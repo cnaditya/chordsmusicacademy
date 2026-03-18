@@ -398,9 +398,6 @@ function submitOrder() {
 
   // 4. Show confirmation — no auto popups, payment link goes via email
   document.getElementById('oIdDisplay').textContent = _orderId;
-  document.getElementById('oConfSub').textContent = email
-    ? 'Invoice & payment link sent to ' + email
-    : 'Order confirmed! Use WhatsApp to pay & confirm.';
   document.getElementById('orderStep1').style.display = 'none';
   document.getElementById('orderStep2').style.display = 'block';
 
