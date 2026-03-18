@@ -253,16 +253,22 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;height:100
     <!-- Step 2: Confirmation -->
     <div id="orderStep2" style="display:none">
       <div class="conf-icon">🎉</div>
-      <div class="conf-title">Order Placed!</div>
-      <div class="conf-sub" id="oConfSub">Your order is confirmed. We deliver within 24 hrs.</div>
-      <div class="conf-id">
+      <div class="conf-title">Order Placed Successfully!</div>
+      <div class="conf-id" style="margin:14px 0">
         <div class="conf-id-lbl">Your Order ID</div>
         <div class="conf-id-val" id="oIdDisplay">CMA-XXXXXX</div>
       </div>
+      <!-- Payment nudge -->
+      <div style="background:#fff8e1;border:1.5px solid #f39c12;border-radius:12px;padding:14px;margin-bottom:14px;text-align:left">
+        <div style="font-size:0.88rem;font-weight:700;color:#e65100;margin-bottom:5px">📧 Payment link sent to your email</div>
+        <div style="font-size:0.8rem;color:#555;line-height:1.6">Please check your inbox and click <strong>Pay Now</strong> to complete your payment. Orders are processed <strong>faster after payment</strong> — usually within a few hours.</div>
+      </div>
+      <div style="background:#e8f5e9;border-radius:10px;padding:11px 14px;margin-bottom:14px;font-size:0.78rem;color:#2e7d32;text-align:center">
+        ✅ Once paid, your notes & videos will be delivered to your WhatsApp within <strong>24 hours</strong>.
+      </div>
       <div class="conf-btns">
-        <button class="btn-wa-conf" id="waConfBtn">💬 Open WhatsApp to Chat</button>
-        <button class="btn-upi-conf" id="upiConfBtn">💳 Pay via UPI Now</button>
-        <button class="btn-done" onclick="closeOrder()">Done</button>
+        <button class="btn-wa-conf" id="waConfBtn">💬 Chat with Us on WhatsApp</button>
+        <button class="btn-done" onclick="closeOrder()" style="margin-top:4px">Close</button>
       </div>
     </div>
 
