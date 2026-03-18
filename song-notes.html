@@ -37,12 +37,17 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;height:100
 .btn-p{flex:1;background:#1a73e8;color:#fff;border:none;border-radius:9px;padding:10px 6px;font-size:0.78rem;font-weight:700;cursor:pointer}
 
 /* ── Song Notes tab ── */
-.price-strip{display:flex;gap:8px}
-.pc{flex:1;background:#fff;border-radius:12px;padding:11px 6px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,0.08)}
-.pc .em{font-size:1.3rem}
-.pc .lb{font-size:0.62rem;color:#666;margin:3px 0 2px}
-.pc .am{font-size:1.05rem;font-weight:800;color:#e74c3c}
-.pc .ol{font-size:0.6rem;color:#bbb;text-decoration:line-through}
+.sn-card{background:#fff;border-radius:13px;padding:12px 14px;box-shadow:0 1px 6px rgba(0,0,0,0.08);display:flex;align-items:center;gap:10px}
+.sn-card.featured{border:2px solid #e74c3c}
+.sn-left{display:flex;align-items:center;gap:9px;flex:1;min-width:0}
+.sn-em{font-size:1.5rem;flex-shrink:0}
+.sn-name{font-size:0.82rem;font-weight:700;color:#1a1a2e}
+.sn-price{font-size:1.1rem;font-weight:800;color:#e74c3c}
+.sn-old{font-size:0.65rem;color:#bbb;text-decoration:line-through;margin-left:3px}
+.sn-right{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.sn-right .btn-w,.sn-right .btn-p{padding:7px 10px;font-size:0.72rem;border-radius:8px;border:none;font-weight:700;cursor:pointer;color:#fff;white-space:nowrap}
+.sn-right .btn-w{background:#25d366}
+.sn-right .btn-p{background:#1a73e8}
 
 .form-card{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.09)}
 .form-card h3{font-size:0.88rem;font-weight:700;color:#1a1a2e;margin-bottom:11px}
@@ -53,13 +58,15 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;height:100
 #reqSuccess{display:none;background:#e8f5e9;color:#2e7d32;padding:9px;border-radius:8px;font-size:0.8rem;margin-bottom:9px;text-align:center}
 
 /* ── Top 50 tab ── */
-.t50{background:#fff;border-radius:13px;padding:12px 13px;box-shadow:0 1px 6px rgba(0,0,0,0.08);display:flex;align-items:center;gap:11px}
-.t50-em{font-size:1.7rem;flex-shrink:0}
-.t50-body{flex:1;min-width:0}
-.t50-name{font-size:0.88rem;font-weight:700;color:#1a1a2e}
-.t50-sub{font-size:0.67rem;color:#777;margin:2px 0 7px}
-.t50-btns{display:flex;gap:6px}
-.t50b{flex:1;border:none;border-radius:8px;padding:7px 3px;font-size:0.68rem;font-weight:700;cursor:pointer;color:#fff;white-space:nowrap}
+.t50{background:#fff;border-radius:13px;padding:12px 13px;box-shadow:0 1px 6px rgba(0,0,0,0.08)}
+.t50-hdr{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.t50-em{font-size:1.5rem;flex-shrink:0}
+.t50-name{font-size:0.9rem;font-weight:700;color:#1a1a2e}
+.t50-sub{font-size:0.65rem;color:#888}
+.t50-opt{display:flex;align-items:center;gap:6px;padding:6px 0;border-top:1px solid #f0f0f0}
+.t50-opt-lbl{font-size:0.72rem;color:#444;font-weight:600;flex:1}
+.t50-opt-price{font-size:0.82rem;font-weight:800;color:#e74c3c;margin-right:4px}
+.t50b{border:none;border-radius:7px;padding:6px 9px;font-size:0.68rem;font-weight:700;cursor:pointer;color:#fff;white-space:nowrap}
 .t50b.w{background:#25d366}
 .t50b.p{background:#1a73e8}
 
@@ -134,27 +141,50 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;height:100
 
   <!-- Tab 1: Song Notes -->
   <div class="panel" id="tab1">
-    <div class="price-strip">
-      <div class="pc">
-        <div class="em">📄</div>
-        <div class="lb">Notes Only</div>
-        <div class="am">₹99</div>
+    <!-- ₹99 Notes Only -->
+    <div class="sn-card">
+      <div class="sn-left">
+        <div class="sn-em">📄</div>
+        <div>
+          <div class="sn-name">Notes Only</div>
+          <div><span class="sn-price">₹99</span> <span style="font-size:0.65rem;color:#888">per song</span></div>
+        </div>
       </div>
-      <div class="pc">
-        <div class="em">🎬</div>
-        <div class="lb">Notes + Video</div>
-        <div class="am">₹249</div>
-        <div class="ol">₹349</div>
-      </div>
-      <div class="pc">
-        <div class="em">🎵</div>
-        <div class="lb">5-Song Bundle</div>
-        <div class="am">₹799</div>
-        <div class="ol">₹1,245</div>
+      <div class="sn-right">
+        <button class="btn-w" onclick="waOrder('Song Notes Only ₹99')">💬 Order</button>
       </div>
     </div>
+    <!-- ₹249 Notes + Video -->
+    <div class="sn-card featured">
+      <div class="sn-left">
+        <div class="sn-em">🎬</div>
+        <div>
+          <div class="sn-name">Notes + Video ⭐</div>
+          <div><span class="sn-price">₹249</span><span class="sn-old">₹349</span></div>
+        </div>
+      </div>
+      <div class="sn-right">
+        <button class="btn-w" onclick="waOrder('Song Notes + Video ₹249')">💬 Order</button>
+        <button class="btn-p" onclick="payUPI(249,'CMA-Notes-Video')">💳 Pay ₹249</button>
+      </div>
+    </div>
+    <!-- ₹799 Bundle -->
+    <div class="sn-card">
+      <div class="sn-left">
+        <div class="sn-em">🎵</div>
+        <div>
+          <div class="sn-name">5-Song Bundle</div>
+          <div><span class="sn-price">₹799</span><span class="sn-old">₹1,245</span></div>
+        </div>
+      </div>
+      <div class="sn-right">
+        <button class="btn-w" onclick="waOrder('5-Song Bundle ₹799')">💬 Order</button>
+        <button class="btn-p" onclick="payUPI(799,'CMA-5Song-Bundle')">💳 Pay ₹799</button>
+      </div>
+    </div>
+    <!-- Request Form -->
     <div class="form-card">
-      <h3>🎵 Request Your Song</h3>
+      <h3>🎵 Request a Specific Song</h3>
       <form id="songForm" name="song-request" method="POST" data-netlify="true">
         <input type="hidden" name="form-name" value="song-request">
         <input class="inp" type="text" name="song_name" placeholder="Song Name *" required>
@@ -173,61 +203,37 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;height:100
 
   <!-- Tab 2: Top 50 Packages -->
   <div class="panel" id="tab2">
+
     <div class="t50">
-      <div class="t50-em">🎵</div>
-      <div class="t50-body">
-        <div class="t50-name">Telugu Top 50</div>
-        <div class="t50-sub">50 best Telugu songs • PDF Notes + Videos</div>
-        <div class="t50-btns">
-          <button class="t50b w" onclick="waOrder('Telugu Top 50 Songs — Notes ₹999')">💬 Notes ₹999</button>
-          <button class="t50b p" onclick="payUPI(1999,'CMA-Telugu-Top50')">💳 +Video ₹1,999</button>
-        </div>
-      </div>
+      <div class="t50-hdr"><div class="t50-em">🎵</div><div><div class="t50-name">Telugu Top 50</div><div class="t50-sub">50 best Telugu songs</div></div></div>
+      <div class="t50-opt"><span class="t50-opt-lbl">📄 Notes Only</span><span class="t50-opt-price">₹999</span><button class="t50b w" onclick="waOrder('Telugu Top 50 — Notes ₹999')">💬</button><button class="t50b p" onclick="payUPI(999,'CMA-Telugu-Notes')">💳</button></div>
+      <div class="t50-opt"><span class="t50-opt-lbl">🎬 Notes + Video</span><span class="t50-opt-price">₹1,999</span><button class="t50b w" onclick="waOrder('Telugu Top 50 — Notes+Video ₹1999')">💬</button><button class="t50b p" onclick="payUPI(1999,'CMA-Telugu-Top50')">💳</button></div>
     </div>
+
     <div class="t50">
-      <div class="t50-em">🎶</div>
-      <div class="t50-body">
-        <div class="t50-name">Hindi Top 50</div>
-        <div class="t50-sub">50 best Hindi songs • PDF Notes + Videos</div>
-        <div class="t50-btns">
-          <button class="t50b w" onclick="waOrder('Hindi Top 50 Songs — Notes ₹999')">💬 Notes ₹999</button>
-          <button class="t50b p" onclick="payUPI(1999,'CMA-Hindi-Top50')">💳 +Video ₹1,999</button>
-        </div>
-      </div>
+      <div class="t50-hdr"><div class="t50-em">🎶</div><div><div class="t50-name">Hindi Top 50</div><div class="t50-sub">50 best Hindi songs</div></div></div>
+      <div class="t50-opt"><span class="t50-opt-lbl">📄 Notes Only</span><span class="t50-opt-price">₹999</span><button class="t50b w" onclick="waOrder('Hindi Top 50 — Notes ₹999')">💬</button><button class="t50b p" onclick="payUPI(999,'CMA-Hindi-Notes')">💳</button></div>
+      <div class="t50-opt"><span class="t50-opt-lbl">🎬 Notes + Video</span><span class="t50-opt-price">₹1,999</span><button class="t50b w" onclick="waOrder('Hindi Top 50 — Notes+Video ₹1999')">💬</button><button class="t50b p" onclick="payUPI(1999,'CMA-Hindi-Top50')">💳</button></div>
     </div>
+
     <div class="t50">
-      <div class="t50-em">🎼</div>
-      <div class="t50-body">
-        <div class="t50-name">Tamil Top 50</div>
-        <div class="t50-sub">50 best Tamil songs • PDF Notes + Videos</div>
-        <div class="t50-btns">
-          <button class="t50b w" onclick="waOrder('Tamil Top 50 Songs — Notes ₹999')">💬 Notes ₹999</button>
-          <button class="t50b p" onclick="payUPI(1999,'CMA-Tamil-Top50')">💳 +Video ₹1,999</button>
-        </div>
-      </div>
+      <div class="t50-hdr"><div class="t50-em">🎼</div><div><div class="t50-name">Tamil Top 50</div><div class="t50-sub">50 best Tamil songs</div></div></div>
+      <div class="t50-opt"><span class="t50-opt-lbl">📄 Notes Only</span><span class="t50-opt-price">₹999</span><button class="t50b w" onclick="waOrder('Tamil Top 50 — Notes ₹999')">💬</button><button class="t50b p" onclick="payUPI(999,'CMA-Tamil-Notes')">💳</button></div>
+      <div class="t50-opt"><span class="t50-opt-lbl">🎬 Notes + Video</span><span class="t50-opt-price">₹1,999</span><button class="t50b w" onclick="waOrder('Tamil Top 50 — Notes+Video ₹1999')">💬</button><button class="t50b p" onclick="payUPI(1999,'CMA-Tamil-Top50')">💳</button></div>
     </div>
+
     <div class="t50">
-      <div class="t50-em">🎤</div>
-      <div class="t50-body">
-        <div class="t50-name">AR Rahman Top 50</div>
-        <div class="t50-sub">50 iconic AR Rahman songs • Notes + Videos</div>
-        <div class="t50-btns">
-          <button class="t50b w" onclick="waOrder('AR Rahman Top 50 Songs — Notes ₹999')">💬 Notes ₹999</button>
-          <button class="t50b p" onclick="payUPI(1999,'CMA-AR-Rahman-Top50')">💳 +Video ₹1,999</button>
-        </div>
-      </div>
+      <div class="t50-hdr"><div class="t50-em">🎤</div><div><div class="t50-name">AR Rahman Top 50</div><div class="t50-sub">50 iconic AR Rahman songs</div></div></div>
+      <div class="t50-opt"><span class="t50-opt-lbl">📄 Notes Only</span><span class="t50-opt-price">₹999</span><button class="t50b w" onclick="waOrder('AR Rahman Top 50 — Notes ₹999')">💬</button><button class="t50b p" onclick="payUPI(999,'CMA-ARR-Notes')">💳</button></div>
+      <div class="t50-opt"><span class="t50-opt-lbl">🎬 Notes + Video</span><span class="t50-opt-price">₹1,999</span><button class="t50b w" onclick="waOrder('AR Rahman Top 50 — Notes+Video ₹1999')">💬</button><button class="t50b p" onclick="payUPI(1999,'CMA-AR-Rahman-Top50')">💳</button></div>
     </div>
+
     <div class="t50">
-      <div class="t50-em">🎹</div>
-      <div class="t50-body">
-        <div class="t50-name">Ilaiyaraaja Top 50</div>
-        <div class="t50-sub">50 evergreen classics • PDF Notes + Videos</div>
-        <div class="t50-btns">
-          <button class="t50b w" onclick="waOrder('Ilaiyaraaja Top 50 Songs — Notes ₹999')">💬 Notes ₹999</button>
-          <button class="t50b p" onclick="payUPI(1999,'CMA-Ilaiyaraaja-Top50')">💳 +Video ₹1,999</button>
-        </div>
-      </div>
+      <div class="t50-hdr"><div class="t50-em">🎹</div><div><div class="t50-name">Ilaiyaraaja Top 50</div><div class="t50-sub">50 evergreen classics</div></div></div>
+      <div class="t50-opt"><span class="t50-opt-lbl">📄 Notes Only</span><span class="t50-opt-price">₹999</span><button class="t50b w" onclick="waOrder('Ilaiyaraaja Top 50 — Notes ₹999')">💬</button><button class="t50b p" onclick="payUPI(999,'CMA-Ilayaraja-Notes')">💳</button></div>
+      <div class="t50-opt"><span class="t50-opt-lbl">🎬 Notes + Video</span><span class="t50-opt-price">₹1,999</span><button class="t50b w" onclick="waOrder('Ilaiyaraaja Top 50 — Notes+Video ₹1999')">💬</button><button class="t50b p" onclick="payUPI(1999,'CMA-Ilaiyaraaja-Top50')">💳</button></div>
     </div>
+
   </div>
 
 </div>
