@@ -241,7 +241,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;height:100
       <div class="opkg" id="oLabel">Package — ₹0</div>
       <input class="oinp" id="oName" type="text" placeholder="Your Name *" required>
       <input class="oinp" id="oPhone" type="tel" placeholder="WhatsApp Number *" required>
-      <input class="oinp" id="oEmail" type="email" placeholder="Email (for order confirmation)">
+      <input class="oinp" id="oEmail" type="email" placeholder="Email — invoice will be sent here">
       <div id="oSongRow" style="display:none">
         <input class="oinp" id="oSong" type="text" placeholder="Song Name (if specific song)">
       </div>
@@ -254,7 +254,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;height:100
     <div id="orderStep2" style="display:none">
       <div class="conf-icon">🎉</div>
       <div class="conf-title">Order Placed!</div>
-      <div class="conf-sub">Your order details have been sent to WhatsApp.<br>We'll deliver within 24 hours.</div>
+      <div class="conf-sub" id="oConfSub">Your order is confirmed. We deliver within 24 hrs.</div>
       <div class="conf-id">
         <div class="conf-id-lbl">Your Order ID</div>
         <div class="conf-id-val" id="oIdDisplay">CMA-XXXXXX</div>
@@ -287,7 +287,14 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;height:100
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
+// ── EmailJS Config — replace these after setup (see instructions below) ──
+var EJS_KEY         = 'YOUR_EMAILJS_PUBLIC_KEY';   // emailjs.com > Account > API Keys
+var EJS_SERVICE     = 'service_cma';               // Email Services > your Gmail service ID
+var EJS_OWNER_TPL   = 'template_owner_order';      // your owner-notification template ID
+var EJS_INVOICE_TPL = 'template_customer_invoice'; // your customer-invoice template ID
+
 // ── State ──
 var _pkg = '', _amount = 0, _ref = '', _orderId = '';
 
@@ -320,6 +327,30 @@ function genOrderId() {
   return 'CMA-' + dd + '-' + rnd;
 }
 
+// ── Send emails via EmailJS ──
+function sendEmails(orderId, pkg, amount, name, phone, email, song) {
+  if (!window.emailjs || EJS_KEY === 'YOUR_EMAILJS_PUBLIC_KEY') return;
+  emailjs.init({publicKey: EJS_KEY});
+  var date   = new Date().toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'});
+  var amtFmt = '\u20B9' + Number(amount).toLocaleString('en-IN');
+  var params = {
+    order_id:       orderId,
+    package_name:   pkg,
+    amount:         amtFmt,
+    customer_name:  name,
+    customer_phone: phone,
+    customer_email: email || 'Not provided',
+    song_name:      song  || 'N/A',
+    order_date:     date
+  };
+  // 1. Notify owner
+  emailjs.send(EJS_SERVICE, EJS_OWNER_TPL, Object.assign({}, params, {to_email: 'chordsmusicstudios@gmail.com'})).catch(function(){});
+  // 2. Invoice to customer
+  if (email) {
+    emailjs.send(EJS_SERVICE, EJS_INVOICE_TPL, Object.assign({}, params, {to_email: email})).catch(function(){});
+  }
+}
+
 function submitOrder() {
   var name  = document.getElementById('oName').value.trim();
   var phone = document.getElementById('oPhone').value.trim();
@@ -330,7 +361,7 @@ function submitOrder() {
 
   _orderId = genOrderId();
 
-  // Fill & submit hidden Netlify form
+  // 1. Netlify form (backup storage)
   document.getElementById('nOrderId').value  = _orderId;
   document.getElementById('nPackage').value  = _pkg;
   document.getElementById('nAmount').value   = _amount;
@@ -340,9 +371,12 @@ function submitOrder() {
   var fd = new FormData(document.getElementById('netlifyForm'));
   fetch('/', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: new URLSearchParams(fd).toString()}).catch(function(){});
 
-  // Build WhatsApp message
+  // 2. Send emails (owner notification + customer invoice)
+  sendEmails(_orderId, _pkg, _amount, name, phone, email, song);
+
+  // 3. Build WhatsApp message
   var lines = [
-    '\uD83D\uDCCB *New Order — ' + _orderId + '*',
+    '\uD83D\uDCCB *New Order \u2014 ' + _orderId + '*',
     '',
     '\uD83D\uDCE6 *Package:* ' + _pkg,
     '\uD83D\uDCB0 *Amount:* \u20B9' + Number(_amount).toLocaleString('en-IN'),
@@ -354,19 +388,20 @@ function submitOrder() {
   var waMsg = encodeURIComponent(lines.join('\n'));
   var waUrl = 'https://api.whatsapp.com/send?phone=917981585309&text=' + waMsg;
 
-  // Show confirmation step
+  // 4. Show confirmation
   document.getElementById('oIdDisplay').textContent = _orderId;
+  document.getElementById('oConfSub').textContent = email
+    ? 'Invoice sent to ' + email + '. We deliver within 24 hrs.'
+    : 'Your order is confirmed. We deliver within 24 hrs.';
   document.getElementById('orderStep1').style.display = 'none';
   document.getElementById('orderStep2').style.display = 'block';
 
-  // Wire up buttons
   document.getElementById('waConfBtn').onclick = function(){ window.open(waUrl, '_blank'); };
   document.getElementById('upiConfBtn').onclick = function(){
     closeOrder();
     payUPI(_amount, _ref + '-' + _orderId);
   };
 
-  // Auto-open WhatsApp after short delay
   setTimeout(function(){ window.open(waUrl, '_blank'); }, 600);
 }
 
