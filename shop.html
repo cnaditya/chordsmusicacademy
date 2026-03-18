@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shop & Services - Chords Music Academy | Telugu Song Notes, Tutorials & Music Production</title>
+    <meta name="description" content="Buy Telugu song notes PDFs, tutorial videos, piano tutorial packages, keyboard programming and music composition services by CN Aditya — Chords Music Academy.">
+    <meta name="keywords" content="telugu song notes, piano notes telugu, keyboard tutorial, music composition hyderabad, song production, keyboard programming, CN Aditya, chords music academy shop">
+    <link rel="icon" type="image/png" href="images/chords_PNG.png">
+    <link rel="apple-touch-icon" href="images/chords_PNG.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0P6P55ERCN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-0P6P55ERCN');
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; overflow-x: hidden; scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #eee; line-height: 1.6; }
+
+        /* Loading */
+        .loading { position: fixed; inset: 0; background: #0a0a0a; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(155,89,182,0.2); border-top-color: #9b59b6; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Banner */
+        .announcement-banner { background: linear-gradient(135deg, #6c3483, #9b59b6); color: #fff; padding: 8px 0; overflow: hidden; white-space: nowrap; position: fixed; top: 0; left: 0; right: 0; font-weight: 500; font-size: 0.85rem; z-index: 1002; }
+        .scrolling-text { display: inline-block; animation: scroll-left 45s linear infinite; padding-left: 100%; }
+        @keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+        /* Navbar */
+        header { position: fixed; top: 32px; left: 0; right: 0; z-index: 1000; }
+        .navbar { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 2rem; background: rgba(10,10,10,0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(155,89,182,0.2); }
+        .logo { display: flex; align-items: center; gap: 0.8rem; text-decoration: none; }
+        .nav-logo-wrap { width: 54px; height: 54px; border-radius: 50%; background: radial-gradient(circle, rgba(155,89,182,0.25), rgba(155,89,182,0.05)); border: 2px solid rgba(155,89,182,0.6); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .nav-logo-img { width: 42px; height: 42px; object-fit: contain; }
+        .shop-name { font-size: 1.2rem; font-weight: 800; color: #9b59b6; }
+        .logo-tagline { font-size: 0.7rem; color: #aaa; }
+        .nav-links { display: flex; list-style: none; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
+        .nav-links a { text-decoration: none; color: #ccc; font-weight: 500; font-size: 0.9rem; transition: color 0.2s; }
+        .nav-links a:hover { color: #9b59b6; }
+        .nav-links .academy-link { background: rgba(243,156,18,0.15); border: 1px solid rgba(243,156,18,0.4); color: #f39c12; padding: 0.4rem 0.9rem; border-radius: 20px; font-size: 0.8rem; }
+        .nav-links .studio-link { background: rgba(243,156,18,0.15); border: 1px solid rgba(243,156,18,0.4); color: #f39c12; padding: 0.4rem 0.9rem; border-radius: 20px; font-size: 0.8rem; }
+        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+        .hamburger span { display: block; width: 25px; height: 2px; background: #9b59b6; border-radius: 2px; }
+
+        /* Hero */
+        .hero { min-height: 50vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 8rem 2rem 4rem; background: linear-gradient(135deg, #0a0a0a, #1a0a2e, #0a0a0a); position: relative; overflow: hidden; }
+        .hero::before { content: '🎵'; position: absolute; font-size: 25rem; opacity: 0.03; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+        .hero-badge { display: inline-block; background: linear-gradient(135deg, #9b59b6, #6c3483); color: #fff; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; letter-spacing: 1px; }
+        .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; color: #fff; margin-bottom: 0.8rem; }
+        .hero p { color: #aaa; font-size: 1rem; max-width: 600px; margin: 0 auto; }
+
+        /* Section common */
+        section { padding: 4rem 2rem; }
+        .section-title { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 800; color: #fff; text-align: center; margin-bottom: 0.5rem; }
+        .section-sub { text-align: center; color: #888; margin-bottom: 3rem; font-size: 0.95rem; }
+        .section-label { display: inline-block; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.8rem; }
+
+        /* ── DIGITAL PRODUCTS ── */
+        .digital-products { background: #0f0f0f; }
+        .digital-products .section-label { background: rgba(155,89,182,0.2); color: #9b59b6; border: 1px solid rgba(155,89,182,0.4); }
+        .products-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+        .product-card { background: #1a1a1a; border: 1px solid rgba(155,89,182,0.15); border-radius: 18px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; }
+        .product-card:hover { transform: translateY(-6px); box-shadow: 0 15px 40px rgba(155,89,182,0.15); border-color: rgba(155,89,182,0.4); }
+        .product-card.featured { border-color: rgba(155,89,182,0.5); box-shadow: 0 0 30px rgba(155,89,182,0.1); }
+        .product-header { padding: 1.5rem; background: linear-gradient(135deg, rgba(155,89,182,0.15), rgba(108,52,131,0.1)); border-bottom: 1px solid rgba(155,89,182,0.1); text-align: center; }
+        .product-icon { font-size: 2.5rem; margin-bottom: 0.5rem; display: block; }
+        .product-header h3 { font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 0.3rem; }
+        .best-tag { display: inline-block; background: linear-gradient(135deg, #9b59b6, #6c3483); color: #fff; padding: 0.2rem 0.7rem; border-radius: 10px; font-size: 0.7rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .product-price { font-size: 1.8rem; font-weight: 900; color: #9b59b6; }
+        .product-price span { font-size: 0.9rem; color: #777; font-weight: 400; text-decoration: line-through; margin-left: 0.3rem; }
+        .product-body { padding: 1.5rem; }
+        .product-body ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .product-body ul li { color: #bbb; font-size: 0.88rem; display: flex; align-items: center; gap: 0.5rem; }
+        .product-body ul li::before { content: '✅'; font-size: 0.75rem; }
+        .buy-btn { width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #9b59b6, #6c3483); color: #fff; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .buy-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(155,89,182,0.4); }
+        .buy-btn.whatsapp { background: linear-gradient(135deg, #25d366, #128c7e); }
+        .buy-btn.whatsapp:hover { box-shadow: 0 6px 20px rgba(37,211,102,0.4); }
+
+        /* ── TUTORIAL PACKAGES ── */
+        .tutorial-packages { background: #0a0a0a; }
+        .tutorial-packages .section-label { background: rgba(243,156,18,0.15); color: #f39c12; border: 1px solid rgba(243,156,18,0.4); }
+        .packages-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .package-card { background: #1a1a1a; border: 1px solid rgba(243,156,18,0.15); border-radius: 20px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; }
+        .package-card.popular { border-color: rgba(243,156,18,0.6); box-shadow: 0 0 30px rgba(243,156,18,0.1); }
+        .package-card:hover { transform: translateY(-6px); box-shadow: 0 15px 40px rgba(243,156,18,0.15); }
+        .package-header { padding: 2rem 1.5rem; text-align: center; background: linear-gradient(135deg, rgba(243,156,18,0.1), rgba(230,126,34,0.05)); border-bottom: 1px solid rgba(243,156,18,0.1); }
+        .package-level { font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem; }
+        .package-level.basic { color: #27ae60; }
+        .package-level.intermediate { color: #f39c12; }
+        .package-level.advanced { color: #e74c3c; }
+        .package-header h3 { font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem; }
+        .popular-tag { display: inline-block; background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; padding: 0.2rem 0.8rem; border-radius: 10px; font-size: 0.7rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .package-price { font-size: 2rem; font-weight: 900; color: #f39c12; }
+        .package-price .per { font-size: 0.85rem; color: #777; font-weight: 400; }
+        .package-body { padding: 1.5rem; }
+        .package-body ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.5rem; }
+        .package-body ul li { color: #bbb; font-size: 0.88rem; display: flex; align-items: flex-start; gap: 0.5rem; }
+        .package-body ul li::before { content: '✅'; font-size: 0.75rem; flex-shrink: 0; margin-top: 0.1rem; }
+        .package-btn { width: 100%; padding: 0.9rem; background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .package-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(243,156,18,0.4); }
+
+        /* ── PRO SERVICES ── */
+        .pro-services { background: #0f0f0f; }
+        .pro-services .section-label { background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.4); }
+        .services-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .service-card { background: #1a1a1a; border: 1px solid rgba(231,76,60,0.15); border-radius: 20px; padding: 2rem; transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s; }
+        .service-card:hover { transform: translateY(-6px); border-color: rgba(231,76,60,0.4); box-shadow: 0 15px 40px rgba(231,76,60,0.1); }
+        .service-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+        .service-card h3 { font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem; }
+        .service-card p { color: #999; font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.2rem; }
+        .service-card ul { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.5rem; }
+        .service-card ul li { color: #bbb; font-size: 0.85rem; }
+        .service-card ul li::before { content: '→ '; color: #e74c3c; }
+        .service-price-note { color: #e74c3c; font-weight: 700; font-size: 0.9rem; margin-bottom: 1rem; }
+        .service-btn { width: 100%; padding: 0.85rem; background: transparent; border: 2px solid #e74c3c; color: #e74c3c; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .service-btn:hover { background: #e74c3c; color: #fff; }
+
+        /* ── SONG REQUEST ── */
+        .song-request { background: #0a0a0a; }
+        .song-request .section-label { background: rgba(39,174,96,0.15); color: #27ae60; border: 1px solid rgba(39,174,96,0.4); }
+        .request-grid { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+        .request-steps { display: flex; flex-direction: column; gap: 1.5rem; }
+        .request-step { display: flex; gap: 1rem; align-items: flex-start; }
+        .step-num { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.95rem; }
+        .request-step h4 { color: #a9dfbf; font-size: 0.95rem; margin-bottom: 0.2rem; }
+        .request-step p { color: #777; font-size: 0.85rem; }
+        .request-form { background: rgba(255,255,255,0.03); border: 1px solid rgba(39,174,96,0.2); border-radius: 20px; padding: 2rem; display: flex; flex-direction: column; gap: 1.2rem; }
+        .request-form h3 { color: #27ae60; font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+        .form-group label { color: #aaa; font-size: 0.82rem; font-weight: 600; }
+        .request-form input, .request-form select, .request-form textarea {
+            padding: 0.85rem 1rem; border: 1px solid rgba(39,174,96,0.2); border-radius: 10px;
+            background: rgba(255,255,255,0.04); color: #eee; font-size: 0.9rem; font-family: inherit;
+            outline: none; transition: border-color 0.2s;
+        }
+        .request-form input:focus, .request-form select:focus, .request-form textarea:focus { border-color: #27ae60; }
+        .request-form select option { background: #1a1a1a; }
+        .request-submit { padding: 1rem; background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .request-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(39,174,96,0.4); }
+
+        /* Footer */
+        .footer { background: #050505; border-top: 1px solid rgba(155,89,182,0.15); padding: 3rem 2rem 1.5rem; }
+        .footer-content { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+        .footer-section h4 { color: #9b59b6; font-weight: 700; margin-bottom: 1rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .footer-section p, .footer-section a { color: #666; font-size: 0.85rem; text-decoration: none; display: block; margin-bottom: 0.3rem; transition: color 0.2s; }
+        .footer-section a:hover { color: #9b59b6; }
+        .footer-bottom { text-align: center; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); }
+        .footer-logo { width: 50px; height: 50px; object-fit: contain; margin-bottom: 0.5rem; }
+        .footer-bottom h4 { color: #9b59b6; font-size: 1rem; margin-bottom: 0.3rem; }
+        .footer-bottom p { color: #444; font-size: 0.8rem; }
+
+        /* WhatsApp Float */
+        .whatsapp-float { position: fixed; bottom: 2rem; right: 2rem; z-index: 999; width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37,211,102,0.5); background: #25d366; transition: transform 0.2s; }
+        .whatsapp-float:hover { transform: scale(1.1); }
+        .whatsapp-float img { width: 34px; height: 34px; object-fit: contain; }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .navbar { padding: 0.8rem 1.2rem; }
+            .hamburger { display: flex; }
+            .nav-links { display: none; position: fixed; top: 70px; left: 0; right: 0; background: rgba(10,10,10,0.98); flex-direction: column; padding: 2rem; gap: 1rem; border-bottom: 1px solid rgba(155,89,182,0.2); }
+            .nav-links.active { display: flex; }
+            .request-grid { grid-template-columns: 1fr; gap: 2rem; }
+            section { padding: 3rem 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading"><div class="spinner"></div></div>
+
+    <div class="announcement-banner">
+        <div class="scrolling-text">
+            🎵 Telugu Song Notes + Tutorial Videos • 📄 Instant PDF Download • 🎹 Piano & Keyboard Tutorials • 🎼 Basic to Advanced Packages • 🎧 Keyboard Programming • 🎵 Music Composition & Production • 📱 WhatsApp: +91-79815 85309 •
+        </div>
+    </div>
+
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <div class="nav-logo-wrap">
+                    <img src="images/chords_PNG.png" alt="Chords Music Academy" class="nav-logo-img">
+                </div>
+                <div class="logo-text">
+                    <div class="shop-name">Shop & Services</div>
+                    <div class="logo-tagline">Chords Music Academy</div>
+                </div>
+            </div>
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span><span></span><span></span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#digital" onclick="closeMenu()">Notes & Videos</a></li>
+                <li><a href="#packages" onclick="closeMenu()">Packages</a></li>
+                <li><a href="#services" onclick="closeMenu()">Pro Services</a></li>
+                <li><a href="#request" onclick="closeMenu()">Request a Song</a></li>
+                <li><a href="index.html" onclick="closeMenu()" class="academy-link">🎓 Academy</a></li>
+                <li><a href="studio.html" onclick="closeMenu()" class="studio-link">🎙 Studio</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero -->
+        <section class="hero">
+            <div style="position:relative;z-index:1;text-align:center;">
+                <div class="hero-badge">🎵 Notes • Tutorials • Production</div>
+                <h1>Shop & Services</h1>
+                <p>Telugu song notes, piano tutorials, keyboard programming, music composition & full song production — all by CN Aditya</p>
+            </div>
+        </section>
+
+        <!-- Digital Products -->
+        <section id="digital" class="digital-products">
+            <div style="text-align:center;">
+                <span class="section-label">📄 Instant Download</span>
+                <div class="section-title">Song Notes & Tutorial Videos</div>
+                <p class="section-sub">Latest Telugu songs — notes PDF + full tutorial video. New songs added every week!</p>
+            </div>
+            <div class="products-grid">
+                <div class="product-card">
+                    <div class="product-header">
+                        <span class="product-icon">📄</span>
+                        <h3>Song Notes Only</h3>
+                        <div class="product-price">₹49</div>
+                    </div>
+                    <div class="product-body">
+                        <ul>
+                            <li>Piano / Keyboard notes PDF</li>
+                            <li>Telugu song notations</li>
+                            <li>Chords & fingering guide</li>
+                            <li>Instant WhatsApp delivery</li>
+                        </ul>
+                        <button class="buy-btn whatsapp" onclick="orderWhatsApp('Song Notes PDF - ₹49')">💬 Order via WhatsApp</button>
+                    </div>
+                </div>
+
+                <div class="product-card featured">
+                    <div class="product-header">
+                        <span class="best-tag">⭐ Most Popular</span>
+                        <span class="product-icon">🎬</span>
+                        <h3>Notes + Tutorial Video</h3>
+                        <div class="product-price">₹149 <span>₹200</span></div>
+                    </div>
+                    <div class="product-body">
+                        <ul>
+                            <li>Full piano notes PDF</li>
+                            <li>Step-by-step tutorial video</li>
+                            <li>Telugu & English notations</li>
+                            <li>Chords + fingering guide</li>
+                            <li>Instant WhatsApp delivery</li>
+                            <li>1 week doubt support</li>
+                        </ul>
+                        <button class="buy-btn whatsapp" onclick="orderWhatsApp('Notes + Tutorial Video Combo - ₹149')">💬 Order via WhatsApp</button>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-header">
+                        <span class="product-icon">🎹</span>
+                        <h3>Keyboard Notes Only</h3>
+                        <div class="product-price">₹49</div>
+                    </div>
+                    <div class="product-body">
+                        <ul>
+                            <li>Keyboard-specific notations</li>
+                            <li>With octave markings</li>
+                            <li>Beginner friendly format</li>
+                            <li>Instant WhatsApp delivery</li>
+                        </ul>
+                        <button class="buy-btn whatsapp" onclick="orderWhatsApp('Keyboard Notes PDF - ₹49')">💬 Order via WhatsApp</button>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-header">
+                        <span class="product-icon">🎵</span>
+                        <h3>Song Bundle (5 Songs)</h3>
+                        <div class="product-price">₹399 <span>₹745</span></div>
+                    </div>
+                    <div class="product-body">
+                        <ul>
+                            <li>5 song notes PDFs</li>
+                            <li>5 tutorial videos</li>
+                            <li>You choose the songs</li>
+                            <li>Best value deal</li>
+                            <li>Instant WhatsApp delivery</li>
+                        </ul>
+                        <button class="buy-btn whatsapp" onclick="orderWhatsApp('5 Song Bundle (Notes + Videos) - ₹399')">💬 Order via WhatsApp</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tutorial Packages -->
+        <section id="packages" class="tutorial-packages">
+            <div style="text-align:center;">
+                <span class="section-label">🎓 Structured Learning</span>
+                <div class="section-title">Piano & Keyboard Tutorial Packages</div>
+                <p class="section-sub">Complete learning packages with video tutorials — from beginner to advanced. Learn at your own pace!</p>
+            </div>
+            <div class="packages-grid">
+                <div class="package-card">
+                    <div class="package-header">
+                        <div class="package-level basic">● Beginner</div>
+                        <h3>Basic Piano Package</h3>
+                        <div class="package-price">₹799 <span class="per">/package</span></div>
+                    </div>
+                    <div class="package-body">
+                        <ul>
+                            <li>Notes reading basics</li>
+                            <li>Hand posture & finger techniques</li>
+                            <li>10 simple Telugu songs</li>
+                            <li>Both hands coordination</li>
+                            <li>Basic chords introduction</li>
+                            <li>Video tutorials for each lesson</li>
+                            <li>PDF notes included</li>
+                        </ul>
+                        <button class="package-btn" onclick="orderWhatsApp('Basic Piano Tutorial Package - ₹799')">💬 Buy via WhatsApp</button>
+                    </div>
+                </div>
+
+                <div class="package-card popular">
+                    <div class="package-header">
+                        <div class="popular-tag">🔥 Most Chosen</div>
+                        <div class="package-level intermediate">● Intermediate</div>
+                        <h3>Intermediate Piano Package</h3>
+                        <div class="package-price">₹1,499 <span class="per">/package</span></div>
+                    </div>
+                    <div class="package-body">
+                        <ul>
+                            <li>Everything in Basic</li>
+                            <li>Advanced chord progressions</li>
+                            <li>15 popular Telugu songs</li>
+                            <li>Rhythm & timing patterns</li>
+                            <li>Left hand bass patterns</li>
+                            <li>Bollywood songs included</li>
+                            <li>Video tutorials + PDF notes</li>
+                            <li>2 weeks doubt support</li>
+                        </ul>
+                        <button class="package-btn" onclick="orderWhatsApp('Intermediate Piano Tutorial Package - ₹1,499')">💬 Buy via WhatsApp</button>
+                    </div>
+                </div>
+
+                <div class="package-card">
+                    <div class="package-header">
+                        <div class="package-level advanced">● Advanced</div>
+                        <h3>Advanced Piano Package</h3>
+                        <div class="package-price">₹2,499 <span class="per">/package</span></div>
+                    </div>
+                    <div class="package-body">
+                        <ul>
+                            <li>Everything in Intermediate</li>
+                            <li>Film industry style arrangements</li>
+                            <li>20+ songs (Telugu, Hindi, English)</li>
+                            <li>Keyboard programming basics</li>
+                            <li>Improvisation techniques</li>
+                            <li>Trinity exam preparation</li>
+                            <li>Video tutorials + PDF notes</li>
+                            <li>1 month doubt support</li>
+                        </ul>
+                        <button class="package-btn" onclick="orderWhatsApp('Advanced Piano Tutorial Package - ₹2,499')">💬 Buy via WhatsApp</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pro Services -->
+        <section id="services" class="pro-services">
+            <div style="text-align:center;">
+                <span class="section-label">🎧 Professional Services</span>
+                <div class="section-title">Keyboard Programming & Music Production</div>
+                <p class="section-sub">Professional music services by CN Aditya — Music Director with 20+ years in Telugu Film Industry</p>
+            </div>
+            <div class="services-grid">
+                <div class="service-card">
+                    <span class="service-icon">🎹</span>
+                    <h3>Keyboard Programming</h3>
+                    <p>Get any song arranged and programmed professionally for keyboard/piano. Perfect for musicians, singers & composers who need a ready-to-play or ready-to-record arrangement.</p>
+                    <ul>
+                        <li>Any Telugu / Hindi / English song</li>
+                        <li>Full arrangement with chords</li>
+                        <li>MIDI file delivery</li>
+                        <li>Studio-ready quality</li>
+                        <li>Delivered within 3–5 days</li>
+                    </ul>
+                    <div class="service-price-note">💰 Pricing: Based on song complexity — WhatsApp to discuss</div>
+                    <button class="service-btn" onclick="serviceWhatsApp('Keyboard Programming')">💬 Get a Quote</button>
+                </div>
+
+                <div class="service-card">
+                    <span class="service-icon">🎵</span>
+                    <h3>Music Composition</h3>
+                    <p>Need an original song composed? CN Aditya composes original music for films, albums, YouTube channels, ads, and personal projects with full Telugu/Hindi lyrics support.</p>
+                    <ul>
+                        <li>Original melody composition</li>
+                        <li>Full arrangement & orchestration</li>
+                        <li>Telugu / Hindi / English lyrics support</li>
+                        <li>Background score composition</li>
+                        <li>Jingle & ad music</li>
+                    </ul>
+                    <div class="service-price-note">💰 Pricing: Custom quote based on project — WhatsApp to discuss</div>
+                    <button class="service-btn" onclick="serviceWhatsApp('Music Composition')">💬 Get a Quote</button>
+                </div>
+
+                <div class="service-card">
+                    <span class="service-icon">🎧</span>
+                    <h3>Full Song Production</h3>
+                    <p>Complete end-to-end song production — from composition to final master-ready track. Includes recording at Chords Music Studio, mixing & mastering by experienced professionals.</p>
+                    <ul>
+                        <li>Composition + arrangement</li>
+                        <li>Recording at Chords Music Studio</li>
+                        <li>Professional mixing & mastering</li>
+                        <li>Vocal + instrument recording</li>
+                        <li>Final broadcast-ready track</li>
+                        <li>Suitable for YouTube / Streaming</li>
+                    </ul>
+                    <div class="service-price-note">💰 Pricing: Based on project scope — WhatsApp to discuss</div>
+                    <button class="service-btn" onclick="serviceWhatsApp('Full Song Production')">💬 Get a Quote</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Song Request -->
+        <section id="request" class="song-request">
+            <div style="text-align:center;">
+                <span class="section-label">🎵 Request a Song</span>
+                <div class="section-title">Don't See Your Song?</div>
+                <p class="section-sub">Request any Telugu song — we'll prepare the notes & tutorial video and notify you on WhatsApp!</p>
+            </div>
+            <div class="request-grid">
+                <div class="request-steps">
+                    <div class="request-step">
+                        <span class="step-num">1</span>
+                        <div>
+                            <h4>Submit Your Request</h4>
+                            <p>Tell us the song name, movie and your WhatsApp number</p>
+                        </div>
+                    </div>
+                    <div class="request-step">
+                        <span class="step-num">2</span>
+                        <div>
+                            <h4>We Prioritise Most Requested</h4>
+                            <p>Songs with highest requests get made first — usually within a week</p>
+                        </div>
+                    </div>
+                    <div class="request-step">
+                        <span class="step-num">3</span>
+                        <div>
+                            <h4>Get Notified on WhatsApp</h4>
+                            <p>We'll message you as soon as your song notes & video are ready</p>
+                        </div>
+                    </div>
+                    <div class="request-step">
+                        <span class="step-num">4</span>
+                        <div>
+                            <h4>Buy at ₹149 (Combo)</h4>
+                            <p>Notes PDF + full tutorial video combo at just ₹149</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form class="request-form" name="song-request" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+                    <input type="hidden" name="form-name" value="song-request">
+                    <p style="display:none;"><input name="bot-field"></p>
+                    <h3>🎵 Submit Your Request</h3>
+                    <div class="form-group">
+                        <label>Song Name *</label>
+                        <input type="text" name="song_name" placeholder="e.g. Samajavaragamana" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Movie / Album</label>
+                        <input type="text" name="movie_name" placeholder="e.g. Ala Vaikunthapurramuloo">
+                    </div>
+                    <div class="form-group">
+                        <label>Your WhatsApp Number *</label>
+                        <input type="tel" name="whatsapp" placeholder="e.g. 9876543210" pattern="[6-9][0-9]{9}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Instrument</label>
+                        <select name="instrument">
+                            <option value="Piano/Keyboard">Piano / Keyboard</option>
+                            <option value="Guitar">Guitar</option>
+                            <option value="Violin">Violin</option>
+                            <option value="Flute">Flute</option>
+                            <option value="Any">Any</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Product Interested In</label>
+                        <select name="product">
+                            <option value="Notes + Video Combo ₹149">Notes + Video Combo (₹149)</option>
+                            <option value="Notes Only ₹49">Notes Only (₹49)</option>
+                            <option value="Keyboard Notes ₹49">Keyboard Notes Only (₹49)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="request-submit">🎵 Submit Request</button>
+                    <div id="reqSuccess" style="display:none;padding:1rem;background:rgba(39,174,96,0.15);border:1px solid rgba(39,174,96,0.4);border-radius:8px;color:#27ae60;font-weight:600;text-align:center;margin-top:0.5rem;">
+                        ✅ Request submitted! We'll WhatsApp you when your song is ready.
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Shop & Services</h4>
+                <a href="#digital">Song Notes & Videos</a>
+                <a href="#packages">Tutorial Packages</a>
+                <a href="#services">Pro Services</a>
+                <a href="#request">Request a Song</a>
+            </div>
+            <div class="footer-section">
+                <h4>Our Brands</h4>
+                <a href="index.html">🎓 Chords Music Academy</a>
+                <a href="studio.html">🎙 Chords Music Studio</a>
+                <a href="shop.html">🛒 Shop & Services</a>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p>📞 +91-79815 85309</p>
+                <p>✉️ chords.music.academy@gmail.com</p>
+                <p>📍 Manikonda, Hyderabad</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <img src="images/chords_PNG.png" alt="Chords Music Academy" class="footer-logo">
+            <h4>Chords Music Academy</h4>
+            <p>Notes • Tutorials • Programming • Composition • Production</p>
+            <p>© <span id="yr"></span> Chords Music Academy. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hello!%20I'm%20interested%20in%20your%20music%20services.%20Can%20you%20share%20more%20details?"
+       target="_blank" class="whatsapp-float" aria-label="WhatsApp">
+        <img src="images/whatsapp.png" alt="WhatsApp" loading="lazy">
+    </a>
+
+    <script>
+        window.addEventListener('load', () => { document.getElementById('loading').style.display = 'none'; });
+
+        function toggleMenu() { document.querySelector('.nav-links').classList.toggle('active'); }
+        function closeMenu() { document.querySelector('.nav-links').classList.remove('active'); }
+
+        function orderWhatsApp(product) {
+            const msg = `Hello! I'd like to order:%0A%0A🎵 *${product}*%0A%0APlease share payment details and confirm availability. Thank you!`;
+            window.open(`https://api.whatsapp.com/send?phone=917981585309&text=${msg}`, '_blank');
+        }
+
+        function serviceWhatsApp(service) {
+            const msg = `Hello! I'm interested in your *${service}* service.%0A%0ACould you please share more details and pricing? Thank you!`;
+            window.open(`https://api.whatsapp.com/send?phone=917981585309&text=${msg}`, '_blank');
+        }
+
+        // Netlify form success
+        const form = document.querySelector('form[name="song-request"]');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                setTimeout(() => {
+                    document.getElementById('reqSuccess').style.display = 'block';
+                }, 500);
+            });
+        }
+
+        document.getElementById('yr').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

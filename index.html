@@ -93,6 +93,7 @@
                 <li><a href="#courses" onclick="closeMenu()">Courses</a></li>
                 <li><a href="#about" onclick="closeMenu()">About</a></li>
                 <li><a href="#contact" onclick="closeMenu()">Contact</a></li>
+                <li><a href="shop.html" onclick="closeMenu()" class="shop-nav-btn">🛒 Shop & Services</a></li>
                 <li><a href="studio.html" onclick="closeMenu()" class="studio-nav-btn">🎙 Music Studio</a></li>
             </ul>
         </nav>
@@ -697,77 +698,6 @@
                     <div class="faq-answer">
                         <p>Each session is 45–60 minutes. We offer both individual (1-on-1) and small group classes for personalized attention.</p>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Song Request Section -->
-        <section class="song-request">
-            <div class="song-request-inner">
-                <div class="song-request-badge">🎵 New Feature</div>
-                <h2>Request a Song</h2>
-                <p class="section-subtitle">Can't find notes for your favourite Telugu song? Request it — we'll make the tutorial & notes for you!</p>
-                <div class="song-request-content">
-                    <div class="song-request-info">
-                        <div class="request-step">
-                            <span class="request-step-num">1</span>
-                            <div>
-                                <h4>Submit Your Request</h4>
-                                <p>Tell us the song name and movie</p>
-                            </div>
-                        </div>
-                        <div class="request-step">
-                            <span class="request-step-num">2</span>
-                            <div>
-                                <h4>We Pick Most Requested</h4>
-                                <p>Songs with most requests get made first</p>
-                            </div>
-                        </div>
-                        <div class="request-step">
-                            <span class="request-step-num">3</span>
-                            <div>
-                                <h4>Get Notified</h4>
-                                <p>We WhatsApp you when your song is ready</p>
-                            </div>
-                        </div>
-                        <div class="request-step">
-                            <span class="request-step-num">4</span>
-                            <div>
-                                <h4>Buy Notes + Video</h4>
-                                <p>Full tutorial video + PDF notes at ₹149</p>
-                            </div>
-                        </div>
-                    </div>
-                    <form class="song-request-form" name="song-request" method="POST" data-netlify="true" netlify-honeypot="bot-field">
-                        <input type="hidden" name="form-name" value="song-request">
-                        <input type="hidden" name="bot-field" style="display:none">
-                        <div class="form-group">
-                            <label>🎵 Song Name *</label>
-                            <input type="text" name="song_name" placeholder="e.g. Samajavaragamana" required>
-                        </div>
-                        <div class="form-group">
-                            <label>🎬 Movie / Album</label>
-                            <input type="text" name="movie_name" placeholder="e.g. Ala Vaikunthapurramuloo">
-                        </div>
-                        <div class="form-group">
-                            <label>📱 Your WhatsApp Number *</label>
-                            <input type="tel" name="whatsapp" placeholder="e.g. 9876543210" pattern="[6-9][0-9]{9}" required>
-                        </div>
-                        <div class="form-group">
-                            <label>🎹 Instrument</label>
-                            <select name="instrument">
-                                <option value="Piano/Keyboard">Piano / Keyboard</option>
-                                <option value="Guitar">Guitar</option>
-                                <option value="Violin">Violin</option>
-                                <option value="Flute">Flute</option>
-                                <option value="Any">Any</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="request-submit-btn">🎵 Submit Song Request</button>
-                        <div id="requestSuccess" style="display:none; margin-top:1rem; padding:1rem; background:rgba(39,174,96,0.15); border:1px solid rgba(39,174,96,0.4); border-radius:8px; color:#27ae60; font-weight:600; text-align:center;">
-                            ✅ Request submitted! We'll WhatsApp you when your song notes are ready.
-                        </div>
-                    </form>
                 </div>
             </div>
         </section>
