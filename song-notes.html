@@ -426,7 +426,20 @@
         function toggleMenu() { document.querySelector('.nav-links').classList.toggle('active'); }
 
         const form = document.querySelector('form[name="song-request"]');
-        if (form) form.addEventListener('submit', () => setTimeout(() => document.getElementById('reqSuccess').style.display = 'block', 500));
+        if (form) {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                try {
+                    await fetch('/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams(new FormData(form)).toString()
+                    });
+                } catch (err) {}
+                document.getElementById('reqSuccess').style.display = 'block';
+                form.reset();
+            });
+        }
 
         document.getElementById('yr').textContent = new Date().getFullYear();
     </script>

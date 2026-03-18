@@ -743,10 +743,17 @@
         // Netlify form success
         const form = document.querySelector('form[name="song-request"]');
         if (form) {
-            form.addEventListener('submit', function(e) {
-                setTimeout(() => {
-                    document.getElementById('reqSuccess').style.display = 'block';
-                }, 500);
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                try {
+                    await fetch('/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams(new FormData(form)).toString()
+                    });
+                } catch (err) {}
+                document.getElementById('reqSuccess').style.display = 'block';
+                form.reset();
             });
         }
 
