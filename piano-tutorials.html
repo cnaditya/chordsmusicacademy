@@ -130,6 +130,8 @@
             .nav-links.active { display: flex; }
             section { padding: 3rem 1.2rem; }
         }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -370,8 +372,19 @@
         function toggleMenu() { document.querySelector('.nav-links').classList.toggle('active'); }
 
         function payUPI(amount, note) {
-            const link = 'upi://pay?pa=7702031616@ybl&pn=Chords+Music+Academy&am=' + amount + '&cu=INR&tn=' + encodeURIComponent(note);
-            window.location.href = link;
+            document.getElementById('upiTitle').textContent = note.replace(/CMA-/g,'').replace(/-/g,' ');
+            document.getElementById('upiAmt').textContent = String.fromCharCode(8377) + Number(amount).toLocaleString('en-IN');
+            const base = 'pa=7702031616@ybl&pn=Chords+Music+Academy&am=' + amount + '&cu=INR&tn=' + encodeURIComponent(note);
+            document.getElementById('gpayBtn').onclick = function(){ window.location.href = 'tez://upi/pay?' + base; };
+            document.getElementById('phonepeBtn').onclick = function(){ window.location.href = 'phonepe://pay?' + base; };
+            document.getElementById('paytmBtn').onclick = function(){ window.location.href = 'paytmmp://pay?' + base; };
+            document.getElementById('upiModal').style.display = 'flex';
+        }
+        function closeUPI() { document.getElementById('upiModal').style.display = 'none'; }
+        function copyUPI(btn) {
+            navigator.clipboard.writeText('7702031616@ybl').then(function(){
+                btn.textContent = 'Copied!'; setTimeout(function(){ btn.textContent = 'Copy'; }, 2000);
+            });
         }
 
         document.getElementById('yr').textContent = new Date().getFullYear();
