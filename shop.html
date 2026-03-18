@@ -146,6 +146,42 @@
         .request-submit { padding: 1rem; background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
         .request-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(39,174,96,0.4); }
 
+        /* Quick Nav */
+        .quick-nav { position: sticky; top: 70px; z-index: 900; background: rgba(10,10,10,0.97); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(155,89,182,0.2); padding: 0.7rem 1rem; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+        .quick-nav::-webkit-scrollbar { display: none; }
+        .quick-nav-inner { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: nowrap; max-width: 1200px; margin: 0 auto; }
+        .qnav-btn { display: inline-block; padding: 0.45rem 1rem; background: rgba(155,89,182,0.1); border: 1px solid rgba(155,89,182,0.25); color: #ccc; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-decoration: none; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
+        .qnav-btn:hover, .qnav-btn.active { background: linear-gradient(135deg, #9b59b6, #6c3483); color: #fff; border-color: transparent; }
+        @media (max-width: 768px) { .quick-nav-inner { justify-content: flex-start; } .quick-nav { top: 60px; } }
+
+        /* Instruments */
+        .instruments { background: #0f0f0f; }
+        .instr-label { background: rgba(39,174,96,0.15); color: #27ae60; border: 1px solid rgba(39,174,96,0.4); }
+        .instr-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+        .instr-card { background: #1a1a1a; border: 1px solid rgba(39,174,96,0.15); border-radius: 16px; padding: 1.8rem 1.5rem; display: flex; flex-direction: column; gap: 0.7rem; transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s; cursor: pointer; }
+        .instr-card:hover { transform: translateY(-5px); border-color: rgba(39,174,96,0.4); box-shadow: 0 10px 30px rgba(39,174,96,0.1); }
+        .instr-icon { font-size: 2.8rem; }
+        .instr-card h3 { color: #fff; font-size: 1.05rem; font-weight: 800; }
+        .instr-card p { color: #999; font-size: 0.85rem; line-height: 1.6; flex: 1; }
+        .instr-tag { display: inline-block; background: rgba(39,174,96,0.15); border: 1px solid rgba(39,174,96,0.3); color: #27ae60; padding: 0.2rem 0.7rem; border-radius: 10px; font-size: 0.75rem; font-weight: 700; width: fit-content; }
+        .instr-btn { width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; font-family: inherit; }
+        .instr-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(39,174,96,0.4); }
+
+        /* Pro Equipment */
+        .pro-equipment { background: #0a0a0a; }
+        .equip-label { background: rgba(52,152,219,0.15); color: #3498db; border: 1px solid rgba(52,152,219,0.4); }
+        .equip-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .equip-card { background: #1a1a1a; border: 1px solid rgba(52,152,219,0.15); border-radius: 16px; padding: 1.8rem 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s; cursor: pointer; }
+        .equip-card:hover { transform: translateY(-5px); border-color: rgba(52,152,219,0.4); box-shadow: 0 10px 30px rgba(52,152,219,0.1); }
+        .equip-icon { font-size: 2.8rem; }
+        .equip-card h3 { color: #fff; font-size: 1.05rem; font-weight: 800; }
+        .equip-card p { color: #999; font-size: 0.85rem; line-height: 1.6; }
+        .equip-card ul { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; flex: 1; }
+        .equip-card ul li { color: #bbb; font-size: 0.82rem; }
+        .equip-card ul li::before { content: '→ '; color: #3498db; }
+        .equip-btn { width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #3498db, #2980b9); color: #fff; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; font-family: inherit; }
+        .equip-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(52,152,219,0.4); }
+
         /* AI Song Suggester */
         .ai-songs { background: #111; }
         .ai-badge { background: linear-gradient(135deg, rgba(52,152,219,0.2), rgba(155,89,182,0.2)); color: #3498db; border: 1px solid rgba(52,152,219,0.4); }
@@ -242,11 +278,23 @@
         <!-- Hero -->
         <section class="hero">
             <div style="position:relative;z-index:1;text-align:center;">
-                <div class="hero-badge">🎵 Notes • Tutorials • Production</div>
+                <div class="hero-badge">🎵 Notes • Tutorials • Instruments • Production</div>
                 <h1>Shop & Services</h1>
-                <p>Telugu song notes, piano tutorials, keyboard programming, music composition & full song production</p>
+                <p>Everything you need for your music journey — notes, tutorials, instruments, gear & professional services</p>
             </div>
         </section>
+
+        <!-- Sticky Quick Nav -->
+        <div class="quick-nav" id="quickNav">
+            <div class="quick-nav-inner">
+                <a href="#ai-songs" class="qnav-btn">🎵 Song Notes & Videos</a>
+                <a href="#packages" class="qnav-btn">🎹 Piano Tutorials</a>
+                <a href="#services" class="qnav-btn">🎧 Programming & Composing</a>
+                <a href="#instruments" class="qnav-btn">🎸 Instruments</a>
+                <a href="#pro-equipment" class="qnav-btn">🎚 Pro Equipment</a>
+                <a href="#request" class="qnav-btn">🎤 Request a Song</a>
+            </div>
+        </div>
 
         <!-- AI Song Suggester -->
         <section id="ai-songs" class="ai-songs">
@@ -489,6 +537,136 @@
             </div>
         </section>
 
+        <!-- Instruments -->
+        <section id="instruments" class="instruments">
+            <div style="text-align:center;">
+                <span class="section-label instr-label">🎸 Student Discounts Available</span>
+                <div class="section-title">Music Instruments</div>
+                <p class="section-sub">Get the right instrument at the best price — our partner vendors offer exclusive discounts to Chords Music Academy students!</p>
+            </div>
+            <div class="instr-grid">
+                <div class="instr-card" onclick="inquireWhatsApp('Keyboard / Digital Piano')">
+                    <span class="instr-icon">🎹</span>
+                    <h3>Keyboard / Digital Piano</h3>
+                    <p>Beginner to professional grade keyboards — Casio, Yamaha, Roland and more</p>
+                    <div class="instr-tag">Student Discount Available</div>
+                    <button class="instr-btn">💬 Enquire on WhatsApp</button>
+                </div>
+                <div class="instr-card" onclick="inquireWhatsApp('Guitar (Acoustic / Electric / Classical)')">
+                    <span class="instr-icon">🎸</span>
+                    <h3>Guitar</h3>
+                    <p>Acoustic, Electric & Classical guitars — beginner starter packs to pro models</p>
+                    <div class="instr-tag">Student Discount Available</div>
+                    <button class="instr-btn">💬 Enquire on WhatsApp</button>
+                </div>
+                <div class="instr-card" onclick="inquireWhatsApp('Drum Kit / Cajon')">
+                    <span class="instr-icon">🥁</span>
+                    <h3>Drums & Cajon</h3>
+                    <p>Acoustic drum kits, electronic drums and cajons for all skill levels</p>
+                    <div class="instr-tag">Student Discount Available</div>
+                    <button class="instr-btn">💬 Enquire on WhatsApp</button>
+                </div>
+                <div class="instr-card" onclick="inquireWhatsApp('Violin')">
+                    <span class="instr-icon">🎻</span>
+                    <h3>Violin</h3>
+                    <p>Student to professional violins with bow and case — all sizes available</p>
+                    <div class="instr-tag">Student Discount Available</div>
+                    <button class="instr-btn">💬 Enquire on WhatsApp</button>
+                </div>
+                <div class="instr-card" onclick="inquireWhatsApp('Flute (Bansuri)')">
+                    <span class="instr-icon">🪈</span>
+                    <h3>Flute / Bansuri</h3>
+                    <p>Indian bamboo flute and western concert flute — beginner to advanced</p>
+                    <div class="instr-tag">Student Discount Available</div>
+                    <button class="instr-btn">💬 Enquire on WhatsApp</button>
+                </div>
+                <div class="instr-card" onclick="inquireWhatsApp('Other Instrument')">
+                    <span class="instr-icon">🎵</span>
+                    <h3>Other Instruments</h3>
+                    <p>Looking for something else? We'll help you find the right instrument at the best price</p>
+                    <div class="instr-tag">Custom Quote</div>
+                    <button class="instr-btn">💬 Ask on WhatsApp</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pro Equipment -->
+        <section id="pro-equipment" class="pro-equipment">
+            <div style="text-align:center;">
+                <span class="section-label equip-label">🎚 Studio Grade Gear</span>
+                <div class="section-title">Professional Equipment</div>
+                <p class="section-sub">Set up your home studio or upgrade your gear — we help you choose the right equipment at the best prices</p>
+            </div>
+            <div class="equip-grid">
+                <div class="equip-card" onclick="inquireWhatsApp('Microphone (Condenser / Dynamic)')">
+                    <span class="equip-icon">🎙</span>
+                    <h3>Microphones</h3>
+                    <p>Condenser & dynamic mics for recording, streaming and live performance — all budgets</p>
+                    <ul>
+                        <li>Studio condenser mics</li>
+                        <li>Dynamic mics for live use</li>
+                        <li>USB mics for beginners</li>
+                    </ul>
+                    <button class="equip-btn">💬 Get Recommendation</button>
+                </div>
+                <div class="equip-card" onclick="inquireWhatsApp('Audio Interface')">
+                    <span class="equip-icon">🎛</span>
+                    <h3>Audio Interfaces</h3>
+                    <p>Connect your instruments & mics to your PC/Mac for professional home recording</p>
+                    <ul>
+                        <li>Focusrite, Behringer, Audient</li>
+                        <li>2-channel to 8-channel</li>
+                        <li>USB & Thunderbolt options</li>
+                    </ul>
+                    <button class="equip-btn">💬 Get Recommendation</button>
+                </div>
+                <div class="equip-card" onclick="inquireWhatsApp('Studio Headphones / Monitor Speakers')">
+                    <span class="equip-icon">🎧</span>
+                    <h3>Headphones & Monitors</h3>
+                    <p>Studio headphones and monitor speakers for accurate mixing and music production</p>
+                    <ul>
+                        <li>Closed-back recording headphones</li>
+                        <li>Studio monitor speakers</li>
+                        <li>All budget ranges</li>
+                    </ul>
+                    <button class="equip-btn">💬 Get Recommendation</button>
+                </div>
+                <div class="equip-card" onclick="inquireWhatsApp('MIDI Controller / Keyboard Controller')">
+                    <span class="equip-icon">🎹</span>
+                    <h3>MIDI Controllers</h3>
+                    <p>Keyboard controllers and MIDI pads for music production, DAW control and live performance</p>
+                    <ul>
+                        <li>25 to 88 key controllers</li>
+                        <li>Drum pad controllers</li>
+                        <li>DAW integration support</li>
+                    </ul>
+                    <button class="equip-btn">💬 Get Recommendation</button>
+                </div>
+                <div class="equip-card" onclick="inquireWhatsApp('DAW Software (Logic Pro / FL Studio / Ableton)')">
+                    <span class="equip-icon">💻</span>
+                    <h3>DAW Software</h3>
+                    <p>Music production software — we help you choose and set up the right DAW for your workflow</p>
+                    <ul>
+                        <li>Logic Pro, FL Studio, Ableton</li>
+                        <li>GarageBand for beginners</li>
+                        <li>Setup & training available</li>
+                    </ul>
+                    <button class="equip-btn">💬 Get Recommendation</button>
+                </div>
+                <div class="equip-card" onclick="inquireWhatsApp('Studio Acoustic Treatment')">
+                    <span class="equip-icon">🔇</span>
+                    <h3>Acoustic Treatment</h3>
+                    <p>Soundproofing and acoustic panels for your home studio or practice room</p>
+                    <ul>
+                        <li>Foam panels & bass traps</li>
+                        <li>DIY acoustic solutions</li>
+                        <li>Studio setup consultation</li>
+                    </ul>
+                    <button class="equip-btn">💬 Get Recommendation</button>
+                </div>
+            </div>
+        </section>
+
         <!-- Song Request -->
         <section id="request" class="song-request">
             <div style="text-align:center;">
@@ -659,6 +837,24 @@
                     </div>
                 </div>`).join('');
         }
+
+        function inquireWhatsApp(item) {
+            const msg = `Hello! I'm interested in: *${item}*%0A%0ACould you please share the available options, brands and pricing? Thank you!`;
+            window.open(`https://api.whatsapp.com/send?phone=917981585309&text=${msg}`, '_blank');
+        }
+
+        // Quick nav active highlight on scroll
+        const sections = ['ai-songs','packages','services','instruments','pro-equipment','request'];
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && window.scrollY >= el.offsetTop - 150) current = id;
+            });
+            document.querySelectorAll('.qnav-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('href') === '#' + current);
+            });
+        });
 
         function orderSong(song, movie, artist, product, price) {
             const msg = `Hello! I'd like to order:%0A%0A🎵 *Song:* ${song}%0A🎬 *Movie:* ${movie}%0A🎤 *Artist:* ${artist}%0A%0A📦 *Product:* ${product} (${price})%0A%0APlease confirm and share payment details. Thank you!`;
