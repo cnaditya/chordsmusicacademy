@@ -1,504 +1,296 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Order Song Notes & Tutorial Videos | Chords Music Academy</title>
-    <meta name="description" content="Get piano & keyboard notes PDF + tutorial video for any Telugu, Hindi, Tamil or English song. Notes ₹99 | Notes + Video ₹249. Order instantly via WhatsApp.">
-    <link rel="icon" type="image/png" href="images/chords_PNG.png">
-    <link rel="apple-touch-icon" href="images/chords_PNG.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0P6P55ERCN"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date()); gtag('config', 'G-0P6P55ERCN');
-    </script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; overflow-x: hidden; scroll-behavior: smooth; }
-        body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #eee; line-height: 1.6; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Chords Music Academy — Piano Notes & Tutorials</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden}
+body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;height:100dvh}
 
-        .loading { position: fixed; inset: 0; background: #0a0a0a; display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .spinner { width: 50px; height: 50px; border: 4px solid rgba(52,152,219,0.2); border-top-color: #3498db; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+/* Header */
+.hdr{background:#1a1a2e;color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.hdr-icon{width:34px;height:34px;background:#e74c3c;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.hdr-title{font-size:0.95rem;font-weight:700;line-height:1.2}
+.hdr-sub{font-size:0.65rem;opacity:0.65}
+.hdr-wa{margin-left:auto;background:#25d366;color:#fff;border:none;border-radius:20px;padding:7px 13px;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block}
 
-        .announcement-banner { background: linear-gradient(135deg, #1a4a7a, #3498db); color: #fff; padding: 8px 0; overflow: hidden; white-space: nowrap; position: fixed; top: 0; left: 0; right: 0; font-weight: 500; font-size: 0.85rem; z-index: 1002; }
-        .scrolling-text { display: inline-block; animation: scroll-left 40s linear infinite; padding-left: 100%; }
-        @keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+/* Tabs */
+.tabs{display:flex;background:#fff;border-bottom:1px solid #e5e5e5;flex-shrink:0}
+.tab{flex:1;padding:10px 4px;text-align:center;font-size:0.68rem;font-weight:600;color:#999;cursor:pointer;border-bottom:2.5px solid transparent;line-height:1.3;transition:.15s}
+.tab.on{color:#e74c3c;border-bottom-color:#e74c3c}
 
-        header { position: fixed; top: 32px; left: 0; right: 0; z-index: 1000; }
-        .navbar { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 2rem; background: rgba(10,10,10,0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(52,152,219,0.2); }
-        .logo { display: flex; align-items: center; gap: 0.8rem; text-decoration: none; }
-        .nav-logo-wrap { width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle, rgba(52,152,219,0.25), rgba(52,152,219,0.05)); border: 2px solid rgba(52,152,219,0.5); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .nav-logo-img { width: 36px; height: 36px; object-fit: contain; }
-        .page-name { font-size: 1.1rem; font-weight: 800; color: #3498db; }
-        .logo-tagline { font-size: 0.7rem; color: #aaa; }
-        .nav-links { display: flex; list-style: none; gap: 1.2rem; align-items: center; flex-wrap: wrap; }
-        .nav-links a { text-decoration: none; color: #ccc; font-weight: 500; font-size: 0.88rem; transition: color 0.2s; }
-        .nav-links a:hover { color: #3498db; }
-        .nav-links .back-link { background: rgba(52,152,219,0.12); border: 1px solid rgba(52,152,219,0.35); color: #3498db; padding: 0.35rem 0.85rem; border-radius: 18px; font-size: 0.8rem; }
-        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
-        .hamburger span { display: block; width: 25px; height: 2px; background: #3498db; border-radius: 2px; }
+/* Panels */
+.panels{flex:1;overflow:hidden;position:relative}
+.panel{position:absolute;inset:0;overflow-y:auto;padding:12px;display:none;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.panel.on{display:flex}
 
-        /* Hero */
-        .hero { min-height: 55vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 8rem 2rem 4rem; background: linear-gradient(135deg, #0a0a0a, #0a1a2e, #0a0a0a); position: relative; overflow: hidden; }
-        .hero::before { content: '🎵'; position: absolute; font-size: 22rem; opacity: 0.03; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
-        .hero-badge { display: inline-block; background: linear-gradient(135deg, #3498db, #2980b9); color: #fff; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; letter-spacing: 1px; }
-        .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 900; color: #fff; margin-bottom: 0.8rem; }
-        .hero h1 span { color: #3498db; }
-        .hero p { color: #aaa; font-size: 1rem; max-width: 580px; margin: 0 auto 2rem; }
-        .hero-prices { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
-        .hero-price-tag { background: rgba(52,152,219,0.1); border: 1.5px solid rgba(52,152,219,0.35); border-radius: 14px; padding: 0.8rem 1.5rem; text-align: center; }
-        .hero-price-tag .price { font-size: 1.6rem; font-weight: 900; color: #3498db; }
-        .hero-price-tag .label { font-size: 0.78rem; color: #aaa; margin-top: 0.1rem; }
-        .hero-price-tag.featured { background: linear-gradient(135deg, rgba(52,152,219,0.15), rgba(155,89,182,0.1)); border-color: rgba(52,152,219,0.6); }
-        .hero-price-tag.featured .price { color: #fff; }
-        .hero-cta { display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #25d366, #128c7e); color: #fff; padding: 1rem 2rem; border-radius: 30px; font-size: 1rem; font-weight: 700; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
-        .hero-cta:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(37,211,102,0.4); }
+/* ── Piano tab ── */
+.pkg{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.09)}
+.pkg-tag{font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;margin-bottom:5px}
+.pkg-name{font-size:0.95rem;font-weight:700;color:#1a1a2e}
+.pkg-price{font-size:1.5rem;font-weight:800;color:#e74c3c}
+.pkg-feat{font-size:0.74rem;color:#555;margin:7px 0 10px;line-height:1.65}
+.btns{display:flex;gap:8px}
+.btn-w{flex:1;background:#25d366;color:#fff;border:none;border-radius:9px;padding:10px 6px;font-size:0.78rem;font-weight:700;cursor:pointer}
+.btn-p{flex:1;background:#1a73e8;color:#fff;border:none;border-radius:9px;padding:10px 6px;font-size:0.78rem;font-weight:700;cursor:pointer}
 
-        section { padding: 4rem 2rem; }
-        .section-title { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 800; color: #fff; text-align: center; margin-bottom: 0.5rem; }
-        .section-sub { text-align: center; color: #888; margin-bottom: 3rem; font-size: 0.95rem; }
-        .section-label { display: inline-block; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.8rem; }
+/* ── Song Notes tab ── */
+.price-strip{display:flex;gap:8px}
+.pc{flex:1;background:#fff;border-radius:12px;padding:11px 6px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,0.08)}
+.pc .em{font-size:1.3rem}
+.pc .lb{font-size:0.62rem;color:#666;margin:3px 0 2px}
+.pc .am{font-size:1.05rem;font-weight:800;color:#e74c3c}
+.pc .ol{font-size:0.6rem;color:#bbb;text-decoration:line-through}
 
-        /* AI Songs */
-        .ai-songs { background: #0f0f0f; }
-        .ai-badge { background: linear-gradient(135deg, rgba(52,152,219,0.2), rgba(155,89,182,0.2)); color: #3498db; border: 1px solid rgba(52,152,219,0.4); }
-        .lang-tabs { display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
-        .lang-tab { padding: 0.6rem 1.5rem; border: 2px solid rgba(52,152,219,0.3); background: transparent; color: #aaa; border-radius: 25px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-        .lang-tab.active { background: linear-gradient(135deg, #3498db, #9b59b6); color: #fff; border-color: transparent; box-shadow: 0 4px 15px rgba(52,152,219,0.3); }
-        .lang-tab:hover:not(.active) { border-color: rgba(52,152,219,0.6); color: #3498db; }
-        .songs-container { max-width: 1100px; margin: 0 auto; min-height: 200px; }
-        .songs-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 3rem; }
-        .ai-spinner { width: 45px; height: 45px; border: 4px solid rgba(52,152,219,0.2); border-top-color: #3498db; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        .songs-loading p { color: #888; font-size: 0.9rem; }
-        .songs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
-        .song-card { background: #1a1a1a; border: 1px solid rgba(52,152,219,0.15); border-radius: 14px; padding: 1.2rem; display: flex; flex-direction: column; gap: 0.8rem; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; }
-        .song-card:hover { transform: translateY(-4px); border-color: rgba(52,152,219,0.4); box-shadow: 0 8px 25px rgba(52,152,219,0.1); }
-        .song-card-top { display: flex; align-items: flex-start; gap: 0.8rem; }
-        .song-num { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #3498db, #9b59b6); color: #fff; font-weight: 800; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .song-info h4 { color: #fff; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem; }
-        .song-info .movie { color: #888; font-size: 0.8rem; }
-        .song-info .artist { color: #3498db; font-size: 0.78rem; font-weight: 600; }
-        .song-card-btns { display: flex; gap: 0.5rem; }
-        .song-notes-btn { flex: 1; padding: 0.5rem 0.3rem; background: rgba(52,152,219,0.1); border: 1px solid rgba(52,152,219,0.3); color: #3498db; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-        .song-notes-btn:hover { background: #3498db; color: #fff; }
-        .song-combo-btn { flex: 1; padding: 0.5rem 0.3rem; background: linear-gradient(135deg, #9b59b6, #6c3483); border: none; color: #fff; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: transform 0.2s; font-family: inherit; }
-        .song-combo-btn:hover { transform: scale(1.03); }
-        .songs-error { text-align: center; padding: 2rem; color: #888; }
-        .songs-error button { background: #3498db; color: #fff; border: none; padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; margin-left: 0.5rem; font-family: inherit; }
-        .ai-note { text-align: center; color: #666; font-size: 0.85rem; margin-top: 1.5rem; }
-        .ai-note a { color: #27ae60; text-decoration: none; }
+.form-card{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.09)}
+.form-card h3{font-size:0.88rem;font-weight:700;color:#1a1a2e;margin-bottom:11px}
+.inp{width:100%;border:1.5px solid #e8e8e8;border-radius:9px;padding:9px 11px;font-size:0.88rem;outline:none;margin-bottom:9px;color:#333}
+.inp:focus{border-color:#e74c3c}
+.sel{width:100%;border:1.5px solid #e8e8e8;border-radius:9px;padding:9px 11px;font-size:0.88rem;outline:none;margin-bottom:11px;background:#fff;color:#333}
+.btn-sub{width:100%;background:#25d366;color:#fff;border:none;border-radius:10px;padding:12px;font-size:0.9rem;font-weight:700;cursor:pointer}
+#reqSuccess{display:none;background:#e8f5e9;color:#2e7d32;padding:9px;border-radius:8px;font-size:0.8rem;margin-bottom:9px;text-align:center}
 
-        /* Pricing strip */
-        .pricing-strip { background: linear-gradient(135deg, #0a0a0a, #111); border-top: 1px solid rgba(52,152,219,0.15); border-bottom: 1px solid rgba(52,152,219,0.15); padding: 1.3rem 2rem; }
-        .pricing-strip-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 1.2rem; flex-wrap: wrap; }
-        .price-pill { display: flex; align-items: center; gap: 0.5rem; background: rgba(52,152,219,0.08); border: 1px solid rgba(52,152,219,0.2); border-radius: 24px; padding: 0.55rem 1.2rem; color: #ddd; font-size: 0.88rem; white-space: nowrap; }
-        .price-pill strong { color: #3498db; font-size: 1rem; }
-        .price-pill .orig { color: #555; text-decoration: line-through; font-size: 0.76rem; margin-left: 0.3rem; }
-        .bundle-btn { padding: 0.6rem 1.4rem; background: linear-gradient(135deg, #25d366, #128c7e); color: #fff; border: none; border-radius: 24px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.2s; white-space: nowrap; }
-        .bundle-btn:hover { transform: scale(1.04); }
-        .upi-btn { padding: 0.55rem 1.2rem; background: linear-gradient(135deg, #ff6b00, #e65c00); color: #fff; border: none; border-radius: 24px; font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.2s; white-space: nowrap; }
-        .upi-btn:hover { transform: scale(1.04); }
+/* ── Top 50 tab ── */
+.t50{background:#fff;border-radius:13px;padding:12px 13px;box-shadow:0 1px 6px rgba(0,0,0,0.08);display:flex;align-items:center;gap:11px}
+.t50-em{font-size:1.7rem;flex-shrink:0}
+.t50-body{flex:1;min-width:0}
+.t50-name{font-size:0.88rem;font-weight:700;color:#1a1a2e}
+.t50-sub{font-size:0.67rem;color:#777;margin:2px 0 7px}
+.t50-btns{display:flex;gap:6px}
+.t50b{flex:1;border:none;border-radius:8px;padding:7px 3px;font-size:0.68rem;font-weight:700;cursor:pointer;color:#fff;white-space:nowrap}
+.t50b.w{background:#25d366}
+.t50b.p{background:#1a73e8}
 
-        /* How it works */
-        .how-it-works { background: #0a0a0a; }
-        .steps-grid { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; }
-        .step-card { text-align: center; padding: 1.5rem 1rem; }
-        .step-icon { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgba(52,152,219,0.2), rgba(52,152,219,0.05)); border: 2px solid rgba(52,152,219,0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.8rem; }
-        .step-num { font-size: 0.72rem; font-weight: 800; color: #3498db; letter-spacing: 1px; margin-bottom: 0.4rem; text-transform: uppercase; }
-        .step-card h3 { color: #fff; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; }
-        .step-card p { color: #888; font-size: 0.85rem; }
-
-        /* Song Request */
-        .song-request { background: #0f0f0f; }
-        .song-request .section-label { background: rgba(39,174,96,0.15); color: #27ae60; border: 1px solid rgba(39,174,96,0.4); }
-        .request-grid { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
-        .request-steps { display: flex; flex-direction: column; gap: 1.5rem; }
-        .request-step { display: flex; gap: 1rem; align-items: flex-start; }
-        .step-num-circle { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.9rem; }
-        .request-step h4 { color: #a9dfbf; font-size: 0.95rem; margin-bottom: 0.2rem; }
-        .request-step p { color: #777; font-size: 0.85rem; }
-        .request-form { background: rgba(255,255,255,0.03); border: 1px solid rgba(39,174,96,0.2); border-radius: 20px; padding: 2rem; display: flex; flex-direction: column; gap: 1.2rem; }
-        .request-form h3 { color: #27ae60; font-size: 1.2rem; font-weight: 800; }
-        .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-        .form-group label { color: #aaa; font-size: 0.82rem; font-weight: 600; }
-        .request-form input, .request-form select, .request-form textarea { padding: 0.85rem 1rem; border: 1px solid rgba(39,174,96,0.2); border-radius: 10px; background: rgba(255,255,255,0.04); color: #eee; font-size: 0.9rem; font-family: inherit; outline: none; transition: border-color 0.2s; }
-        .request-form input:focus, .request-form select:focus { border-color: #27ae60; }
-        .request-form select option { background: #1a1a1a; }
-        .request-submit { padding: 1rem; background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: transform 0.2s; }
-        .request-submit:hover { transform: translateY(-2px); }
-
-        /* Footer */
-        .footer { background: #050505; border-top: 1px solid rgba(52,152,219,0.15); padding: 2.5rem 2rem 1.5rem; text-align: center; }
-        .footer-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
-        .footer-links a { color: #666; text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
-        .footer-links a:hover { color: #3498db; }
-        .footer-logo { width: 44px; height: 44px; object-fit: contain; margin-bottom: 0.5rem; }
-        .footer-name { color: #3498db; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem; }
-        .footer-copy { color: #333; font-size: 0.78rem; }
-
-        .whatsapp-float { position: fixed; bottom: 2rem; right: 2rem; z-index: 999; width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37,211,102,0.5); background: #25d366; transition: transform 0.2s; }
-        .whatsapp-float:hover { transform: scale(1.1); }
-        .whatsapp-float img { width: 34px; height: 34px; object-fit: contain; }
-
-        @media (max-width: 768px) {
-            .navbar { padding: 0.8rem 1.2rem; }
-            .hamburger { display: flex; }
-            .nav-links { display: none; position: fixed; top: 70px; left: 0; right: 0; background: rgba(10,10,10,0.98); flex-direction: column; padding: 2rem; gap: 1rem; border-bottom: 1px solid rgba(52,152,219,0.2); }
-            .nav-links.active { display: flex; }
-            .hero-prices { gap: 0.6rem; }
-            .hero-price-tag { padding: 0.6rem 1rem; }
-            .request-grid { grid-template-columns: 1fr; gap: 2rem; }
-            .songs-grid { grid-template-columns: 1fr 1fr; }
-            section { padding: 3rem 1.2rem; }
-        }
-        @media (max-width: 480px) { .songs-grid { grid-template-columns: 1fr; } }
-
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    </style>
+/* UPI Modal */
+#upiModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:flex-end;justify-content:center}
+.usheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:24px 20px 32px}
+.utitle{font-size:1rem;font-weight:700;text-align:center;color:#333}
+.uamt{font-size:1.9rem;font-weight:800;color:#1a73e8;text-align:center;margin:5px 0}
+.uid{text-align:center;font-size:0.95rem;font-weight:700;color:#111;letter-spacing:1px;margin:3px 0}
+.ucopy{display:block;margin:6px auto 14px;background:#f1f3f4;border:none;border-radius:8px;padding:6px 18px;color:#1a73e8;font-weight:600;font-size:0.82rem;cursor:pointer}
+.uapps{display:flex;flex-direction:column;gap:9px;margin-bottom:11px}
+.uapp{border:none;border-radius:12px;padding:12px;font-size:0.92rem;font-weight:700;cursor:pointer;color:#fff}
+.unote{text-align:center;font-size:0.75rem;color:#999;margin-bottom:9px}
+.ucancel{width:100%;background:#f1f3f4;border:none;border-radius:12px;padding:11px;font-size:0.88rem;color:#555;cursor:pointer;font-weight:600}
+</style>
 </head>
 <body>
-    <div class="loading" id="loading"><div class="spinner"></div></div>
 
-    <div class="announcement-banner">
-        <div class="scrolling-text">
-            🎵 Piano & Keyboard Notes for Any Song • 📄 Notes PDF ₹99 • 🎬 Notes + Tutorial Video ₹249 • 🎵 5-Song Bundle ₹799 • Instant WhatsApp Delivery • Telugu • Hindi • Tamil • English • 📱 +91-79815 85309 •
-        </div>
+<!-- Header -->
+<div class="hdr">
+  <div class="hdr-icon">🎹</div>
+  <div>
+    <div class="hdr-title">Chords Music Academy</div>
+    <div class="hdr-sub">Manikonda, Hyderabad</div>
+  </div>
+  <a href="https://api.whatsapp.com/send?phone=917981585309" class="hdr-wa" target="_blank">💬 WhatsApp</a>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab on" onclick="showTab(0)">🎹 Piano<br>Tutorials</div>
+  <div class="tab" onclick="showTab(1)">🎵 Song<br>Notes</div>
+  <div class="tab" onclick="showTab(2)">🎼 Top 50<br>Packages</div>
+</div>
+
+<!-- Panels -->
+<div class="panels">
+
+  <!-- Tab 0: Piano Tutorials -->
+  <div class="panel on" id="tab0">
+    <div class="pkg">
+      <span class="pkg-tag" style="background:#e8f5e9;color:#2e7d32">Beginner</span>
+      <div class="pkg-name">Basic Piano Package</div>
+      <div class="pkg-price">₹1,499</div>
+      <div class="pkg-feat">✅ 10 beginner songs with notes PDF<br>✅ Step-by-step tutorial videos<br>✅ 1 month WhatsApp support</div>
+      <div class="btns">
+        <button class="btn-w" onclick="waOrder('Piano Basic Package ₹1,499')">💬 Order on WhatsApp</button>
+        <button class="btn-p" onclick="payUPI(1499,'CMA-Piano-Basic')">💳 Pay ₹1,499</button>
+      </div>
     </div>
-
-    <header>
-        <nav class="navbar">
-            <a href="index.html" class="logo">
-                <div class="nav-logo-wrap">
-                    <img src="images/chords_PNG.png" alt="Chords Music Academy" class="nav-logo-img">
-                </div>
-                <div>
-                    <div class="page-name">Song Notes & Videos</div>
-                    <div class="logo-tagline">Chords Music Academy</div>
-                </div>
-            </a>
-            <div class="hamburger" onclick="toggleMenu()">
-                <span></span><span></span><span></span>
-            </div>
-            <ul class="nav-links">
-                <li><a href="#trending">Trending Songs</a></li>
-                <li><a href="#request">Request a Song</a></li>
-                <li><a href="piano-tutorials.html">🎹 Piano Tutorials</a></li>
-                <li><a href="music-services.html">🎼 Music Services</a></li>
-                <li><a href="shop.html" class="back-link">🛒 All Services</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main>
-        <section class="hero">
-            <div style="position:relative;z-index:1;text-align:center;">
-                <div class="hero-badge">📄 Notes • 🎬 Tutorial Videos • Instant WhatsApp Delivery</div>
-                <h1>Piano Notes for <span>Any Song</span></h1>
-                <p>Get keyboard/piano notes PDF + step-by-step tutorial video for trending Telugu, Hindi, Tamil & English songs — delivered instantly on WhatsApp!</p>
-                <div class="hero-prices">
-                    <div class="hero-price-tag">
-                        <div class="price">₹99</div>
-                        <div class="label">📄 Notes Only</div>
-                    </div>
-                    <div class="hero-price-tag featured">
-                        <div class="price">₹249 <span style="font-size:0.8rem;color:#888;text-decoration:line-through;">₹349</span></div>
-                        <div class="label">⭐ Notes + Video</div>
-                    </div>
-                    <div class="hero-price-tag">
-                        <div class="price">₹799</div>
-                        <div class="label">🎵 5-Song Bundle</div>
-                    </div>
-                </div>
-                <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hello!%20I%20want%20to%20order%20piano%20notes%20for%20a%20song.%20Please%20help!" target="_blank" class="hero-cta">💬 Order on WhatsApp</a>
-            </div>
-        </section>
-
-        <!-- Trending Songs -->
-        <section id="trending" class="ai-songs">
-            <div style="text-align:center;">
-                <span class="section-label ai-badge">🤖 Powered by AI</span>
-                <div class="section-title">Trending Songs Right Now</div>
-                <p class="section-sub">AI-curated latest trending songs — tap any song to instantly order notes & tutorial via WhatsApp!</p>
-            </div>
-            <div class="lang-tabs">
-                <button class="lang-tab active" onclick="switchLang('Telugu', this)">🎵 Telugu</button>
-                <button class="lang-tab" onclick="switchLang('Hindi', this)">🎵 Hindi</button>
-                <button class="lang-tab" onclick="switchLang('Tamil', this)">🎵 Tamil</button>
-                <button class="lang-tab" onclick="switchLang('English', this)">🎵 English</button>
-            </div>
-            <div class="songs-container" id="songsContainer">
-                <div class="songs-loading" id="songsLoading">
-                    <div class="ai-spinner"></div>
-                    <p>AI is fetching latest trending songs...</p>
-                </div>
-                <div class="songs-grid" id="songsGrid" style="display:none;"></div>
-                <div class="songs-error" id="songsError" style="display:none;">
-                    <p>⚠️ Could not fetch songs. <button onclick="loadSongs()">Try again</button></p>
-                </div>
-            </div>
-            <p class="ai-note">💡 Don't see your song? Use the <a href="#request">Request a Song</a> form below!</p>
-        </section>
-
-        <!-- Pricing Strip -->
-        <div class="pricing-strip">
-            <div class="pricing-strip-inner">
-                <div class="price-pill">📄 Notes Only <strong>₹99</strong> <span>per song</span></div>
-                <div class="price-pill">🎬 Notes + Video <strong>₹249</strong> <span class="orig">₹349</span></div>
-                <div class="price-pill">🎵 5-Song Bundle <strong>₹799</strong> <span class="orig">₹1,245</span></div>
-                <button class="bundle-btn" onclick="orderWhatsApp('5 Song Bundle (Notes + Videos) - ₹799')">💬 Order 5-Bundle ₹799</button>
-                <button class="upi-btn" onclick="payUPI(799,'CMA-5Song-Bundle')">💳 Pay ₹799 via UPI</button>
-            </div>
-        </div>
-
-        <!-- How it Works -->
-        <section class="how-it-works">
-            <div style="text-align:center;">
-                <div class="section-title">How It Works</div>
-                <p class="section-sub">Get your song notes in 3 simple steps</p>
-            </div>
-            <div class="steps-grid">
-                <div class="step-card">
-                    <div class="step-icon">🎵</div>
-                    <div class="step-num">Step 1</div>
-                    <h3>Choose Your Song</h3>
-                    <p>Pick from trending songs above or request any song you like</p>
-                </div>
-                <div class="step-card">
-                    <div class="step-icon">💬</div>
-                    <div class="step-num">Step 2</div>
-                    <h3>Order via WhatsApp</h3>
-                    <p>Tap the order button — it opens WhatsApp with your song details pre-filled</p>
-                </div>
-                <div class="step-card">
-                    <div class="step-icon">📲</div>
-                    <div class="step-num">Step 3</div>
-                    <h3>Instant Delivery</h3>
-                    <p>Pay & receive your notes PDF + tutorial video instantly on WhatsApp</p>
-                </div>
-                <div class="step-card">
-                    <div class="step-icon">🎹</div>
-                    <div class="step-num">Bonus</div>
-                    <h3>1 Week Support</h3>
-                    <p>Notes + Video orders include 1 week of doubt clearing support</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Song Request -->
-        <section id="request" class="song-request">
-            <div style="text-align:center;">
-                <span class="section-label">🎵 Request a Song</span>
-                <div class="section-title">Don't See Your Song?</div>
-                <p class="section-sub">Request any song — we'll prepare the notes & tutorial video and notify you on WhatsApp!</p>
-            </div>
-            <div class="request-grid">
-                <div class="request-steps">
-                    <div class="request-step">
-                        <span class="step-num-circle">1</span>
-                        <div><h4>Submit Your Request</h4><p>Tell us the song name, movie and your WhatsApp number</p></div>
-                    </div>
-                    <div class="request-step">
-                        <span class="step-num-circle">2</span>
-                        <div><h4>We Prioritise Most Requested</h4><p>Songs with highest requests get made first — usually within a week</p></div>
-                    </div>
-                    <div class="request-step">
-                        <span class="step-num-circle">3</span>
-                        <div><h4>Get Notified on WhatsApp</h4><p>We'll message you as soon as your song notes & video are ready</p></div>
-                    </div>
-                    <div class="request-step">
-                        <span class="step-num-circle">4</span>
-                        <div><h4>Notes + Video ₹249</h4><p>Full notes PDF + tutorial video — delivered instantly</p></div>
-                    </div>
-                </div>
-                <form class="request-form" name="song-request" method="POST" action="/song-notes.html" data-netlify="true" netlify-honeypot="bot-field">
-                    <input type="hidden" name="form-name" value="song-request">
-                    <p style="display:none;"><input name="bot-field"></p>
-                    <h3>🎵 Submit Your Request</h3>
-                    <div class="form-group">
-                        <label>Song Name *</label>
-                        <input type="text" name="song_name" placeholder="e.g. Samajavaragamana" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Movie / Album</label>
-                        <input type="text" name="movie_name" placeholder="e.g. Ala Vaikunthapurramuloo">
-                    </div>
-                    <div class="form-group">
-                        <label>Your WhatsApp Number *</label>
-                        <input type="tel" name="whatsapp" placeholder="e.g. 9876543210" pattern="[6-9][0-9]{9}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Product Interested In</label>
-                        <select name="product">
-                            <option value="Notes Only ₹99">Notes Only (₹99)</option>
-                            <option value="Notes + Video ₹249">Notes + Video (₹249)</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="request-submit">🎵 Submit Request</button>
-                    <div id="reqSuccess" style="display:none;padding:1rem;background:rgba(39,174,96,0.15);border:1px solid rgba(39,174,96,0.4);border-radius:8px;color:#27ae60;font-weight:600;text-align:center;">
-                        ✅ Request submitted! We'll WhatsApp you when your song is ready.
-                    </div>
-                </form>
-            </div>
-        </section>
-    </main>
-
-    <footer class="footer">
-        <img src="images/chords_PNG.png" alt="Chords Music Academy" class="footer-logo">
-        <div class="footer-name">Chords Music Academy</div>
-        <div class="footer-links">
-            <a href="index.html">🎓 Academy</a>
-            <a href="piano-tutorials.html">🎹 Piano Tutorials</a>
-            <a href="music-services.html">🎼 Music Services</a>
-            <a href="studio.html">🎙 Studio</a>
-            <a href="shop.html">🛒 All Services</a>
-        </div>
-        <p class="footer-copy">📞 +91-79815 85309 &nbsp;|&nbsp; 📍 Manikonda, Hyderabad</p>
-        <p class="footer-copy" style="margin-top:0.4rem;">© <span id="yr"></span> Chords Music Academy. All rights reserved.</p>
-    </footer>
-
-    <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hello!%20I%20want%20to%20order%20piano%20notes%20for%20a%20song!" target="_blank" class="whatsapp-float" aria-label="WhatsApp">
-        <img src="images/whatsapp.png" alt="WhatsApp" loading="lazy">
-    </a>
-
-    <script>
-        window.addEventListener('load', () => {
-            document.getElementById('loading').style.display = 'none';
-            loadSongs();
-        });
-
-        let allSongs = {}, currentLang = 'Telugu';
-
-        async function loadSongs() {
-            document.getElementById('songsLoading').style.display = 'flex';
-            document.getElementById('songsGrid').style.display = 'none';
-            document.getElementById('songsError').style.display = 'none';
-            try {
-                const res = await fetch('/.netlify/functions/suggest-songs');
-                const data = await res.json();
-                allSongs = data.songs;
-                renderSongs(currentLang);
-            } catch (err) {
-                document.getElementById('songsLoading').style.display = 'none';
-                document.getElementById('songsError').style.display = 'block';
-            }
-        }
-
-        function switchLang(lang, btn) {
-            currentLang = lang;
-            document.querySelectorAll('.lang-tab').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            if (Object.keys(allSongs).length > 0) renderSongs(lang);
-        }
-
-        function renderSongs(lang) {
-            const songs = allSongs[lang] || [];
-            const grid = document.getElementById('songsGrid');
-            document.getElementById('songsLoading').style.display = 'none';
-            document.getElementById('songsError').style.display = 'none';
-            grid.style.display = 'grid';
-            grid.innerHTML = songs.map((s, i) => `
-                <div class="song-card">
-                    <div class="song-card-top">
-                        <div class="song-num">${i + 1}</div>
-                        <div class="song-info">
-                            <h4>${s.song}</h4>
-                            <div class="movie">🎬 ${s.movie}</div>
-                            <div class="artist">🎤 ${s.artist}</div>
-                        </div>
-                    </div>
-                    <div class="song-card-btns">
-                        <button class="song-notes-btn" onclick="orderSong('${s.song}','${s.movie}','${s.artist}','Notes PDF','₹99')">📄 Notes ₹99</button>
-                        <button class="song-combo-btn" onclick="orderSong('${s.song}','${s.movie}','${s.artist}','Notes + Video','₹249')">🎬 Notes + Video ₹249</button>
-                    </div>
-                </div>`).join('');
-        }
-
-        function orderSong(song, movie, artist, product, price) {
-            const msg = `Hello! I'd like to order:%0A%0A🎵 *Song:* ${song}%0A🎬 *Movie:* ${movie}%0A🎤 *Artist:* ${artist}%0A%0A📦 *Product:* ${product} (${price})%0A%0APlease confirm and share payment details. Thank you!`;
-            window.open(`https://api.whatsapp.com/send?phone=917981585309&text=${msg}`, '_blank');
-        }
-
-        function orderWhatsApp(product) {
-            const msg = `Hello! I'd like to order:%0A%0A🎵 *${product}*%0A%0APlease share payment details and confirm availability. Thank you!`;
-            window.open(`https://api.whatsapp.com/send?phone=917981585309&text=${msg}`, '_blank');
-        }
-
-        function toggleMenu() { document.querySelector('.nav-links').classList.toggle('active'); }
-
-        const form = document.querySelector('form[name="song-request"]');
-        if (form) {
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const data = new FormData(form);
-                const song    = data.get('song_name') || '';
-                const movie   = data.get('movie_name') || '';
-                const phone   = data.get('whatsapp') || '';
-                const product = data.get('product') || '';
-                // Save to Netlify Forms
-                try {
-                    await fetch('/', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams(data).toString()
-                    });
-                } catch (err) {}
-                // Also send directly to WhatsApp
-                const msg = `🎵 *New Song Request!*%0A%0A🎵 *Song:* ${encodeURIComponent(song)}%0A🎬 *Movie:* ${encodeURIComponent(movie)}%0A📱 *Customer WhatsApp:* ${phone}%0A📦 *Product:* ${encodeURIComponent(product)}`;
-                window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
-                document.getElementById('reqSuccess').style.display = 'block';
-                form.reset();
-            });
-        }
-
-        function payUPI(amount, note) {
-            document.getElementById('upiTitle').textContent = note.replace(/CMA-/g,'').replace(/-/g,' ');
-            document.getElementById('upiAmt').textContent = String.fromCharCode(8377) + Number(amount).toLocaleString('en-IN');
-            const base = 'pa=7702031616@ybl&pn=Chords+Music+Academy&am=' + amount + '&cu=INR&tn=' + encodeURIComponent(note);
-            document.getElementById('gpayBtn').onclick = function(){ window.location.href = 'tez://upi/pay?' + base; };
-            document.getElementById('phonepeBtn').onclick = function(){ window.location.href = 'phonepe://pay?' + base; };
-            document.getElementById('paytmBtn').onclick = function(){ window.location.href = 'paytmmp://pay?' + base; };
-            document.getElementById('upiModal').style.display = 'flex';
-        }
-        function closeUPI() { document.getElementById('upiModal').style.display = 'none'; }
-        function copyUPI(btn) {
-            navigator.clipboard.writeText('7702031616@ybl').then(function(){
-                btn.textContent = 'Copied!'; setTimeout(function(){ btn.textContent = 'Copy'; }, 2000);
-            });
-        }
-
-        document.getElementById('yr').textContent = new Date().getFullYear();
-    </script>
-
-<!-- UPI Payment Modal -->
-<div id="upiModal" onclick="if(event.target===this)closeUPI()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9998;align-items:flex-end;justify-content:center;">
-  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:28px 24px 36px;box-shadow:0 -4px 32px rgba(0,0,0,0.3);">
-    <div style="text-align:center;margin-bottom:18px;">
-      <div style="font-size:1.1rem;font-weight:700;color:#333;" id="upiTitle">Package</div>
-      <div style="font-size:2rem;font-weight:800;color:#1a73e8;margin:4px 0;" id="upiAmt">₹0</div>
-      <div style="font-size:0.85rem;color:#666;">Pay to UPI ID</div>
-      <div style="font-size:1.1rem;font-weight:700;color:#111;letter-spacing:1px;margin:6px 0;">7702031616@ybl</div>
-      <button onclick="copyUPI(this)" style="background:#f1f3f4;border:none;border-radius:8px;padding:6px 18px;font-size:0.85rem;cursor:pointer;color:#1a73e8;font-weight:600;">Copy</button>
+    <div class="pkg">
+      <span class="pkg-tag" style="background:#fff3e0;color:#e65100">⭐ Most Popular</span>
+      <div class="pkg-name">Intermediate Package</div>
+      <div class="pkg-price">₹2,499</div>
+      <div class="pkg-feat">✅ 20 songs — Telugu, Hindi, English<br>✅ Full tutorial video for each song<br>✅ 2 months WhatsApp support</div>
+      <div class="btns">
+        <button class="btn-w" onclick="waOrder('Piano Intermediate Package ₹2,499')">💬 Order on WhatsApp</button>
+        <button class="btn-p" onclick="payUPI(2499,'CMA-Piano-Inter')">💳 Pay ₹2,499</button>
+      </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
-      <button id="gpayBtn" style="background:#1a73e8;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;">
-        <svg width="22" height="22" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="24" fill="#fff"/><text x="24" y="30" text-anchor="middle" font-size="16" fill="#1a73e8" font-weight="bold">G</text></svg>
-        Pay with Google Pay
-      </button>
-      <button id="phonepeBtn" style="background:#5f259f;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;">
-        Pay with PhonePe
-      </button>
-      <button id="paytmBtn" style="background:#00baf2;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;">
-        Pay with Paytm
-      </button>
+    <div class="pkg">
+      <span class="pkg-tag" style="background:#fce4ec;color:#c62828">Advanced</span>
+      <div class="pkg-name">Advanced Package</div>
+      <div class="pkg-price">₹3,999</div>
+      <div class="pkg-feat">✅ 40+ songs all languages<br>✅ Advanced tutorials + chord theory<br>✅ 3 months support + live sessions</div>
+      <div class="btns">
+        <button class="btn-w" onclick="waOrder('Piano Advanced Package ₹3,999')">💬 Order on WhatsApp</button>
+        <button class="btn-p" onclick="payUPI(3999,'CMA-Piano-Advanced')">💳 Pay ₹3,999</button>
+      </div>
     </div>
-    <p style="text-align:center;font-size:0.8rem;color:#888;margin-bottom:12px;">After payment, send screenshot on WhatsApp to confirm your order.</p>
-    <button onclick="closeUPI()" style="width:100%;background:#f1f3f4;border:none;border-radius:12px;padding:12px;font-size:0.95rem;color:#555;cursor:pointer;font-weight:600;">Cancel</button>
+  </div>
+
+  <!-- Tab 1: Song Notes -->
+  <div class="panel" id="tab1">
+    <div class="price-strip">
+      <div class="pc">
+        <div class="em">📄</div>
+        <div class="lb">Notes Only</div>
+        <div class="am">₹99</div>
+      </div>
+      <div class="pc">
+        <div class="em">🎬</div>
+        <div class="lb">Notes + Video</div>
+        <div class="am">₹249</div>
+        <div class="ol">₹349</div>
+      </div>
+      <div class="pc">
+        <div class="em">🎵</div>
+        <div class="lb">5-Song Bundle</div>
+        <div class="am">₹799</div>
+        <div class="ol">₹1,245</div>
+      </div>
+    </div>
+    <div class="form-card">
+      <h3>🎵 Request Your Song</h3>
+      <form id="songForm" name="song-request" method="POST" data-netlify="true">
+        <input type="hidden" name="form-name" value="song-request">
+        <input class="inp" type="text" name="song_name" placeholder="Song Name *" required>
+        <input class="inp" type="text" name="movie_name" placeholder="Movie / Album (optional)">
+        <input class="inp" type="tel" name="whatsapp" placeholder="Your WhatsApp Number *" required>
+        <select class="sel" name="product">
+          <option value="Notes Only (₹99)">📄 Notes Only — ₹99</option>
+          <option value="Notes + Video (₹249)" selected>🎬 Notes + Video — ₹249</option>
+          <option value="5-Song Bundle (₹799)">🎵 5-Song Bundle — ₹799</option>
+        </select>
+        <div id="reqSuccess">✅ Request sent! We'll WhatsApp you soon.</div>
+        <button class="btn-sub" type="submit">💬 Submit & Order via WhatsApp</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tab 2: Top 50 Packages -->
+  <div class="panel" id="tab2">
+    <div class="t50">
+      <div class="t50-em">🎵</div>
+      <div class="t50-body">
+        <div class="t50-name">Telugu Top 50</div>
+        <div class="t50-sub">50 best Telugu songs • PDF Notes + Videos</div>
+        <div class="t50-btns">
+          <button class="t50b w" onclick="waOrder('Telugu Top 50 Songs — Notes ₹999')">💬 Notes ₹999</button>
+          <button class="t50b p" onclick="payUPI(1999,'CMA-Telugu-Top50')">💳 +Video ₹1,999</button>
+        </div>
+      </div>
+    </div>
+    <div class="t50">
+      <div class="t50-em">🎶</div>
+      <div class="t50-body">
+        <div class="t50-name">Hindi Top 50</div>
+        <div class="t50-sub">50 best Hindi songs • PDF Notes + Videos</div>
+        <div class="t50-btns">
+          <button class="t50b w" onclick="waOrder('Hindi Top 50 Songs — Notes ₹999')">💬 Notes ₹999</button>
+          <button class="t50b p" onclick="payUPI(1999,'CMA-Hindi-Top50')">💳 +Video ₹1,999</button>
+        </div>
+      </div>
+    </div>
+    <div class="t50">
+      <div class="t50-em">🎼</div>
+      <div class="t50-body">
+        <div class="t50-name">Tamil Top 50</div>
+        <div class="t50-sub">50 best Tamil songs • PDF Notes + Videos</div>
+        <div class="t50-btns">
+          <button class="t50b w" onclick="waOrder('Tamil Top 50 Songs — Notes ₹999')">💬 Notes ₹999</button>
+          <button class="t50b p" onclick="payUPI(1999,'CMA-Tamil-Top50')">💳 +Video ₹1,999</button>
+        </div>
+      </div>
+    </div>
+    <div class="t50">
+      <div class="t50-em">🎤</div>
+      <div class="t50-body">
+        <div class="t50-name">AR Rahman Top 50</div>
+        <div class="t50-sub">50 iconic AR Rahman songs • Notes + Videos</div>
+        <div class="t50-btns">
+          <button class="t50b w" onclick="waOrder('AR Rahman Top 50 Songs — Notes ₹999')">💬 Notes ₹999</button>
+          <button class="t50b p" onclick="payUPI(1999,'CMA-AR-Rahman-Top50')">💳 +Video ₹1,999</button>
+        </div>
+      </div>
+    </div>
+    <div class="t50">
+      <div class="t50-em">🎹</div>
+      <div class="t50-body">
+        <div class="t50-name">Ilaiyaraaja Top 50</div>
+        <div class="t50-sub">50 evergreen classics • PDF Notes + Videos</div>
+        <div class="t50-btns">
+          <button class="t50b w" onclick="waOrder('Ilaiyaraaja Top 50 Songs — Notes ₹999')">💬 Notes ₹999</button>
+          <button class="t50b p" onclick="payUPI(1999,'CMA-Ilaiyaraaja-Top50')">💳 +Video ₹1,999</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- UPI Modal -->
+<div id="upiModal" onclick="if(event.target===this)closeUPI()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:flex-end;justify-content:center;">
+  <div class="usheet">
+    <div class="utitle" id="upiTitle">Package</div>
+    <div class="uamt" id="upiAmt">&#x20B9;0</div>
+    <div style="font-size:0.78rem;color:#888;text-align:center">Pay to UPI ID</div>
+    <div class="uid">7702031616@ybl</div>
+    <button class="ucopy" onclick="copyUPI(this)">Copy UPI ID</button>
+    <div class="uapps">
+      <button id="gpayBtn" class="uapp" style="background:#1a73e8">Pay with Google Pay</button>
+      <button id="phonepeBtn" class="uapp" style="background:#5f259f">Pay with PhonePe</button>
+      <button id="paytmBtn" class="uapp" style="background:#00baf2">Pay with Paytm</button>
+    </div>
+    <p class="unote">After payment, send screenshot on WhatsApp to confirm your order.</p>
+    <button class="ucancel" onclick="closeUPI()">Cancel</button>
   </div>
 </div>
+
+<script>
+function showTab(i) {
+  document.querySelectorAll('.tab').forEach(function(t,j){ t.classList.toggle('on',j===i); });
+  document.querySelectorAll('.panel').forEach(function(p,j){ p.classList.toggle('on',j===i); });
+}
+
+function waOrder(pkg) {
+  var msg = encodeURIComponent('Hi! I want to order: *' + pkg + '*\n\nPlease let me know the next steps.');
+  window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
+}
+
+function payUPI(amount, note) {
+  document.getElementById('upiTitle').textContent = note.replace(/CMA-/g,'').replace(/-/g,' ');
+  document.getElementById('upiAmt').textContent = '\u20B9' + Number(amount).toLocaleString('en-IN');
+  var base = 'pa=7702031616@ybl&pn=Chords+Music+Academy&am=' + amount + '&cu=INR&tn=' + encodeURIComponent(note);
+  document.getElementById('gpayBtn').onclick = function(){ window.location.href = 'tez://upi/pay?' + base; };
+  document.getElementById('phonepeBtn').onclick = function(){ window.location.href = 'phonepe://pay?' + base; };
+  document.getElementById('paytmBtn').onclick = function(){ window.location.href = 'paytmmp://pay?' + base; };
+  document.getElementById('upiModal').style.display = 'flex';
+}
+function closeUPI() { document.getElementById('upiModal').style.display = 'none'; }
+function copyUPI(btn) {
+  navigator.clipboard.writeText('7702031616@ybl').then(function(){
+    btn.textContent = 'Copied!'; setTimeout(function(){ btn.textContent = 'Copy UPI ID'; }, 2000);
+  });
+}
+
+var form = document.getElementById('songForm');
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+  var data = new FormData(form);
+  var song = data.get('song_name') || '';
+  var movie = data.get('movie_name') || '';
+  var phone = data.get('whatsapp') || '';
+  var product = data.get('product') || '';
+  try { fetch('/', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: new URLSearchParams(data).toString()}); } catch(err) {}
+  var msg = encodeURIComponent('🎵 New Song Request!\n\n🎵 Song: ' + song + '\n🎬 Movie: ' + movie + '\n📱 Phone: ' + phone + '\n📦 Product: ' + product);
+  window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
+  document.getElementById('reqSuccess').style.display = 'block';
+  form.reset();
+});
+</script>
 </body>
 </html>
