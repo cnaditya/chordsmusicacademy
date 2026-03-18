@@ -473,5 +473,32 @@
 
         document.getElementById('yr').textContent = new Date().getFullYear();
     </script>
+
+<!-- UPI Payment Modal -->
+<div id="upiModal" onclick="if(event.target===this)closeUPI()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9998;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:28px 24px 36px;box-shadow:0 -4px 32px rgba(0,0,0,0.3);">
+    <div style="text-align:center;margin-bottom:18px;">
+      <div style="font-size:1.1rem;font-weight:700;color:#333;" id="upiTitle">Package</div>
+      <div style="font-size:2rem;font-weight:800;color:#1a73e8;margin:4px 0;" id="upiAmt">₹0</div>
+      <div style="font-size:0.85rem;color:#666;">Pay to UPI ID</div>
+      <div style="font-size:1.1rem;font-weight:700;color:#111;letter-spacing:1px;margin:6px 0;">7702031616@ybl</div>
+      <button onclick="copyUPI(this)" style="background:#f1f3f4;border:none;border-radius:8px;padding:6px 18px;font-size:0.85rem;cursor:pointer;color:#1a73e8;font-weight:600;">Copy</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
+      <button id="gpayBtn" style="background:#1a73e8;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;">
+        <svg width="22" height="22" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="24" fill="#fff"/><text x="24" y="30" text-anchor="middle" font-size="16" fill="#1a73e8" font-weight="bold">G</text></svg>
+        Pay with Google Pay
+      </button>
+      <button id="phonepeBtn" style="background:#5f259f;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;">
+        Pay with PhonePe
+      </button>
+      <button id="paytmBtn" style="background:#00baf2;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;">
+        Pay with Paytm
+      </button>
+    </div>
+    <p style="text-align:center;font-size:0.8rem;color:#888;margin-bottom:12px;">After payment, send screenshot on WhatsApp to confirm your order.</p>
+    <button onclick="closeUPI()" style="width:100%;background:#f1f3f4;border:none;border-radius:12px;padding:12px;font-size:0.95rem;color:#555;cursor:pointer;font-weight:600;">Cancel</button>
+  </div>
+</div>
 </body>
 </html>
