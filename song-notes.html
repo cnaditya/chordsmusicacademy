@@ -429,13 +429,22 @@
         if (form) {
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                const data = new FormData(form);
+                const song    = data.get('song_name') || '';
+                const movie   = data.get('movie_name') || '';
+                const phone   = data.get('whatsapp') || '';
+                const product = data.get('product') || '';
+                // Save to Netlify Forms
                 try {
                     await fetch('/', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams(new FormData(form)).toString()
+                        body: new URLSearchParams(data).toString()
                     });
                 } catch (err) {}
+                // Also send directly to WhatsApp
+                const msg = `🎵 *New Song Request!*%0A%0A🎵 *Song:* ${encodeURIComponent(song)}%0A🎬 *Movie:* ${encodeURIComponent(movie)}%0A📱 *Customer WhatsApp:* ${phone}%0A📦 *Product:* ${encodeURIComponent(product)}`;
+                window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
                 document.getElementById('reqSuccess').style.display = 'block';
                 form.reset();
             });
