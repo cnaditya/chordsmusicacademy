@@ -331,8 +331,9 @@ function genOrderId() {
 function sendEmails(orderId, pkg, amount, name, phone, email, song) {
   if (!window.emailjs || EJS_KEY === 'YOUR_EMAILJS_PUBLIC_KEY') return;
   emailjs.init({publicKey: EJS_KEY});
-  var date   = new Date().toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'});
-  var amtFmt = '\u20B9' + Number(amount).toLocaleString('en-IN');
+  var date     = new Date().toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'});
+  var amtFmt   = '\u20B9' + Number(amount).toLocaleString('en-IN');
+  var upiLink  = 'upi://pay?pa=7702031616@ybl&pn=Chords+Music+Academy&am=' + amount + '&cu=INR&tn=' + encodeURIComponent(orderId);
   var params = {
     order_id:       orderId,
     package_name:   pkg,
@@ -341,7 +342,8 @@ function sendEmails(orderId, pkg, amount, name, phone, email, song) {
     customer_phone: phone,
     customer_email: email || 'Not provided',
     song_name:      song  || 'N/A',
-    order_date:     date
+    order_date:     date,
+    payment_link:   upiLink
   };
   // 1. Notify owner
   emailjs.send(EJS_SERVICE, EJS_OWNER_TPL, Object.assign({}, params, {to_email: 'chordsmusicstudios@gmail.com'})).catch(function(){});
@@ -388,21 +390,18 @@ function submitOrder() {
   var waMsg = encodeURIComponent(lines.join('\n'));
   var waUrl = 'https://api.whatsapp.com/send?phone=917981585309&text=' + waMsg;
 
-  // 4. Show confirmation
+  // 4. Show confirmation — no auto popups, payment link goes via email
   document.getElementById('oIdDisplay').textContent = _orderId;
   document.getElementById('oConfSub').textContent = email
-    ? 'Invoice sent to ' + email + '. We deliver within 24 hrs.'
-    : 'Your order is confirmed. We deliver within 24 hrs.';
+    ? 'Invoice & payment link sent to ' + email
+    : 'Order confirmed! Use WhatsApp to pay & confirm.';
   document.getElementById('orderStep1').style.display = 'none';
   document.getElementById('orderStep2').style.display = 'block';
 
+  // WhatsApp — optional, user taps when ready
   document.getElementById('waConfBtn').onclick = function(){ window.open(waUrl, '_blank'); };
-  document.getElementById('upiConfBtn').onclick = function(){
-    closeOrder();
-    payUPI(_amount, _ref + '-' + _orderId);
-  };
-
-  setTimeout(function(){ window.open(waUrl, '_blank'); }, 600);
+  // UPI button hidden — payment link is in the email now
+  document.getElementById('upiConfBtn').style.display = 'none';
 }
 
 function closeOrder() { document.getElementById('orderModal').style.display = 'none'; }
