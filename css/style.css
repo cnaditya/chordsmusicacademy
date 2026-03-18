@@ -136,6 +136,104 @@
     .studio-promo-btn { align-self: center; }
 }
 
+/* Song Request Section */
+.song-request {
+    background: linear-gradient(135deg, #1a0a2e 0%, #0d0d1a 50%, #1a0a2e 100%);
+    padding: 5rem 2rem;
+}
+.song-request-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: center;
+}
+.song-request-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #9b59b6, #6c3483);
+    color: #fff;
+    padding: 0.35rem 1.2rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+.song-request h2 { color: #fff; }
+.song-request .section-subtitle { color: #aaa; margin-bottom: 3rem; }
+.song-request-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+    text-align: left;
+}
+.request-step {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+.request-step-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #9b59b6, #6c3483);
+    color: #fff;
+    font-weight: 800;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.request-step h4 { color: #d7bce8; font-size: 0.95rem; margin-bottom: 0.2rem; }
+.request-step p { color: #888; font-size: 0.85rem; }
+.song-request-form {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(155,89,182,0.3);
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-group label { color: #ccc; font-size: 0.85rem; font-weight: 600; }
+.song-request-form input,
+.song-request-form select {
+    padding: 0.85rem 1rem;
+    border: 1px solid rgba(155,89,182,0.3);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    color: #eee;
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.song-request-form input:focus,
+.song-request-form select:focus { border-color: #9b59b6; }
+.song-request-form select option { background: #1a1a2e; }
+.request-submit-btn {
+    background: linear-gradient(135deg, #9b59b6, #6c3483);
+    color: #fff;
+    border: none;
+    padding: 1rem;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(155,89,182,0.4);
+}
+.request-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(155,89,182,0.5);
+}
+@media (max-width: 768px) {
+    .song-request-content { grid-template-columns: 1fr; }
+}
+
 /* Scrolling Announcement Banner */
 .announcement-banner {
     background: linear-gradient(135deg, #e74c3c, #c0392b);
