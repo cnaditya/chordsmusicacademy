@@ -333,7 +333,7 @@ function sendEmails(orderId, pkg, amount, name, phone, email, song) {
   emailjs.init({publicKey: EJS_KEY});
   var date     = new Date().toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'});
   var amtFmt   = '\u20B9' + Number(amount).toLocaleString('en-IN');
-  var upiLink  = 'upi://pay?pa=7702031616@ybl&pn=Chords+Music+Academy&am=' + amount + '&cu=INR&tn=' + encodeURIComponent(orderId);
+  var upiLink  = 'https://chordsmusicacademy.in/pay?id=' + encodeURIComponent(orderId) + '&amount=' + amount + '&pkg=' + encodeURIComponent(pkg);
   var params = {
     order_id:       orderId,
     package_name:   pkg,
