@@ -62,27 +62,15 @@
         .section-sub { text-align: center; color: #888; margin-bottom: 3rem; font-size: 0.95rem; }
         .section-label { display: inline-block; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.8rem; }
 
-        /* ── DIGITAL PRODUCTS ── */
-        .digital-products { background: #0f0f0f; }
-        .digital-products .section-label { background: rgba(155,89,182,0.2); color: #9b59b6; border: 1px solid rgba(155,89,182,0.4); }
-        .products-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
-        .product-card { background: #1a1a1a; border: 1px solid rgba(155,89,182,0.15); border-radius: 18px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; }
-        .product-card:hover { transform: translateY(-6px); box-shadow: 0 15px 40px rgba(155,89,182,0.15); border-color: rgba(155,89,182,0.4); }
-        .product-card.featured { border-color: rgba(155,89,182,0.5); box-shadow: 0 0 30px rgba(155,89,182,0.1); }
-        .product-header { padding: 1.5rem; background: linear-gradient(135deg, rgba(155,89,182,0.15), rgba(108,52,131,0.1)); border-bottom: 1px solid rgba(155,89,182,0.1); text-align: center; }
-        .product-icon { font-size: 2.5rem; margin-bottom: 0.5rem; display: block; }
-        .product-header h3 { font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 0.3rem; }
-        .best-tag { display: inline-block; background: linear-gradient(135deg, #9b59b6, #6c3483); color: #fff; padding: 0.2rem 0.7rem; border-radius: 10px; font-size: 0.7rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .product-price { font-size: 1.8rem; font-weight: 900; color: #9b59b6; }
-        .product-price span { font-size: 0.9rem; color: #777; font-weight: 400; text-decoration: line-through; margin-left: 0.3rem; }
-        .product-body { padding: 1.5rem; }
-        .product-body ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
-        .product-body ul li { color: #bbb; font-size: 0.88rem; display: flex; align-items: center; gap: 0.5rem; }
-        .product-body ul li::before { content: '✅'; font-size: 0.75rem; }
-        .buy-btn { width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #9b59b6, #6c3483); color: #fff; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-        .buy-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(155,89,182,0.4); }
-        .buy-btn.whatsapp { background: linear-gradient(135deg, #25d366, #128c7e); }
-        .buy-btn.whatsapp:hover { box-shadow: 0 6px 20px rgba(37,211,102,0.4); }
+        /* ── PRICING STRIP ── */
+        .pricing-strip { background: linear-gradient(135deg, #111, #1a0a2e); border-top: 1px solid rgba(155,89,182,0.2); border-bottom: 1px solid rgba(155,89,182,0.2); padding: 1.2rem 2rem; }
+        .pricing-strip-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 1.5rem; flex-wrap: wrap; }
+        .price-pill { display: flex; align-items: center; gap: 0.5rem; background: rgba(155,89,182,0.1); border: 1px solid rgba(155,89,182,0.25); border-radius: 24px; padding: 0.5rem 1.1rem; color: #ddd; font-size: 0.88rem; white-space: nowrap; }
+        .price-pill strong { color: #9b59b6; font-size: 1rem; }
+        .price-pill .orig { color: #555; text-decoration: line-through; font-size: 0.76rem; margin-left: 0.2rem; }
+        .bundle-btn { padding: 0.55rem 1.3rem; background: linear-gradient(135deg, #25d366, #128c7e); color: #fff; border: none; border-radius: 24px; font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.2s; white-space: nowrap; }
+        .bundle-btn:hover { transform: scale(1.04); }
+        @media (max-width: 600px) { .pricing-strip-inner { gap: 0.8rem; } .price-pill { font-size: 0.8rem; } }
 
         /* ── TUTORIAL PACKAGES ── */
         .tutorial-packages { background: #0a0a0a; }
@@ -289,7 +277,7 @@
                 <span></span><span></span><span></span>
             </div>
             <ul class="nav-links">
-                <li><a href="#digital" onclick="closeMenu()">Notes & Videos</a></li>
+                <li><a href="#ai-songs" onclick="closeMenu()">Notes & Videos</a></li>
                 <li><a href="#packages" onclick="closeMenu()">Packages</a></li>
                 <li><a href="#services" onclick="closeMenu()">Pro Services</a></li>
                 <li><a href="#request" onclick="closeMenu()">Request a Song</a></li>
@@ -440,87 +428,15 @@
             </div>
         </section>
 
-        <!-- Digital Products -->
-        <section id="digital" class="digital-products">
-            <div style="text-align:center;">
-                <span class="section-label">📄 Instant Download</span>
-                <div class="section-title">Song Notes & Tutorial Videos</div>
-                <p class="section-sub">Latest Telugu songs — notes PDF + full tutorial video. New songs added every week!</p>
+        <!-- Pricing Strip -->
+        <div class="pricing-strip">
+            <div class="pricing-strip-inner">
+                <div class="price-pill">📄 Notes Only <strong>₹99</strong> <span>per song</span></div>
+                <div class="price-pill">🎬 Notes + Video <strong>₹249</strong> <span class="orig">₹349</span></div>
+                <div class="price-pill">🎵 5-Song Bundle <strong>₹799</strong> <span class="orig">₹1,245</span></div>
+                <button class="bundle-btn" onclick="orderWhatsApp('5 Song Bundle (Notes + Videos) - ₹799')">💬 Order 5-Bundle ₹799</button>
             </div>
-            <div class="products-grid">
-                <div class="product-card">
-                    <div class="product-header">
-                        <span class="product-icon">📄</span>
-                        <h3>Song Notes Only</h3>
-                        <div class="product-price">₹99</div>
-                    </div>
-                    <div class="product-body">
-                        <ul>
-                            <li>Piano / Keyboard notes PDF</li>
-                            <li>Telugu song notations</li>
-                            <li>Chords & fingering guide</li>
-                            <li>Instant WhatsApp delivery</li>
-                        </ul>
-                        <button class="buy-btn whatsapp" onclick="orderWhatsApp('Song Notes PDF - ₹99')">💬 Order via WhatsApp</button>
-                    </div>
-                </div>
-
-                <div class="product-card featured">
-                    <div class="product-header">
-                        <span class="best-tag">⭐ Most Popular</span>
-                        <span class="product-icon">🎬</span>
-                        <h3>Notes + Tutorial Video</h3>
-                        <div class="product-price">₹249 <span>₹349</span></div>
-                    </div>
-                    <div class="product-body">
-                        <ul>
-                            <li>Full piano notes PDF</li>
-                            <li>Step-by-step tutorial video</li>
-                            <li>Telugu & English notations</li>
-                            <li>Chords + fingering guide</li>
-                            <li>Instant WhatsApp delivery</li>
-                            <li>1 week doubt support</li>
-                        </ul>
-                        <button class="buy-btn whatsapp" onclick="orderWhatsApp('Notes + Video - ₹249')">💬 Order via WhatsApp</button>
-                    </div>
-                </div>
-
-                <div class="product-card">
-                    <div class="product-header">
-                        <span class="product-icon">🎹</span>
-                        <h3>Keyboard Notes Only</h3>
-                        <div class="product-price">₹99</div>
-                    </div>
-                    <div class="product-body">
-                        <ul>
-                            <li>Keyboard-specific notations</li>
-                            <li>With octave markings</li>
-                            <li>Beginner friendly format</li>
-                            <li>Instant WhatsApp delivery</li>
-                        </ul>
-                        <button class="buy-btn whatsapp" onclick="orderWhatsApp('Keyboard Notes PDF - ₹99')">💬 Order via WhatsApp</button>
-                    </div>
-                </div>
-
-                <div class="product-card">
-                    <div class="product-header">
-                        <span class="product-icon">🎵</span>
-                        <h3>Song Bundle (5 Songs)</h3>
-                        <div class="product-price">₹799 <span>₹1,495</span></div>
-                    </div>
-                    <div class="product-body">
-                        <ul>
-                            <li>5 song notes PDFs</li>
-                            <li>5 tutorial videos</li>
-                            <li>You choose the songs</li>
-                            <li>Best value deal</li>
-                            <li>Instant WhatsApp delivery</li>
-                        </ul>
-                        <button class="buy-btn whatsapp" onclick="orderWhatsApp('5 Song Bundle (Notes + Videos) - ₹799')">💬 Order via WhatsApp</button>
-                    </div>
-                </div>
-            </div>
-        </section>
+        </div>
 
         <!-- Tutorial Packages -->
         <section id="packages" class="tutorial-packages">
@@ -534,7 +450,7 @@
                     <div class="package-header">
                         <div class="package-level basic">● Beginner</div>
                         <h3>Basic Piano Package</h3>
-                        <div class="package-price">₹799 <span class="per">/package</span></div>
+                        <div class="package-price">₹1,499 <span class="per">/package</span></div>
                     </div>
                     <div class="package-body">
                         <ul>
@@ -546,7 +462,7 @@
                             <li>Video tutorials for each lesson</li>
                             <li>PDF notes included</li>
                         </ul>
-                        <button class="package-btn" onclick="orderWhatsApp('Basic Piano Tutorial Package - ₹799')">💬 Buy via WhatsApp</button>
+                        <button class="package-btn" onclick="orderWhatsApp('Basic Piano Tutorial Package - ₹1,499')">💬 Buy via WhatsApp</button>
                     </div>
                 </div>
 
@@ -555,7 +471,7 @@
                         <div class="popular-tag">🔥 Most Chosen</div>
                         <div class="package-level intermediate">● Intermediate</div>
                         <h3>Intermediate Piano Package</h3>
-                        <div class="package-price">₹1,499 <span class="per">/package</span></div>
+                        <div class="package-price">₹2,499 <span class="per">/package</span></div>
                     </div>
                     <div class="package-body">
                         <ul>
@@ -568,7 +484,7 @@
                             <li>Video tutorials + PDF notes</li>
                             <li>2 weeks doubt support</li>
                         </ul>
-                        <button class="package-btn" onclick="orderWhatsApp('Intermediate Piano Tutorial Package - ₹1,499')">💬 Buy via WhatsApp</button>
+                        <button class="package-btn" onclick="orderWhatsApp('Intermediate Piano Tutorial Package - ₹2,499')">💬 Buy via WhatsApp</button>
                     </div>
                 </div>
 
@@ -576,7 +492,7 @@
                     <div class="package-header">
                         <div class="package-level advanced">● Advanced</div>
                         <h3>Advanced Piano Package</h3>
-                        <div class="package-price">₹2,499 <span class="per">/package</span></div>
+                        <div class="package-price">₹3,999 <span class="per">/package</span></div>
                     </div>
                     <div class="package-body">
                         <ul>
@@ -589,7 +505,7 @@
                             <li>Video tutorials + PDF notes</li>
                             <li>1 month doubt support</li>
                         </ul>
-                        <button class="package-btn" onclick="orderWhatsApp('Advanced Piano Tutorial Package - ₹2,499')">💬 Buy via WhatsApp</button>
+                        <button class="package-btn" onclick="orderWhatsApp('Advanced Piano Tutorial Package - ₹3,999')">💬 Buy via WhatsApp</button>
                     </div>
                 </div>
             </div>
@@ -866,7 +782,7 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h4>Shop & Services</h4>
-                <a href="#digital">Song Notes & Videos</a>
+                <a href="#ai-songs">Song Notes & Videos</a>
                 <a href="#packages">Tutorial Packages</a>
                 <a href="#services">Pro Services</a>
                 <a href="#request">Request a Song</a>
