@@ -7,6 +7,43 @@
     <meta name="description" content="Learn music at Chords Music Academy, Hyderabad. Trinity College London certified courses in Piano, Guitar, Drums, Violin, Flute, and Vocals. Founded by CN Aditya, Telugu film industry music director.">
     <meta name="keywords" content="music academy, music classes, piano lessons, guitar classes, drums, violin, flute, vocals, Trinity College London, Hyderabad, CN Aditya, music education">
     <meta name="author" content="Chords Music Academy">
+    <!-- Open Graph / WhatsApp / Instagram sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://chordsmusicacademy.in/">
+    <meta property="og:title" content="Chords Music Academy - Professional Music Education | Hyderabad">
+    <meta property="og:description" content="Learn Piano, Guitar, Drums, Violin, Flute & Vocals at Chords Music Academy, Manikonda, Hyderabad. Trinity College London certified. Founded by Telugu film industry music director CN Aditya.">
+    <meta property="og:image" content="https://chordsmusicacademy.in/images/chords_PNG.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Chords Music Academy - Professional Music Education">
+    <meta name="twitter:description" content="Trinity certified music classes in Piano, Guitar, Drums, Violin, Flute & Vocals. Manikonda, Hyderabad.">
+    <meta name="twitter:image" content="https://chordsmusicacademy.in/images/chords_PNG.png">
+    <!-- Apple touch icon -->
+    <link rel="apple-touch-icon" href="images/chords_PNG.png">
+    <!-- Schema.org structured data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "MusicSchool",
+      "name": "Chords Music Academy",
+      "description": "Professional music education in Hyderabad. Trinity College London certified courses in Piano, Guitar, Drums, Violin, Flute and Vocals.",
+      "url": "https://chordsmusicacademy.in/",
+      "telephone": ["+91-79815 85309", "+91-75693 48879"],
+      "email": "chords.music.academy@gmail.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "No602, Abhinandana Jewel, Lanco Hills Rd, Opp Harivillu Apartments",
+        "addressLocality": "Manikonda",
+        "addressRegion": "Telangana",
+        "postalCode": "500089",
+        "addressCountry": "IN"
+      },
+      "founder": { "@type": "Person", "name": "CN Aditya" },
+      "sameAs": [
+        "https://www.youtube.com/@TeluguPianoTeacher",
+        "https://www.instagram.com/chordsmusicacademyhyd"
+      ]
+    }
+    </script>
     <link rel="icon" type="image/png" href="images/chords_PNG.png">
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,13 +68,14 @@
     <!-- Scrolling Announcement Banner -->
     <div class="announcement-banner">
         <div class="scrolling-text">
-            🎹 Online & Offline Piano Classes • 🎸 Online & Offline Guitar Classes • 🥁 Online & Offline Drums Classes • 🎤 Online & Offline Vocals Classes • 📞 Call +91-79815 85309 for Enrollment • 
+            🎁 FREE Trial Class Available — Book Now! • 🎹 Online & Offline Piano Classes • 🎸 Online & Offline Guitar Classes • 🥁 Online & Offline Drums Classes • 🎻 Online & Offline Violin Classes • 🪈 Online & Offline Flute Classes • 🎤 Online & Offline Carnatic Vocals • 🎤 Online & Offline Hindustani Vocals • 🎤 Online & Offline Western Vocals • 🏆 Trinity College London Certified • 📞 Call +91-79815 85309 for Enrollment •
         </div>
     </div>
 
     <header>
         <nav class="navbar">
             <div class="logo">
+                <img src="images/chords_PNG.png" alt="Chords Music Academy Logo" class="nav-logo-img">
                 <div class="logo-text">
                     <h1 class="academy-name">Chords Music Academy</h1>
                     <div class="logo-tagline">Discover the Music Within You</div>
@@ -53,6 +91,7 @@
                 <li><a href="#courses" onclick="closeMenu()">Courses</a></li>
                 <li><a href="#about" onclick="closeMenu()">About</a></li>
                 <li><a href="#contact" onclick="closeMenu()">Contact</a></li>
+                <li><a href="studio.html" onclick="closeMenu()" style="background:rgba(243,156,18,0.15);border:1px solid rgba(243,156,18,0.4);color:#f39c12;padding:0.4rem 0.9rem;border-radius:20px;font-size:0.85rem;">🎙 Music Studio</a></li>
             </ul>
         </nav>
     </header>
@@ -67,16 +106,45 @@
                 <div class="musical-notes note2">♫</div>
                 <div class="musical-notes note3">♬</div>
                 <div class="musical-notes note4">♪</div>
-                <h1>Learn Music with Expert Guidance</h1>
+                <h1>Hyderabad's Premier Music Academy</h1>
                 <p>Professional music education for all ages and skill levels</p>
                 <a href="https://www.youtube.com/@TeluguPianoTeacher" target="_blank" class="youtube-badge">
                     <img src="images/youtube_new.png" alt="YouTube" class="youtube-logo">
                     <div class="youtube-text">
                         <span class="channel-name">Telugu Piano Teacher</span>
-                        <span class="subscriber-count">1 lakh+ Subscribers</span>
+                        <span class="subscriber-count">Rapidly Growing to 1 Lakh!</span>
                     </div>
                 </a>
-                <button class="cta-btn" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">Enroll Now</button>
+                <div class="hero-btns">
+                    <button class="cta-btn" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">Enroll Now</button>
+                    <button class="trial-btn" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">🎵 Book Free Trial Class</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Bar -->
+        <section class="stats-bar">
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label">Students Trained</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">7+</span>
+                    <span class="stat-label">Years of Excellence</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">8</span>
+                    <span class="stat-label">Courses Offered</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">Trinity</span>
+                    <span class="stat-label">College Certified</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">Exam Pass Rate</span>
+                </div>
             </div>
         </section>
 
@@ -85,7 +153,7 @@
                 <h2>🌟 Prestigious Inauguration</h2>
                 <div class="inauguration-highlight">
                     <div class="inauguration-image">
-                        <img src="images/ramajogayya-aditya.jpeg" alt="RamaJogayya Sastry garu inaugurating Chords Music Academy">
+                        <img src="images/ramajogayya-aditya.jpeg" alt="RamaJogayya Sastry garu inaugurating Chords Music Academy" loading="lazy">
                     </div>
                     <div class="inauguration-text">
                         <h3>Inaugurated by RamaJogayya Sastry Garu</h3>
@@ -108,7 +176,7 @@
                 
                 <div class="celebrity-grid">
                     <div class="celebrity-card">
-                        <img src="images/MusicDirector_RP Patnaik.jpeg" alt="Music Director RP Patnaik">
+                        <img src="images/MusicDirector_RP Patnaik.jpeg" alt="Music Director RP Patnaik" loading="lazy">
                         <div class="celebrity-info">
                             <h4>RP Patnaik</h4>
                             <span>Music Director</span>
@@ -116,7 +184,7 @@
                     </div>
                     
                     <div class="celebrity-card">
-                        <img src="images/Singer_Dhanunjay.jpg" alt="Singer Dhanunjay">
+                        <img src="images/Singer_Dhanunjay.jpg" alt="Singer Dhanunjay" loading="lazy">
                         <div class="celebrity-info">
                             <h4>Dhanunjay</h4>
                             <span>Playback Singer</span>
@@ -124,7 +192,7 @@
                     </div>
                     
                     <div class="celebrity-card">
-                        <img src="images/Singer_Saicharan.jpg" alt="Singer Saicharan">
+                        <img src="images/Singer_Saicharan.jpg" alt="Singer Saicharan" loading="lazy">
                         <div class="celebrity-info">
                             <h4>Saicharan</h4>
                             <span>Playback Singer</span>
@@ -132,7 +200,7 @@
                     </div>
                     
                     <div class="celebrity-card">
-                        <img src="images/Singer-HemaChandra.png" alt="Singer HemaChandra">
+                        <img src="images/Singer-HemaChandra.png" alt="Singer HemaChandra" loading="lazy">
                         <div class="celebrity-info">
                             <h4>HemaChandra</h4>
                             <span>Playback Singer</span>
@@ -152,16 +220,16 @@
             <h2>Our Academy</h2>
             <div class="slideshow-container">
                 <div class="slide active">
-                    <img src="images/academy_1.jpg" alt="Chords Music Academy Interior">
+                    <img src="images/academy_1.jpg" alt="Chords Music Academy Interior" loading="lazy">
                 </div>
                 <div class="slide">
-                    <img src="images/academy_2.jpg" alt="Music Classes at Chords Academy">
+                    <img src="images/academy_2.jpg" alt="Music Classes at Chords Academy" loading="lazy">
                 </div>
                 <div class="slide">
-                    <img src="images/academy_3.jpg" alt="Students Learning Music">
+                    <img src="images/academy_3.jpg" alt="Students Learning Music" loading="lazy">
                 </div>
                 <div class="slide">
-                    <img src="images/academy_4.png" alt="Academy Facilities">
+                    <img src="images/academy_4.png" alt="Academy Facilities" loading="lazy">
                 </div>
                 <button class="prev" onclick="changeSlide(-1)">❮</button>
                 <button class="next" onclick="changeSlide(1)">❯</button>
@@ -173,28 +241,28 @@
             <p class="section-subtitle">Student visits, faculty, and our academy family</p>
             <div class="moments-slideshow">
                 <div class="moment-slide active">
-                    <img src="images/Student_Parent1.jpeg" alt="Student and parent visiting Chords Music Academy">
+                    <img src="images/Student_Parent1.jpeg" alt="Student and parent visiting Chords Music Academy" loading="lazy">
                     <div class="slide-caption">
                         <h4>Personal Consultation</h4>
                         <p>Meeting with students and parents to understand their musical goals</p>
                     </div>
                 </div>
                 <div class="moment-slide">
-                    <img src="images/Student_Parent2.jpeg" alt="Student and parent at Chords Music Academy">
+                    <img src="images/Student_Parent2.jpeg" alt="Student and parent at Chords Music Academy" loading="lazy">
                     <div class="slide-caption">
                         <h4>Academy Tour</h4>
                         <p>Showing our facilities and discussing course options</p>
                     </div>
                 </div>
                 <div class="moment-slide">
-                    <img src="images/faculty_1.jpeg" alt="Faculty member at Chords Music Academy">
+                    <img src="images/faculty_1.jpeg" alt="Faculty member at Chords Music Academy" loading="lazy">
                     <div class="slide-caption">
                         <h4>Expert Music Instructor</h4>
                         <p>Dedicated to providing personalized music education</p>
                     </div>
                 </div>
                 <div class="moment-slide">
-                    <img src="images/faculty_2.jpeg" alt="Faculty member at Chords Music Academy">
+                    <img src="images/faculty_2.jpeg" alt="Faculty member at Chords Music Academy" loading="lazy">
                     <div class="slide-caption">
                         <h4>Professional Music Teacher</h4>
                         <p>Passionate about nurturing musical talent</p>
@@ -214,59 +282,115 @@
             <div class="course-grid scroll-animate">
                 <div class="course-card">
                     <div class="course-image">
-                        <img src="https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Piano lessons">
+                        <img src="https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Piano lessons" loading="lazy">
+                        <span class="course-badge">All Ages</span>
                     </div>
-                    <h3>Piano</h3>
-                    <p>Classical and contemporary piano lessons with Trinity certification</p>
+                    <div class="course-info">
+                        <h3>Piano</h3>
+                        <p>Classical and contemporary piano lessons with Trinity certification</p>
+                        <div class="course-meta">
+                            <span>⏱ 45–60 min/class</span>
+                            <span>📶 Beginner to Advanced</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="course-card">
                     <div class="course-image">
-                        <img src="https://images.unsplash.com/photo-1510915361894-db8b60106cb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Girl playing guitar">
+                        <img src="https://images.unsplash.com/photo-1510915361894-db8b60106cb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Girl playing guitar" loading="lazy">
+                        <span class="course-badge">All Ages</span>
                     </div>
-                    <h3>Guitar</h3>
-                    <p>Acoustic and electric guitar training with Trinity certification</p>
+                    <div class="course-info">
+                        <h3>Guitar</h3>
+                        <p>Acoustic and electric guitar training with Trinity certification</p>
+                        <div class="course-meta">
+                            <span>⏱ 45–60 min/class</span>
+                            <span>📶 Beginner to Advanced</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="course-card">
                     <div class="course-image">
-                        <img src="https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Boy playing drums">
+                        <img src="https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Boy playing drums" loading="lazy">
+                        <span class="course-badge">Age 7+</span>
                     </div>
-                    <h3>Drums</h3>
-                    <p>Rhythm and percussion training with Trinity certification</p>
+                    <div class="course-info">
+                        <h3>Drums</h3>
+                        <p>Rhythm and percussion training with Trinity certification</p>
+                        <div class="course-meta">
+                            <span>⏱ 45–60 min/class</span>
+                            <span>📶 Beginner to Advanced</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="course-card">
                     <div class="course-image">
-                        <img src="https://images.unsplash.com/photo-1612225330812-01a9c6b355ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Violin player">
+                        <img src="https://images.unsplash.com/photo-1612225330812-01a9c6b355ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Violin player" loading="lazy">
+                        <span class="course-badge">Age 5+</span>
                     </div>
-                    <h3>Violin</h3>
-                    <p>Traditional and modern violin instruction with Trinity certification</p>
+                    <div class="course-info">
+                        <h3>Violin</h3>
+                        <p>Traditional and modern violin instruction with Trinity certification</p>
+                        <div class="course-meta">
+                            <span>⏱ 45–60 min/class</span>
+                            <span>📶 Beginner to Advanced</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="course-card">
                     <div class="course-image">
-                        <img src="images/flute.jpg" alt="Indian bamboo flute player">
+                        <img src="images/flute.jpg" alt="Indian bamboo flute player" loading="lazy">
+                        <span class="course-badge">All Ages</span>
                     </div>
-                    <h3>Flute</h3>
-                    <p>Indian bamboo flute (Bansuri) training with Trinity certification</p>
+                    <div class="course-info">
+                        <h3>Flute</h3>
+                        <p>Indian bamboo flute (Bansuri) training with Trinity certification</p>
+                        <div class="course-meta">
+                            <span>⏱ 45–60 min/class</span>
+                            <span>📶 Beginner to Advanced</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="course-card">
                     <div class="course-image">
-                        <img src="images/CarnaticVocal.jpg" alt="Carnatic vocalist">
+                        <img src="images/CarnaticVocal.jpg" alt="Carnatic vocalist" loading="lazy">
+                        <span class="course-badge">Age 5+</span>
                     </div>
-                    <h3>Carnatic Vocals</h3>
-                    <p>Traditional South Indian classical vocal training</p>
+                    <div class="course-info">
+                        <h3>Carnatic Vocals</h3>
+                        <p>Traditional South Indian classical vocal training</p>
+                        <div class="course-meta">
+                            <span>⏱ 45–60 min/class</span>
+                            <span>📶 Beginner to Advanced</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="course-card">
                     <div class="course-image">
-                        <img src="images/HindustaniVocals.jpg" alt="Hindustani vocalist">
+                        <img src="images/HindustaniVocals.jpg" alt="Hindustani vocalist" loading="lazy">
+                        <span class="course-badge">All Ages</span>
                     </div>
-                    <h3>Hindustani Vocals</h3>
-                    <p>North Indian classical vocal training</p>
+                    <div class="course-info">
+                        <h3>Hindustani Vocals</h3>
+                        <p>North Indian classical vocal training</p>
+                        <div class="course-meta">
+                            <span>⏱ 45–60 min/class</span>
+                            <span>📶 Beginner to Advanced</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="course-card">
                     <div class="course-image">
-                        <img src="images/western_vocal.jpg" alt="Western vocalist">
+                        <img src="images/western_vocal.jpg" alt="Western vocalist" loading="lazy">
+                        <span class="course-badge">All Ages</span>
                     </div>
-                    <h3>Western Vocals</h3>
-                    <p>Contemporary Western vocal training with Trinity certification</p>
+                    <div class="course-info">
+                        <h3>Western Vocals</h3>
+                        <p>Contemporary Western vocal training with Trinity certification</p>
+                        <div class="course-meta">
+                            <span>⏱ 45–60 min/class</span>
+                            <span>📶 Beginner to Advanced</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -365,7 +489,7 @@
                     <h3>🎹 Meet Our Founders</h3>
                     
                     <div class="founders-photo">
-                        <img src="./images/founders_aditya_brahmani.jpeg" alt="C.N. Aditya (Founder) and C.Satya Brahmani (Co-Founder) - Chords Music Academy">
+                        <img src="./images/founders_aditya_brahmani.jpeg" alt="C.N. Aditya (Founder) and C.Satya Brahmani (Co-Founder) - Chords Music Academy" loading="lazy">
                     </div>
                     
                     <div class="founder-section">
@@ -418,6 +542,113 @@
             </div>
         </section>
 
+        <!-- Testimonials -->
+        <section class="testimonials">
+            <h2 class="scroll-animate">❤️ What Parents & Students Say</h2>
+            <p class="section-subtitle">Real experiences from our academy family</p>
+            <div class="testimonials-grid scroll-animate">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <p>"My daughter started piano at age 6 with zero experience. Within 6 months she was playing full songs! The teachers here are incredibly patient and skilled."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">P</div>
+                        <div>
+                            <strong>Priya Sharma</strong>
+                            <span>Parent of Piano Student</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <p>"I joined guitar classes as a working professional with no prior music knowledge. CN Aditya sir's teaching style is amazing — I passed Trinity Grade 3 in my first attempt!"</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">R</div>
+                        <div>
+                            <strong>Ravi Kumar</strong>
+                            <span>Guitar Student, Adult Learner</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <p>"Brahmani Ma'am's Carnatic vocal classes are outstanding. My son has improved dramatically in just 3 months. Highly recommend Chords Music Academy!"</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">S</div>
+                        <div>
+                            <strong>Sunita Reddy</strong>
+                            <span>Parent of Carnatic Vocals Student</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <p>"The online classes are just as effective as offline. Very flexible timings, professional faculty, and the WhatsApp updates on my child's progress are a great touch!"</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">A</div>
+                        <div>
+                            <strong>Anitha Varma</strong>
+                            <span>Parent of Keyboard Student</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="faq">
+            <h2 class="scroll-animate">❓ Frequently Asked Questions</h2>
+            <div class="faq-container scroll-animate">
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        What age groups do you teach? <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>We welcome students of all ages — from 5 years old to adults. Music has no age limit!</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Do I need to own an instrument before joining? <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>No! You can start learning at our academy. We also help you choose and purchase the right instrument at exclusive discounted prices through our partner vendors.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Are online classes available? <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes! We offer both online and offline classes for all courses. Classes are scheduled as per your convenience.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Is there a free trial class? <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes! We offer a free trial class for all new students. Simply fill the enrollment form or WhatsApp us to book your free session.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        Do you prepare students for Trinity College exams? <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Absolutely! All our courses are structured to prepare students for Trinity College of London certifications from Grade 1 to Grade 8. We have a 100% exam pass rate.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        How long is each class session? <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Each session is 45–60 minutes. We offer both individual (1-on-1) and small group classes for personalized attention.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="contact" class="contact">
             <h2>Contact Information & Enrollment</h2>
             <div class="contact-content">
@@ -427,13 +658,19 @@
                     <p>📞 Phone: +91-79815 85309, +91-75693 48879</p>
                     <p>✉️ Email: chords.music.academy@gmail.com</p>
                     <p>🌐 <a href="https://www.google.com/search?q=chords+music+academy+address&dlnr=1&sei=GdSBaKjCOoPk4-EP_d69UQ#lpg=cid:CgIgAQ%3D%3D,ik:CAoSLEFGMVFpcFBnUEVialZnQmdjNlhySG02RVh6dTRUSXkteWlBOWEzLVR5amxt" target="_blank" style="color: white;">Find us on Google</a></p>
+                    <div class="map-embed">
+                        <iframe
+                            src="https://maps.google.com/maps?q=No602+Abhinandana+Jewel+Lanco+Hills+Road+Manikonda+Hyderabad+Telangana+500089&output=embed"
+                            width="100%" height="220" style="border:0; border-radius:10px;" allowfullscreen="" loading="lazy">
+                        </iframe>
+                    </div>
                 </div>
                 <div class="enrollment-form">
                     <h3>🎵 Enroll Now</h3>
                     <form id="enrollmentForm">
                         <input type="text" id="studentName" placeholder="Your Name" required>
                         <input type="email" id="studentEmail" placeholder="Your Email" required>
-                        <input type="tel" id="studentPhone" placeholder="Your Phone Number" required>
+                        <input type="tel" id="studentPhone" placeholder="Your Phone Number" pattern="[6-9][0-9]{9}" title="Enter a valid 10-digit Indian mobile number" required>
                         <select id="courseSelect" required>
                             <option value="">Select Course</option>
                             <option value="Piano">Piano</option>
@@ -446,6 +683,9 @@
                             <option value="Western Vocals">Western Vocals</option>
                         </select>
                         <button type="submit">Send Enrollment Request</button>
+                        <div id="enrollSuccess" style="display:none; margin-top:1rem; padding:1rem 1.2rem; background:rgba(39,174,96,0.15); border:1px solid rgba(39,174,96,0.4); border-radius:8px; color:#27ae60; font-weight:600; text-align:center;">
+                            ✅ Thank you! Your request has been sent. We'll contact you soon.
+                        </div>
                     </form>
                 </div>
             </div>
@@ -459,14 +699,14 @@
             <div class="footer-section">
                 <h4>Social Media Links</h4>
                 <div class="social-links">
-                    <a href="https://www.youtube.com/@TeluguPianoTeacher" target="_blank" aria-label="YouTube - Telugu Piano Teacher (1 lakh+ subscribers)">
+                    <a href="https://www.youtube.com/@TeluguPianoTeacher" target="_blank" aria-label="YouTube - Telugu Piano Teacher (Nearly 1 Lakh subscribers)">
                         <img src="images/youtube_new.png" alt="YouTube" class="social-icon">
                     </a>
                     <a href="https://www.instagram.com/chordsmusicacademyhyd" target="_blank" aria-label="Instagram - @chordsmusicacademyhyd (3K+ followers)">
-                        <img src="images/instagram.png" alt="Instagram" class="social-icon">
+                        <img src="images/instagram.png" alt="Instagram" class="social-icon" loading="lazy">
                     </a>
                     <a href="https://api.whatsapp.com/send?phone=917981585309" target="_blank" aria-label="WhatsApp">
-                        <img src="images/whatsapp.png" alt="WhatsApp" class="social-icon">
+                        <img src="images/whatsapp.png" alt="WhatsApp" class="social-icon" loading="lazy">
                     </a>
                 </div>
             </div>
@@ -477,6 +717,7 @@
                     <li><a href="#courses">Courses</a></li>
                     <li><a href="#about">About</a></li>
                     <li><a href="#contact">Contact</a></li>
+                    <li><a href="studio.html">🎙 Music Studio</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -487,9 +728,10 @@
             </div>
         </div>
         <div class="footer-bottom">
+            <img src="images/chords_PNG.png" alt="Chords Music Academy Logo" class="footer-logo">
             <h4>Chords Music Academy</h4>
             <p>Professional music education with Trinity College London certification</p>
-            <p>&copy; 2024 Chords Music Academy. All rights reserved.</p>
+            <p>&copy; <span id="copyrightYear"></span> Chords Music Academy. All rights reserved.</p>
         </div>
     </footer>
 
@@ -498,8 +740,8 @@
     <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hello!%20I'm%20super%20excited%20to%20start%20learning%20music.%20Can%20you%20please%20tell%20me%20more%20about%20Chords%20Music%20Academy%20and%20how%20I%20can%20enroll?%20😊" 
        target="_blank" 
        class="whatsapp-float">
-      <img src="https://img.icons8.com/color/48/000000/whatsapp--v1.png" 
-           alt="Chat on WhatsApp" />
+      <img src="images/whatsapp.png"
+           alt="Chat on WhatsApp" loading="lazy">
     </a>
 
     <script src="js/script.js"></script>
