@@ -146,6 +146,37 @@
         .request-submit { padding: 1rem; background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
         .request-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(39,174,96,0.4); }
 
+        /* AI Song Suggester */
+        .ai-songs { background: #111; }
+        .ai-badge { background: linear-gradient(135deg, rgba(52,152,219,0.2), rgba(155,89,182,0.2)); color: #3498db; border: 1px solid rgba(52,152,219,0.4); }
+        .lang-tabs { display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
+        .lang-tab { padding: 0.6rem 1.5rem; border: 2px solid rgba(52,152,219,0.3); background: transparent; color: #aaa; border-radius: 25px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+        .lang-tab.active { background: linear-gradient(135deg, #3498db, #9b59b6); color: #fff; border-color: transparent; box-shadow: 0 4px 15px rgba(52,152,219,0.3); }
+        .lang-tab:hover:not(.active) { border-color: rgba(52,152,219,0.6); color: #3498db; }
+        .songs-container { max-width: 1100px; margin: 0 auto; min-height: 200px; }
+        .songs-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 3rem; }
+        .ai-spinner { width: 45px; height: 45px; border: 4px solid rgba(52,152,219,0.2); border-top-color: #3498db; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .songs-loading p { color: #888; font-size: 0.9rem; }
+        .songs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .song-card { background: #1a1a1a; border: 1px solid rgba(52,152,219,0.15); border-radius: 14px; padding: 1.2rem; display: flex; flex-direction: column; gap: 0.8rem; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; }
+        .song-card:hover { transform: translateY(-4px); border-color: rgba(52,152,219,0.4); box-shadow: 0 8px 25px rgba(52,152,219,0.1); }
+        .song-card-top { display: flex; align-items: flex-start; gap: 0.8rem; }
+        .song-num { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #3498db, #9b59b6); color: #fff; font-weight: 800; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .song-info h4 { color: #fff; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem; }
+        .song-info .movie { color: #888; font-size: 0.8rem; }
+        .song-info .artist { color: #3498db; font-size: 0.78rem; font-weight: 600; }
+        .song-card-btns { display: flex; gap: 0.5rem; }
+        .song-notes-btn { flex: 1; padding: 0.5rem 0.3rem; background: rgba(52,152,219,0.1); border: 1px solid rgba(52,152,219,0.3); color: #3498db; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+        .song-notes-btn:hover { background: #3498db; color: #fff; }
+        .song-combo-btn { flex: 1; padding: 0.5rem 0.3rem; background: linear-gradient(135deg, #9b59b6, #6c3483); border: none; color: #fff; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: transform 0.2s; font-family: inherit; }
+        .song-combo-btn:hover { transform: scale(1.03); }
+        .songs-error { text-align: center; padding: 2rem; color: #888; }
+        .songs-error button { background: #3498db; color: #fff; border: none; padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; margin-left: 0.5rem; font-family: inherit; }
+        .ai-note { text-align: center; color: #666; font-size: 0.85rem; margin-top: 1.5rem; }
+        .ai-note a { color: #27ae60; text-decoration: none; }
+        @media (max-width: 768px) { .songs-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 480px) { .songs-grid { grid-template-columns: 1fr; } }
+
         /* Footer */
         .footer { background: #050505; border-top: 1px solid rgba(155,89,182,0.15); padding: 3rem 2rem 1.5rem; }
         .footer-content { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
@@ -215,6 +246,36 @@
                 <h1>Shop & Services</h1>
                 <p>Telugu song notes, piano tutorials, keyboard programming, music composition & full song production — all by CN Aditya</p>
             </div>
+        </section>
+
+        <!-- AI Song Suggester -->
+        <section id="ai-songs" class="ai-songs">
+            <div style="text-align:center;">
+                <span class="section-label ai-badge">🤖 Powered by AI</span>
+                <div class="section-title">Trending Songs Right Now</div>
+                <p class="section-sub">AI-curated latest trending songs — click any song to instantly order notes & tutorial via WhatsApp!</p>
+            </div>
+
+            <!-- Language Tabs -->
+            <div class="lang-tabs">
+                <button class="lang-tab active" onclick="switchLang('Telugu', this)">🎵 Telugu</button>
+                <button class="lang-tab" onclick="switchLang('Hindi', this)">🎵 Hindi</button>
+                <button class="lang-tab" onclick="switchLang('Tamil', this)">🎵 Tamil</button>
+                <button class="lang-tab" onclick="switchLang('English', this)">🎵 English</button>
+            </div>
+
+            <!-- Song Cards -->
+            <div class="songs-container" id="songsContainer">
+                <div class="songs-loading" id="songsLoading">
+                    <div class="ai-spinner"></div>
+                    <p>AI is fetching latest trending songs...</p>
+                </div>
+                <div class="songs-grid" id="songsGrid" style="display:none;"></div>
+                <div class="songs-error" id="songsError" style="display:none;">
+                    <p>⚠️ Could not fetch songs. <button onclick="loadSongs()">Try again</button></p>
+                </div>
+            </div>
+            <p class="ai-note">💡 Don't see your song? Use the <a href="#request">Request a Song</a> form below!</p>
         </section>
 
         <!-- Digital Products -->
@@ -546,7 +607,63 @@
     </a>
 
     <script>
-        window.addEventListener('load', () => { document.getElementById('loading').style.display = 'none'; });
+        window.addEventListener('load', () => {
+            document.getElementById('loading').style.display = 'none';
+            loadSongs();
+        });
+
+        let allSongs = {};
+        let currentLang = 'Telugu';
+
+        async function loadSongs() {
+            document.getElementById('songsLoading').style.display = 'flex';
+            document.getElementById('songsGrid').style.display = 'none';
+            document.getElementById('songsError').style.display = 'none';
+            try {
+                const res = await fetch('/.netlify/functions/suggest-songs');
+                const data = await res.json();
+                allSongs = data.songs;
+                renderSongs(currentLang);
+            } catch (err) {
+                document.getElementById('songsLoading').style.display = 'none';
+                document.getElementById('songsError').style.display = 'block';
+            }
+        }
+
+        function switchLang(lang, btn) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (Object.keys(allSongs).length > 0) renderSongs(lang);
+        }
+
+        function renderSongs(lang) {
+            const songs = allSongs[lang] || [];
+            const grid = document.getElementById('songsGrid');
+            document.getElementById('songsLoading').style.display = 'none';
+            document.getElementById('songsError').style.display = 'none';
+            grid.style.display = 'grid';
+            grid.innerHTML = songs.map((s, i) => `
+                <div class="song-card">
+                    <div class="song-card-top">
+                        <div class="song-num">${i + 1}</div>
+                        <div class="song-info">
+                            <h4>${s.song}</h4>
+                            <div class="movie">🎬 ${s.movie}</div>
+                            <div class="artist">🎤 ${s.artist}</div>
+                        </div>
+                    </div>
+                    <div class="song-card-btns">
+                        <button class="song-notes-btn" onclick="orderSong('${s.song}','${s.movie}','${s.artist}','Notes PDF','₹49')">📄 Notes ₹49</button>
+                        <button class="song-combo-btn" onclick="orderSong('${s.song}','${s.movie}','${s.artist}','Notes + Video Combo','₹149')">🎬 Combo ₹149</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function orderSong(song, movie, artist, product, price) {
+            const msg = `Hello! I'd like to order:%0A%0A🎵 *Song:* ${song}%0A🎬 *Movie:* ${movie}%0A🎤 *Artist:* ${artist}%0A%0A📦 *Product:* ${product} (${price})%0A%0APlease confirm and share payment details. Thank you!`;
+            window.open(`https://api.whatsapp.com/send?phone=917981585309&text=${msg}`, '_blank');
+        }
 
         function toggleMenu() { document.querySelector('.nav-links').classList.toggle('active'); }
         function closeMenu() { document.querySelector('.nav-links').classList.remove('active'); }
