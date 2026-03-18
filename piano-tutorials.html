@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Piano & Keyboard Tutorial Packages | Chords Music Academy Hyderabad</title>
+    <meta name="description" content="Structured piano & keyboard tutorial packages — Basic ₹1,499 | Intermediate ₹2,499 | Advanced ₹3,999. Video tutorials + PDF notes. Learn at your own pace. Chords Music Academy, Manikonda, Hyderabad.">
+    <link rel="icon" type="image/png" href="images/chords_PNG.png">
+    <link rel="apple-touch-icon" href="images/chords_PNG.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0P6P55ERCN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date()); gtag('config', 'G-0P6P55ERCN');
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; overflow-x: hidden; scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #eee; line-height: 1.6; }
+
+        .loading { position: fixed; inset: 0; background: #0a0a0a; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(243,156,18,0.2); border-top-color: #f39c12; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .announcement-banner { background: linear-gradient(135deg, #7d5a00, #f39c12); color: #fff; padding: 8px 0; overflow: hidden; white-space: nowrap; position: fixed; top: 0; left: 0; right: 0; font-weight: 500; font-size: 0.85rem; z-index: 1002; }
+        .scrolling-text { display: inline-block; animation: scroll-left 45s linear infinite; padding-left: 100%; }
+        @keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+        header { position: fixed; top: 32px; left: 0; right: 0; z-index: 1000; }
+        .navbar { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 2rem; background: rgba(10,10,10,0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(243,156,18,0.2); }
+        .logo { display: flex; align-items: center; gap: 0.8rem; text-decoration: none; }
+        .nav-logo-wrap { width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle, rgba(243,156,18,0.2), rgba(243,156,18,0.05)); border: 2px solid rgba(243,156,18,0.5); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .nav-logo-img { width: 36px; height: 36px; object-fit: contain; }
+        .page-name { font-size: 1.1rem; font-weight: 800; color: #f39c12; }
+        .logo-tagline { font-size: 0.7rem; color: #aaa; }
+        .nav-links { display: flex; list-style: none; gap: 1.2rem; align-items: center; flex-wrap: wrap; }
+        .nav-links a { text-decoration: none; color: #ccc; font-weight: 500; font-size: 0.88rem; transition: color 0.2s; }
+        .nav-links a:hover { color: #f39c12; }
+        .nav-links .back-link { background: rgba(243,156,18,0.12); border: 1px solid rgba(243,156,18,0.35); color: #f39c12; padding: 0.35rem 0.85rem; border-radius: 18px; font-size: 0.8rem; }
+        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+        .hamburger span { display: block; width: 25px; height: 2px; background: #f39c12; border-radius: 2px; }
+
+        /* Hero */
+        .hero { min-height: 52vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 8rem 2rem 4rem; background: linear-gradient(135deg, #0a0a0a, #1a1000, #0a0a0a); position: relative; overflow: hidden; }
+        .hero::before { content: '🎹'; position: absolute; font-size: 20rem; opacity: 0.04; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+        .hero-badge { display: inline-block; background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; letter-spacing: 1px; }
+        .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 900; color: #fff; margin-bottom: 0.8rem; }
+        .hero h1 span { color: #f39c12; }
+        .hero p { color: #aaa; font-size: 1rem; max-width: 600px; margin: 0 auto 2rem; }
+        .hero-packages { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .hero-pkg { background: rgba(243,156,18,0.08); border: 1.5px solid rgba(243,156,18,0.3); border-radius: 14px; padding: 0.8rem 1.2rem; text-align: center; min-width: 120px; }
+        .hero-pkg .level { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.3rem; }
+        .hero-pkg .level.basic { color: #27ae60; }
+        .hero-pkg .level.inter { color: #f39c12; }
+        .hero-pkg .level.adv { color: #e74c3c; }
+        .hero-pkg .price { font-size: 1.4rem; font-weight: 900; color: #fff; }
+        .hero-cta { display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #25d366, #128c7e); color: #fff; padding: 1rem 2rem; border-radius: 30px; font-size: 1rem; font-weight: 700; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
+        .hero-cta:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(37,211,102,0.4); }
+
+        section { padding: 4rem 2rem; }
+        .section-title { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 800; color: #fff; text-align: center; margin-bottom: 0.5rem; }
+        .section-sub { text-align: center; color: #888; margin-bottom: 3rem; font-size: 0.95rem; }
+        .section-label { display: inline-block; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.8rem; }
+
+        /* Packages */
+        .packages { background: #0a0a0a; }
+        .packages-grid { max-width: 1050px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .pkg-card { background: #1a1a1a; border: 2px solid rgba(243,156,18,0.15); border-radius: 22px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; }
+        .pkg-card.popular { border-color: rgba(243,156,18,0.6); box-shadow: 0 0 35px rgba(243,156,18,0.12); }
+        .pkg-card:hover { transform: translateY(-7px); box-shadow: 0 18px 45px rgba(243,156,18,0.15); }
+        .pkg-header { padding: 2rem 1.8rem 1.5rem; background: linear-gradient(135deg, rgba(243,156,18,0.1), rgba(230,126,34,0.04)); border-bottom: 1px solid rgba(243,156,18,0.1); text-align: center; }
+        .pkg-level { font-size: 0.72rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem; }
+        .pkg-level.basic { color: #27ae60; }
+        .pkg-level.inter { color: #f39c12; }
+        .pkg-level.adv { color: #e74c3c; }
+        .popular-tag { display: inline-block; background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; padding: 0.25rem 0.9rem; border-radius: 12px; font-size: 0.7rem; font-weight: 700; margin-bottom: 0.6rem; }
+        .pkg-header h3 { font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem; }
+        .pkg-header .pkg-icon { font-size: 2.5rem; margin-bottom: 0.6rem; display: block; }
+        .pkg-price { font-size: 2.2rem; font-weight: 900; color: #f39c12; }
+        .pkg-price .per { font-size: 0.85rem; color: #777; font-weight: 400; }
+        .pkg-body { padding: 1.8rem; }
+        .pkg-body ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.8rem; }
+        .pkg-body ul li { color: #bbb; font-size: 0.88rem; display: flex; align-items: flex-start; gap: 0.5rem; }
+        .pkg-body ul li::before { content: '✅'; font-size: 0.75rem; flex-shrink: 0; margin-top: 0.1rem; }
+        .pkg-btn { width: 100%; padding: 1rem; background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; font-family: inherit; }
+        .pkg-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(243,156,18,0.4); }
+
+        /* What you get */
+        .what-you-get { background: #0f0f0f; }
+        .features-grid { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+        .feature-card { background: #1a1a1a; border: 1px solid rgba(243,156,18,0.12); border-radius: 16px; padding: 1.5rem; text-align: center; }
+        .feature-icon { font-size: 2.5rem; margin-bottom: 0.8rem; display: block; }
+        .feature-card h3 { color: #f39c12; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; }
+        .feature-card p { color: #888; font-size: 0.84rem; line-height: 1.6; }
+
+        /* FAQ */
+        .faq { background: #0a0a0a; }
+        .faq-list { max-width: 750px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; }
+        .faq-item { background: #1a1a1a; border: 1px solid rgba(243,156,18,0.1); border-radius: 14px; overflow: hidden; }
+        .faq-q { padding: 1.2rem 1.5rem; color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+        .faq-q:hover { color: #f39c12; }
+        .faq-a { padding: 0 1.5rem 1.2rem; color: #888; font-size: 0.88rem; line-height: 1.7; display: none; }
+        .faq-item.open .faq-a { display: block; }
+        .faq-item.open .faq-q { color: #f39c12; }
+        .faq-arrow { font-size: 0.8rem; color: #f39c12; transition: transform 0.2s; flex-shrink: 0; }
+        .faq-item.open .faq-arrow { transform: rotate(180deg); }
+
+        /* Footer */
+        .footer { background: #050505; border-top: 1px solid rgba(243,156,18,0.15); padding: 2.5rem 2rem 1.5rem; text-align: center; }
+        .footer-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .footer-links a { color: #666; text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+        .footer-links a:hover { color: #f39c12; }
+        .footer-logo { width: 44px; height: 44px; object-fit: contain; margin-bottom: 0.5rem; }
+        .footer-name { color: #f39c12; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem; }
+        .footer-copy { color: #333; font-size: 0.78rem; }
+
+        .whatsapp-float { position: fixed; bottom: 2rem; right: 2rem; z-index: 999; width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37,211,102,0.5); background: #25d366; transition: transform 0.2s; }
+        .whatsapp-float:hover { transform: scale(1.1); }
+        .whatsapp-float img { width: 34px; height: 34px; object-fit: contain; }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 0.8rem 1.2rem; }
+            .hamburger { display: flex; }
+            .nav-links { display: none; position: fixed; top: 70px; left: 0; right: 0; background: rgba(10,10,10,0.98); flex-direction: column; padding: 2rem; gap: 1rem; border-bottom: 1px solid rgba(243,156,18,0.2); }
+            .nav-links.active { display: flex; }
+            section { padding: 3rem 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading"><div class="spinner"></div></div>
+
+    <div class="announcement-banner">
+        <div class="scrolling-text">
+            🎹 Piano & Keyboard Tutorial Packages • Basic ₹1,499 • Intermediate ₹2,499 • Advanced ₹3,999 • Video Tutorials + PDF Notes • Learn Telugu, Hindi & English Songs • Chords Music Academy, Manikonda, Hyderabad • 📱 +91-79815 85309 •
+        </div>
+    </div>
+
+    <header>
+        <nav class="navbar">
+            <a href="index.html" class="logo">
+                <div class="nav-logo-wrap">
+                    <img src="images/chords_PNG.png" alt="Chords Music Academy" class="nav-logo-img">
+                </div>
+                <div>
+                    <div class="page-name">Piano Tutorials</div>
+                    <div class="logo-tagline">Chords Music Academy</div>
+                </div>
+            </a>
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span><span></span><span></span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#packages">Packages</a></li>
+                <li><a href="#what-you-get">What You Get</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="song-notes.html">🎵 Song Notes</a></li>
+                <li><a href="music-services.html">🎼 Music Services</a></li>
+                <li><a href="shop.html" class="back-link">🛒 All Services</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div style="position:relative;z-index:1;text-align:center;">
+                <div class="hero-badge">🎹 Self-Paced • Video Tutorials • PDF Notes Included</div>
+                <h1>Learn <span>Piano & Keyboard</span><br>from Scratch</h1>
+                <p>Structured video tutorial packages from beginner to advanced. Learn Telugu, Hindi & English songs at your own pace with full PDF notes and doubt support.</p>
+                <div class="hero-packages">
+                    <div class="hero-pkg"><div class="level basic">● Beginner</div><div class="price">₹1,499</div></div>
+                    <div class="hero-pkg"><div class="level inter">🔥 Popular</div><div class="price">₹2,499</div></div>
+                    <div class="hero-pkg"><div class="level adv">● Advanced</div><div class="price">₹3,999</div></div>
+                </div>
+                <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hello!%20I%20want%20to%20know%20more%20about%20the%20Piano%20Tutorial%20Packages.%20Please%20help!" target="_blank" class="hero-cta">💬 Enquire on WhatsApp</a>
+            </div>
+        </section>
+
+        <!-- Packages -->
+        <section id="packages" class="packages">
+            <div style="text-align:center;">
+                <span class="section-label" style="background:rgba(243,156,18,0.15);color:#f39c12;border:1px solid rgba(243,156,18,0.4);">🎓 Structured Learning</span>
+                <div class="section-title">Choose Your Learning Package</div>
+                <p class="section-sub">Video tutorials + PDF notes — learn at your own pace, anytime, anywhere</p>
+            </div>
+            <div class="packages-grid">
+
+                <div class="pkg-card">
+                    <div class="pkg-header">
+                        <span class="pkg-icon">🌱</span>
+                        <div class="pkg-level basic">● Beginner</div>
+                        <h3>Basic Piano Package</h3>
+                        <div class="pkg-price">₹1,499 <span class="per">/package</span></div>
+                    </div>
+                    <div class="pkg-body">
+                        <ul>
+                            <li>Notes reading & music basics</li>
+                            <li>Hand posture & finger techniques</li>
+                            <li>10 simple Telugu songs</li>
+                            <li>Both hands coordination</li>
+                            <li>Basic chords introduction</li>
+                            <li>Video tutorials for each lesson</li>
+                            <li>PDF notes included</li>
+                            <li>WhatsApp support — 1 week</li>
+                        </ul>
+                        <button class="pkg-btn" onclick="orderPkg('Basic Piano Tutorial Package', '₹1,499')">💬 Buy via WhatsApp ₹1,499</button>
+                    </div>
+                </div>
+
+                <div class="pkg-card popular">
+                    <div class="pkg-header">
+                        <div class="popular-tag">🔥 Most Chosen</div>
+                        <span class="pkg-icon">🎯</span>
+                        <div class="pkg-level inter">● Intermediate</div>
+                        <h3>Intermediate Piano Package</h3>
+                        <div class="pkg-price">₹2,499 <span class="per">/package</span></div>
+                    </div>
+                    <div class="pkg-body">
+                        <ul>
+                            <li>Everything in Basic</li>
+                            <li>Advanced chord progressions</li>
+                            <li>15 popular Telugu songs</li>
+                            <li>Rhythm & timing patterns</li>
+                            <li>Left hand bass patterns</li>
+                            <li>Bollywood songs included</li>
+                            <li>Video tutorials + PDF notes</li>
+                            <li>WhatsApp support — 2 weeks</li>
+                        </ul>
+                        <button class="pkg-btn" onclick="orderPkg('Intermediate Piano Tutorial Package', '₹2,499')">💬 Buy via WhatsApp ₹2,499</button>
+                    </div>
+                </div>
+
+                <div class="pkg-card">
+                    <div class="pkg-header">
+                        <span class="pkg-icon">🏆</span>
+                        <div class="pkg-level adv">● Advanced</div>
+                        <h3>Advanced Piano Package</h3>
+                        <div class="pkg-price">₹3,999 <span class="per">/package</span></div>
+                    </div>
+                    <div class="pkg-body">
+                        <ul>
+                            <li>Everything in Intermediate</li>
+                            <li>Film industry style arrangements</li>
+                            <li>20+ songs — Telugu, Hindi, English</li>
+                            <li>Keyboard programming basics</li>
+                            <li>Improvisation techniques</li>
+                            <li>Trinity exam preparation</li>
+                            <li>Video tutorials + PDF notes</li>
+                            <li>WhatsApp support — 1 month</li>
+                        </ul>
+                        <button class="pkg-btn" onclick="orderPkg('Advanced Piano Tutorial Package', '₹3,999')">💬 Buy via WhatsApp ₹3,999</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- What You Get -->
+        <section id="what-you-get" class="what-you-get">
+            <div style="text-align:center;">
+                <div class="section-title">What's Included in Every Package</div>
+                <p class="section-sub">Everything you need to learn piano properly — no hidden extras</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">🎬</span>
+                    <h3>Step-by-Step Videos</h3>
+                    <p>Detailed tutorial videos for every lesson — watch, pause and replay at your own pace</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📄</span>
+                    <h3>PDF Notes</h3>
+                    <p>Clean, printable PDF notes with Telugu, Hindi & English notations and fingering guides</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📱</span>
+                    <h3>WhatsApp Delivery</h3>
+                    <p>All materials delivered instantly to your WhatsApp. No apps or logins needed</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">💬</span>
+                    <h3>Doubt Support</h3>
+                    <p>WhatsApp doubt clearing support included — ask questions anytime during the support period</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🎵</span>
+                    <h3>Telugu Songs</h3>
+                    <p>Learn popular Telugu film songs you love — from classic hits to latest releases</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🏫</span>
+                    <h3>By Professionals</h3>
+                    <p>Created by Music Director with 20+ years in the Telugu film industry — Chords Music Academy</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section id="faq" class="faq">
+            <div style="text-align:center;">
+                <div class="section-title">Frequently Asked Questions</div>
+                <p class="section-sub">Everything you need to know before buying</p>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-q">Do I need prior music knowledge to start? <span class="faq-arrow">▼</span></div>
+                    <div class="faq-a">No! The Basic package is designed for complete beginners — no prior knowledge required. We start from absolute scratch.</div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-q">How will I receive the tutorials? <span class="faq-arrow">▼</span></div>
+                    <div class="faq-a">All video tutorials and PDF notes are delivered directly to your WhatsApp after payment. No apps, no logins — just WhatsApp.</div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-q">Which keyboard/piano do I need? <span class="faq-arrow">▼</span></div>
+                    <div class="faq-a">Any keyboard or digital piano with at least 5 octaves works. We can also help you choose the right keyboard — just WhatsApp us!</div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-q">Can I upgrade from Basic to Intermediate later? <span class="faq-arrow">▼</span></div>
+                    <div class="faq-a">Yes! You can buy the Intermediate package at any time. Your Basic package materials remain with you forever.</div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-q">Are the songs only Telugu? <span class="faq-arrow">▼</span></div>
+                    <div class="faq-a">Basic and Intermediate packages focus on Telugu songs. Advanced package includes Telugu, Hindi and English songs.</div>
+                </div>
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-q">How do I pay? <span class="faq-arrow">▼</span></div>
+                    <div class="faq-a">We accept UPI, bank transfer and other digital payments. After confirming via WhatsApp, share the payment screenshot and materials will be sent instantly.</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <img src="images/chords_PNG.png" alt="Chords Music Academy" class="footer-logo">
+        <div class="footer-name">Chords Music Academy</div>
+        <div class="footer-links">
+            <a href="index.html">🎓 Academy</a>
+            <a href="song-notes.html">🎵 Song Notes</a>
+            <a href="music-services.html">🎼 Music Services</a>
+            <a href="studio.html">🎙 Studio</a>
+            <a href="shop.html">🛒 All Services</a>
+        </div>
+        <p class="footer-copy">📞 +91-79815 85309 &nbsp;|&nbsp; 📍 Manikonda, Hyderabad</p>
+        <p class="footer-copy" style="margin-top:0.4rem;">© <span id="yr"></span> Chords Music Academy. All rights reserved.</p>
+    </footer>
+
+    <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hello!%20I%20want%20to%20know%20more%20about%20Piano%20Tutorial%20Packages!" target="_blank" class="whatsapp-float" aria-label="WhatsApp">
+        <img src="images/whatsapp.png" alt="WhatsApp" loading="lazy">
+    </a>
+
+    <script>
+        window.addEventListener('load', () => document.getElementById('loading').style.display = 'none');
+
+        function orderPkg(name, price) {
+            const msg = `Hello! I'd like to buy:%0A%0A🎹 *${name}* (${price})%0A%0APlease share payment details. Thank you!`;
+            window.open(`https://api.whatsapp.com/send?phone=917981585309&text=${msg}`, '_blank');
+        }
+
+        function toggleFaq(el) {
+            el.classList.toggle('open');
+        }
+
+        function toggleMenu() { document.querySelector('.nav-links').classList.toggle('active'); }
+
+        document.getElementById('yr').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

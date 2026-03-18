@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Composer Song Packages & Music Production Services | Chords Music Academy</title>
+    <meta name="description" content="Top 50 song packages by AR Rahman, DSP, Thaman, Ilaiyaraaja, Anirudh. Keyboard programming, music composition & full song production services. Chords Music Academy, Hyderabad.">
+    <link rel="icon" type="image/png" href="images/chords_PNG.png">
+    <link rel="apple-touch-icon" href="images/chords_PNG.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0P6P55ERCN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date()); gtag('config', 'G-0P6P55ERCN');
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; overflow-x: hidden; scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #eee; line-height: 1.6; }
+
+        .loading { position: fixed; inset: 0; background: #0a0a0a; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(155,89,182,0.2); border-top-color: #9b59b6; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .announcement-banner { background: linear-gradient(135deg, #4a1a6b, #9b59b6); color: #fff; padding: 8px 0; overflow: hidden; white-space: nowrap; position: fixed; top: 0; left: 0; right: 0; font-weight: 500; font-size: 0.85rem; z-index: 1002; }
+        .scrolling-text { display: inline-block; animation: scroll-left 45s linear infinite; padding-left: 100%; }
+        @keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+        header { position: fixed; top: 32px; left: 0; right: 0; z-index: 1000; }
+        .navbar { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 2rem; background: rgba(10,10,10,0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(155,89,182,0.2); }
+        .logo { display: flex; align-items: center; gap: 0.8rem; text-decoration: none; }
+        .nav-logo-wrap { width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle, rgba(155,89,182,0.2), rgba(155,89,182,0.05)); border: 2px solid rgba(155,89,182,0.5); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .nav-logo-img { width: 36px; height: 36px; object-fit: contain; }
+        .page-name { font-size: 1.1rem; font-weight: 800; color: #9b59b6; }
+        .logo-tagline { font-size: 0.7rem; color: #aaa; }
+        .nav-links { display: flex; list-style: none; gap: 1.2rem; align-items: center; flex-wrap: wrap; }
+        .nav-links a { text-decoration: none; color: #ccc; font-weight: 500; font-size: 0.88rem; transition: color 0.2s; }
+        .nav-links a:hover { color: #9b59b6; }
+        .nav-links .back-link { background: rgba(155,89,182,0.12); border: 1px solid rgba(155,89,182,0.35); color: #9b59b6; padding: 0.35rem 0.85rem; border-radius: 18px; font-size: 0.8rem; }
+        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+        .hamburger span { display: block; width: 25px; height: 2px; background: #9b59b6; border-radius: 2px; }
+
+        section { padding: 4rem 2rem; }
+        .section-title { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 800; color: #fff; text-align: center; margin-bottom: 0.5rem; }
+        .section-sub { text-align: center; color: #888; margin-bottom: 3rem; font-size: 0.95rem; }
+        .section-label { display: inline-block; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.8rem; }
+
+        /* Hero */
+        .hero { min-height: 52vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 8rem 2rem 4rem; background: linear-gradient(135deg, #0a0a0a, #150a20, #0a0a0a); position: relative; overflow: hidden; }
+        .hero::before { content: '🎼'; position: absolute; font-size: 20rem; opacity: 0.03; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+        .hero-badge { display: inline-block; background: linear-gradient(135deg, #9b59b6, #6c3483); color: #fff; padding: 0.4rem 1.2rem; border-radius: 20px; font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; letter-spacing: 1px; }
+        .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 900; color: #fff; margin-bottom: 0.8rem; }
+        .hero h1 span { color: #9b59b6; }
+        .hero p { color: #aaa; font-size: 1rem; max-width: 620px; margin: 0 auto 2rem; }
+        .hero-tags { display: flex; gap: 0.7rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.8rem; }
+        .hero-tag { background: rgba(155,89,182,0.1); border: 1px solid rgba(155,89,182,0.3); color: #ddd; padding: 0.45rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .hero-tag strong { color: #9b59b6; }
+        .hero-cta { display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #25d366, #128c7e); color: #fff; padding: 1rem 2rem; border-radius: 30px; font-size: 1rem; font-weight: 700; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
+        .hero-cta:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(37,211,102,0.4); }
+
+        /* Quick Nav */
+        .quick-nav { position: sticky; top: 70px; z-index: 900; background: rgba(10,10,10,0.97); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(155,89,182,0.2); padding: 0.7rem 1rem; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+        .quick-nav::-webkit-scrollbar { display: none; }
+        .quick-nav-inner { display: flex; gap: 0.6rem; justify-content: center; max-width: 1100px; margin: 0 auto; }
+        .qnav-btn { display: inline-block; padding: 0.45rem 1rem; background: rgba(155,89,182,0.1); border: 1px solid rgba(155,89,182,0.25); color: #ccc; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-decoration: none; transition: all 0.2s; white-space: nowrap; }
+        .qnav-btn:hover, .qnav-btn.active { background: linear-gradient(135deg, #9b59b6, #6c3483); color: #fff; border-color: transparent; }
+
+        /* ── COMPOSER PACKAGES ── */
+        .composer-packages { background: #0f0f0f; }
+        .composer-label { background: linear-gradient(135deg, rgba(243,156,18,0.2), rgba(231,76,60,0.2)); color: #f39c12; border: 1px solid rgba(243,156,18,0.4); }
+        .composers-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 1.5rem; }
+        .composer-card { background: #1a1a1a; border: 2px solid rgba(243,156,18,0.15); border-radius: 20px; padding: 1.8rem 1.2rem 1.4rem; text-align: center; display: flex; flex-direction: column; gap: 0.7rem; align-items: center; transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; }
+        .composer-card:hover { border-color: rgba(243,156,18,0.5); box-shadow: 0 10px 35px rgba(243,156,18,0.12); transform: translateY(-5px); }
+        .composer-emoji { font-size: 2.8rem; }
+        .composer-card h3 { color: #fff; font-size: 0.95rem; font-weight: 800; line-height: 1.3; }
+        .comp-badge { background: rgba(243,156,18,0.12); color: #f39c12; border: 1px solid rgba(243,156,18,0.3); padding: 0.2rem 0.75rem; border-radius: 12px; font-size: 0.72rem; font-weight: 700; }
+        .comp-price-row { display: flex; flex-direction: column; gap: 0.3rem; width: 100%; margin: 0.3rem 0; }
+        .comp-price-notes { color: #ccc; font-size: 0.82rem; }
+        .comp-price-notes strong { color: #fff; font-size: 1rem; }
+        .comp-price-notes .orig { color: #555; text-decoration: line-through; font-size: 0.75rem; margin-left: 0.3rem; }
+        .comp-price-video { color: #f39c12; font-size: 0.82rem; }
+        .comp-price-video strong { font-size: 1rem; }
+        .comp-price-video .orig { color: #555; text-decoration: line-through; font-size: 0.75rem; margin-left: 0.3rem; }
+        .comp-savings { font-size: 0.7rem; color: #27ae60; font-weight: 700; background: rgba(39,174,96,0.1); border: 1px solid rgba(39,174,96,0.25); padding: 0.15rem 0.6rem; border-radius: 8px; }
+        .comp-btns { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; margin-top: 0.3rem; }
+        .comp-btn-notes { padding: 0.6rem; background: rgba(243,156,18,0.1); border: 1.5px solid rgba(243,156,18,0.4); color: #f39c12; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .comp-btn-notes:hover { background: rgba(243,156,18,0.2); }
+        .comp-btn-video { padding: 0.65rem; background: linear-gradient(135deg, #f39c12, #e67e22); border: none; color: #fff; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.2s, box-shadow 0.2s; }
+        .comp-btn-video:hover { transform: scale(1.03); box-shadow: 0 4px 14px rgba(243,156,18,0.35); }
+
+        /* ── PRO SERVICES ── */
+        .pro-services { background: #0a0a0a; }
+        .pro-label { background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.4); }
+        .services-grid { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 2rem; }
+        .service-card { background: #1a1a1a; border: 1px solid rgba(155,89,182,0.15); border-radius: 22px; padding: 2rem; transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s; }
+        .service-card:hover { transform: translateY(-6px); border-color: rgba(155,89,182,0.4); box-shadow: 0 15px 40px rgba(155,89,182,0.1); }
+        .service-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+        .service-card h3 { font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem; }
+        .service-card p { color: #999; font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.2rem; }
+        .service-card ul { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.5rem; }
+        .service-card ul li { color: #bbb; font-size: 0.85rem; }
+        .service-card ul li::before { content: '→ '; color: #9b59b6; }
+        .service-price-note { color: #9b59b6; font-weight: 700; font-size: 0.9rem; margin-bottom: 1rem; background: rgba(155,89,182,0.08); border: 1px solid rgba(155,89,182,0.2); border-radius: 8px; padding: 0.6rem 0.9rem; }
+        .service-btn { width: 100%; padding: 0.9rem; background: linear-gradient(135deg, #9b59b6, #6c3483); color: #fff; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; font-family: inherit; }
+        .service-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(155,89,182,0.35); }
+
+        /* ── WHY US ── */
+        .why-us { background: #0f0f0f; }
+        .why-grid { max-width: 950px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+        .why-card { text-align: center; padding: 1.5rem 1rem; background: #1a1a1a; border: 1px solid rgba(155,89,182,0.1); border-radius: 16px; }
+        .why-icon { font-size: 2.5rem; margin-bottom: 0.8rem; display: block; }
+        .why-card h3 { color: #9b59b6; font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+        .why-card p { color: #888; font-size: 0.84rem; line-height: 1.6; }
+
+        /* Footer */
+        .footer { background: #050505; border-top: 1px solid rgba(155,89,182,0.15); padding: 2.5rem 2rem 1.5rem; text-align: center; }
+        .footer-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .footer-links a { color: #666; text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+        .footer-links a:hover { color: #9b59b6; }
+        .footer-logo { width: 44px; height: 44px; object-fit: contain; margin-bottom: 0.5rem; }
+        .footer-name { color: #9b59b6; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem; }
+        .footer-copy { color: #333; font-size: 0.78rem; }
+
+        .whatsapp-float { position: fixed; bottom: 2rem; right: 2rem; z-index: 999; width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37,211,102,0.5); background: #25d366; transition: transform 0.2s; }
+        .whatsapp-float:hover { transform: scale(1.1); }
+        .whatsapp-float img { width: 34px; height: 34px; object-fit: contain; }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 0.8rem 1.2rem; }
+            .hamburger { display: flex; }
+            .nav-links { display: none; position: fixed; top: 70px; left: 0; right: 0; background: rgba(10,10,10,0.98); flex-direction: column; padding: 2rem; gap: 1rem; border-bottom: 1px solid rgba(155,89,182,0.2); }
+            .nav-links.active { display: flex; }
+            .composers-grid { grid-template-columns: repeat(2, 1fr); }
+            section { padding: 3rem 1.2rem; }
+        }
+        @media (max-width: 400px) { .composers-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading"><div class="spinner"></div></div>
+
+    <div class="announcement-banner">
+        <div class="scrolling-text">
+            🎼 Composer Top 50 Song Packages • AR Rahman • Devi Sri Prasad • S. Thaman • Ilaiyaraaja • Anirudh • 🎹 Keyboard Programming • 🎵 Music Composition • 🎧 Full Song Production • 20+ Years Telugu Film Industry Experience • 📱 +91-79815 85309 •
+        </div>
+    </div>
+
+    <header>
+        <nav class="navbar">
+            <a href="index.html" class="logo">
+                <div class="nav-logo-wrap">
+                    <img src="images/chords_PNG.png" alt="Chords Music Academy" class="nav-logo-img">
+                </div>
+                <div>
+                    <div class="page-name">Music Services</div>
+                    <div class="logo-tagline">Chords Music Academy</div>
+                </div>
+            </a>
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span><span></span><span></span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#composers">Composer Packages</a></li>
+                <li><a href="#services">Pro Services</a></li>
+                <li><a href="song-notes.html">🎵 Song Notes</a></li>
+                <li><a href="piano-tutorials.html">🎹 Piano Tutorials</a></li>
+                <li><a href="shop.html" class="back-link">🛒 All Services</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div style="position:relative;z-index:1;text-align:center;">
+                <div class="hero-badge">🎼 Composer Packages • Keyboard Programming • Music Direction</div>
+                <h1><span>Professional</span> Music<br>Services & Packages</h1>
+                <p>Top 50 song packages by legendary composers + professional keyboard programming, music composition & full song production services by a 20+ year Telugu film industry Music Director.</p>
+                <div class="hero-tags">
+                    <div class="hero-tag">🏆 AR Rahman <strong>Top 50</strong></div>
+                    <div class="hero-tag">🔥 DSP <strong>Top 50</strong></div>
+                    <div class="hero-tag">⚡ Thaman <strong>Top 50</strong></div>
+                    <div class="hero-tag">👑 Ilaiyaraaja <strong>Top 50</strong></div>
+                    <div class="hero-tag">🎸 Anirudh <strong>Top 50</strong></div>
+                </div>
+                <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hello!%20I%27m%20interested%20in%20your%20music%20services.%20Can%20you%20share%20more%20details?" target="_blank" class="hero-cta">💬 Enquire on WhatsApp</a>
+            </div>
+        </section>
+
+        <!-- Quick Nav -->
+        <div class="quick-nav">
+            <div class="quick-nav-inner">
+                <a href="#composers" class="qnav-btn">🎼 Composer Packages</a>
+                <a href="#services" class="qnav-btn">🎹 Keyboard Programming</a>
+                <a href="#services" class="qnav-btn">🎵 Composition</a>
+                <a href="#services" class="qnav-btn">🎧 Song Production</a>
+            </div>
+        </div>
+
+        <!-- Composer Packages -->
+        <section id="composers" class="composer-packages">
+            <div style="text-align:center;">
+                <span class="section-label composer-label">🎼 Music Director Collections</span>
+                <div class="section-title">Top 50 Songs — Mega Packages</div>
+                <p class="section-sub">Get notes & tutorials for the top 50 most iconic songs by India's greatest music directors — all in one discounted bundle!</p>
+            </div>
+            <div class="composers-grid">
+
+                <div class="composer-card">
+                    <span class="composer-emoji">🏆</span>
+                    <h3>A.R. Rahman</h3>
+                    <div class="comp-badge">Top 50 Songs</div>
+                    <div class="comp-price-row">
+                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
+                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
+                        <div class="comp-savings">You save up to ₹10,451!</div>
+                    </div>
+                    <div class="comp-btns">
+                        <button class="comp-btn-notes" onclick="orderComposerPkg('A.R. Rahman','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
+                        <button class="comp-btn-video" onclick="orderComposerPkg('A.R. Rahman','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                    </div>
+                </div>
+
+                <div class="composer-card">
+                    <span class="composer-emoji">🔥</span>
+                    <h3>Devi Sri Prasad</h3>
+                    <div class="comp-badge">Top 50 Songs</div>
+                    <div class="comp-price-row">
+                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
+                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
+                        <div class="comp-savings">You save up to ₹10,451!</div>
+                    </div>
+                    <div class="comp-btns">
+                        <button class="comp-btn-notes" onclick="orderComposerPkg('Devi Sri Prasad','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
+                        <button class="comp-btn-video" onclick="orderComposerPkg('Devi Sri Prasad','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                    </div>
+                </div>
+
+                <div class="composer-card">
+                    <span class="composer-emoji">⚡</span>
+                    <h3>S. Thaman</h3>
+                    <div class="comp-badge">Top 50 Songs</div>
+                    <div class="comp-price-row">
+                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
+                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
+                        <div class="comp-savings">You save up to ₹10,451!</div>
+                    </div>
+                    <div class="comp-btns">
+                        <button class="comp-btn-notes" onclick="orderComposerPkg('S. Thaman','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
+                        <button class="comp-btn-video" onclick="orderComposerPkg('S. Thaman','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                    </div>
+                </div>
+
+                <div class="composer-card">
+                    <span class="composer-emoji">👑</span>
+                    <h3>Ilaiyaraaja</h3>
+                    <div class="comp-badge">Top 50 Songs</div>
+                    <div class="comp-price-row">
+                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
+                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
+                        <div class="comp-savings">You save up to ₹10,451!</div>
+                    </div>
+                    <div class="comp-btns">
+                        <button class="comp-btn-notes" onclick="orderComposerPkg('Ilaiyaraaja','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
+                        <button class="comp-btn-video" onclick="orderComposerPkg('Ilaiyaraaja','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                    </div>
+                </div>
+
+                <div class="composer-card">
+                    <span class="composer-emoji">🎸</span>
+                    <h3>Anirudh Ravichander</h3>
+                    <div class="comp-badge">Top 50 Songs</div>
+                    <div class="comp-price-row">
+                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
+                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
+                        <div class="comp-savings">You save up to ₹10,451!</div>
+                    </div>
+                    <div class="comp-btns">
+                        <button class="comp-btn-notes" onclick="orderComposerPkg('Anirudh Ravichander','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
+                        <button class="comp-btn-video" onclick="orderComposerPkg('Anirudh Ravichander','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pro Services -->
+        <section id="services" class="pro-services">
+            <div style="text-align:center;">
+                <span class="section-label pro-label">🎧 Professional Services</span>
+                <div class="section-title">Keyboard Programming & Music Production</div>
+                <p class="section-sub">Professional music services by Chords Music Academy — Music Director with 20+ years in the Telugu Film Industry</p>
+            </div>
+            <div class="services-grid">
+
+                <div class="service-card">
+                    <span class="service-icon">🎹</span>
+                    <h3>Keyboard Programming</h3>
+                    <p>Get any song arranged and programmed professionally for keyboard/piano. Perfect for musicians, singers & composers who need a ready-to-play or ready-to-record arrangement.</p>
+                    <ul>
+                        <li>Any Telugu / Hindi / English song</li>
+                        <li>Full arrangement with chords</li>
+                        <li>MIDI file delivery</li>
+                        <li>Studio-ready quality</li>
+                        <li>Delivered within 3–5 days</li>
+                    </ul>
+                    <div class="service-price-note">💰 Pricing based on song complexity — WhatsApp to discuss</div>
+                    <button class="service-btn" onclick="serviceWhatsApp('Keyboard Programming')">💬 Get a Quote</button>
+                </div>
+
+                <div class="service-card">
+                    <span class="service-icon">🎵</span>
+                    <h3>Music Composition</h3>
+                    <p>Need an original song composed? We compose original music for films, albums, YouTube channels, ads and personal projects with full Telugu/Hindi lyrics support.</p>
+                    <ul>
+                        <li>Original melody composition</li>
+                        <li>Full arrangement & orchestration</li>
+                        <li>Telugu / Hindi / English lyrics support</li>
+                        <li>Background score composition</li>
+                        <li>Jingle & ad music</li>
+                    </ul>
+                    <div class="service-price-note">💰 Custom quote based on project scope — WhatsApp to discuss</div>
+                    <button class="service-btn" onclick="serviceWhatsApp('Music Composition')">💬 Get a Quote</button>
+                </div>
+
+                <div class="service-card">
+                    <span class="service-icon">🎧</span>
+                    <h3>Full Song Production</h3>
+                    <p>Complete end-to-end song production — from composition to final master-ready track. Includes recording at Chords Music Studio, mixing & mastering by experienced professionals.</p>
+                    <ul>
+                        <li>Composition + arrangement</li>
+                        <li>Recording at Chords Music Studio</li>
+                        <li>Professional mixing & mastering</li>
+                        <li>Vocal + instrument recording</li>
+                        <li>Final broadcast-ready track</li>
+                        <li>Suitable for YouTube / Streaming</li>
+                    </ul>
+                    <div class="service-price-note">💰 Pricing based on project scope — WhatsApp to discuss</div>
+                    <button class="service-btn" onclick="serviceWhatsApp('Full Song Production')">💬 Get a Quote</button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Why Us -->
+        <section class="why-us">
+            <div style="text-align:center;">
+                <div class="section-title">Why Choose Chords Music Academy?</div>
+                <p class="section-sub">Professional quality backed by real Telugu film industry experience</p>
+            </div>
+            <div class="why-grid">
+                <div class="why-card">
+                    <span class="why-icon">🎬</span>
+                    <h3>20+ Years Film Industry</h3>
+                    <p>Our Music Director has composed & arranged for Telugu films, albums & independent artists for over 20 years</p>
+                </div>
+                <div class="why-card">
+                    <span class="why-icon">🎙</span>
+                    <h3>Professional Studio</h3>
+                    <p>Chords Music Studio with one console room and two recording rooms — fully equipped for professional recording</p>
+                </div>
+                <div class="why-card">
+                    <span class="why-icon">⚡</span>
+                    <h3>Fast Turnaround</h3>
+                    <p>Programming & composition delivered within 3–5 working days. Full productions quoted with clear timelines</p>
+                </div>
+                <div class="why-card">
+                    <span class="why-icon">💬</span>
+                    <h3>Direct WhatsApp</h3>
+                    <p>Work directly with the Music Director — no middlemen, no delays. Everything on WhatsApp, simple and transparent</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <img src="images/chords_PNG.png" alt="Chords Music Academy" class="footer-logo">
+        <div class="footer-name">Chords Music Academy</div>
+        <div class="footer-links">
+            <a href="index.html">🎓 Academy</a>
+            <a href="song-notes.html">🎵 Song Notes</a>
+            <a href="piano-tutorials.html">🎹 Piano Tutorials</a>
+            <a href="studio.html">🎙 Studio</a>
+            <a href="shop.html">🛒 All Services</a>
+        </div>
+        <p class="footer-copy">📞 +91-79815 85309 &nbsp;|&nbsp; 📍 Manikonda, Hyderabad</p>
+        <p class="footer-copy" style="margin-top:0.4rem;">© <span id="yr"></span> Chords Music Academy. All rights reserved.</p>
+    </footer>
+
+    <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hello!%20I'm%20interested%20in%20your%20music%20services.%20Can%20you%20share%20more%20details?" target="_blank" class="whatsapp-float" aria-label="WhatsApp">
+        <img src="images/whatsapp.png" alt="WhatsApp" loading="lazy">
+    </a>
+
+    <script>
+        window.addEventListener('load', () => document.getElementById('loading').style.display = 'none');
+
+        function orderComposerPkg(composer, product, price) {
+            const msg = `Hello! I'd like to order:%0A%0A🎼 *Composer:* ${composer}%0A📦 *Package:* ${product} — Top 50 Songs (${price})%0A%0APlease confirm and share payment details. Thank you!`;
+            window.open(`https://api.whatsapp.com/send?phone=917981585309&text=${msg}`, '_blank');
+        }
+
+        function serviceWhatsApp(service) {
+            const msg = `Hello! I'm interested in your *${service}* service.%0A%0ACould you please share more details and pricing? Thank you!`;
+            window.open(`https://api.whatsapp.com/send?phone=917981585309&text=${msg}`, '_blank');
+        }
+
+        function toggleMenu() { document.querySelector('.nav-links').classList.toggle('active'); }
+
+        document.getElementById('yr').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

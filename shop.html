@@ -62,6 +62,31 @@
         .section-sub { text-align: center; color: #888; margin-bottom: 3rem; font-size: 0.95rem; }
         .section-label { display: inline-block; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.8rem; }
 
+        /* ── SERVICE HUB CARDS ── */
+        .service-hub { background: #0a0a0a; padding: 3rem 2rem; }
+        .hub-grid { max-width: 1050px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.8rem; }
+        .hub-card { border-radius: 22px; padding: 2rem; display: flex; flex-direction: column; gap: 1rem; transition: transform 0.3s, box-shadow 0.3s; text-decoration: none; color: inherit; cursor: pointer; }
+        .hub-card:hover { transform: translateY(-7px); }
+        .hub-card.blue { background: linear-gradient(135deg, #0a1a2e, #112233); border: 2px solid rgba(52,152,219,0.35); }
+        .hub-card.blue:hover { box-shadow: 0 16px 45px rgba(52,152,219,0.2); border-color: rgba(52,152,219,0.6); }
+        .hub-card.gold { background: linear-gradient(135deg, #1a1000, #1a1200); border: 2px solid rgba(243,156,18,0.35); }
+        .hub-card.gold:hover { box-shadow: 0 16px 45px rgba(243,156,18,0.18); border-color: rgba(243,156,18,0.6); }
+        .hub-card.purple { background: linear-gradient(135deg, #150a20, #130a1e); border: 2px solid rgba(155,89,182,0.35); }
+        .hub-card.purple:hover { box-shadow: 0 16px 45px rgba(155,89,182,0.18); border-color: rgba(155,89,182,0.6); }
+        .hub-icon { font-size: 3rem; }
+        .hub-card h3 { font-size: 1.2rem; font-weight: 800; color: #fff; }
+        .hub-card p { color: #999; font-size: 0.88rem; line-height: 1.6; flex: 1; }
+        .hub-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .hub-tag { font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 8px; }
+        .blue .hub-tag { background: rgba(52,152,219,0.12); color: #3498db; border: 1px solid rgba(52,152,219,0.3); }
+        .gold .hub-tag { background: rgba(243,156,18,0.12); color: #f39c12; border: 1px solid rgba(243,156,18,0.3); }
+        .purple .hub-tag { background: rgba(155,89,182,0.12); color: #9b59b6; border: 1px solid rgba(155,89,182,0.3); }
+        .hub-cta { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.2rem; border-radius: 12px; font-size: 0.9rem; font-weight: 700; margin-top: 0.3rem; transition: opacity 0.2s; }
+        .blue .hub-cta { background: linear-gradient(135deg, #3498db, #2980b9); color: #fff; }
+        .gold .hub-cta { background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; }
+        .purple .hub-cta { background: linear-gradient(135deg, #9b59b6, #6c3483); color: #fff; }
+        .hub-cta:hover { opacity: 0.9; }
+
         /* ── PRICING STRIP ── */
         .pricing-strip { background: linear-gradient(135deg, #111, #1a0a2e); border-top: 1px solid rgba(155,89,182,0.2); border-bottom: 1px solid rgba(155,89,182,0.2); padding: 1.2rem 2rem; }
         .pricing-strip-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 1.5rem; flex-wrap: wrap; }
@@ -277,9 +302,9 @@
                 <span></span><span></span><span></span>
             </div>
             <ul class="nav-links">
-                <li><a href="#ai-songs" onclick="closeMenu()">Notes & Videos</a></li>
-                <li><a href="#packages" onclick="closeMenu()">Packages</a></li>
-                <li><a href="#services" onclick="closeMenu()">Pro Services</a></li>
+                <li><a href="song-notes.html" onclick="closeMenu()">Song Notes</a></li>
+                <li><a href="piano-tutorials.html" onclick="closeMenu()">Piano Tutorials</a></li>
+                <li><a href="music-services.html" onclick="closeMenu()">Music Services</a></li>
                 <li><a href="#request" onclick="closeMenu()">Request a Song</a></li>
                 <li><a href="index.html" onclick="closeMenu()" class="academy-link">🎓 Academy</a></li>
                 <li><a href="studio.html" onclick="closeMenu()" class="studio-link">🎙 Studio</a></li>
@@ -297,13 +322,51 @@
             </div>
         </section>
 
+        <!-- Service Hub -->
+        <div class="service-hub">
+            <div class="hub-grid">
+                <a href="song-notes.html" class="hub-card blue">
+                    <span class="hub-icon">🎵</span>
+                    <h3>Song Notes & Tutorial Videos</h3>
+                    <p>Piano & keyboard notes PDF + step-by-step tutorial video for any trending Telugu, Hindi, Tamil or English song. Instant WhatsApp delivery.</p>
+                    <div class="hub-tags">
+                        <span class="hub-tag">📄 Notes ₹99</span>
+                        <span class="hub-tag">🎬 Notes+Video ₹249</span>
+                        <span class="hub-tag">🎵 Bundle ₹799</span>
+                    </div>
+                    <div class="hub-cta">Explore & Order →</div>
+                </a>
+                <a href="piano-tutorials.html" class="hub-card gold">
+                    <span class="hub-icon">🎹</span>
+                    <h3>Piano & Keyboard Tutorial Packages</h3>
+                    <p>Structured learning packages with video tutorials + PDF notes — from absolute beginner to advanced. Learn popular songs at your own pace.</p>
+                    <div class="hub-tags">
+                        <span class="hub-tag">🌱 Basic ₹1,499</span>
+                        <span class="hub-tag">🔥 Intermediate ₹2,499</span>
+                        <span class="hub-tag">🏆 Advanced ₹3,999</span>
+                    </div>
+                    <div class="hub-cta">View Packages →</div>
+                </a>
+                <a href="music-services.html" class="hub-card purple">
+                    <span class="hub-icon">🎼</span>
+                    <h3>Composer Packages & Music Services</h3>
+                    <p>Top 50 songs by AR Rahman, DSP, Thaman, Ilaiyaraaja & Anirudh + professional keyboard programming, music composition & song production.</p>
+                    <div class="hub-tags">
+                        <span class="hub-tag">🏆 Top 50 Packs</span>
+                        <span class="hub-tag">🎹 Programming</span>
+                        <span class="hub-tag">🎧 Production</span>
+                    </div>
+                    <div class="hub-cta">Explore Services →</div>
+                </a>
+            </div>
+        </div>
+
         <!-- Sticky Quick Nav -->
         <div class="quick-nav" id="quickNav">
             <div class="quick-nav-inner">
-                <a href="#ai-songs" class="qnav-btn">🎵 Song Notes & Videos</a>
-                <a href="#composers" class="qnav-btn">🎼 Composer Collections</a>
-                <a href="#packages" class="qnav-btn">🎹 Piano Tutorials</a>
-                <a href="#services" class="qnav-btn">🎧 Programming & Composing</a>
+                <a href="song-notes.html" class="qnav-btn">🎵 Song Notes & Videos</a>
+                <a href="piano-tutorials.html" class="qnav-btn">🎹 Piano Tutorials</a>
+                <a href="music-services.html" class="qnav-btn">🎼 Composer & Production</a>
                 <a href="#instruments" class="qnav-btn">🎸 Instruments</a>
                 <a href="#pro-equipment" class="qnav-btn">🎚 Pro Equipment</a>
                 <a href="#request" class="qnav-btn">🎤 Request a Song</a>
@@ -340,234 +403,8 @@
             <p class="ai-note">💡 Don't see your song? Use the <a href="#request">Request a Song</a> form below!</p>
         </section>
 
-        <!-- Composer Song Packages -->
-        <section id="composers" class="composer-packages">
-            <div style="text-align:center;">
-                <span class="section-label composer-label">🎼 Music Director Collections</span>
-                <div class="section-title">Top 50 Songs — Mega Packages</div>
-                <p class="section-sub">Get notes & tutorials for the top 50 most iconic songs by India's greatest music directors — all in one discounted bundle!</p>
-            </div>
 
-            <div class="composers-grid">
-
-                <div class="composer-card">
-                    <span class="composer-emoji">🏆</span>
-                    <h3>A.R. Rahman</h3>
-                    <div class="comp-badge">Top 50 Songs</div>
-                    <div class="comp-price-row">
-                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
-                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
-                        <div class="comp-savings">You save up to ₹10,451!</div>
-                    </div>
-                    <div class="comp-btns">
-                        <button class="comp-btn-notes" onclick="orderComposerPkg('A.R. Rahman','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
-                        <button class="comp-btn-video" onclick="orderComposerPkg('A.R. Rahman','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
-                    </div>
-                </div>
-
-                <div class="composer-card">
-                    <span class="composer-emoji">🔥</span>
-                    <h3>Devi Sri Prasad</h3>
-                    <div class="comp-badge">Top 50 Songs</div>
-                    <div class="comp-price-row">
-                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
-                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
-                        <div class="comp-savings">You save up to ₹10,451!</div>
-                    </div>
-                    <div class="comp-btns">
-                        <button class="comp-btn-notes" onclick="orderComposerPkg('Devi Sri Prasad','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
-                        <button class="comp-btn-video" onclick="orderComposerPkg('Devi Sri Prasad','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
-                    </div>
-                </div>
-
-                <div class="composer-card">
-                    <span class="composer-emoji">⚡</span>
-                    <h3>S. Thaman</h3>
-                    <div class="comp-badge">Top 50 Songs</div>
-                    <div class="comp-price-row">
-                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
-                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
-                        <div class="comp-savings">You save up to ₹10,451!</div>
-                    </div>
-                    <div class="comp-btns">
-                        <button class="comp-btn-notes" onclick="orderComposerPkg('S. Thaman','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
-                        <button class="comp-btn-video" onclick="orderComposerPkg('S. Thaman','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
-                    </div>
-                </div>
-
-                <div class="composer-card">
-                    <span class="composer-emoji">👑</span>
-                    <h3>Ilaiyaraaja</h3>
-                    <div class="comp-badge">Top 50 Songs</div>
-                    <div class="comp-price-row">
-                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
-                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
-                        <div class="comp-savings">You save up to ₹10,451!</div>
-                    </div>
-                    <div class="comp-btns">
-                        <button class="comp-btn-notes" onclick="orderComposerPkg('Ilaiyaraaja','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
-                        <button class="comp-btn-video" onclick="orderComposerPkg('Ilaiyaraaja','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
-                    </div>
-                </div>
-
-                <div class="composer-card">
-                    <span class="composer-emoji">🎸</span>
-                    <h3>Anirudh Ravichander</h3>
-                    <div class="comp-badge">Top 50 Songs</div>
-                    <div class="comp-price-row">
-                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
-                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
-                        <div class="comp-savings">You save up to ₹10,451!</div>
-                    </div>
-                    <div class="comp-btns">
-                        <button class="comp-btn-notes" onclick="orderComposerPkg('Anirudh Ravichander','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
-                        <button class="comp-btn-video" onclick="orderComposerPkg('Anirudh Ravichander','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- Pricing Strip -->
-        <div class="pricing-strip">
-            <div class="pricing-strip-inner">
-                <div class="price-pill">📄 Notes Only <strong>₹99</strong> <span>per song</span></div>
-                <div class="price-pill">🎬 Notes + Video <strong>₹249</strong> <span class="orig">₹349</span></div>
-                <div class="price-pill">🎵 5-Song Bundle <strong>₹799</strong> <span class="orig">₹1,245</span></div>
-                <button class="bundle-btn" onclick="orderWhatsApp('5 Song Bundle (Notes + Videos) - ₹799')">💬 Order 5-Bundle ₹799</button>
-            </div>
-        </div>
-
-        <!-- Tutorial Packages -->
-        <section id="packages" class="tutorial-packages">
-            <div style="text-align:center;">
-                <span class="section-label">🎓 Structured Learning</span>
-                <div class="section-title">Piano & Keyboard Tutorial Packages</div>
-                <p class="section-sub">Complete learning packages with video tutorials — from beginner to advanced. Learn at your own pace!</p>
-            </div>
-            <div class="packages-grid">
-                <div class="package-card">
-                    <div class="package-header">
-                        <div class="package-level basic">● Beginner</div>
-                        <h3>Basic Piano Package</h3>
-                        <div class="package-price">₹1,499 <span class="per">/package</span></div>
-                    </div>
-                    <div class="package-body">
-                        <ul>
-                            <li>Notes reading basics</li>
-                            <li>Hand posture & finger techniques</li>
-                            <li>10 simple Telugu songs</li>
-                            <li>Both hands coordination</li>
-                            <li>Basic chords introduction</li>
-                            <li>Video tutorials for each lesson</li>
-                            <li>PDF notes included</li>
-                        </ul>
-                        <button class="package-btn" onclick="orderWhatsApp('Basic Piano Tutorial Package - ₹1,499')">💬 Buy via WhatsApp</button>
-                    </div>
-                </div>
-
-                <div class="package-card popular">
-                    <div class="package-header">
-                        <div class="popular-tag">🔥 Most Chosen</div>
-                        <div class="package-level intermediate">● Intermediate</div>
-                        <h3>Intermediate Piano Package</h3>
-                        <div class="package-price">₹2,499 <span class="per">/package</span></div>
-                    </div>
-                    <div class="package-body">
-                        <ul>
-                            <li>Everything in Basic</li>
-                            <li>Advanced chord progressions</li>
-                            <li>15 popular Telugu songs</li>
-                            <li>Rhythm & timing patterns</li>
-                            <li>Left hand bass patterns</li>
-                            <li>Bollywood songs included</li>
-                            <li>Video tutorials + PDF notes</li>
-                            <li>2 weeks doubt support</li>
-                        </ul>
-                        <button class="package-btn" onclick="orderWhatsApp('Intermediate Piano Tutorial Package - ₹2,499')">💬 Buy via WhatsApp</button>
-                    </div>
-                </div>
-
-                <div class="package-card">
-                    <div class="package-header">
-                        <div class="package-level advanced">● Advanced</div>
-                        <h3>Advanced Piano Package</h3>
-                        <div class="package-price">₹3,999 <span class="per">/package</span></div>
-                    </div>
-                    <div class="package-body">
-                        <ul>
-                            <li>Everything in Intermediate</li>
-                            <li>Film industry style arrangements</li>
-                            <li>20+ songs (Telugu, Hindi, English)</li>
-                            <li>Keyboard programming basics</li>
-                            <li>Improvisation techniques</li>
-                            <li>Trinity exam preparation</li>
-                            <li>Video tutorials + PDF notes</li>
-                            <li>1 month doubt support</li>
-                        </ul>
-                        <button class="package-btn" onclick="orderWhatsApp('Advanced Piano Tutorial Package - ₹3,999')">💬 Buy via WhatsApp</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Pro Services -->
-        <section id="services" class="pro-services">
-            <div style="text-align:center;">
-                <span class="section-label">🎧 Professional Services</span>
-                <div class="section-title">Keyboard Programming & Music Production</div>
-                <p class="section-sub">Professional music services by Chords Music Academy — Music Director with 20+ years in Telugu Film Industry</p>
-            </div>
-            <div class="services-grid">
-                <div class="service-card">
-                    <span class="service-icon">🎹</span>
-                    <h3>Keyboard Programming</h3>
-                    <p>Get any song arranged and programmed professionally for keyboard/piano. Perfect for musicians, singers & composers who need a ready-to-play or ready-to-record arrangement.</p>
-                    <ul>
-                        <li>Any Telugu / Hindi / English song</li>
-                        <li>Full arrangement with chords</li>
-                        <li>MIDI file delivery</li>
-                        <li>Studio-ready quality</li>
-                        <li>Delivered within 3–5 days</li>
-                    </ul>
-                    <div class="service-price-note">💰 Pricing: Based on song complexity — WhatsApp to discuss</div>
-                    <button class="service-btn" onclick="serviceWhatsApp('Keyboard Programming')">💬 Get a Quote</button>
-                </div>
-
-                <div class="service-card">
-                    <span class="service-icon">🎵</span>
-                    <h3>Music Composition</h3>
-                    <p>Need an original song composed? We compose original music for films, albums, YouTube channels, ads, and personal projects with full Telugu/Hindi lyrics support.</p>
-                    <ul>
-                        <li>Original melody composition</li>
-                        <li>Full arrangement & orchestration</li>
-                        <li>Telugu / Hindi / English lyrics support</li>
-                        <li>Background score composition</li>
-                        <li>Jingle & ad music</li>
-                    </ul>
-                    <div class="service-price-note">💰 Pricing: Custom quote based on project — WhatsApp to discuss</div>
-                    <button class="service-btn" onclick="serviceWhatsApp('Music Composition')">💬 Get a Quote</button>
-                </div>
-
-                <div class="service-card">
-                    <span class="service-icon">🎧</span>
-                    <h3>Full Song Production</h3>
-                    <p>Complete end-to-end song production — from composition to final master-ready track. Includes recording at Chords Music Studio, mixing & mastering by experienced professionals.</p>
-                    <ul>
-                        <li>Composition + arrangement</li>
-                        <li>Recording at Chords Music Studio</li>
-                        <li>Professional mixing & mastering</li>
-                        <li>Vocal + instrument recording</li>
-                        <li>Final broadcast-ready track</li>
-                        <li>Suitable for YouTube / Streaming</li>
-                    </ul>
-                    <div class="service-price-note">💰 Pricing: Based on project scope — WhatsApp to discuss</div>
-                    <button class="service-btn" onclick="serviceWhatsApp('Full Song Production')">💬 Get a Quote</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Instruments -->
+                <!-- Instruments -->
         <section id="instruments" class="instruments">
             <div style="text-align:center;">
                 <span class="section-label instr-label">🎸 Student Discounts Available</span>
@@ -782,9 +619,9 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h4>Shop & Services</h4>
-                <a href="#ai-songs">Song Notes & Videos</a>
-                <a href="#packages">Tutorial Packages</a>
-                <a href="#services">Pro Services</a>
+                <a href="song-notes.html">Song Notes & Videos</a>
+                <a href="piano-tutorials.html">Piano Tutorials</a>
+                <a href="music-services.html">Music Services</a>
                 <a href="#request">Request a Song</a>
             </div>
             <div class="footer-section">
@@ -873,7 +710,7 @@
         }
 
         // Quick nav active highlight on scroll
-        const sections = ['ai-songs','composers','packages','services','instruments','pro-equipment','request'];
+        const sections = ['ai-songs','instruments','pro-equipment','request'];
         window.addEventListener('scroll', () => {
             let current = '';
             sections.forEach(id => {
