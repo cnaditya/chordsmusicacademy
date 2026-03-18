@@ -90,6 +90,8 @@
         .comp-btn-notes:hover { background: rgba(243,156,18,0.2); }
         .comp-btn-video { padding: 0.65rem; background: linear-gradient(135deg, #f39c12, #e67e22); border: none; color: #fff; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.2s, box-shadow 0.2s; }
         .comp-btn-video:hover { transform: scale(1.03); box-shadow: 0 4px 14px rgba(243,156,18,0.35); }
+        .upi-btn { width: 100%; padding: 0.6rem; background: linear-gradient(135deg, #ff6b00, #e65c00); color: #fff; border: none; border-radius: 10px; font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 0.3rem; transition: transform 0.2s; }
+        .upi-btn:hover { transform: scale(1.03); }
 
         /* ── PRO SERVICES ── */
         .pro-services { background: #0a0a0a; }
@@ -220,6 +222,7 @@
                     <div class="comp-btns">
                         <button class="comp-btn-notes" onclick="orderComposerPkg('A.R. Rahman','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
                         <button class="comp-btn-video" onclick="orderComposerPkg('A.R. Rahman','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                        <button class="upi-btn" onclick="payUPI(1999,'CMA-AR-Rahman-Top50')">💳 Pay ₹1,999 via UPI</button>
                     </div>
                 </div>
 
@@ -235,6 +238,7 @@
                     <div class="comp-btns">
                         <button class="comp-btn-notes" onclick="orderComposerPkg('Devi Sri Prasad','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
                         <button class="comp-btn-video" onclick="orderComposerPkg('Devi Sri Prasad','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                        <button class="upi-btn" onclick="payUPI(1999,'CMA-DSP-Top50')">💳 Pay ₹1,999 via UPI</button>
                     </div>
                 </div>
 
@@ -250,6 +254,7 @@
                     <div class="comp-btns">
                         <button class="comp-btn-notes" onclick="orderComposerPkg('S. Thaman','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
                         <button class="comp-btn-video" onclick="orderComposerPkg('S. Thaman','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                        <button class="upi-btn" onclick="payUPI(1999,'CMA-Thaman-Top50')">💳 Pay ₹1,999 via UPI</button>
                     </div>
                 </div>
 
@@ -265,6 +270,7 @@
                     <div class="comp-btns">
                         <button class="comp-btn-notes" onclick="orderComposerPkg('Ilaiyaraaja','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
                         <button class="comp-btn-video" onclick="orderComposerPkg('Ilaiyaraaja','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                        <button class="upi-btn" onclick="payUPI(1999,'CMA-Ilaiyaraaja-Top50')">💳 Pay ₹1,999 via UPI</button>
                     </div>
                 </div>
 
@@ -280,6 +286,7 @@
                     <div class="comp-btns">
                         <button class="comp-btn-notes" onclick="orderComposerPkg('Anirudh Ravichander','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
                         <button class="comp-btn-video" onclick="orderComposerPkg('Anirudh Ravichander','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                        <button class="upi-btn" onclick="payUPI(1999,'CMA-Anirudh-Top50')">💳 Pay ₹1,999 via UPI</button>
                     </div>
                 </div>
             </div>
@@ -406,6 +413,11 @@
         }
 
         function toggleMenu() { document.querySelector('.nav-links').classList.toggle('active'); }
+
+        function payUPI(amount, note) {
+            const link = 'upi://pay?pa=7702031616@ybl&pn=Chords+Music+Academy&am=' + amount + '&cu=INR&tn=' + encodeURIComponent(note);
+            window.location.href = link;
+        }
 
         document.getElementById('yr').textContent = new Date().getFullYear();
     </script>

@@ -101,6 +101,8 @@
         .price-pill .orig { color: #555; text-decoration: line-through; font-size: 0.76rem; margin-left: 0.3rem; }
         .bundle-btn { padding: 0.6rem 1.4rem; background: linear-gradient(135deg, #25d366, #128c7e); color: #fff; border: none; border-radius: 24px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.2s; white-space: nowrap; }
         .bundle-btn:hover { transform: scale(1.04); }
+        .upi-btn { padding: 0.55rem 1.2rem; background: linear-gradient(135deg, #ff6b00, #e65c00); color: #fff; border: none; border-radius: 24px; font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.2s; white-space: nowrap; }
+        .upi-btn:hover { transform: scale(1.04); }
 
         /* How it works */
         .how-it-works { background: #0a0a0a; }
@@ -247,6 +249,7 @@
                 <div class="price-pill">🎬 Notes + Video <strong>₹249</strong> <span class="orig">₹349</span></div>
                 <div class="price-pill">🎵 5-Song Bundle <strong>₹799</strong> <span class="orig">₹1,245</span></div>
                 <button class="bundle-btn" onclick="orderWhatsApp('5 Song Bundle (Notes + Videos) - ₹799')">💬 Order 5-Bundle ₹799</button>
+                <button class="upi-btn" onclick="payUPI(799,'CMA-5Song-Bundle')">💳 Pay ₹799 via UPI</button>
             </div>
         </div>
 
@@ -448,6 +451,11 @@
                 document.getElementById('reqSuccess').style.display = 'block';
                 form.reset();
             });
+        }
+
+        function payUPI(amount, note) {
+            const link = 'upi://pay?pa=7702031616@ybl&pn=Chords+Music+Academy&am=' + amount + '&cu=INR&tn=' + encodeURIComponent(note);
+            window.location.href = link;
         }
 
         document.getElementById('yr').textContent = new Date().getFullYear();

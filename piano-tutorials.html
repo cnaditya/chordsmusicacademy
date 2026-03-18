@@ -87,6 +87,8 @@
         .pkg-body ul li::before { content: '✅'; font-size: 0.75rem; flex-shrink: 0; margin-top: 0.1rem; }
         .pkg-btn { width: 100%; padding: 1rem; background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; font-family: inherit; }
         .pkg-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(243,156,18,0.4); }
+        .upi-btn { width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #ff6b00, #e65c00); color: #fff; border: none; border-radius: 12px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: transform 0.2s; font-family: inherit; margin-top: 0.5rem; }
+        .upi-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,0,0.4); }
 
         /* What you get */
         .what-you-get { background: #0f0f0f; }
@@ -206,7 +208,8 @@
                             <li>PDF notes included</li>
                             <li>WhatsApp support — 1 week</li>
                         </ul>
-                        <button class="pkg-btn" onclick="orderPkg('Basic Piano Tutorial Package', '₹1,499')">💬 Buy via WhatsApp ₹1,499</button>
+                        <button class="pkg-btn" onclick="orderPkg('Basic Piano Tutorial Package', '₹1,499')">💬 Order via WhatsApp ₹1,499</button>
+                        <button class="upi-btn" onclick="payUPI(1499,'CMA-Piano-Basic')">💳 Pay ₹1,499 via UPI</button>
                     </div>
                 </div>
 
@@ -229,7 +232,8 @@
                             <li>Video tutorials + PDF notes</li>
                             <li>WhatsApp support — 2 weeks</li>
                         </ul>
-                        <button class="pkg-btn" onclick="orderPkg('Intermediate Piano Tutorial Package', '₹2,499')">💬 Buy via WhatsApp ₹2,499</button>
+                        <button class="pkg-btn" onclick="orderPkg('Intermediate Piano Tutorial Package', '₹2,499')">💬 Order via WhatsApp ₹2,499</button>
+                        <button class="upi-btn" onclick="payUPI(2499,'CMA-Piano-Inter')">💳 Pay ₹2,499 via UPI</button>
                     </div>
                 </div>
 
@@ -251,7 +255,8 @@
                             <li>Video tutorials + PDF notes</li>
                             <li>WhatsApp support — 1 month</li>
                         </ul>
-                        <button class="pkg-btn" onclick="orderPkg('Advanced Piano Tutorial Package', '₹3,999')">💬 Buy via WhatsApp ₹3,999</button>
+                        <button class="pkg-btn" onclick="orderPkg('Advanced Piano Tutorial Package', '₹3,999')">💬 Order via WhatsApp ₹3,999</button>
+                        <button class="upi-btn" onclick="payUPI(3999,'CMA-Piano-Adv')">💳 Pay ₹3,999 via UPI</button>
                     </div>
                 </div>
             </div>
@@ -363,6 +368,11 @@
         }
 
         function toggleMenu() { document.querySelector('.nav-links').classList.toggle('active'); }
+
+        function payUPI(amount, note) {
+            const link = 'upi://pay?pa=7702031616@ybl&pn=Chords+Music+Academy&am=' + amount + '&cu=INR&tn=' + encodeURIComponent(note);
+            window.location.href = link;
+        }
 
         document.getElementById('yr').textContent = new Date().getFullYear();
     </script>
