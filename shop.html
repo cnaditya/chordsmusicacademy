@@ -216,39 +216,27 @@
         /* ── COMPOSER PACKAGES ── */
         .composer-packages { background: #0a0a0a; }
         .composer-label { background: linear-gradient(135deg, rgba(243,156,18,0.2), rgba(231,76,60,0.2)); color: #f39c12; border: 1px solid rgba(243,156,18,0.4); }
-        .composers-grid { max-width: 1100px; margin: 0 auto 2rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1.5rem; }
-        .composer-card { background: #1a1a1a; border: 2px solid rgba(243,156,18,0.15); border-radius: 18px; padding: 1.8rem 1.2rem 1.2rem; text-align: center; cursor: pointer; transition: all 0.3s; display: flex; flex-direction: column; gap: 0.8rem; align-items: center; }
-        .composer-card:hover { border-color: rgba(243,156,18,0.5); box-shadow: 0 8px 30px rgba(243,156,18,0.1); transform: translateY(-4px); }
-        .composer-card.active { border-color: #f39c12; box-shadow: 0 0 30px rgba(243,156,18,0.25); background: rgba(243,156,18,0.05); transform: translateY(-4px); }
+        .composers-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 1.5rem; }
+        .composer-card { background: #1a1a1a; border: 2px solid rgba(243,156,18,0.15); border-radius: 20px; padding: 1.8rem 1.2rem 1.4rem; text-align: center; display: flex; flex-direction: column; gap: 0.7rem; align-items: center; transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; }
+        .composer-card:hover { border-color: rgba(243,156,18,0.5); box-shadow: 0 10px 35px rgba(243,156,18,0.12); transform: translateY(-5px); }
         .composer-emoji { font-size: 2.8rem; }
         .composer-card h3 { color: #fff; font-size: 0.95rem; font-weight: 800; line-height: 1.3; }
-        .composer-songs-count { background: rgba(243,156,18,0.12); color: #f39c12; border: 1px solid rgba(243,156,18,0.3); padding: 0.2rem 0.7rem; border-radius: 12px; font-size: 0.72rem; font-weight: 700; }
-        .composer-load-btn { width: 100%; padding: 0.6rem; background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; border: none; border-radius: 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.2s, box-shadow 0.2s; }
-        .composer-load-btn:hover { transform: scale(1.03); box-shadow: 0 4px 12px rgba(243,156,18,0.35); }
-        .composer-songs-panel { max-width: 1100px; margin: 0 auto; background: rgba(255,255,255,0.02); border: 1px solid rgba(243,156,18,0.2); border-radius: 20px; padding: 2rem; display: none; }
-        .composer-songs-panel.visible { display: block; animation: fadeInUp 0.35s ease; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        .comp-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.8rem; }
-        .comp-panel-title { color: #f39c12; font-size: 1.2rem; font-weight: 800; }
-        .comp-panel-count { color: #666; font-size: 0.82rem; background: rgba(243,156,18,0.1); border: 1px solid rgba(243,156,18,0.2); padding: 0.25rem 0.75rem; border-radius: 10px; color: #f39c12; font-weight: 600; }
-        .comp-songs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.8rem; }
-        .comp-song-card { background: #1e1e1e; border: 1px solid rgba(243,156,18,0.1); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; transition: border-color 0.2s, transform 0.2s; }
-        .comp-song-card:hover { border-color: rgba(243,156,18,0.35); transform: translateY(-2px); }
-        .comp-song-top { display: flex; align-items: flex-start; gap: 0.7rem; }
-        .comp-song-num { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; font-weight: 800; font-size: 0.72rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
-        .comp-song-info h4 { color: #fff; font-size: 0.88rem; font-weight: 700; margin-bottom: 0.15rem; }
-        .comp-song-info .comp-movie { color: #888; font-size: 0.76rem; }
-        .comp-song-info .comp-artist { color: #f39c12; font-size: 0.74rem; font-weight: 600; }
-        .comp-song-btns { display: flex; gap: 0.4rem; }
-        .comp-notes-btn { flex: 1; padding: 0.45rem 0.2rem; background: rgba(243,156,18,0.1); border: 1px solid rgba(243,156,18,0.3); color: #f39c12; border-radius: 7px; font-size: 0.7rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; white-space: nowrap; }
-        .comp-notes-btn:hover { background: #f39c12; color: #000; }
-        .comp-video-btn { flex: 1; padding: 0.45rem 0.2rem; background: linear-gradient(135deg, #9b59b6, #6c3483); border: none; color: #fff; border-radius: 7px; font-size: 0.7rem; font-weight: 700; cursor: pointer; transition: transform 0.2s; font-family: inherit; white-space: nowrap; }
-        .comp-video-btn:hover { transform: scale(1.03); }
-        .comp-loading { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 3rem; }
-        .comp-spinner { width: 40px; height: 40px; border: 4px solid rgba(243,156,18,0.2); border-top-color: #f39c12; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        .comp-loading p { color: #888; font-size: 0.9rem; }
-        @media (max-width: 768px) { .composers-grid { grid-template-columns: repeat(2, 1fr); } .comp-songs-grid { grid-template-columns: 1fr 1fr; } }
-        @media (max-width: 480px) { .comp-songs-grid { grid-template-columns: 1fr; } }
+        .comp-badge { background: rgba(243,156,18,0.12); color: #f39c12; border: 1px solid rgba(243,156,18,0.3); padding: 0.2rem 0.75rem; border-radius: 12px; font-size: 0.72rem; font-weight: 700; }
+        .comp-price-row { display: flex; flex-direction: column; gap: 0.3rem; width: 100%; margin: 0.3rem 0; }
+        .comp-price-notes { color: #ccc; font-size: 0.82rem; }
+        .comp-price-notes strong { color: #fff; font-size: 1rem; }
+        .comp-price-notes .orig { color: #555; text-decoration: line-through; font-size: 0.75rem; margin-left: 0.3rem; }
+        .comp-price-video { color: #f39c12; font-size: 0.82rem; }
+        .comp-price-video strong { font-size: 1rem; }
+        .comp-price-video .orig { color: #555; text-decoration: line-through; font-size: 0.75rem; margin-left: 0.3rem; }
+        .comp-savings { font-size: 0.7rem; color: #27ae60; font-weight: 700; background: rgba(39,174,96,0.1); border: 1px solid rgba(39,174,96,0.25); padding: 0.15rem 0.6rem; border-radius: 8px; }
+        .comp-btns { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; margin-top: 0.3rem; }
+        .comp-btn-notes { padding: 0.6rem; background: rgba(243,156,18,0.1); border: 1.5px solid rgba(243,156,18,0.4); color: #f39c12; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .comp-btn-notes:hover { background: rgba(243,156,18,0.2); }
+        .comp-btn-video { padding: 0.65rem; background: linear-gradient(135deg, #f39c12, #e67e22); border: none; color: #fff; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.2s, box-shadow 0.2s; }
+        .comp-btn-video:hover { transform: scale(1.03); box-shadow: 0 4px 14px rgba(243,156,18,0.35); }
+        @media (max-width: 768px) { .composers-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 400px) { .composers-grid { grid-template-columns: 1fr; } }
 
         /* Footer */
         .footer { background: #050505; border-top: 1px solid rgba(155,89,182,0.15); padding: 3rem 2rem 1.5rem; }
@@ -368,56 +356,87 @@
         <section id="composers" class="composer-packages">
             <div style="text-align:center;">
                 <span class="section-label composer-label">🎼 Music Director Collections</span>
-                <div class="section-title">Top 50 Songs by Legendary Composers</div>
-                <p class="section-sub">AI-curated top 50 iconic songs from India's greatest music directors — tap a composer to explore & order notes!</p>
+                <div class="section-title">Top 50 Songs — Mega Packages</div>
+                <p class="section-sub">Get notes & tutorials for the top 50 most iconic songs by India's greatest music directors — all in one discounted bundle!</p>
             </div>
 
             <div class="composers-grid">
-                <div class="composer-card" id="card-AR Rahman" onclick="loadComposer('AR Rahman', this)">
+
+                <div class="composer-card">
                     <span class="composer-emoji">🏆</span>
                     <h3>A.R. Rahman</h3>
-                    <div class="composer-songs-count">🎵 Top 50 Songs</div>
-                    <button class="composer-load-btn">Explore Songs →</button>
+                    <div class="comp-badge">Top 50 Songs</div>
+                    <div class="comp-price-row">
+                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
+                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
+                        <div class="comp-savings">You save up to ₹10,451!</div>
+                    </div>
+                    <div class="comp-btns">
+                        <button class="comp-btn-notes" onclick="orderComposerPkg('A.R. Rahman','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
+                        <button class="comp-btn-video" onclick="orderComposerPkg('A.R. Rahman','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                    </div>
                 </div>
-                <div class="composer-card" id="card-Devi Sri Prasad" onclick="loadComposer('Devi Sri Prasad', this)">
+
+                <div class="composer-card">
                     <span class="composer-emoji">🔥</span>
                     <h3>Devi Sri Prasad</h3>
-                    <div class="composer-songs-count">🎵 Top 50 Songs</div>
-                    <button class="composer-load-btn">Explore Songs →</button>
+                    <div class="comp-badge">Top 50 Songs</div>
+                    <div class="comp-price-row">
+                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
+                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
+                        <div class="comp-savings">You save up to ₹10,451!</div>
+                    </div>
+                    <div class="comp-btns">
+                        <button class="comp-btn-notes" onclick="orderComposerPkg('Devi Sri Prasad','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
+                        <button class="comp-btn-video" onclick="orderComposerPkg('Devi Sri Prasad','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                    </div>
                 </div>
-                <div class="composer-card" id="card-S. Thaman" onclick="loadComposer('S. Thaman', this)">
+
+                <div class="composer-card">
                     <span class="composer-emoji">⚡</span>
                     <h3>S. Thaman</h3>
-                    <div class="composer-songs-count">🎵 Top 50 Songs</div>
-                    <button class="composer-load-btn">Explore Songs →</button>
+                    <div class="comp-badge">Top 50 Songs</div>
+                    <div class="comp-price-row">
+                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
+                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
+                        <div class="comp-savings">You save up to ₹10,451!</div>
+                    </div>
+                    <div class="comp-btns">
+                        <button class="comp-btn-notes" onclick="orderComposerPkg('S. Thaman','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
+                        <button class="comp-btn-video" onclick="orderComposerPkg('S. Thaman','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                    </div>
                 </div>
-                <div class="composer-card" id="card-Ilaiyaraaja" onclick="loadComposer('Ilaiyaraaja', this)">
+
+                <div class="composer-card">
                     <span class="composer-emoji">👑</span>
                     <h3>Ilaiyaraaja</h3>
-                    <div class="composer-songs-count">🎵 Top 50 Songs</div>
-                    <button class="composer-load-btn">Explore Songs →</button>
+                    <div class="comp-badge">Top 50 Songs</div>
+                    <div class="comp-price-row">
+                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
+                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
+                        <div class="comp-savings">You save up to ₹10,451!</div>
+                    </div>
+                    <div class="comp-btns">
+                        <button class="comp-btn-notes" onclick="orderComposerPkg('Ilaiyaraaja','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
+                        <button class="comp-btn-video" onclick="orderComposerPkg('Ilaiyaraaja','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                    </div>
                 </div>
-                <div class="composer-card" id="card-Anirudh Ravichander" onclick="loadComposer('Anirudh Ravichander', this)">
+
+                <div class="composer-card">
                     <span class="composer-emoji">🎸</span>
                     <h3>Anirudh Ravichander</h3>
-                    <div class="composer-songs-count">🎵 Top 50 Songs</div>
-                    <button class="composer-load-btn">Explore Songs →</button>
-                </div>
-            </div>
-
-            <!-- Songs Panel -->
-            <div class="composer-songs-panel" id="composerPanel">
-                <div class="comp-loading" id="compLoading">
-                    <div class="comp-spinner"></div>
-                    <p>AI is loading top 50 songs...</p>
-                </div>
-                <div id="compContent" style="display:none;">
-                    <div class="comp-panel-header">
-                        <div class="comp-panel-title" id="compPanelTitle"></div>
-                        <div class="comp-panel-count" id="compPanelCount"></div>
+                    <div class="comp-badge">Top 50 Songs</div>
+                    <div class="comp-price-row">
+                        <div class="comp-price-notes">📄 Notes Only <strong>₹999</strong><span class="orig">₹4,950</span></div>
+                        <div class="comp-price-video">🎬 Notes + Video <strong>₹1,999</strong><span class="orig">₹12,450</span></div>
+                        <div class="comp-savings">You save up to ₹10,451!</div>
                     </div>
-                    <div class="comp-songs-grid" id="compSongsGrid"></div>
+                    <div class="comp-btns">
+                        <button class="comp-btn-notes" onclick="orderComposerPkg('Anirudh Ravichander','Notes Only Package','₹999')">📄 Notes Package ₹999</button>
+                        <button class="comp-btn-video" onclick="orderComposerPkg('Anirudh Ravichander','Notes + Video Package','₹1,999')">🎬 Notes + Video ₹1,999</button>
+                    </div>
                 </div>
+
             </div>
         </section>
 
@@ -980,73 +999,8 @@
 
         document.getElementById('yr').textContent = new Date().getFullYear();
 
-        // ── Composer Songs ──
-        const composerCache = {};
-        let activeComposerCard = null;
-
-        async function loadComposer(composer, cardEl) {
-            if (activeComposerCard) activeComposerCard.classList.remove('active');
-            cardEl.classList.add('active');
-            activeComposerCard = cardEl;
-
-            const panel = document.getElementById('composerPanel');
-            const loading = document.getElementById('compLoading');
-            const content = document.getElementById('compContent');
-
-            panel.classList.add('visible');
-            loading.style.display = 'flex';
-            loading.innerHTML = '<div class="comp-spinner"></div><p>AI is loading top 50 songs for ' + composer + '...</p>';
-            content.style.display = 'none';
-
-            setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
-
-            if (composerCache[composer]) {
-                renderComposerSongs(composer, composerCache[composer]);
-                return;
-            }
-
-            try {
-                const res = await fetch('/.netlify/functions/composer-songs?composer=' + encodeURIComponent(composer));
-                const data = await res.json();
-                composerCache[composer] = data.songs;
-                renderComposerSongs(composer, data.songs);
-            } catch (err) {
-                loading.innerHTML = '<p style="color:#e74c3c;">⚠️ Could not load songs. <button onclick="loadComposer(\'' + composer + '\', document.getElementById(\'card-' + composer + '\'))" style="background:#f39c12;color:#000;border:none;padding:0.4rem 1rem;border-radius:8px;cursor:pointer;font-weight:700;margin-left:0.5rem;">Try Again</button></p>';
-            }
-        }
-
-        function renderComposerSongs(composer, songs) {
-            const loading = document.getElementById('compLoading');
-            const content = document.getElementById('compContent');
-            const grid = document.getElementById('compSongsGrid');
-            document.getElementById('compPanelTitle').textContent = '🎼 ' + composer + ' — Top ' + songs.length + ' Songs';
-            document.getElementById('compPanelCount').textContent = songs.length + ' songs available';
-
-            grid.innerHTML = songs.map((s, i) => {
-                const si = encodeURIComponent(JSON.stringify({song: s.song, movie: s.movie, artist: s.artist, composer: composer}));
-                return `<div class="comp-song-card">
-                    <div class="comp-song-top">
-                        <div class="comp-song-num">${i + 1}</div>
-                        <div class="comp-song-info">
-                            <h4>${s.song}</h4>
-                            <div class="comp-movie">🎬 ${s.movie}</div>
-                            <div class="comp-artist">🎤 ${s.artist}</div>
-                        </div>
-                    </div>
-                    <div class="comp-song-btns">
-                        <button class="comp-notes-btn" onclick="orderComposerSong('${composer}', ${i}, 'Notes PDF', '₹99')">📄 Notes ₹99</button>
-                        <button class="comp-video-btn" onclick="orderComposerSong('${composer}', ${i}, 'Notes + Video', '₹249')">🎬 +Video ₹249</button>
-                    </div>
-                </div>`;
-            }).join('');
-
-            loading.style.display = 'none';
-            content.style.display = 'block';
-        }
-
-        function orderComposerSong(composer, idx, product, price) {
-            const s = composerCache[composer][idx];
-            const msg = `Hello! I'd like to order:%0A%0A🎵 *Song:* ${s.song}%0A🎬 *Movie:* ${s.movie}%0A🎤 *Artist:* ${s.artist}%0A🎼 *Composer:* ${composer}%0A%0A📦 *Product:* ${product} (${price})%0A%0APlease confirm and share payment details. Thank you!`;
+        function orderComposerPkg(composer, product, price) {
+            const msg = `Hello! I'd like to order:%0A%0A🎼 *Composer:* ${composer}%0A📦 *Package:* ${product} — Top 50 Songs (${price})%0A%0APlease confirm and share payment details. Thank you!`;
             window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
         }
     </script>
