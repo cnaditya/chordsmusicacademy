@@ -24,6 +24,17 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .hdr-title{font-size:0.95rem;font-weight:700}
 .hdr-sub{font-size:0.65rem;opacity:0.65}
 .hdr-logout{margin-left:auto;background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:20px;padding:6px 12px;font-size:0.75rem;font-weight:700;cursor:pointer}
+.hdr-pwd{background:rgba(255,255,255,0.08);color:#fff;border:none;border-radius:20px;padding:6px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;margin-right:6px}
+
+/* Change password modal */
+.pwd-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+.pwd-modal-bg.show{display:flex}
+.pwd-modal{background:#fff;border-radius:18px;padding:24px 20px;width:100%;max-width:360px}
+.pwd-modal-title{font-size:1rem;font-weight:800;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.pwd-modal input{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:11px 13px;font-size:0.88rem;font-family:inherit;outline:none;margin-bottom:12px;transition:.2s}
+.pwd-modal input:focus{border-color:#e74c3c}
+.pwd-save{width:100%;background:#e74c3c;color:#fff;border:none;border-radius:10px;padding:12px;font-size:0.9rem;font-weight:800;cursor:pointer;margin-top:4px}
+.pwd-msg{font-size:0.75rem;margin-top:10px;text-align:center;display:none}
 
 /* Stats */
 .stats{display:flex;gap:10px;padding:16px;overflow-x:auto;scrollbar-width:none}
@@ -115,6 +126,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
       <div class="hdr-title">🎵 CMA Admin</div>
       <div class="hdr-sub">Student CRM</div>
     </div>
+    <button class="hdr-pwd" onclick="openPwdModal()">🔑 Password</button>
     <button class="hdr-logout" onclick="logout()">Logout</button>
   </div>
 
@@ -145,6 +157,21 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 
 </div>
 
+<!-- Change Password Modal -->
+<div class="pwd-modal-bg" id="pwdModalBg">
+  <div class="pwd-modal">
+    <div class="pwd-modal-title">
+      🔑 Change Password
+      <button style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#888" onclick="closePwdModal()">✕</button>
+    </div>
+    <input type="password" id="curPwd" placeholder="Current password">
+    <input type="password" id="newPwd" placeholder="New password">
+    <input type="password" id="confPwd" placeholder="Confirm new password">
+    <button class="pwd-save" onclick="changePassword()">Save New Password</button>
+    <div class="pwd-msg" id="pwdMsg"></div>
+  </div>
+</div>
+
 <!-- Detail Modal -->
 <div class="modal-bg" id="modalBg" onclick="closeModal(event)">
   <div class="modal" id="modalBox">
@@ -158,9 +185,10 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getFirestore, collection, getDocs, updateDoc, doc, orderBy, query } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, collection, getDocs, updateDoc, setDoc, doc, orderBy, query, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-const ADMIN_PASS = 'CMA@admin2025';
+const DEFAULT_PASS = 'CMA@admin2025';
+var ADMIN_PASS = DEFAULT_PASS;
 
 const firebaseConfig = {
   apiKey: "AIzaSyDvuCr7IHM7oLYY6e675P_KtcTxsNEJr1c",
@@ -177,6 +205,17 @@ const db = getFirestore(app);
 var allStudents = [];
 var currentFilter = 'all';
 
+// Load password from Firestore on page load
+async function loadPassword() {
+  try {
+    var snap = await getDoc(doc(db, 'settings', 'admin'));
+    if (snap.exists() && snap.data().password) {
+      ADMIN_PASS = snap.data().password;
+    }
+  } catch(e) {}
+}
+loadPassword();
+
 window.doLogin = function() {
   var pwd = document.getElementById('pwdInput').value;
   if (pwd === ADMIN_PASS) {
@@ -185,6 +224,43 @@ window.doLogin = function() {
     loadStudents();
   } else {
     document.getElementById('loginErr').style.display = 'block';
+  }
+};
+
+window.openPwdModal = function() {
+  document.getElementById('curPwd').value = '';
+  document.getElementById('newPwd').value = '';
+  document.getElementById('confPwd').value = '';
+  var msg = document.getElementById('pwdMsg');
+  msg.style.display = 'none';
+  document.getElementById('pwdModalBg').classList.add('show');
+};
+
+window.closePwdModal = function() {
+  document.getElementById('pwdModalBg').classList.remove('show');
+};
+
+window.changePassword = async function() {
+  var cur = document.getElementById('curPwd').value;
+  var nw = document.getElementById('newPwd').value;
+  var conf = document.getElementById('confPwd').value;
+  var msg = document.getElementById('pwdMsg');
+
+  msg.style.display = 'block';
+  msg.style.color = '#e74c3c';
+
+  if (cur !== ADMIN_PASS) { msg.textContent = '❌ Current password is wrong'; return; }
+  if (nw.length < 6) { msg.textContent = '❌ New password must be at least 6 characters'; return; }
+  if (nw !== conf) { msg.textContent = '❌ Passwords do not match'; return; }
+
+  try {
+    await setDoc(doc(db, 'settings', 'admin'), { password: nw });
+    ADMIN_PASS = nw;
+    msg.style.color = '#27ae60';
+    msg.textContent = '✅ Password changed successfully';
+    setTimeout(function(){ closePwdModal(); }, 1500);
+  } catch(e) {
+    msg.textContent = '❌ Error saving. Try again.';
   }
 };
 

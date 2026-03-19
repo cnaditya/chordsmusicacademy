@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Students collection - read/write access
+    match /students/{studentId} {
+      allow read, write: if true;
+    }
+    
+    // Materials collection - read/write access
+    match /materials/{materialId} {
+      allow read, write: if true;
+    }
+    
+    // Practice sessions collection - read/write access
+    match /practiceSessions/{sessionId} {
+      allow read, write: if true;
+    }
+    
+    // Deleted practice sessions collection - read/write access
+    match /deletedPracticeSessions/{sessionId} {
+      allow read, write: if true;
+    }
+    
+    // Student activity log collection - read/write access
+    match /studentActivityLog/{logId} {
+      allow read, write: if true;
+    }
+    
+    // Groups collection - read/write access
+    match /groups/{groupId} {
+      allow read, write: if true;
+    }
+    
+    // Registrations collection - read/write access
+    match /registrations/{registrationId} {
+      allow read, write: if true;
+    }
+
+    // Admin settings (password storage)
+    match /settings/{docId} {
+      allow read, write: if true;
+    }
+    
+    // Offline Registrations collection - read/write access
+    match /offlineRegistrations/{registrationId} {
+      allow read, write: if true;
+    }
+  }
+}
