@@ -23,13 +23,12 @@ body{display:flex;flex-direction:column;margin:0 auto}
 /* ── Desktop: 3-column grid ── */
 @media(min-width:768px){
   body{max-width:1200px}
-  .tabs{display:none}
-  .panels{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;padding:24px 28px;align-items:start}
-  .panel{display:flex;flex-direction:column;gap:12px}
-  .desk-head{display:block}
-  .hdr{padding:14px 28px}
-  .hdr-title{font-size:1.15rem}
-  .pkg,.sn,.t50{box-shadow:0 2px 12px rgba(0,0,0,0.09)}
+  .tabs{display:none!important}
+  .panels{display:grid!important;grid-template-columns:1fr 1fr 1fr;gap:20px;padding:24px 32px;align-items:start}
+  .panel{display:flex!important;position:static!important;flex-direction:column;gap:12px;overflow:visible!important;padding:0}
+  .col-title{display:block}
+  .hdr{padding:14px 32px}
+  .hdr-title{font-size:1.1rem}
 }
 
 /* Header */
@@ -39,15 +38,13 @@ body{display:flex;flex-direction:column;margin:0 auto}
 .hdr-sub{font-size:0.65rem;opacity:0.65}
 .hdr-wa{margin-left:auto;background:#25d366;color:#fff;border:none;border-radius:20px;padding:7px 13px;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block}
 
-/* Tabs */
-.tabs{display:flex;background:#fff;border-bottom:1px solid #e5e5e5;flex-shrink:0}
+/* Tabs — base styles, visibility controlled by media queries above */
+.tabs{background:#fff;border-bottom:1px solid #e5e5e5;flex-shrink:0}
 .tab{flex:1;padding:10px 4px;text-align:center;font-size:0.68rem;font-weight:600;color:#999;cursor:pointer;border-bottom:2.5px solid transparent;line-height:1.3;transition:.15s}
 .tab.on{color:#e74c3c;border-bottom-color:#e74c3c}
 
-/* Panels */
-.panels{flex:1;overflow:hidden;position:relative}
-.panel{position:absolute;inset:0;overflow-y:auto;padding:12px;display:none;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
-.panel.on{display:flex}
+/* Section column titles — desktop only */
+.col-title{display:none;font-size:1rem;font-weight:800;color:#1a1a2e;padding:4px 0 8px;border-bottom:2px solid #e74c3c;margin-bottom:4px}
 
 /* Piano cards */
 .pkg{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.09)}
@@ -142,6 +139,7 @@ body{display:flex;flex-direction:column;margin:0 auto}
 
   <!-- Tab 0: Piano Tutorials -->
   <div class="panel on" id="tab0">
+    <div class="col-title">🎹 Piano Tutorials</div>
     <div class="pkg">
       <span class="pkg-tag" style="background:#e8f5e9;color:#2e7d32">Beginner</span>
       <div class="pkg-name">Basic Piano Package</div>
@@ -167,6 +165,7 @@ body{display:flex;flex-direction:column;margin:0 auto}
 
   <!-- Tab 1: Song Notes -->
   <div class="panel" id="tab1">
+    <div class="col-title">🎵 Song Notes</div>
     <div class="sn">
       <div class="sn-em">📄</div>
       <div class="sn-info">
@@ -209,6 +208,7 @@ body{display:flex;flex-direction:column;margin:0 auto}
 
   <!-- Tab 2: Top 50 Packages -->
   <div class="panel" id="tab2">
+    <div class="col-title">🎼 Top 50 Packages</div>
 
     <div class="t50">
       <div class="t50-hdr"><div class="t50-em">🎵</div><div><div class="t50-name">Telugu Top 50</div><div class="t50-sub">50 best Telugu songs</div></div></div>
