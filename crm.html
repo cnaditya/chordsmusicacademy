@@ -257,6 +257,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 
   <!-- Leads (Registrations) -->
   <div class="page" id="pg-leads">
+    <input class="search-bar" id="leadSearch" placeholder="🔍 Search by name, phone, email..." oninput="renderLeads()">
     <div class="leads-filter">
       <button class="fb on" onclick="setLeadFilter('all',this)">All</button>
       <button class="fb" onclick="setLeadFilter('new',this)">🟡 New</button>
@@ -623,8 +624,12 @@ window.setLeadFilter = function(f, btn) {
 };
 
 function renderLeads() {
+  var q = ((document.getElementById('leadSearch')||{}).value||'').toLowerCase();
   var list = allLeads.filter(function(l){
-    return currentLeadFilter==='all' || l.status===currentLeadFilter;
+    var matchF = currentLeadFilter==='all' || l.status===currentLeadFilter;
+    var name = (l.full_name||l.name||'').toLowerCase();
+    var matchQ = !q || name.includes(q) || (l.phone||'').includes(q) || (l.email||'').toLowerCase().includes(q) || (l.instrument||'').toLowerCase().includes(q);
+    return matchF && matchQ;
   });
   var box = document.getElementById('leadsList');
   if(!list.length){ box.innerHTML='<div style="color:#aaa;text-align:center;padding:40px 0">No leads found</div>'; return; }
