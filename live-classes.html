@@ -56,6 +56,8 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 
 /* What's included */
 .section-title{font-size:0.85rem;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px}
+.inst-btn{border:2px solid #e0e0e0;background:#fff;border-radius:24px;padding:9px 16px;font-size:0.8rem;font-weight:700;cursor:pointer;color:#666;transition:.2s;flex:1;min-width:130px}
+.inst-btn.on{border-color:#e74c3c;background:#e74c3c;color:#fff}
 .includes{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 8px rgba(0,0,0,0.07);margin-bottom:20px}
 .inc-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f5f5f5}
 .inc-row:last-child{border-bottom:none;padding-bottom:0}
@@ -99,8 +101,8 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 
 <!-- Hero -->
 <div class="hero">
-  <div class="hero-icon">🎹</div>
-  <div class="hero-title">Online Live Piano Classes</div>
+  <div class="hero-icon" id="heroIcon">🎹</div>
+  <div class="hero-title" id="heroTitle">Live Online Piano & Keyboard Classes</div>
   <div class="hero-sub">One-to-one personal coaching via Google Meet<br>Learn at your own pace from anywhere in the world</div>
   <div class="hero-pills">
     <span class="pill">📅 2 Classes / Week</span>
@@ -134,6 +136,15 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
       <div class="il">Platform</div>
       <div class="iv">Google Meet</div>
     </div>
+  </div>
+
+  <!-- Instrument Selector -->
+  <div class="section-title">Choose Your Instrument</div>
+  <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+    <button class="inst-btn on" onclick="setInst('piano')" id="inst-piano">🎹 Piano & Keyboard</button>
+    <button class="inst-btn" onclick="setInst('vocal')" id="inst-vocal">🎤 Carnatic Vocals</button>
+    <button class="inst-btn" onclick="setInst('guitar')" id="inst-guitar">🎸 Guitar</button>
+    <button class="inst-btn" onclick="setInst('drums')" id="inst-drums">🥁 Drums</button>
   </div>
 
   <!-- Free Demo Banner -->
@@ -204,23 +215,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 
   <!-- Curriculum -->
   <div class="section-title">Curriculum</div>
-  <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 8px rgba(0,0,0,0.07);margin-bottom:20px">
-    <div style="background:linear-gradient(135deg,#1a1a2e,#2c3e6b);border-radius:10px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
-      <div style="font-size:1.8rem">🎓</div>
-      <div>
-        <div style="color:#fff;font-size:0.9rem;font-weight:800">Trinity College London</div>
-        <div style="color:rgba(255,255,255,0.65);font-size:0.75rem">Internationally Recognised Certification</div>
-      </div>
-      <div style="margin-left:auto;background:#f39c12;color:#fff;font-size:0.65rem;font-weight:800;padding:4px 10px;border-radius:10px;white-space:nowrap">CERTIFIED</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:0">
-      <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5"><span style="font-size:1.1rem">🎹</span><div><div style="font-size:0.84rem;font-weight:700;color:#1a1a2e">Finger Techniques & Hand Development</div><div style="font-size:0.73rem;color:#888">Proper posture, hand coordination, speed & accuracy</div></div></div>
-      <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5"><span style="font-size:1.1rem">🎵</span><div><div style="font-size:0.84rem;font-weight:700;color:#1a1a2e">Indian Classical & Ragas</div><div style="font-size:0.73rem;color:#888">Ragas, scales, Indian classical music foundations</div></div></div>
-      <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5"><span style="font-size:1.1rem">🎶</span><div><div style="font-size:0.84rem;font-weight:700;color:#1a1a2e">Chords, Scales & Music Theory</div><div style="font-size:0.73rem;color:#888">Western & Indian scales, chord progressions, harmony</div></div></div>
-      <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5"><span style="font-size:1.1rem">🎬</span><div><div style="font-size:0.84rem;font-weight:700;color:#1a1a2e">Songs — Your Favourites</div><div style="font-size:0.73rem;color:#888">Telugu, Hindi, Tamil, English & Western songs</div></div></div>
-      <div style="display:flex;gap:10px;align-items:center;padding:10px 0"><span style="font-size:1.1rem">📖</span><div><div style="font-size:0.84rem;font-weight:700;color:#1a1a2e">Staff Notation & Sheet Music</div><div style="font-size:0.73rem;color:#888">Read & write music professionally</div></div></div>
-    </div>
-  </div>
+  <div id="curriculumBox" style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 8px rgba(0,0,0,0.07);margin-bottom:20px"></div>
 
   <!-- What's included -->
   <div class="section-title">What's Included</div>
@@ -236,31 +231,78 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 
   <!-- CTA -->
   <div class="cta">
-    <div class="cta-title">Ready to Start Your Piano Journey?</div>
+    <div class="cta-title" id="ctaTitle">Ready to Start Your Journey?</div>
     <div class="cta-sub">Message us on WhatsApp to schedule a free 15-min demo class</div>
-    <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hi!%20I%27m%20interested%20in%20Online%20Live%20Piano%20Classes.%20Can%20I%20get%20more%20details?" class="cta-wa" target="_blank">💬 WhatsApp Us to Enrol</a>
+    <button onclick="bookDemo()" class="cta-wa">💬 WhatsApp Us to Enrol</button>
     <div class="cta-note">📞 +91-79815 85309 · Responds within minutes</div>
   </div>
 
 </div>
 
 <script>
+var INSTRUMENTS = {
+  piano:  { icon:'🎹', name:'Piano & Keyboard', curriculum:[
+    ['🎹','Finger Techniques & Hand Development','Proper posture, hand coordination, speed & accuracy'],
+    ['🎵','Indian Classical & Ragas','Ragas, scales, Indian classical music foundations'],
+    ['🎶','Chords, Scales & Music Theory','Western & Indian scales, chord progressions, harmony'],
+    ['🎬','Songs — Your Favourites','Telugu, Hindi, Tamil, English & Western songs'],
+    ['📖','Staff Notation & Sheet Music','Read & write music professionally']
+  ]},
+  vocal:  { icon:'🎤', name:'Carnatic Vocals', curriculum:[
+    ['🎤','Sarali Varisai & Voice Training','Breathing, voice culture, pitch & tone development'],
+    ['🎵','Raga Alapana & Swaras','Introduction to ragas, swara gnanam, raga bhavam'],
+    ['🥁','Talam & Rhythm','Aadi, Rupaka, Misra Chapu and other key talams'],
+    ['🎶','Keerthanams & Compositions','Classical compositions of Thyagaraja, Dikshitar & more'],
+    ['🎬','Devotional & Film Songs','Bhajans, Carnatic film songs across languages']
+  ]},
+  guitar: { icon:'🎸', name:'Guitar', curriculum:[
+    ['🎸','Open Chords & Basic Strumming','Beginner chords, strumming patterns, rhythm playing'],
+    ['🎵','Scales & Lead Guitar','Major, minor, pentatonic scales, melodies & solos'],
+    ['🎶','Music Theory for Guitar','Chord progressions, harmony, intervals'],
+    ['🎬','Songs — Your Favourites','Bollywood, Telugu, Tamil, English & Western songs'],
+    ['📖','Tabs & Chord Charts','Reading guitar tabs and chord diagrams']
+  ]},
+  drums:  { icon:'🥁', name:'Drums', curriculum:[
+    ['🥁','Basic Beats & Rudiments','Grip, posture, single/double stroke, paradiddles'],
+    ['🎵','Rhythm & Timing','Metronome training, time signatures, subdivisions'],
+    ['🎶','Styles — Rock, Jazz & Indian','Versatile drumming across multiple genres'],
+    ['🎬','Play Along with Songs','Telugu, Hindi, Tamil, English & Western tracks'],
+    ['📖','Reading Drum Notation','Understanding and reading drum sheet music']
+  ]}
+};
+
+var _inst = 'piano';
+
+function setInst(key) {
+  _inst = key;
+  var d = INSTRUMENTS[key];
+  document.getElementById('heroIcon').textContent = d.icon;
+  document.getElementById('heroTitle').textContent = 'Live Online ' + d.name + ' Classes';
+  document.getElementById('ctaTitle').textContent = 'Ready to Start Your ' + d.name + ' Journey?';
+  document.querySelectorAll('.inst-btn').forEach(function(b){ b.classList.remove('on'); });
+  document.getElementById('inst-' + key).classList.add('on');
+  var box = document.getElementById('curriculumBox');
+  var rows = d.curriculum.map(function(r){
+    return '<div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5"><span style="font-size:1.1rem">'+r[0]+'</span><div><div style="font-size:0.84rem;font-weight:700;color:#1a1a2e">'+r[1]+'</div><div style="font-size:0.73rem;color:#888">'+r[2]+'</div></div></div>';
+  });
+  rows[rows.length-1] = rows[rows.length-1].replace('border-bottom:1px solid #f5f5f5','border-bottom:none');
+  box.innerHTML = '<div style="background:linear-gradient(135deg,#1a1a2e,#2c3e6b);border-radius:10px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px"><div style="font-size:1.8rem">🎓</div><div><div style="color:#fff;font-size:0.9rem;font-weight:800">Trinity College London</div><div style="color:rgba(255,255,255,0.65);font-size:0.75rem">Internationally Recognised Certification</div></div><div style="margin-left:auto;background:#f39c12;color:#fff;font-size:0.65rem;font-weight:800;padding:4px 10px;border-radius:10px;white-space:nowrap">CERTIFIED</div></div><div style="display:flex;flex-direction:column">' + rows.join('') + '</div>';
+}
+
 function bookDemo() {
-  var msg = encodeURIComponent('Hi! I\'d like to book a *Free Demo Class* for Online Piano.\n\nPlease let me know the available slots. 🎹');
+  var name = INSTRUMENTS[_inst].name;
+  var msg = encodeURIComponent('Hi! I\'d like to book a *Free Demo Class* for ' + name + '.\n\nPlease let me know the available slots. ' + INSTRUMENTS[_inst].icon);
   window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
 }
 
 function bookClass(plan, price) {
-  var msg = encodeURIComponent('Hi! I want to enrol in the *' + plan + '* (' + price + ') for Online Live Piano Classes.\n\nPlease share payment and schedule details. 🎹');
+  var name = INSTRUMENTS[_inst].name;
+  var msg = encodeURIComponent('Hi! I want to enrol in the *' + plan + '* (' + price + ') for Live Online ' + name + ' Classes.\n\nPlease share payment and schedule details. ' + INSTRUMENTS[_inst].icon);
   window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
 }
 
-function bookClass(plan) {
-  var curr = document.getElementById('btnUSD').classList.contains('on') ? 'USD' : 'INR';
-  var price = curr === 'INR' ? INR['p' + plan.charAt(0)] : USD['p' + plan.charAt(0)];
-  var msg = encodeURIComponent('Hi! I want to enrol in the *' + plan + '* for Online Live Piano Classes.\n\nPlease share payment and schedule details. 🎹');
-  window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
-}
+// Init
+setInst('piano');
 </script>
 </body>
 </html>
