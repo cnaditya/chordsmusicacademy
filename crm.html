@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Academy CRM — Chords Music Academy</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a2e;min-height:100vh}
+
+/* Login */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#1a1a2e,#2c3e6b)}
+.login-box{background:#fff;border-radius:18px;padding:32px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.3)}
+.login-icon{font-size:2.5rem;margin-bottom:10px}
+.login-title{font-size:1.2rem;font-weight:800;margin-bottom:4px}
+.login-sub{font-size:0.78rem;color:#888;margin-bottom:24px}
+.login-box input{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:12px 14px;font-size:0.9rem;font-family:inherit;outline:none;margin-bottom:12px;transition:.2s}
+.login-box input:focus{border-color:#e74c3c}
+.login-box button{width:100%;background:#e74c3c;color:#fff;border:none;border-radius:10px;padding:13px;font-size:0.92rem;font-weight:800;cursor:pointer}
+.login-err{font-size:0.75rem;color:#e74c3c;margin-top:8px;display:none}
+
+/* Header */
+.hdr{background:#1a1a2e;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+.hdr-logo{font-size:1.2rem}
+.hdr-title{font-size:0.95rem;font-weight:800;flex:1}
+.hdr-sub{font-size:0.62rem;opacity:0.6}
+.hdr-btn{background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:16px;padding:5px 11px;font-size:0.72rem;font-weight:700;cursor:pointer;margin-left:4px}
+
+/* Bottom nav */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;display:flex;z-index:100;box-shadow:0 -2px 10px rgba(0,0,0,0.08)}
+.bnav-btn{flex:1;padding:10px 4px 8px;text-align:center;border:none;background:none;cursor:pointer;font-size:0.6rem;font-weight:700;color:#aaa;transition:.2s}
+.bnav-btn .bi{font-size:1.3rem;display:block;margin-bottom:2px}
+.bnav-btn.on{color:#e74c3c}
+
+/* Pages */
+.page{display:none;padding:16px 16px 80px}
+.page.on{display:block}
+
+/* Stats grid */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.stat{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07)}
+.stat-num{font-size:1.8rem;font-weight:800;line-height:1}
+.stat-label{font-size:0.68rem;color:#888;margin-top:3px;font-weight:600}
+
+/* Section title */
+.sec{font-size:0.78rem;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.6px;margin:18px 0 10px}
+
+/* Search & filter */
+.search-bar{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 14px;font-size:0.88rem;font-family:inherit;outline:none;margin-bottom:10px;transition:.2s}
+.search-bar:focus{border-color:#e74c3c}
+.filter-row{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.fb{flex:0 0 auto;border:1.5px solid #e0e0e0;background:#fff;border-radius:20px;padding:5px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;color:#666;white-space:nowrap}
+.fb.on{background:#1a1a2e;border-color:#1a1a2e;color:#fff}
+
+/* Student cards */
+.scard{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:10px;border-left:4px solid #e74c3c}
+.scard.completed{border-left-color:#27ae60}
+.scard.inactive{border-left-color:#95a5a6;opacity:0.7}
+.sc-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.sc-av{width:38px;height:38px;border-radius:50%;background:#1a1a2e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:800;flex-shrink:0}
+.sc-av.completed{background:#27ae60}
+.sc-info{flex:1}
+.sc-name{font-size:0.9rem;font-weight:800;color:#1a1a2e}
+.sc-meta{font-size:0.7rem;color:#888;margin-top:2px}
+.sc-id{font-size:0.62rem;color:#bbb;font-family:monospace}
+.sc-badge{font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;margin-top:3px}
+.badge-active{background:#e8f5e9;color:#2e7d32}
+.badge-completed{background:#e3f2fd;color:#1565c0}
+.badge-inactive{background:#f5f5f5;color:#888}
+
+/* Progress bar */
+.prog-wrap{margin-bottom:8px}
+.prog-label{display:flex;justify-content:space-between;font-size:0.68rem;color:#888;margin-bottom:3px}
+.prog-bar{height:6px;background:#f0f2f5;border-radius:10px;overflow:hidden}
+.prog-fill{height:100%;background:#e74c3c;border-radius:10px;transition:.3s}
+.prog-fill.done{background:#27ae60}
+
+/* Schedule tag */
+.sched{font-size:0.68rem;color:#3498db;background:#e8f4fd;padding:3px 8px;border-radius:8px;display:inline-block;margin-bottom:8px}
+
+/* Action row */
+.sc-actions{display:flex;gap:6px}
+.sc-btn{flex:1;border:none;border-radius:8px;padding:8px 6px;font-size:0.72rem;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:3px}
+.btn-attend{background:#e74c3c;color:#fff}
+.btn-attend.done-today{background:#e8f5e9;color:#2e7d32}
+.btn-wa{background:#25d366;color:#fff;text-decoration:none}
+.btn-detail{background:#f0f2f5;color:#555}
+.btn-edit{background:#fff3e0;color:#e65100}
+
+/* Today's schedule */
+.today-card{background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.tc-time{font-size:0.78rem;font-weight:800;color:#e74c3c;width:70px;flex-shrink:0}
+.tc-name{font-size:0.85rem;font-weight:700}
+.tc-sub{font-size:0.68rem;color:#888}
+.tc-att{margin-left:auto;background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:0.7rem;font-weight:700;cursor:pointer;flex-shrink:0}
+.tc-att.done{background:#27ae60}
+
+/* Add student form */
+.form-card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:16px}
+.form-card h3{font-size:0.82rem;font-weight:800;margin-bottom:14px;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.5px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:0.72rem;font-weight:700;color:#555;margin-bottom:4px}
+.field input,.field select{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 12px;font-size:0.85rem;font-family:inherit;outline:none;transition:.2s;-webkit-appearance:none}
+.field input:focus,.field select:focus{border-color:#e74c3c}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-submit{width:100%;background:#e74c3c;color:#fff;border:none;border-radius:12px;padding:13px;font-size:0.9rem;font-weight:800;cursor:pointer;margin-top:4px}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:22px 18px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto}
+.modal-title{font-size:1rem;font-weight:800;margin-bottom:14px;display:flex;justify-content:space-between}
+.modal-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:#888}
+.dr{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:0.82rem}
+.dr:last-child{border-bottom:none}
+.dl{font-weight:700;color:#888;flex:0 0 110px;font-size:0.75rem}
+.dv{color:#1a1a2e;flex:1}
+
+/* Attendance history */
+.att-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:0.78rem}
+.att-item:last-child{border-bottom:none}
+
+/* Alert */
+.alert{background:#fff3cd;border:1.5px solid #ffc107;border-radius:10px;padding:10px 14px;font-size:0.78rem;color:#856404;margin-bottom:10px}
+
+@media(min-width:768px){
+  .page{max-width:780px;margin:0 auto;padding:20px 24px 80px}
+  .stats{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div class="login-wrap" id="loginScreen">
+  <div class="login-box">
+    <div class="login-icon">🎵</div>
+    <div class="login-title">Academy CRM</div>
+    <div class="login-sub">Chords Music Academy</div>
+    <input type="text" id="lu" placeholder="Username">
+    <input type="password" id="lp" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">Login →</button>
+    <div class="login-err" id="lerr">Incorrect credentials</div>
+  </div>
+</div>
+
+<!-- App -->
+<div id="crmApp" style="display:none">
+
+  <div class="hdr">
+    <div class="hdr-logo">🎵</div>
+    <div>
+      <div class="hdr-title">Chords Music Academy</div>
+      <div class="hdr-sub">Academy CRM</div>
+    </div>
+    <button class="hdr-btn" onclick="syncData()">↻ Sync</button>
+    <button class="hdr-btn" onclick="doLogout()">Exit</button>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="page on" id="pg-dash">
+    <div class="stats" id="statsGrid"></div>
+    <div class="sec">📅 Today's Classes</div>
+    <div id="todayClasses"></div>
+    <div class="sec">⚠️ Classes Completing Soon</div>
+    <div id="alertsBox"></div>
+  </div>
+
+  <!-- Students -->
+  <div class="page" id="pg-students">
+    <input class="search-bar" id="searchInput" placeholder="🔍 Search by name, ID, phone..." oninput="renderStudents()">
+    <div class="filter-row">
+      <button class="fb on" onclick="setFilter('all',this)">All</button>
+      <button class="fb" onclick="setFilter('active',this)">🟢 Active</button>
+      <button class="fb" onclick="setFilter('completed',this)">✅ Completed</button>
+      <button class="fb" onclick="setFilter('Piano',this)">🎹 Piano</button>
+      <button class="fb" onclick="setFilter('Vocals',this)">🎤 Vocals</button>
+      <button class="fb" onclick="setFilter('Guitar',this)">🎸 Guitar</button>
+      <button class="fb" onclick="setFilter('Drums',this)">🥁 Drums</button>
+    </div>
+    <div id="studentsList"></div>
+  </div>
+
+  <!-- Add Student -->
+  <div class="page" id="pg-add">
+    <div class="form-card">
+      <h3>➕ Add New Student</h3>
+      <div class="row2">
+        <div class="field"><label>First Name *</label><input id="af-fname" placeholder="First name"></div>
+        <div class="field"><label>Last Name</label><input id="af-lname" placeholder="Last name"></div>
+      </div>
+      <div class="field"><label>Phone / WhatsApp *</label><input id="af-phone" type="tel" placeholder="+91 9876543210"></div>
+      <div class="field"><label>Email</label><input id="af-email" type="email" placeholder="student@email.com"></div>
+      <div class="field"><label>Instrument *</label>
+        <select id="af-course">
+          <option value="Piano">🎹 Piano & Keyboard</option>
+          <option value="Vocals">🎤 Carnatic Vocals</option>
+          <option value="Guitar">🎸 Guitar</option>
+          <option value="Drums">🥁 Drums</option>
+        </select>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Package (Classes) *</label>
+          <select id="af-package">
+            <option value="8">8 Classes (Monthly)</option>
+            <option value="24">24 Classes (3 Months)</option>
+            <option value="48">48 Classes (6 Months)</option>
+            <option value="96">96 Classes (1 Year)</option>
+          </select>
+        </div>
+        <div class="field"><label>Amount Paid (₹)</label><input id="af-amount" type="number" placeholder="5000"></div>
+      </div>
+      <div class="field"><label>Class Schedule</label><input id="af-schedule" placeholder="e.g. Mon 6:00pm, Thu 6:00pm"></div>
+      <div class="field"><label>Join Date</label><input id="af-joindate" type="date"></div>
+      <div class="field"><label>Mode</label>
+        <select id="af-mode">
+          <option value="Online">Online (Google Meet)</option>
+          <option value="Offline">Offline (In-person)</option>
+        </select>
+      </div>
+      <div class="field"><label>Notes</label><input id="af-notes" placeholder="Any notes..."></div>
+      <button class="btn-submit" onclick="addStudent()">✅ Add Student</button>
+    </div>
+  </div>
+
+  <!-- Attendance -->
+  <div class="page" id="pg-attend">
+    <div class="sec">Quick Attendance — Today</div>
+    <div id="attendList"></div>
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="bnav">
+    <button class="bnav-btn on" onclick="showPage('dash',this)"><span class="bi">🏠</span>Dashboard</button>
+    <button class="bnav-btn" onclick="showPage('students',this)"><span class="bi">👥</span>Students</button>
+    <button class="bnav-btn" onclick="showPage('attend',this)"><span class="bi">✅</span>Attendance</button>
+    <button class="bnav-btn" onclick="showPage('add',this)"><span class="bi">➕</span>Add</button>
+  </div>
+
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title">Student Details <button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const fb = initializeApp({
+  apiKey:"AIzaSyDvuCr7IHM7oLYY6e675P_KtcTxsNEJr1c",
+  authDomain:"chords-music-academy.firebaseapp.com",
+  projectId:"chords-music-academy",
+  storageBucket:"chords-music-academy.firebasestorage.app",
+  messagingSenderId:"146425788425",
+  appId:"1:146425788425:web:8abbafbc93287a14ab20d8"
+});
+const db = getFirestore(fb);
+
+// ── Existing 39 students (migrated from old webapp) ──
+const SEED = [
+  {id:"OPA001",name:"Sriram",email:"sriram@email.com",phone:"9876543210",course:"Piano",package:"24",packageAmount:15000,classesCompleted:5,totalClasses:24,status:"active",joinDate:"2024-01-15",schedule:"Mon 6:20am, Thu 6:20am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA002",name:"Gayatri",email:"gayatri@email.com",phone:"9876543211",course:"Piano",package:"8",packageAmount:6000,classesCompleted:3,totalClasses:8,status:"active",joinDate:"2024-02-01",schedule:"Mon 7:00am, Sat 6:20pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA003",name:"Sarayu",email:"sarayu@email.com",phone:"9876543212",course:"Piano",package:"8",packageAmount:3000,classesCompleted:2,totalClasses:8,status:"active",joinDate:"2024-02-05",schedule:"Mon 7:40am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA004",name:"Sharvin",email:"sharvin@email.com",phone:"9876543213",course:"Piano",package:"24",packageAmount:15000,classesCompleted:8,totalClasses:24,status:"active",joinDate:"2024-01-20",schedule:"Mon 8:20am, Tue 8:30pm, Wed 10:20am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA005",name:"Pratham",email:"pratham@email.com",phone:"9876543214",course:"Piano",package:"8",packageAmount:4800,classesCompleted:4,totalClasses:8,status:"active",joinDate:"2024-02-10",schedule:"Mon 9:00am, Fri 9:00am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA006",name:"Kanvas",email:"kanvas@email.com",phone:"9876543215",course:"Piano",package:"8",packageAmount:5000,classesCompleted:3,totalClasses:8,status:"active",joinDate:"2024-02-12",schedule:"Mon 9:40am, Wed 9:40am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA007",name:"Bhargavram",email:"bhargavram@email.com",phone:"9876543216",course:"Piano",package:"24",packageAmount:15000,classesCompleted:6,totalClasses:24,status:"active",joinDate:"2024-01-25",schedule:"Mon 3:30pm, Fri 3:30pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA008",name:"Ravi Parri",email:"ravi@email.com",phone:"9876543217",course:"Piano",package:"8",packageAmount:4500,classesCompleted:2,totalClasses:8,status:"active",joinDate:"2024-02-15",schedule:"Mon 4:50pm, Thu 4:50pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA009",name:"Srikar",email:"srikar@email.com",phone:"9876543218",course:"Piano",package:"24",packageAmount:15000,classesCompleted:7,totalClasses:24,status:"active",joinDate:"2024-01-30",schedule:"Mon 5:30pm, Thu 5:30pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA010",name:"Indira",email:"indira@email.com",phone:"9876543219",course:"Piano",package:"8",packageAmount:6000,classesCompleted:4,totalClasses:8,status:"active",joinDate:"2024-02-08",schedule:"Mon 6:00pm, Thu 6:00pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA011",name:"Pranathi",email:"pranathi@email.com",phone:"9876543220",course:"Piano",package:"8",packageAmount:5000,classesCompleted:3,totalClasses:8,status:"active",joinDate:"2024-02-12",schedule:"Mon 6:20pm, Wed 6:20pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA012",name:"Anil Kumar",email:"anil@email.com",phone:"9876543221",course:"Piano",package:"8",packageAmount:6000,classesCompleted:2,totalClasses:8,status:"active",joinDate:"2024-02-18",schedule:"Mon 7:00pm, Thu 7:00pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA013",name:"Revanth",email:"revanth@email.com",phone:"9876543222",course:"Piano",package:"8",packageAmount:4800,classesCompleted:1,totalClasses:8,status:"active",joinDate:"2024-02-20",schedule:"Mon 7:40pm, Thu 7:40pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA014",name:"Adhyasri",email:"adhyasri@email.com",phone:"9876543223",course:"Piano",package:"24",packageAmount:15000,classesCompleted:9,totalClasses:24,status:"active",joinDate:"2024-01-18",schedule:"Tue 6:20am, Sun 8:20pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA015",name:"Mayukha",email:"mayukha@email.com",phone:"9876543224",course:"Piano",package:"8",packageAmount:6000,classesCompleted:3,totalClasses:8,status:"active",joinDate:"2024-02-05",schedule:"Tue 7:00am, Fri 7:00am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA016",name:"Harshith",email:"harshith@email.com",phone:"9876543225",course:"Piano",package:"8",packageAmount:4500,classesCompleted:2,totalClasses:8,status:"active",joinDate:"2024-02-10",schedule:"Tue 7:40am, Thu 7:40am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA017",name:"Sneha",email:"sneha@email.com",phone:"9876543226",course:"Piano",package:"24",packageAmount:15000,classesCompleted:6,totalClasses:24,status:"active",joinDate:"2024-01-28",schedule:"Tue 8:20am, Thu 9:00am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA018",name:"Sravya",email:"sravya@email.com",phone:"9876543227",course:"Piano",package:"8",packageAmount:5000,classesCompleted:4,totalClasses:8,status:"active",joinDate:"2024-02-08",schedule:"Tue 10:20am, Thu 10:20am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA019",name:"Krishika",email:"krishika@email.com",phone:"9876543228",course:"Piano",package:"8",packageAmount:4500,classesCompleted:2,totalClasses:8,status:"active",joinDate:"2024-02-15",schedule:"Tue 6:20pm, Thu 6:20pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA020",name:"Murali K",email:"murali@email.com",phone:"9876543229",course:"Piano",package:"8",packageAmount:6000,classesCompleted:3,totalClasses:8,status:"active",joinDate:"2024-02-12",schedule:"Tue 7:40pm, Fri 7:40pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA021",name:"Abhiram",email:"abhiram@email.com",phone:"9876543230",course:"Piano",package:"8",packageAmount:5000,classesCompleted:4,totalClasses:8,status:"active",joinDate:"2024-02-05",schedule:"Wed 6:20am, Sat 6:20am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA022",name:"Aashi",email:"aashi@email.com",phone:"9876543231",course:"Piano",package:"8",packageAmount:6000,classesCompleted:2,totalClasses:8,status:"active",joinDate:"2024-02-18",schedule:"Wed 7:00am, Sun 9:00pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA023",name:"Siri",email:"siri@email.com",phone:"9876543232",course:"Piano",package:"8",packageAmount:6000,classesCompleted:3,totalClasses:8,status:"active",joinDate:"2024-02-10",schedule:"Wed 7:40am, Fri 7:40am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA024",name:"Darshil Ashwini",email:"darshil@email.com",phone:"9876543233",course:"Piano",package:"8",packageAmount:5000,classesCompleted:2,totalClasses:8,status:"active",joinDate:"2024-02-15",schedule:"Wed 8:20am, Sat 8:20am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA025",name:"Allen",email:"allen@email.com",phone:"9876543234",course:"Piano",package:"8",packageAmount:5000,classesCompleted:3,totalClasses:8,status:"active",joinDate:"2024-02-12",schedule:"Wed 9:00am, Sat 9:00am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA026",name:"Saanvi",email:"saanvi@email.com",phone:"9876543235",course:"Piano",package:"24",packageAmount:15000,classesCompleted:8,totalClasses:24,status:"active",joinDate:"2024-01-22",schedule:"Wed 4:30pm, Fri 6:20am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA027",name:"Padmavati",email:"padmavati@email.com",phone:"9876543236",course:"Piano",package:"8",packageAmount:6000,classesCompleted:2,totalClasses:8,status:"active",joinDate:"2024-02-18",schedule:"Wed 7:00pm, Fri 7:00pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA028",name:"Hanvitha",email:"hanvitha@email.com",phone:"9876543237",course:"Piano",package:"24",packageAmount:15000,classesCompleted:7,totalClasses:24,status:"active",joinDate:"2024-01-25",schedule:"Thu 7:00am, Sun 7:40pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA029",name:"Srinika",email:"srinika@email.com",phone:"9876543238",course:"Piano",package:"24",packageAmount:15000,classesCompleted:5,totalClasses:24,status:"active",joinDate:"2024-02-01",schedule:"Thu 8:20am, Sat 7:40pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA030",name:"Nainika",email:"nainika@email.com",phone:"9876543239",course:"Piano",package:"8",packageAmount:5000,classesCompleted:3,totalClasses:8,status:"active",joinDate:"2024-02-12",schedule:"Thu 9:40am, Sat 9:40am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA031",name:"Jaasritha",email:"jaasritha@email.com",phone:"9876543240",course:"Piano",package:"8",packageAmount:5000,classesCompleted:2,totalClasses:8,status:"active",joinDate:"2024-02-15",schedule:"Fri 8:20am, Sat 7:00am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA032",name:"Viha",email:"viha@email.com",phone:"9876543241",course:"Piano",package:"8",packageAmount:5000,classesCompleted:1,totalClasses:8,status:"active",joinDate:"2024-02-20",schedule:"Fri 9:40am",mode:"Online",notes:"",classes:[]},
+  {id:"OPA033",name:"Parinita",email:"parinita@email.com",phone:"9876543242",course:"Piano",package:"8",packageAmount:5000,classesCompleted:2,totalClasses:8,status:"active",joinDate:"2024-02-18",schedule:"Fri 5:00pm, Sat 5:00pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA034",name:"Pavan",email:"pavan@email.com",phone:"9876543243",course:"Piano",package:"8",packageAmount:4000,classesCompleted:3,totalClasses:8,status:"active",joinDate:"2024-02-10",schedule:"Sat 7:40am, Sun 6:20pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA035",name:"Sahasra",email:"sahasra@email.com",phone:"9876543244",course:"Piano",package:"24",packageAmount:15000,classesCompleted:6,totalClasses:24,status:"active",joinDate:"2024-01-28",schedule:"Sat 4:15pm, Sun 4:15pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA036",name:"Krishna",email:"krishna@email.com",phone:"9876543245",course:"Piano",package:"4",packageAmount:3000,classesCompleted:1,totalClasses:4,status:"active",joinDate:"2024-02-22",schedule:"Sat 8:20pm",mode:"Online",notes:"",classes:[]},
+  {id:"OPA037",name:"Group Class 1",email:"group1@email.com",phone:"9876543246",course:"Piano",package:"8",packageAmount:4800,classesCompleted:2,totalClasses:8,status:"active",joinDate:"2024-02-05",schedule:"Tue 9:00am, Sat 10:20am",mode:"Online",notes:"2 Members",classes:[]},
+  {id:"OPA038",name:"Group Class 2",email:"group2@email.com",phone:"9876543247",course:"Piano",package:"8",packageAmount:12000,classesCompleted:3,totalClasses:8,status:"active",joinDate:"2024-02-08",schedule:"Tue 5:40pm, Fri 5:40pm",mode:"Online",notes:"5 Members",classes:[]},
+  {id:"OPA039",name:"Group Class 3",email:"group3@email.com",phone:"9876543248",course:"Piano",package:"8",packageAmount:4800,classesCompleted:1,totalClasses:8,status:"active",joinDate:"2024-02-15",schedule:"Sat 5:40pm, Sun 5:40pm",mode:"Online",notes:"2 Members",classes:[]}
+];
+
+var allStudents = [];
+var currentFilter = 'all';
+var ADMIN_PASS = 'Sep@2012';
+
+// Load password
+async function loadPass() {
+  try {
+    var s = await getDoc(doc(db,'settings','admin'));
+    if(s.exists() && s.data().password) ADMIN_PASS = s.data().password;
+  } catch(e){}
+}
+loadPass();
+
+window.doLogin = async function() {
+  var u = document.getElementById('lu').value.trim();
+  var p = document.getElementById('lp').value;
+  if((u==='admin'||u==='Admin') && p===ADMIN_PASS) {
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('crmApp').style.display='block';
+    await loadStudents();
+  } else {
+    document.getElementById('lerr').style.display='block';
+  }
+};
+
+window.doLogout = function() {
+  document.getElementById('crmApp').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+};
+
+async function loadStudents() {
+  try {
+    var snap = await getDocs(collection(db,'students'));
+    allStudents = [];
+    snap.forEach(function(d){ allStudents.push({_id:d.id,...d.data()}); });
+    if(allStudents.length === 0) {
+      // First time — seed from old data
+      for(var s of SEED) {
+        var ref = await addDoc(collection(db,'students'), s);
+        allStudents.push({_id:ref.id,...s});
+      }
+    }
+    renderDash();
+    renderStudents();
+    renderAttendance();
+  } catch(e) { alert('Error loading: '+e.message); }
+}
+
+window.syncData = async function() {
+  await loadStudents();
+  alert('Synced! '+allStudents.length+' students loaded.');
+};
+
+// ── Dashboard ──
+function renderDash() {
+  var total = allStudents.length;
+  var active = allStudents.filter(function(s){ return s.status==='active'; }).length;
+  var completed = allStudents.filter(function(s){ return s.classesCompleted>=s.totalClasses; }).length;
+  var revenue = allStudents.reduce(function(a,s){ return a+(s.packageAmount||0); },0);
+
+  document.getElementById('statsGrid').innerHTML =
+    stat(total,'👥','Total Students','#1a1a2e') +
+    stat(active,'🟢','Active','#27ae60') +
+    stat(completed,'✅','Completed','#3498db') +
+    stat('₹'+Math.round(revenue/1000)+'K','💰','Total Revenue','#e74c3c');
+
+  // Today's classes
+  var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var today = days[new Date().getDay()];
+  var todayStudents = allStudents.filter(function(s){ return s.schedule && s.schedule.includes(today); });
+  var box = document.getElementById('todayClasses');
+  if(!todayStudents.length) { box.innerHTML='<div style="color:#aaa;font-size:0.82rem;padding:10px 0">No classes scheduled today</div>'; }
+  else {
+    box.innerHTML = todayStudents.map(function(s){
+      var todayStr = new Date().toLocaleDateString('en-IN');
+      var marked = s.classes && s.classes.includes(todayStr);
+      var phone = (s.phone||'').replace(/\D/g,'');
+      return '<div class="today-card">' +
+        '<div class="tc-time">'+extractTime(s.schedule,today)+'</div>' +
+        '<div><div class="tc-name">'+s.name+'</div><div class="tc-sub">'+s.course+' · '+(s.classesCompleted||0)+'/'+s.totalClasses+' done</div></div>' +
+        '<button class="tc-att'+(marked?' done':'')+ '" onclick="markAttendance(\''+s._id+'\')">'+(marked?'✅':'Mark')+'</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Alerts — 2 or fewer classes remaining
+  var alerts = allStudents.filter(function(s){ return s.status==='active' && (s.totalClasses - (s.classesCompleted||0)) <= 2; });
+  var ab = document.getElementById('alertsBox');
+  if(!alerts.length) { ab.innerHTML='<div style="color:#aaa;font-size:0.82rem;padding:10px 0">No alerts</div>'; }
+  else { ab.innerHTML = alerts.map(function(s){ var rem=s.totalClasses-(s.classesCompleted||0); return '<div class="alert">⚠️ <strong>'+s.name+'</strong> — '+rem+' class'+(rem===1?'':'es')+' remaining ('+s.package+'-class package)</div>'; }).join(''); }
+}
+
+function stat(n,ic,lb,color) {
+  return '<div class="stat"><div class="stat-num" style="color:'+color+'">'+ic+' '+n+'</div><div class="stat-label">'+lb+'</div></div>';
+}
+
+function extractTime(schedule, day) {
+  if(!schedule) return '';
+  var parts = schedule.split(',');
+  for(var p of parts){ if(p.trim().startsWith(day)) return p.trim().replace(day,'').trim(); }
+  return '';
+}
+
+// ── Students ──
+window.setFilter = function(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.fb').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  renderStudents();
+};
+
+window.renderStudents = function() {
+  var q = (document.getElementById('searchInput')||{}).value||'';
+  var list = allStudents.filter(function(s){
+    var matchQ = !q || s.name.toLowerCase().includes(q.toLowerCase()) || (s.id||'').toLowerCase().includes(q.toLowerCase()) || (s.phone||'').includes(q);
+    var matchF = currentFilter==='all' ? true :
+      currentFilter==='active' ? s.status==='active' && s.classesCompleted<s.totalClasses :
+      currentFilter==='completed' ? s.classesCompleted>=s.totalClasses :
+      (s.course||'').toLowerCase().includes(currentFilter.toLowerCase());
+    return matchQ && matchF;
+  });
+
+  var container = document.getElementById('studentsList');
+  if(!list.length){ container.innerHTML='<div style="color:#aaa;text-align:center;padding:40px 0">No students found</div>'; return; }
+  container.innerHTML = list.map(function(s){ return buildCard(s); }).join('');
+};
+
+function buildCard(s) {
+  var prog = Math.min(100, Math.round(((s.classesCompleted||0)/s.totalClasses)*100));
+  var done = prog>=100;
+  var initials = s.name.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
+  var phone = (s.phone||'').replace(/\D/g,'');
+  var waMsg = encodeURIComponent('Hi '+s.name.split(' ')[0]+'! This is Chords Music Academy. How are your classes going? 🎵');
+  var todayStr = new Date().toLocaleDateString('en-IN');
+  var markedToday = s.classes && s.classes.includes(todayStr);
+
+  return '<div class="scard'+(done?' completed':'')+'">'+
+    '<div class="sc-top">'+
+      '<div class="sc-av'+(done?' completed':'')+'">'+initials+'</div>'+
+      '<div class="sc-info">'+
+        '<div class="sc-name">'+s.name+'</div>'+
+        '<div class="sc-meta">'+(s.phone||'—')+' · '+(s.course||'')+'</div>'+
+        '<div class="sc-id">'+(s.id||s._id)+'</div>'+
+        '<span class="sc-badge '+(done?'badge-completed':s.status==='inactive'?'badge-inactive':'badge-active')+'">'+(done?'✅ Completed':s.status==='inactive'?'Inactive':'🟢 Active')+'</span>'+
+      '</div>'+
+    '</div>'+
+    (s.schedule?'<div class="sched">📅 '+s.schedule+'</div>':'')+
+    '<div class="prog-wrap">'+
+      '<div class="prog-label"><span>'+(s.classesCompleted||0)+'/'+s.totalClasses+' classes</span><span>'+prog+'%</span></div>'+
+      '<div class="prog-bar"><div class="prog-fill'+(done?' done':'')+'" style="width:'+prog+'%"></div></div>'+
+    '</div>'+
+    '<div class="sc-actions">'+
+      '<button class="sc-btn btn-attend'+(markedToday?' done-today':'')+'" onclick="markAttendance(\''+s._id+'\')">'+(markedToday?'✅ Today':'+ Attend')+'</button>'+
+      '<a href="https://api.whatsapp.com/send?phone='+phone+'&text='+waMsg+'" class="sc-btn btn-wa" target="_blank">💬</a>'+
+      '<button class="sc-btn btn-detail" onclick="showDetail(\''+s._id+'\')">Details</button>'+
+    '</div>'+
+  '</div>';
+}
+
+// ── Attendance ──
+window.markAttendance = async function(id) {
+  var s = allStudents.find(function(x){ return x._id===id; });
+  if(!s) return;
+  var todayStr = new Date().toLocaleDateString('en-IN');
+  var classes = s.classes || [];
+  if(classes.includes(todayStr)) { alert('Attendance already marked for today!'); return; }
+  classes.push(todayStr);
+  var newCount = (s.classesCompleted||0) + 1;
+  try {
+    await updateDoc(doc(db,'students',id),{ classes:classes, classesCompleted:newCount });
+    s.classes = classes;
+    s.classesCompleted = newCount;
+    renderDash();
+    renderStudents();
+    renderAttendance();
+  } catch(e){ alert('Error: '+e.message); }
+};
+
+function renderAttendance() {
+  var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var today = days[new Date().getDay()];
+  var todayStr = new Date().toLocaleDateString('en-IN');
+  var list = allStudents.filter(function(s){ return s.schedule && s.schedule.includes(today); });
+  var box = document.getElementById('attendList');
+  if(!list.length){ box.innerHTML='<div style="color:#aaa;text-align:center;padding:40px 0">No classes today</div>'; return; }
+  box.innerHTML = list.map(function(s){
+    var marked = s.classes && s.classes.includes(todayStr);
+    return '<div class="today-card">'+
+      '<div><div class="tc-name">'+s.name+'</div><div class="tc-sub">'+extractTime(s.schedule,today)+' · '+(s.classesCompleted||0)+'/'+s.totalClasses+'</div></div>'+
+      '<button class="tc-att'+(marked?' done':'')+'" onclick="markAttendance(\''+s._id+'\')">'+(marked?'✅ Done':'Mark')+'</button>'+
+    '</div>';
+  }).join('');
+}
+
+// ── Add Student ──
+window.addStudent = async function() {
+  var fname = document.getElementById('af-fname').value.trim();
+  var lname = document.getElementById('af-lname').value.trim();
+  var phone = document.getElementById('af-phone').value.trim();
+  if(!fname || !phone){ alert('Name and phone are required'); return; }
+
+  var pkg = document.getElementById('af-package').value;
+  var data = {
+    id: 'OPA'+String(allStudents.length+1).padStart(3,'0'),
+    name: fname+(lname?' '+lname:''),
+    email: document.getElementById('af-email').value.trim(),
+    phone: phone,
+    course: document.getElementById('af-course').value,
+    package: pkg,
+    packageAmount: parseInt(document.getElementById('af-amount').value)||0,
+    classesCompleted: 0,
+    totalClasses: parseInt(pkg),
+    status: 'active',
+    joinDate: document.getElementById('af-joindate').value || new Date().toISOString().split('T')[0],
+    schedule: document.getElementById('af-schedule').value.trim(),
+    mode: document.getElementById('af-mode').value,
+    notes: document.getElementById('af-notes').value.trim(),
+    classes: [],
+    createdAt: new Date().toISOString()
+  };
+
+  try {
+    var ref = await addDoc(collection(db,'students'), data);
+    allStudents.push({_id:ref.id,...data});
+    renderDash(); renderStudents(); renderAttendance();
+    showPage('students', document.querySelectorAll('.bnav-btn')[1]);
+    alert('✅ '+data.name+' added successfully!');
+    // Clear form
+    ['af-fname','af-lname','af-phone','af-email','af-amount','af-schedule','af-notes'].forEach(function(id){ document.getElementById(id).value=''; });
+  } catch(e){ alert('Error: '+e.message); }
+};
+
+// ── Detail Modal ──
+window.showDetail = function(id) {
+  var s = allStudents.find(function(x){ return x._id===id; });
+  if(!s) return;
+  var prog = Math.min(100,Math.round(((s.classesCompleted||0)/s.totalClasses)*100));
+  var history = (s.classes||[]).slice().reverse().slice(0,10).map(function(d){
+    return '<div class="att-item"><span>'+d+'</span><span style="color:#27ae60">✅ Present</span></div>';
+  }).join('') || '<div style="color:#aaa;font-size:0.78rem">No attendance recorded yet</div>';
+
+  document.getElementById('modalContent').innerHTML =
+    '<div class="dr"><div class="dl">ID</div><div class="dv">'+(s.id||s._id)+'</div></div>'+
+    '<div class="dr"><div class="dl">Name</div><div class="dv">'+s.name+'</div></div>'+
+    '<div class="dr"><div class="dl">Phone</div><div class="dv">'+s.phone+'</div></div>'+
+    '<div class="dr"><div class="dl">Email</div><div class="dv">'+(s.email||'—')+'</div></div>'+
+    '<div class="dr"><div class="dl">Instrument</div><div class="dv">'+s.course+'</div></div>'+
+    '<div class="dr"><div class="dl">Package</div><div class="dv">'+s.package+' classes · ₹'+(s.packageAmount||0).toLocaleString()+'</div></div>'+
+    '<div class="dr"><div class="dl">Progress</div><div class="dv">'+(s.classesCompleted||0)+'/'+s.totalClasses+' ('+prog+'%)</div></div>'+
+    '<div class="dr"><div class="dl">Schedule</div><div class="dv">'+(s.schedule||'—')+'</div></div>'+
+    '<div class="dr"><div class="dl">Mode</div><div class="dv">'+(s.mode||'Online')+'</div></div>'+
+    '<div class="dr"><div class="dl">Joined</div><div class="dv">'+s.joinDate+'</div></div>'+
+    '<div class="dr"><div class="dl">Notes</div><div class="dv">'+(s.notes||'—')+'</div></div>'+
+    '<div style="margin-top:14px"><div style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Recent Attendance</div>'+history+'</div>';
+
+  document.getElementById('modalBg').classList.add('show');
+};
+
+window.closeModal = function() { document.getElementById('modalBg').classList.remove('show'); };
+
+// ── Navigation ──
+window.showPage = function(name, btn) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('on'); });
+  document.querySelectorAll('.bnav-btn').forEach(function(b){ b.classList.remove('on'); });
+  document.getElementById('pg-'+name).classList.add('on');
+  btn.classList.add('on');
+};
+
+// Set default join date
+document.getElementById('af-joindate').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
