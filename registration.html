@@ -452,7 +452,6 @@ function showSuccess(regId, name, dob, address, phone, email, guardian, inst, le
     '*Level:* ' + level + '\n' +
     '*Class Mode:* ' + mode + '\n' +
     (notes && notes !== '—' ? '*Notes:* ' + notes + '\n' : '') +
-    '📎 *Send to student:* ' + classUrl + '\n' +
     '━━━━━━━━━━━━━━━━━━'
   );
   document.getElementById('waConfirmBtn').href = 'https://api.whatsapp.com/send?phone=917981585309&text=' + stuMsg;
