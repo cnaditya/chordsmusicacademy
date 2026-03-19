@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Student Registration — Chords Music Academy</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a2e}
+
+.hdr{background:#1a1a2e;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+.hdr-icon{width:36px;height:36px;background:#e74c3c;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.hdr-title{font-size:0.95rem;font-weight:700;line-height:1.2}
+.hdr-sub{font-size:0.65rem;opacity:0.65}
+
+.hero{background:linear-gradient(135deg,#1a1a2e 0%,#2c3e6b 100%);padding:20px 16px;text-align:center;color:#fff}
+.hero-icon{font-size:2rem;margin-bottom:6px}
+.hero-title{font-size:1.15rem;font-weight:800;margin-bottom:4px}
+.hero-sub{font-size:0.78rem;opacity:0.7;line-height:1.5}
+
+.page{max-width:600px;margin:0 auto;padding:20px 16px 48px}
+
+/* Step indicator */
+.steps{display:flex;gap:0;margin-bottom:24px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07)}
+.step{flex:1;padding:10px 6px;text-align:center;font-size:0.65rem;font-weight:700;color:#aaa;border-bottom:3px solid transparent;transition:.2s;cursor:default}
+.step.active{color:#e74c3c;border-bottom-color:#e74c3c;background:#fff5f5}
+.step.done{color:#2e7d32;border-bottom-color:#2e7d32;background:#f0fff4}
+.step-num{display:block;font-size:0.85rem;font-weight:800;margin-bottom:2px}
+
+/* Card */
+.card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 8px rgba(0,0,0,0.07);margin-bottom:16px}
+.card-title{font-size:0.8rem;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #f0f2f5}
+
+/* Form fields */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:0.75rem;font-weight:700;color:#555;margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:11px 13px;font-size:0.88rem;font-family:inherit;color:#1a1a2e;background:#fff;outline:none;transition:.2s;-webkit-appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#e74c3c;box-shadow:0 0 0 3px rgba(231,76,60,0.08)}
+.field textarea{resize:none;height:72px;line-height:1.5}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* Option cards (instrument / level / class type) */
+.opt-grid{display:grid;gap:10px}
+.opt-grid.cols2{grid-template-columns:1fr 1fr}
+.opt-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+.opt-card{border:2px solid #e8e8e8;border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:.2s;background:#fafafa;user-select:none}
+.opt-card:hover{border-color:#e74c3c;background:#fff5f5}
+.opt-card.sel{border-color:#e74c3c;background:#fff0f0}
+.opt-card .oc-icon{font-size:1.5rem;margin-bottom:4px}
+.opt-card .oc-label{font-size:0.72rem;font-weight:700;color:#333;line-height:1.3}
+.opt-card.sel .oc-label{color:#e74c3c}
+
+/* Nav buttons */
+.nav{display:flex;gap:12px;margin-top:6px}
+.btn-back{flex:0 0 auto;background:#f0f2f5;color:#555;border:none;border-radius:12px;padding:13px 20px;font-size:0.88rem;font-weight:700;cursor:pointer}
+.btn-next{flex:1;background:#e74c3c;color:#fff;border:none;border-radius:12px;padding:13px;font-size:0.92rem;font-weight:800;cursor:pointer;transition:.2s}
+.btn-next:disabled{opacity:0.5;cursor:not-allowed}
+.btn-next:not(:disabled):hover{background:#c0392b}
+
+/* Success */
+.success{display:none;text-align:center;padding:32px 20px}
+.success-icon{font-size:3.5rem;margin-bottom:14px}
+.success-title{font-size:1.3rem;font-weight:800;color:#1a1a2e;margin-bottom:6px}
+.success-sub{font-size:0.82rem;color:#666;line-height:1.6;margin-bottom:6px}
+.reg-id{display:inline-block;background:#1a1a2e;color:#fff;font-size:0.88rem;font-weight:800;padding:8px 18px;border-radius:20px;margin:10px 0 18px;letter-spacing:1px}
+.wa-btn{display:block;background:#25d366;color:#fff;text-decoration:none;border-radius:12px;padding:14px;font-size:0.92rem;font-weight:800;margin-bottom:10px}
+
+/* Error */
+.err{font-size:0.72rem;color:#e74c3c;margin-top:4px;display:none}
+.field.invalid input,.field.invalid select{border-color:#e74c3c}
+.field.invalid .err{display:block}
+
+@media(min-width:768px){
+  .page{padding:28px 24px 60px}
+  .opt-grid.cols3{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="hdr">
+  <div class="hdr-icon">🎵</div>
+  <div>
+    <div class="hdr-title">Chords Music Academy</div>
+    <div class="hdr-sub">Student Registration</div>
+  </div>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-icon">📝</div>
+  <div class="hero-title">New Student Registration</div>
+  <div class="hero-sub">Fill in your details and we'll get back to you on WhatsApp</div>
+</div>
+
+<div class="page">
+
+  <!-- Step indicator -->
+  <div class="steps">
+    <div class="step active" id="s1"><span class="step-num">1</span>Personal</div>
+    <div class="step" id="s2"><span class="step-num">2</span>Contact</div>
+    <div class="step" id="s3"><span class="step-num">3</span>Instrument</div>
+    <div class="step" id="s4"><span class="step-num">4</span>Preference</div>
+  </div>
+
+  <!-- STEP 1: Personal Details -->
+  <div id="step1">
+    <div class="card">
+      <div class="card-title">👤 Personal Details</div>
+      <div class="row2">
+        <div class="field" id="f-fname">
+          <label>First Name *</label>
+          <input type="text" id="fname" placeholder="e.g. Rahul" autocomplete="given-name">
+          <div class="err">Please enter your first name</div>
+        </div>
+        <div class="field" id="f-lname">
+          <label>Last Name *</label>
+          <input type="text" id="lname" placeholder="e.g. Sharma" autocomplete="family-name">
+          <div class="err">Please enter your last name</div>
+        </div>
+      </div>
+      <div class="field" id="f-dob">
+        <label>Date of Birth *</label>
+        <input type="date" id="dob" max="">
+        <div class="err">Please enter your date of birth</div>
+      </div>
+      <div class="field">
+        <label>Address / City *</label>
+        <textarea id="address" placeholder="House/Flat, Street, City, State, Country"></textarea>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn-next" onclick="goStep(2)">Next — Contact Details →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Contact Details -->
+  <div id="step2" style="display:none">
+    <div class="card">
+      <div class="card-title">📞 Contact Details</div>
+      <div class="field" id="f-phone">
+        <label>WhatsApp Number *</label>
+        <input type="tel" id="phone" placeholder="+91 98765 43210" autocomplete="tel">
+        <div class="err">Please enter a valid phone number</div>
+      </div>
+      <div class="field" id="f-email">
+        <label>Email Address *</label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+        <div class="err">Please enter a valid email address</div>
+      </div>
+      <div class="field">
+        <label>Parent / Guardian Name <span style="font-weight:400;color:#aaa">(if student is a minor)</span></label>
+        <input type="text" id="guardian" placeholder="Leave blank if not applicable">
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goStep(1)">← Back</button>
+      <button class="btn-next" onclick="goStep(3)">Next — Instrument →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Instrument & Experience -->
+  <div id="step3" style="display:none">
+    <div class="card">
+      <div class="card-title">🎵 Which Instrument?</div>
+      <div class="opt-grid cols3" id="inst-opts">
+        <div class="opt-card" data-val="Piano & Keyboard" onclick="pick(this,'inst-opts')">
+          <div class="oc-icon">🎹</div><div class="oc-label">Piano &amp; Keyboard</div>
+        </div>
+        <div class="opt-card" data-val="Carnatic Vocals" onclick="pick(this,'inst-opts')">
+          <div class="oc-icon">🎤</div><div class="oc-label">Carnatic Vocals</div>
+        </div>
+        <div class="opt-card" data-val="Guitar" onclick="pick(this,'inst-opts')">
+          <div class="oc-icon">🎸</div><div class="oc-label">Guitar</div>
+        </div>
+        <div class="opt-card" data-val="Drums" onclick="pick(this,'inst-opts')">
+          <div class="oc-icon">🥁</div><div class="oc-label">Drums</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 Experience Level</div>
+      <div class="opt-grid cols2" id="level-opts">
+        <div class="opt-card" data-val="Complete Beginner" onclick="pick(this,'level-opts')">
+          <div class="oc-icon">🌱</div><div class="oc-label">Complete Beginner</div>
+        </div>
+        <div class="opt-card" data-val="Some Experience" onclick="pick(this,'level-opts')">
+          <div class="oc-icon">🎓</div><div class="oc-label">Some Experience</div>
+        </div>
+        <div class="opt-card" data-val="Intermediate" onclick="pick(this,'level-opts')">
+          <div class="oc-icon">⭐</div><div class="oc-label">Intermediate</div>
+        </div>
+        <div class="opt-card" data-val="Advanced" onclick="pick(this,'level-opts')">
+          <div class="oc-icon">🏆</div><div class="oc-label">Advanced</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button class="btn-back" onclick="goStep(2)">← Back</button>
+      <button class="btn-next" onclick="goStep(4)">Next — Preference →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Class Preference -->
+  <div id="step4" style="display:none">
+    <div class="card">
+      <div class="card-title">🖥 How Would You Like to Learn?</div>
+      <div class="opt-grid" id="mode-opts">
+        <div class="opt-card" data-val="Online Live Classes" onclick="pick(this,'mode-opts')">
+          <div class="oc-icon">💻</div>
+          <div class="oc-label">Online Live Classes<br><span style="font-weight:400;font-size:0.65rem;color:#888">Google Meet · 1-on-1</span></div>
+        </div>
+        <div class="opt-card" data-val="Offline Classes (In-person)" onclick="pick(this,'mode-opts')">
+          <div class="oc-icon">🏫</div>
+          <div class="oc-label">Offline Classes<br><span style="font-weight:400;font-size:0.65rem;color:#888">In-person · Manikonda, Hyd</span></div>
+        </div>
+        <div class="opt-card" data-val="Recorded Tutorial Packages" onclick="pick(this,'mode-opts')">
+          <div class="oc-icon">🎬</div>
+          <div class="oc-label">Recorded Tutorials<br><span style="font-weight:400;font-size:0.65rem;color:#888">Self-paced · Anytime access</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💬 Anything Else?</div>
+      <div class="field">
+        <label>Additional notes <span style="font-weight:400;color:#aaa">(optional)</span></label>
+        <textarea id="notes" placeholder="Any specific goals, preferred class timings, or questions..."></textarea>
+      </div>
+    </div>
+
+    <div id="submit-err" style="background:#fff5f5;border:1.5px solid #e74c3c;border-radius:10px;padding:10px 14px;font-size:0.78rem;color:#c0392b;margin-bottom:12px;display:none">
+      ⚠️ Please select an instrument, experience level, and class preference before submitting.
+    </div>
+
+    <div class="nav">
+      <button class="btn-back" onclick="goStep(3)">← Back</button>
+      <button class="btn-next" id="submitBtn" onclick="submitReg()">✅ Submit Registration</button>
+    </div>
+  </div>
+
+  <!-- Success -->
+  <div class="success" id="successBox">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">You're Registered!</div>
+    <div class="success-sub">Welcome to Chords Music Academy.<br>Your registration ID is:</div>
+    <div class="reg-id" id="regIdDisplay">CMA-REG-000000</div>
+    <div class="success-sub" style="margin-bottom:18px">We've sent a confirmation to your email.<br>Our team will reach you on WhatsApp within minutes!</div>
+    <a href="#" id="waConfirmBtn" class="wa-btn" target="_blank">💬 Message Us on WhatsApp</a>
+    <div style="font-size:0.72rem;color:#aaa">📞 +91-79815 85309</div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+emailjs.init('LbGxJUAXBqvBlf_0t');
+
+var EJS_SERVICE = 'service_cma';
+var EJS_REG_OWNER = 'template_reg_owner';   // create this template
+var EJS_REG_STUDENT = 'template_reg_student'; // create this template
+
+// Set max date for DOB (today)
+document.getElementById('dob').max = new Date().toISOString().split('T')[0];
+
+function goStep(n) {
+  // Validate current step before advancing
+  var cur = getCurrentStep();
+  if (n > cur && !validateStep(cur)) return;
+
+  for (var i = 1; i <= 4; i++) {
+    var el = document.getElementById('step' + i);
+    if (el) el.style.display = (i === n) ? 'block' : 'none';
+    var si = document.getElementById('s' + i);
+    si.classList.remove('active','done');
+    if (i === n) si.classList.add('active');
+    else if (i < n) si.classList.add('done');
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function getCurrentStep() {
+  for (var i = 1; i <= 4; i++) {
+    var el = document.getElementById('step' + i);
+    if (el && el.style.display !== 'none') return i;
+  }
+  return 1;
+}
+
+function validateStep(n) {
+  var ok = true;
+  if (n === 1) {
+    ok = req('fname') & req('lname') & req('dob') & reqTA('address');
+  } else if (n === 2) {
+    ok = req('phone') & reqEmail('email');
+  }
+  return ok;
+}
+
+function req(id) {
+  var el = document.getElementById(id);
+  var wrap = document.getElementById('f-' + id);
+  var v = el.value.trim();
+  if (!v) { if(wrap) wrap.classList.add('invalid'); return false; }
+  if(wrap) wrap.classList.remove('invalid');
+  return true;
+}
+function reqTA(id) {
+  var el = document.getElementById(id);
+  return el.value.trim().length > 0;
+}
+function reqEmail(id) {
+  var el = document.getElementById(id);
+  var wrap = document.getElementById('f-' + id);
+  var v = el.value.trim();
+  var ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  if (!ok) { if(wrap) wrap.classList.add('invalid'); return false; }
+  if(wrap) wrap.classList.remove('invalid');
+  return true;
+}
+
+function pick(el, groupId) {
+  document.querySelectorAll('#' + groupId + ' .opt-card').forEach(function(c){ c.classList.remove('sel'); });
+  el.classList.add('sel');
+}
+
+function getSelected(groupId) {
+  var sel = document.querySelector('#' + groupId + ' .opt-card.sel');
+  return sel ? sel.getAttribute('data-val') : '';
+}
+
+function genRegId() {
+  var d = new Date();
+  var dt = d.getFullYear().toString().slice(2) +
+    String(d.getMonth()+1).padStart(2,'0') +
+    String(d.getDate()).padStart(2,'0');
+  var r = Math.floor(1000 + Math.random() * 9000);
+  return 'CMA-REG-' + dt + '-' + r;
+}
+
+function submitReg() {
+  var inst = getSelected('inst-opts');
+  var level = getSelected('level-opts');
+  var mode = getSelected('mode-opts');
+
+  document.getElementById('submit-err').style.display = 'none';
+  if (!inst || !level || !mode) {
+    document.getElementById('submit-err').style.display = 'block';
+    return;
+  }
+
+  var btn = document.getElementById('submitBtn');
+  btn.textContent = 'Submitting…';
+  btn.disabled = true;
+
+  var fname = document.getElementById('fname').value.trim();
+  var lname = document.getElementById('lname').value.trim();
+  var fullName = fname + ' ' + lname;
+  var dob = document.getElementById('dob').value;
+  var address = document.getElementById('address').value.trim();
+  var phone = document.getElementById('phone').value.trim();
+  var email = document.getElementById('email').value.trim();
+  var guardian = document.getElementById('guardian').value.trim();
+  var notes = document.getElementById('notes').value.trim();
+  var regId = genRegId();
+  var regDate = new Date().toLocaleString('en-IN', {timeZone:'Asia/Kolkata'});
+
+  var params = {
+    reg_id: regId,
+    full_name: fullName,
+    first_name: fname,
+    last_name: lname,
+    dob: dob,
+    address: address,
+    phone: phone,
+    email: email,
+    to_email: email,
+    guardian: guardian || '—',
+    instrument: inst,
+    level: level,
+    mode: mode,
+    notes: notes || '—',
+    reg_date: regDate,
+    message:
+      'New Student Registration\n' +
+      '========================\n' +
+      'Reg ID   : ' + regId + '\n' +
+      'Name     : ' + fullName + '\n' +
+      'DOB      : ' + dob + '\n' +
+      'Address  : ' + address + '\n' +
+      'Phone    : ' + phone + '\n' +
+      'Email    : ' + email + '\n' +
+      'Guardian : ' + (guardian || '—') + '\n' +
+      'Instrument: ' + inst + '\n' +
+      'Level    : ' + level + '\n' +
+      'Mode     : ' + mode + '\n' +
+      'Notes    : ' + (notes || '—') + '\n' +
+      'Date     : ' + regDate
+  };
+
+  // Send to owner
+  emailjs.send(EJS_SERVICE, EJS_REG_OWNER, params)
+    .then(function() {
+      // Send confirmation to student
+      return emailjs.send(EJS_SERVICE, EJS_REG_STUDENT, params);
+    })
+    .catch(function(e){ console.log('Email error', e); })
+    .finally(function() {
+      showSuccess(regId, fullName, inst, phone);
+    });
+}
+
+function showSuccess(regId, name, inst, phone) {
+  // Hide all steps
+  for (var i = 1; i <= 4; i++) {
+    var el = document.getElementById('step' + i);
+    if (el) el.style.display = 'none';
+  }
+  document.querySelector('.steps').style.display = 'none';
+
+  document.getElementById('regIdDisplay').textContent = regId;
+
+  var msg = encodeURIComponent(
+    'Hi! I just registered at Chords Music Academy 🎵\n\n' +
+    '*Name:* ' + name + '\n' +
+    '*Instrument:* ' + inst + '\n' +
+    '*Reg ID:* ' + regId + '\n\n' +
+    'Looking forward to starting my classes!'
+  );
+  document.getElementById('waConfirmBtn').href = 'https://api.whatsapp.com/send?phone=917981585309&text=' + msg;
+
+  var box = document.getElementById('successBox');
+  box.style.display = 'block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
