@@ -67,10 +67,14 @@ body{display:flex;flex-direction:column;margin:0 auto}
 .col-title{display:none}
 
 /* Piano cards */
-.pkg{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.09)}
+.pkg{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.09);position:relative;overflow:hidden}
 .pkg-tag{font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;margin-bottom:5px}
 .pkg-name{font-size:0.95rem;font-weight:700;color:#1a1a2e}
+.pkg-price-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:2px}
+.pkg-mrp{font-size:0.95rem;color:#aaa;text-decoration:line-through;font-weight:500}
 .pkg-price{font-size:1.5rem;font-weight:800;color:#e74c3c}
+.pkg-save{font-size:0.65rem;font-weight:800;background:#e8f5e9;color:#2e7d32;padding:2px 7px;border-radius:10px;white-space:nowrap}
+.pkg-discount-badge{position:absolute;top:12px;right:12px;background:#e74c3c;color:#fff;font-size:0.65rem;font-weight:800;padding:4px 8px;border-radius:8px;letter-spacing:0.3px}
 .pkg-feat{font-size:0.74rem;color:#555;margin:7px 0 10px;line-height:1.65}
 .btn-order{width:100%;background:#e74c3c;color:#fff;border:none;border-radius:10px;padding:11px;font-size:0.88rem;font-weight:700;cursor:pointer}
 
@@ -180,9 +184,14 @@ body{display:flex;flex-direction:column;margin:0 auto}
       <div class="col-title-sub">Step-by-step video lessons — buy once, learn at your own pace</div>
     </div>
     <div class="pkg">
+      <div class="pkg-discount-badge">44% OFF</div>
       <span class="pkg-tag" style="background:#e8f5e9;color:#2e7d32">Foundation</span>
       <div class="pkg-name">Beginner Package</div>
-      <div class="pkg-price">₹4,999</div>
+      <div class="pkg-price-row">
+        <span class="pkg-mrp">₹8,999</span>
+        <span class="pkg-price">₹4,999</span>
+        <span class="pkg-save">Save ₹4,000</span>
+      </div>
       <div class="pkg-feat">
         🎹 White keys mastery — the perfect starting point<br>
         🎵 Popular Indian melodies you already love<br>
@@ -193,9 +202,14 @@ body{display:flex;flex-direction:column;margin:0 auto}
       <button class="btn-order" onclick="openOrder('Beginner Piano Package','4999','CMA-Piano-Basic')">🛒 Order Now</button>
     </div>
     <div class="pkg">
+      <div class="pkg-discount-badge">42% OFF</div>
       <span class="pkg-tag" style="background:#fff3e0;color:#e65100">⭐ Most Popular</span>
       <div class="pkg-name">Intermediate Package</div>
-      <div class="pkg-price">₹7,499</div>
+      <div class="pkg-price-row">
+        <span class="pkg-mrp">₹12,999</span>
+        <span class="pkg-price">₹7,499</span>
+        <span class="pkg-save">Save ₹5,500</span>
+      </div>
       <div class="pkg-feat">
         🎹 Unlock black keys — sharps, flats & new scales<br>
         🎵 Progressive Indian songs with growing complexity<br>
@@ -206,9 +220,14 @@ body{display:flex;flex-direction:column;margin:0 auto}
       <button class="btn-order" onclick="openOrder('Intermediate Piano Package','7499','CMA-Piano-Inter')">🛒 Order Now</button>
     </div>
     <div class="pkg">
+      <div class="pkg-discount-badge">44% OFF</div>
       <span class="pkg-tag" style="background:#fce4ec;color:#c62828">Mastery</span>
       <div class="pkg-name">Advanced Package</div>
-      <div class="pkg-price">₹9,999</div>
+      <div class="pkg-price-row">
+        <span class="pkg-mrp">₹17,999</span>
+        <span class="pkg-price">₹9,999</span>
+        <span class="pkg-save">Save ₹8,000</span>
+      </div>
       <div class="pkg-feat">
         🎹 Full keyboard — all keys, all scales, all songs<br>
         🎵 Indian & Western songs across all genres<br>
