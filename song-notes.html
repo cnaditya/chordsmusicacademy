@@ -16,7 +16,7 @@ body{display:flex;flex-direction:column;margin:0 auto}
   .hero{display:none}
   .tabs{display:flex}
   .panels{flex:1;overflow:hidden;position:relative}
-  .panel{position:absolute;inset:0;overflow-y:auto;padding:12px;display:none;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+  .panel{position:absolute;inset:0;overflow-y:auto;padding:12px 12px 32px;display:none;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
   .panel.on{display:flex}
 }
 
@@ -59,9 +59,9 @@ body{display:flex;flex-direction:column;margin:0 auto}
 .hdr-wa{margin-left:auto;background:#25d366;color:#fff;border:none;border-radius:20px;padding:7px 13px;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block}
 
 /* Tabs — base styles, visibility controlled by media queries above */
-.tabs{background:#fff;border-bottom:1px solid #e5e5e5;flex-shrink:0}
-.tab{flex:1;padding:10px 4px;text-align:center;font-size:0.68rem;font-weight:600;color:#999;cursor:pointer;border-bottom:2.5px solid transparent;line-height:1.3;transition:.15s}
-.tab.on{color:#e74c3c;border-bottom-color:#e74c3c}
+.tabs{background:#f0f2f5;border-bottom:1px solid #ddd;flex-shrink:0;display:flex;padding:8px 10px;gap:6px}
+.tab{flex:1;padding:10px 4px;text-align:center;font-size:0.75rem;font-weight:700;color:#888;cursor:pointer;border-radius:10px;line-height:1.4;transition:.15s;background:transparent}
+.tab.on{color:#fff;background:#e74c3c;font-weight:800}
 
 /* Section column titles */
 .col-title{display:block;margin-bottom:12px}
