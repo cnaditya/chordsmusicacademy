@@ -386,11 +386,11 @@ function submitReg() {
   fetch('https://api.web3forms.com/submit', { method: 'POST', body: body.toString(), headers: {'Content-Type':'application/x-www-form-urlencoded'} })
     .catch(function(e){ console.log('Form submit error', e); })
     .finally(function() {
-      showSuccess(regId, fullName, inst, phone);
+      showSuccess(regId, fullName, dob, address, phone, email, guardian, inst, level, mode, notes);
     });
 }
 
-function showSuccess(regId, name, inst, phone) {
+function showSuccess(regId, name, dob, address, phone, email, guardian, inst, level, mode, notes) {
   // Hide all steps
   for (var i = 1; i <= 4; i++) {
     var el = document.getElementById('step' + i);
@@ -400,14 +400,34 @@ function showSuccess(regId, name, inst, phone) {
 
   document.getElementById('regIdDisplay').textContent = regId;
 
-  var msg = encodeURIComponent(
+  // WhatsApp to owner with full details
+  var ownerMsg = encodeURIComponent(
+    '🎵 *New Student Registration*\n' +
+    '━━━━━━━━━━━━━━━━━━\n' +
+    '*Reg ID:* ' + regId + '\n' +
+    '*Name:* ' + name + '\n' +
+    '*DOB:* ' + dob + '\n' +
+    '*Phone:* ' + phone + '\n' +
+    '*Email:* ' + email + '\n' +
+    '*Address:* ' + address + '\n' +
+    (guardian && guardian !== '—' ? '*Guardian:* ' + guardian + '\n' : '') +
+    '*Instrument:* ' + inst + '\n' +
+    '*Level:* ' + level + '\n' +
+    '*Mode:* ' + mode + '\n' +
+    (notes && notes !== '—' ? '*Notes:* ' + notes + '\n' : '') +
+    '━━━━━━━━━━━━━━━━━━'
+  );
+  window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + ownerMsg, '_blank');
+
+  // Student WhatsApp button
+  var stuMsg = encodeURIComponent(
     'Hi! I just registered at Chords Music Academy 🎵\n\n' +
     '*Name:* ' + name + '\n' +
     '*Instrument:* ' + inst + '\n' +
     '*Reg ID:* ' + regId + '\n\n' +
     'Looking forward to starting my classes!'
   );
-  document.getElementById('waConfirmBtn').href = 'https://api.whatsapp.com/send?phone=917981585309&text=' + msg;
+  document.getElementById('waConfirmBtn').href = 'https://api.whatsapp.com/send?phone=917981585309&text=' + stuMsg;
 
   var box = document.getElementById('successBox');
   box.style.display = 'block';
