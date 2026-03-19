@@ -4,4 +4,5 @@
 /shop              /shop.html              200
 /studio            /studio.html            200
 /pay               /pay.html               200
-/live-classes      /live-classes.html      200
+/live-classes      /live-classes.html         200
+/live-classes-global /live-classes-global.html 200
