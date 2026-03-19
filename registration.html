@@ -419,13 +419,22 @@ function showSuccess(regId, name, dob, address, phone, email, guardian, inst, le
   );
   window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + ownerMsg, '_blank');
 
-  // Student WhatsApp button
+  // Student WhatsApp button — full details
   var stuMsg = encodeURIComponent(
-    'Hi! I just registered at Chords Music Academy 🎵\n\n' +
+    '🎵 *New Student Registration*\n' +
+    '━━━━━━━━━━━━━━━━━━\n' +
+    '*Reg ID:* ' + regId + '\n' +
     '*Name:* ' + name + '\n' +
+    '*DOB:* ' + dob + '\n' +
+    '*Phone:* ' + phone + '\n' +
+    '*Email:* ' + email + '\n' +
+    '*Address:* ' + address + '\n' +
+    (guardian && guardian !== '—' ? '*Guardian:* ' + guardian + '\n' : '') +
     '*Instrument:* ' + inst + '\n' +
-    '*Reg ID:* ' + regId + '\n\n' +
-    'Looking forward to starting my classes!'
+    '*Level:* ' + level + '\n' +
+    '*Class Mode:* ' + mode + '\n' +
+    (notes && notes !== '—' ? '*Notes:* ' + notes + '\n' : '') +
+    '━━━━━━━━━━━━━━━━━━'
   );
   document.getElementById('waConfirmBtn').href = 'https://api.whatsapp.com/send?phone=917981585309&text=' + stuMsg;
 
