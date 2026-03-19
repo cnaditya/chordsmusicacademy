@@ -406,7 +406,7 @@ function showSuccess(regId, name, dob, address, phone, email, guardian, inst, le
     '━━━━━━━━━━━━━━━━━━\n' +
     '*Reg ID:* ' + regId + '\n' +
     '*Name:* ' + name + '\n' +
-    '*DOB:* ' + dob + '\n' +
+    '*DOB:* ' + dob.split('-').reverse().join('/') + '\n' +
     '*Phone:* ' + phone + '\n' +
     '*Email:* ' + email + '\n' +
     '*Address:* ' + address + '\n' +
@@ -425,7 +425,7 @@ function showSuccess(regId, name, dob, address, phone, email, guardian, inst, le
     '━━━━━━━━━━━━━━━━━━\n' +
     '*Reg ID:* ' + regId + '\n' +
     '*Name:* ' + name + '\n' +
-    '*DOB:* ' + dob + '\n' +
+    '*DOB:* ' + dob.split('-').reverse().join('/') + '\n' +
     '*Phone:* ' + phone + '\n' +
     '*Email:* ' + email + '\n' +
     '*Address:* ' + address + '\n' +
