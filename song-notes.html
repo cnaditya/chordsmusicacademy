@@ -7,7 +7,8 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:#f0f2f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden}
-body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;height:100dvh}
+body{display:flex;flex-direction:column;max-width:520px;margin:0 auto;height:100dvh}
+@media(min-width:600px){body{box-shadow:0 0 40px rgba(0,0,0,0.13)}}
 
 /* Header */
 .hdr{background:#1a1a2e;color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
@@ -241,11 +242,11 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;height:100
       <div class="opkg" id="oLabel">Package — ₹0</div>
       <input class="oinp" id="oName" type="text" placeholder="Your Name *" required>
       <input class="oinp" id="oPhone" type="tel" placeholder="WhatsApp Number *" required>
-      <input class="oinp" id="oEmail" type="email" placeholder="Email — invoice will be sent here">
+      <input class="oinp" id="oEmail" type="email" placeholder="Email * — payment link sent here" required>
       <div id="oSongRow" style="display:none">
         <input class="oinp" id="oSong" type="text" placeholder="Song Name (if specific song)">
       </div>
-      <div id="oErr" style="display:none;color:#e74c3c;font-size:0.78rem;margin-bottom:10px">⚠️ Please fill Name and WhatsApp number</div>
+      <div id="oErr" style="display:none;color:#e74c3c;font-size:0.78rem;margin-bottom:10px">⚠️ Please fill Name, WhatsApp and Email (needed for payment link)</div>
       <button class="obtn" onclick="submitOrder()">✅ Place Order</button>
       <button class="ocancel" onclick="closeOrder()">Cancel</button>
     </div>
@@ -364,7 +365,7 @@ function submitOrder() {
   var phone = document.getElementById('oPhone').value.trim();
   var email = document.getElementById('oEmail').value.trim();
   var song  = document.getElementById('oSong').value.trim();
-  if (!name || !phone) { document.getElementById('oErr').style.display='block'; return; }
+  if (!name || !phone || !email) { document.getElementById('oErr').style.display='block'; return; }
   document.getElementById('oErr').style.display = 'none';
 
   _orderId = genOrderId();
@@ -403,8 +404,6 @@ function submitOrder() {
 
   // WhatsApp — optional, user taps when ready
   document.getElementById('waConfBtn').onclick = function(){ window.open(waUrl, '_blank'); };
-  // UPI button hidden — payment link is in the email now
-  document.getElementById('upiConfBtn').style.display = 'none';
 }
 
 function closeOrder() { document.getElementById('orderModal').style.display = 'none'; }
