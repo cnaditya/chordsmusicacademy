@@ -383,6 +383,14 @@ function submitReg() {
       'Notes     : ' + (notes || '—')
   });
 
+  // Save to Firestore
+  saveToFirestore({
+    reg_id: regId, full_name: fullName, dob: dob, address: address,
+    phone: phone, email: email, guardian: guardian || '—',
+    instrument: inst, level: level, mode: mode, notes: notes || '—',
+    status: 'new', createdAt: new Date().toISOString()
+  });
+
   fetch('https://api.web3forms.com/submit', { method: 'POST', body: body.toString(), headers: {'Content-Type':'application/x-www-form-urlencoded'} })
     .catch(function(e){ console.log('Form submit error', e); })
     .finally(function() {
@@ -423,6 +431,27 @@ function showSuccess(regId, name, dob, address, phone, email, guardian, inst, le
   box.style.display = 'block';
   window.scrollTo({top:0,behavior:'smooth'});
 }
+</script>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const app = initializeApp({
+  apiKey: "AIzaSyDvuCr7IHM7oLYY6e675P_KtcTxsNEJr1c",
+  authDomain: "chords-music-academy.firebaseapp.com",
+  projectId: "chords-music-academy",
+  storageBucket: "chords-music-academy.firebasestorage.app",
+  messagingSenderId: "146425788425",
+  appId: "1:146425788425:web:8abbafbc93287a14ab20d8"
+});
+const db = getFirestore(app);
+
+window.saveToFirestore = async function(data) {
+  try {
+    await addDoc(collection(db, 'registrations'), data);
+  } catch(e) { console.log('Firestore error', e); }
+};
 </script>
 </body>
 </html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Admin CRM — Chords Music Academy</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a2e;min-height:100vh}
+
+/* Login */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#1a1a2e,#2c3e6b)}
+.login-box{background:#fff;border-radius:18px;padding:32px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.3)}
+.login-icon{font-size:2.5rem;margin-bottom:12px}
+.login-title{font-size:1.2rem;font-weight:800;margin-bottom:4px}
+.login-sub{font-size:0.78rem;color:#888;margin-bottom:24px}
+.login-box input{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:12px 14px;font-size:0.9rem;font-family:inherit;outline:none;margin-bottom:12px;transition:.2s}
+.login-box input:focus{border-color:#e74c3c}
+.login-box button{width:100%;background:#e74c3c;color:#fff;border:none;border-radius:10px;padding:13px;font-size:0.92rem;font-weight:800;cursor:pointer}
+.login-err{font-size:0.75rem;color:#e74c3c;margin-top:8px;display:none}
+
+/* Header */
+.hdr{background:#1a1a2e;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+.hdr-title{font-size:0.95rem;font-weight:700}
+.hdr-sub{font-size:0.65rem;opacity:0.65}
+.hdr-logout{margin-left:auto;background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:20px;padding:6px 12px;font-size:0.75rem;font-weight:700;cursor:pointer}
+
+/* Stats */
+.stats{display:flex;gap:10px;padding:16px;overflow-x:auto;scrollbar-width:none}
+.stat{flex:0 0 auto;background:#fff;border-radius:12px;padding:12px 16px;text-align:center;min-width:90px;box-shadow:0 1px 6px rgba(0,0,0,0.07)}
+.stat-num{font-size:1.6rem;font-weight:800;line-height:1}
+.stat-label{font-size:0.65rem;color:#888;margin-top:3px;font-weight:600}
+
+/* Filters */
+.filters{display:flex;gap:8px;padding:0 16px 14px;overflow-x:auto;scrollbar-width:none}
+.filter-btn{flex:0 0 auto;border:2px solid #e0e0e0;background:#fff;border-radius:20px;padding:6px 14px;font-size:0.75rem;font-weight:700;cursor:pointer;color:#666;white-space:nowrap;transition:.2s}
+.filter-btn.on{border-color:#1a1a2e;background:#1a1a2e;color:#fff}
+
+/* Cards */
+.cards{padding:0 16px 80px;display:flex;flex-direction:column;gap:12px}
+.card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 8px rgba(0,0,0,0.07);border-left:4px solid #ddd;transition:.2s}
+.card.st-new{border-left-color:#f39c12}
+.card.st-contacted{border-left-color:#3498db}
+.card.st-demo{border-left-color:#9b59b6}
+.card.st-joined{border-left-color:#27ae60}
+.card.st-lost{border-left-color:#95a5a6}
+
+.card-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.card-avatar{width:40px;height:40px;border-radius:50%;background:#1a1a2e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;flex-shrink:0}
+.card-info{flex:1;min-width:0}
+.card-name{font-size:0.92rem;font-weight:800;color:#1a1a2e}
+.card-meta{font-size:0.72rem;color:#888;margin-top:2px}
+.card-regid{font-size:0.65rem;color:#bbb;margin-top:2px;font-family:monospace}
+
+.card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tag{font-size:0.65rem;font-weight:700;padding:3px 8px;border-radius:10px;background:#f0f2f5;color:#555}
+.tag.inst{background:#e8f4fd;color:#1a6fa0}
+.tag.mode{background:#fef9e7;color:#b7770d}
+.tag.level{background:#eafaf1;color:#1e8449}
+
+.card-status{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.st-btn{border:1.5px solid #e0e0e0;background:#fff;border-radius:20px;padding:5px 10px;font-size:0.67rem;font-weight:700;cursor:pointer;color:#888;transition:.2s;white-space:nowrap}
+.st-btn:hover{opacity:0.8}
+.st-btn.active-new{background:#f39c12;border-color:#f39c12;color:#fff}
+.st-btn.active-contacted{background:#3498db;border-color:#3498db;color:#fff}
+.st-btn.active-demo{background:#9b59b6;border-color:#9b59b6;color:#fff}
+.st-btn.active-joined{background:#27ae60;border-color:#27ae60;color:#fff}
+.st-btn.active-lost{background:#95a5a6;border-color:#95a5a6;color:#fff}
+
+.card-actions{display:flex;gap:8px}
+.act-wa{flex:1;background:#25d366;color:#fff;border:none;border-radius:10px;padding:9px;font-size:0.78rem;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:4px}
+.act-detail{flex:0 0 auto;background:#f0f2f5;color:#555;border:none;border-radius:10px;padding:9px 12px;font-size:0.78rem;font-weight:700;cursor:pointer}
+
+/* Detail modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-width:600px;max-height:80vh;overflow-y:auto}
+.modal-title{font-size:1rem;font-weight:800;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:#888}
+.detail-row{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:0.82rem}
+.detail-row:last-child{border-bottom:none}
+.detail-label{font-weight:700;color:#888;flex:0 0 100px}
+.detail-val{color:#1a1a2e;flex:1}
+
+.empty{text-align:center;padding:60px 20px;color:#bbb}
+.empty-icon{font-size:3rem;margin-bottom:12px}
+.loading{text-align:center;padding:60px 20px;color:#888;font-size:0.85rem}
+
+@media(min-width:768px){
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 24px 80px}
+  .stats{padding:20px 24px}
+  .filters{padding:0 24px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div class="login-wrap" id="loginScreen">
+  <div class="login-box">
+    <div class="login-icon">🔐</div>
+    <div class="login-title">Admin Login</div>
+    <div class="login-sub">Chords Music Academy CRM</div>
+    <input type="password" id="pwdInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">Login →</button>
+    <div class="login-err" id="loginErr">Incorrect password</div>
+  </div>
+</div>
+
+<!-- CRM App -->
+<div id="crmApp" style="display:none">
+
+  <div class="hdr">
+    <div>
+      <div class="hdr-title">🎵 CMA Admin</div>
+      <div class="hdr-sub">Student CRM</div>
+    </div>
+    <button class="hdr-logout" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats" id="statsBar">
+    <div class="stat"><div class="stat-num" id="st-total">0</div><div class="stat-label">Total</div></div>
+    <div class="stat"><div class="stat-num" style="color:#f39c12" id="st-new">0</div><div class="stat-label">New</div></div>
+    <div class="stat"><div class="stat-num" style="color:#3498db" id="st-contacted">0</div><div class="stat-label">Contacted</div></div>
+    <div class="stat"><div class="stat-num" style="color:#9b59b6" id="st-demo">0</div><div class="stat-label">Demo</div></div>
+    <div class="stat"><div class="stat-num" style="color:#27ae60" id="st-joined">0</div><div class="stat-label">Joined</div></div>
+    <div class="stat"><div class="stat-num" style="color:#95a5a6" id="st-lost">0</div><div class="stat-label">Not Int.</div></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <button class="filter-btn on" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('new',this)">🟡 New</button>
+    <button class="filter-btn" onclick="setFilter('contacted',this)">🔵 Contacted</button>
+    <button class="filter-btn" onclick="setFilter('demo',this)">🟣 Demo Booked</button>
+    <button class="filter-btn" onclick="setFilter('joined',this)">🟢 Joined</button>
+    <button class="filter-btn" onclick="setFilter('lost',this)">⚫ Not Interested</button>
+  </div>
+
+  <!-- Cards -->
+  <div class="cards" id="cardsContainer">
+    <div class="loading">Loading students…</div>
+  </div>
+
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-bg" id="modalBg" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-title">
+      Student Details
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getFirestore, collection, getDocs, updateDoc, doc, orderBy, query } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const ADMIN_PASS = 'CMA@admin2025';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDvuCr7IHM7oLYY6e675P_KtcTxsNEJr1c",
+  authDomain: "chords-music-academy.firebaseapp.com",
+  projectId: "chords-music-academy",
+  storageBucket: "chords-music-academy.firebasestorage.app",
+  messagingSenderId: "146425788425",
+  appId: "1:146425788425:web:8abbafbc93287a14ab20d8"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+var allStudents = [];
+var currentFilter = 'all';
+
+window.doLogin = function() {
+  var pwd = document.getElementById('pwdInput').value;
+  if (pwd === ADMIN_PASS) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('crmApp').style.display = 'block';
+    loadStudents();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+};
+
+window.logout = function() {
+  document.getElementById('crmApp').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('pwdInput').value = '';
+};
+
+async function loadStudents() {
+  try {
+    var q = query(collection(db, 'registrations'), orderBy('createdAt', 'desc'));
+    var snap = await getDocs(q);
+    allStudents = [];
+    snap.forEach(function(d){ allStudents.push({id: d.id, ...d.data()}); });
+    renderCards();
+    updateStats();
+  } catch(e) {
+    document.getElementById('cardsContainer').innerHTML = '<div class="loading">Error loading data. Check Firestore rules.</div>';
+  }
+}
+
+function updateStats() {
+  var counts = {new:0, contacted:0, demo:0, joined:0, lost:0};
+  allStudents.forEach(function(s){
+    var st = s.status || 'new';
+    if (counts[st] !== undefined) counts[st]++;
+  });
+  document.getElementById('st-total').textContent = allStudents.length;
+  document.getElementById('st-new').textContent = counts.new;
+  document.getElementById('st-contacted').textContent = counts.contacted;
+  document.getElementById('st-demo').textContent = counts.demo;
+  document.getElementById('st-joined').textContent = counts.joined;
+  document.getElementById('st-lost').textContent = counts.lost;
+}
+
+window.setFilter = function(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  renderCards();
+};
+
+function renderCards() {
+  var list = currentFilter === 'all' ? allStudents : allStudents.filter(function(s){ return (s.status || 'new') === currentFilter; });
+  var container = document.getElementById('cardsContainer');
+  if (!list.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>No students here yet</div>';
+    return;
+  }
+  container.innerHTML = list.map(function(s){ return buildCard(s); }).join('');
+}
+
+function buildCard(s) {
+  var st = s.status || 'new';
+  var stLabels = {new:'🟡 New', contacted:'🔵 Contacted', demo:'🟣 Demo Booked', joined:'🟢 Joined', lost:'⚫ Not Interested'};
+  var initials = (s.full_name || 'ST').split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
+  var date = s.createdAt ? new Date(s.createdAt).toLocaleDateString('en-IN') : '—';
+  var waMsg = encodeURIComponent('Hi ' + (s.full_name || '').split(' ')[0] + '! This is Chords Music Academy. We received your registration for ' + (s.instrument || 'music classes') + '. Would you like to schedule a free demo class?');
+  var phone = (s.phone || '').replace(/\D/g,'');
+
+  var stBtns = ['new','contacted','demo','joined','lost'].map(function(k){
+    return '<button class="st-btn' + (st===k ? ' active-'+k : '') + '" onclick="updateStatus(\''+s.id+'\',\''+k+'\')">' +
+      {new:'🟡 New',contacted:'🔵 Contacted',demo:'🟣 Demo',joined:'🟢 Joined',lost:'⚫ Not Int.'}[k] +
+      '</button>';
+  }).join('');
+
+  return '<div class="card st-'+st+'" id="card-'+s.id+'">' +
+    '<div class="card-top">' +
+      '<div class="card-avatar">'+initials+'</div>' +
+      '<div class="card-info">' +
+        '<div class="card-name">'+(s.full_name||'Unknown')+'</div>' +
+        '<div class="card-meta">'+(s.phone||'—')+' · '+date+'</div>' +
+        '<div class="card-regid">'+(s.reg_id||'')+'</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="card-tags">' +
+      '<span class="tag inst">🎵 '+(s.instrument||'—')+'</span>' +
+      '<span class="tag mode">'+(s.mode||'—')+'</span>' +
+      '<span class="tag level">'+(s.level||'—')+'</span>' +
+    '</div>' +
+    '<div class="card-status">'+stBtns+'</div>' +
+    '<div class="card-actions">' +
+      '<a href="https://api.whatsapp.com/send?phone='+phone+'&text='+waMsg+'" class="act-wa" target="_blank">💬 WhatsApp</a>' +
+      '<button class="act-detail" onclick="showDetail(\''+s.id+'\')">Details</button>' +
+    '</div>' +
+  '</div>';
+}
+
+window.updateStatus = async function(id, status) {
+  try {
+    await updateDoc(doc(db, 'registrations', id), { status: status, updatedAt: new Date().toISOString() });
+    var idx = allStudents.findIndex(function(s){ return s.id === id; });
+    if (idx > -1) { allStudents[idx].status = status; }
+    renderCards();
+    updateStats();
+  } catch(e) { alert('Error updating status'); }
+};
+
+window.showDetail = function(id) {
+  var s = allStudents.find(function(x){ return x.id === id; });
+  if (!s) return;
+  var rows = [
+    ['Reg ID', s.reg_id],
+    ['Name', s.full_name],
+    ['DOB', s.dob],
+    ['Phone', s.phone],
+    ['Email', s.email],
+    ['Address', s.address],
+    ['Guardian', s.guardian],
+    ['Instrument', s.instrument],
+    ['Level', s.level],
+    ['Mode', s.mode],
+    ['Notes', s.notes],
+    ['Status', s.status || 'new'],
+    ['Registered', s.createdAt ? new Date(s.createdAt).toLocaleString('en-IN') : '—']
+  ].map(function(r){
+    return '<div class="detail-row"><div class="detail-label">'+r[0]+'</div><div class="detail-val">'+(r[1]||'—')+'</div></div>';
+  }).join('');
+  document.getElementById('modalContent').innerHTML = rows;
+  document.getElementById('modalBg').classList.add('show');
+};
+
+window.closeModal = function(e) {
+  if (!e || e.target === document.getElementById('modalBg')) {
+    document.getElementById('modalBg').classList.remove('show');
+  }
+};
+</script>
+</body>
+</html>
