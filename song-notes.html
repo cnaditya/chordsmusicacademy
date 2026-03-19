@@ -72,7 +72,8 @@ body{display:flex;flex-direction:column;margin:0 auto}
 
 /* Song Notes cards */
 .sn{background:#fff;border-radius:13px;padding:13px 14px;box-shadow:0 1px 6px rgba(0,0,0,0.08);display:flex;align-items:center;gap:12px}
-.sn.feat{border:2px solid #e74c3c}
+.sn.feat{border:2px solid #e74c3c;background:linear-gradient(135deg,#fff5f5 0%,#fff 100%);box-shadow:0 4px 16px rgba(231,76,60,0.15);position:relative}
+.sn.feat::before{content:'⭐ Most Popular';position:absolute;top:-11px;left:14px;background:#e74c3c;color:#fff;font-size:0.6rem;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:0.3px}
 .sn-em{font-size:1.5rem;flex-shrink:0}
 .sn-info{flex:1}
 .sn-name{font-size:0.85rem;font-weight:700;color:#1a1a2e}
@@ -205,7 +206,7 @@ body{display:flex;flex-direction:column;margin:0 auto}
       </div>
       <button class="btn-order" onclick="openOrder('Song Notes Only','99','CMA-Notes')">🛒 Order</button>
     </div>
-    <div class="sn feat">
+    <div class="sn feat" style="margin-top:8px">
       <div class="sn-em">🎬</div>
       <div class="sn-info">
         <div class="sn-name">Notes + Video ⭐</div>
