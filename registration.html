@@ -78,14 +78,6 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 </head>
 <body>
 
-<!-- Netlify Forms detection (hidden) -->
-<form name="student-registration" netlify netlify-honeypot="bot-field" hidden>
-  <input name="reg_id"><input name="full_name"><input name="dob">
-  <input name="address"><input name="phone"><input name="email">
-  <input name="guardian"><input name="instrument"><input name="level">
-  <input name="mode"><textarea name="notes"></textarea>
-</form>
-
 <!-- Header -->
 <div class="hdr">
   <div class="hdr-icon">🎵</div>
@@ -368,23 +360,30 @@ function submitReg() {
   var notes = document.getElementById('notes').value.trim();
   var regId = genRegId();
 
-  // Submit to Netlify Forms
+  // Submit to Web3Forms
   var body = new URLSearchParams({
-    'form-name': 'student-registration',
-    'reg_id': regId,
-    'full_name': fullName,
-    'dob': dob,
-    'address': address,
-    'phone': phone,
+    'access_key': '50fb98d5-f13a-44cb-a9c0-65fbd7321c09',
+    'subject': 'New Student Registration — ' + regId,
+    'from_name': 'Chords Music Academy',
+    'name': fullName,
     'email': email,
-    'guardian': guardian || '—',
-    'instrument': inst,
-    'level': level,
-    'mode': mode,
-    'notes': notes || '—'
+    'message':
+      'New Student Registration\n' +
+      '========================\n' +
+      'Reg ID    : ' + regId + '\n' +
+      'Name      : ' + fullName + '\n' +
+      'DOB       : ' + dob + '\n' +
+      'Address   : ' + address + '\n' +
+      'Phone     : ' + phone + '\n' +
+      'Email     : ' + email + '\n' +
+      'Guardian  : ' + (guardian || '—') + '\n' +
+      'Instrument: ' + inst + '\n' +
+      'Level     : ' + level + '\n' +
+      'Mode      : ' + mode + '\n' +
+      'Notes     : ' + (notes || '—')
   });
 
-  fetch('/', { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: body.toString() })
+  fetch('https://api.web3forms.com/submit', { method: 'POST', body: body.toString(), headers: {'Content-Type':'application/x-www-form-urlencoded'} })
     .catch(function(e){ console.log('Form submit error', e); })
     .finally(function() {
       showSuccess(regId, fullName, inst, phone);
