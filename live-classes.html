@@ -136,6 +136,15 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
     </div>
   </div>
 
+  <!-- Free Demo Banner -->
+  <div style="background:linear-gradient(135deg,#1a1a2e,#2c3e6b);border-radius:16px;padding:22px 20px;margin-bottom:20px;text-align:center">
+    <div style="font-size:1.6rem;margin-bottom:8px">🎹</div>
+    <div style="color:#fff;font-size:1.05rem;font-weight:800;margin-bottom:6px">Try a Free Demo Class First</div>
+    <div style="color:rgba(255,255,255,0.65);font-size:0.8rem;line-height:1.6;margin-bottom:16px">No payment needed · 15 minutes · Live on Google Meet<br>See how we teach before you commit to any package</div>
+    <button onclick="bookDemo()" style="width:100%;background:#25d366;color:#fff;border:none;border-radius:12px;padding:14px;font-size:0.95rem;font-weight:800;cursor:pointer;margin-bottom:8px">📅 Book Free Demo Class</button>
+    <div style="color:rgba(255,255,255,0.4);font-size:0.72rem">We'll confirm your slot within minutes on WhatsApp</div>
+  </div>
+
   <!-- Currency toggle -->
   <div class="curr-toggle">
     <span class="curr-label">Currency</span>
@@ -241,6 +250,11 @@ function setCurr(c) {
   Object.keys(d).forEach(function(id){ document.getElementById(id).textContent = d[id]; });
   document.getElementById('btnINR').classList.toggle('on', c==='INR');
   document.getElementById('btnUSD').classList.toggle('on', c==='USD');
+}
+
+function bookDemo() {
+  var msg = encodeURIComponent('Hi! I\'d like to book a *Free Demo Class* for Online Piano.\n\nPlease let me know the available slots. 🎹');
+  window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
 }
 
 function bookClass(plan) {
