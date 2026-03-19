@@ -360,6 +360,25 @@ function submitReg() {
   var notes = document.getElementById('notes').value.trim();
   var regId = genRegId();
 
+  // Open WhatsApp to owner NOW (sync, direct user click — not blocked)
+  var ownerMsg = encodeURIComponent(
+    '🎵 *New Student Registration*\n' +
+    '━━━━━━━━━━━━━━━━━━\n' +
+    '*Reg ID:* ' + regId + '\n' +
+    '*Name:* ' + fullName + '\n' +
+    '*DOB:* ' + dob.split('-').reverse().join('/') + '\n' +
+    '*Phone:* ' + phone + '\n' +
+    '*Email:* ' + email + '\n' +
+    '*Address:* ' + address + '\n' +
+    (guardian ? '*Guardian:* ' + guardian + '\n' : '') +
+    '*Instrument:* ' + inst + '\n' +
+    '*Level:* ' + level + '\n' +
+    '*Mode:* ' + mode + '\n' +
+    (notes ? '*Notes:* ' + notes + '\n' : '') +
+    '━━━━━━━━━━━━━━━━━━'
+  );
+  window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + ownerMsg, '_blank');
+
   // Submit to Web3Forms
   var body = new URLSearchParams({
     'access_key': '50fb98d5-f13a-44cb-a9c0-65fbd7321c09',
