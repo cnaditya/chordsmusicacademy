@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Live Piano Classes Online — Chords Music Academy</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a2e}
+
+/* Header */
+.hdr{background:#1a1a2e;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+.hdr-icon{width:36px;height:36px;background:#e74c3c;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.hdr-title{font-size:0.95rem;font-weight:700;line-height:1.2}
+.hdr-sub{font-size:0.65rem;opacity:0.65}
+.hdr-wa{margin-left:auto;background:#25d366;color:#fff;border:none;border-radius:20px;padding:7px 13px;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;text-decoration:none}
+
+/* Hero */
+.hero{background:linear-gradient(135deg,#1a1a2e 0%,#2c3e6b 100%);padding:28px 20px;text-align:center;color:#fff}
+.hero-icon{font-size:2.5rem;margin-bottom:10px}
+.hero-title{font-size:1.4rem;font-weight:800;margin-bottom:6px}
+.hero-sub{font-size:0.85rem;opacity:0.75;line-height:1.6;margin-bottom:18px}
+.hero-pills{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.pill{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:#fff;padding:5px 14px;border-radius:20px;font-size:0.75rem;font-weight:600}
+
+/* Content */
+.page{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+
+/* Info strip */
+.info-strip{display:flex;gap:10px;margin-bottom:20px}
+.info-card{flex:1;background:#fff;border-radius:12px;padding:14px 10px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,0.08)}
+.info-card .ic{font-size:1.4rem;margin-bottom:5px}
+.info-card .il{font-size:0.68rem;color:#888;margin-bottom:2px}
+.info-card .iv{font-size:0.9rem;font-weight:800;color:#1a1a2e}
+
+/* Currency toggle */
+.curr-toggle{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:20px}
+.curr-label{font-size:0.82rem;font-weight:600;color:#888}
+.toggle-wrap{background:#e5e7eb;border-radius:30px;padding:3px;display:flex;gap:2px}
+.toggle-btn{border:none;background:transparent;padding:6px 18px;border-radius:24px;font-size:0.8rem;font-weight:700;cursor:pointer;color:#888;transition:.2s}
+.toggle-btn.on{background:#1a1a2e;color:#fff}
+
+/* Plans */
+.plans{display:flex;flex-direction:column;gap:14px;margin-bottom:24px}
+.plan{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 8px rgba(0,0,0,0.08);display:flex;align-items:center;gap:14px;position:relative;border:2px solid transparent;transition:.2s}
+.plan.pop{border-color:#e74c3c;background:linear-gradient(135deg,#fff5f5,#fff)}
+.plan-badge{position:absolute;top:-11px;left:18px;background:#e74c3c;color:#fff;font-size:0.6rem;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:0.3px}
+.plan-left{flex:1}
+.plan-period{font-size:1rem;font-weight:800;color:#1a1a2e}
+.plan-classes{font-size:0.75rem;color:#888;margin:2px 0 6px}
+.plan-saving{font-size:0.72rem;font-weight:700;color:#2e7d32;background:#e8f5e9;padding:2px 8px;border-radius:10px;display:inline-block}
+.plan-right{text-align:right;flex-shrink:0}
+.plan-price{font-size:1.5rem;font-weight:800;color:#e74c3c;line-height:1}
+.plan-orig{font-size:0.72rem;color:#bbb;text-decoration:line-through;margin-top:2px}
+.plan-btn{background:#e74c3c;color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:0.78rem;font-weight:700;cursor:pointer;margin-top:8px;white-space:nowrap}
+
+/* What's included */
+.section-title{font-size:0.85rem;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px}
+.includes{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 8px rgba(0,0,0,0.07);margin-bottom:20px}
+.inc-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f5f5f5}
+.inc-row:last-child{border-bottom:none;padding-bottom:0}
+.inc-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+.inc-text{font-size:0.82rem;color:#444;line-height:1.5}
+.inc-text strong{color:#1a1a2e}
+
+/* CTA */
+.cta{background:#1a1a2e;border-radius:14px;padding:20px;text-align:center;margin-bottom:20px}
+.cta-title{color:#fff;font-size:1rem;font-weight:700;margin-bottom:6px}
+.cta-sub{color:rgba(255,255,255,0.6);font-size:0.78rem;margin-bottom:14px}
+.cta-wa{display:block;background:#25d366;color:#fff;text-decoration:none;border-radius:12px;padding:13px;font-size:0.92rem;font-weight:700;margin-bottom:10px}
+.cta-note{font-size:0.72rem;color:rgba(255,255,255,0.45)}
+
+/* Desktop */
+@media(min-width:768px){
+  body{background:#eaecf0}
+  .hdr{padding:14px 40px}
+  .hdr-title{font-size:1.05rem}
+  .hero{padding:40px 20px}
+  .hero-title{font-size:1.8rem}
+  .page{max-width:780px;padding:28px 24px 60px}
+  .info-strip{gap:16px}
+  .plan{padding:22px 24px}
+  .plan-period{font-size:1.1rem}
+  .plan-price{font-size:1.7rem}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="hdr">
+  <div class="hdr-icon">🎹</div>
+  <div>
+    <div class="hdr-title">Chords Music Academy</div>
+    <div class="hdr-sub">Manikonda, Hyderabad</div>
+  </div>
+  <a href="https://api.whatsapp.com/send?phone=917981585309" class="hdr-wa" target="_blank">💬 WhatsApp</a>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-icon">🎹</div>
+  <div class="hero-title">Online Live Piano Classes</div>
+  <div class="hero-sub">One-to-one personal coaching via Google Meet<br>Learn at your own pace from anywhere in the world</div>
+  <div class="hero-pills">
+    <span class="pill">📅 2 Classes / Week</span>
+    <span class="pill">⏱ 40 Min / Class</span>
+    <span class="pill">🎯 One-to-One</span>
+    <span class="pill">🌍 Google Meet</span>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <div class="info-card">
+      <div class="ic">📅</div>
+      <div class="il">Frequency</div>
+      <div class="iv">2 / Week</div>
+    </div>
+    <div class="info-card">
+      <div class="ic">⏱</div>
+      <div class="il">Duration</div>
+      <div class="iv">40 Minutes</div>
+    </div>
+    <div class="info-card">
+      <div class="ic">🎯</div>
+      <div class="il">Format</div>
+      <div class="iv">1-on-1 Live</div>
+    </div>
+    <div class="info-card">
+      <div class="ic">🌍</div>
+      <div class="il">Platform</div>
+      <div class="iv">Google Meet</div>
+    </div>
+  </div>
+
+  <!-- Currency toggle -->
+  <div class="curr-toggle">
+    <span class="curr-label">Currency</span>
+    <div class="toggle-wrap">
+      <button class="toggle-btn on" id="btnINR" onclick="setCurr('INR')">₹ INR</button>
+      <button class="toggle-btn" id="btnUSD" onclick="setCurr('USD')">$ USD</button>
+    </div>
+  </div>
+
+  <!-- Plans -->
+  <div class="section-title">Fee Structure</div>
+  <div class="plans">
+
+    <div class="plan">
+      <div class="plan-left">
+        <div class="plan-period">Monthly</div>
+        <div class="plan-classes">8 classes</div>
+      </div>
+      <div class="plan-right">
+        <div class="plan-price" id="p1">₹5,000</div>
+        <button class="plan-btn" onclick="bookClass('Monthly Plan')">💬 Book Now</button>
+      </div>
+    </div>
+
+    <div class="plan pop">
+      <div class="plan-badge">⭐ Best Value</div>
+      <div class="plan-left">
+        <div class="plan-period">3 Months</div>
+        <div class="plan-classes">24 classes</div>
+        <span class="plan-saving" id="s2">Save ₹1,500 · 10% off</span>
+      </div>
+      <div class="plan-right">
+        <div class="plan-price" id="p2">₹13,500</div>
+        <div class="plan-orig" id="o2">₹15,000</div>
+        <button class="plan-btn" onclick="bookClass('3-Month Plan')">💬 Book Now</button>
+      </div>
+    </div>
+
+    <div class="plan">
+      <div class="plan-left">
+        <div class="plan-period">6 Months</div>
+        <div class="plan-classes">48 classes</div>
+        <span class="plan-saving" id="s3">Save ₹4,500 · 15% off</span>
+      </div>
+      <div class="plan-right">
+        <div class="plan-price" id="p3">₹25,500</div>
+        <div class="plan-orig" id="o3">₹30,000</div>
+        <button class="plan-btn" onclick="bookClass('6-Month Plan')">💬 Book Now</button>
+      </div>
+    </div>
+
+    <div class="plan">
+      <div class="plan-left">
+        <div class="plan-period">1 Year</div>
+        <div class="plan-classes">96 classes</div>
+        <span class="plan-saving" id="s4">Save ₹12,000 · 20% off</span>
+      </div>
+      <div class="plan-right">
+        <div class="plan-price" id="p4">₹48,000</div>
+        <div class="plan-orig" id="o4">₹60,000</div>
+        <button class="plan-btn" onclick="bookClass('1-Year Plan')">💬 Book Now</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- What's included -->
+  <div class="section-title">What's Included</div>
+  <div class="includes">
+    <div class="inc-row"><div class="inc-icon">🎹</div><div class="inc-text"><strong>Personalised curriculum</strong> — lessons designed around your skill level and goals</div></div>
+    <div class="inc-row"><div class="inc-icon">🎵</div><div class="inc-text"><strong>Songs you love</strong> — Telugu, Hindi, Tamil, English, Western — your choice</div></div>
+    <div class="inc-row"><div class="inc-icon">📄</div><div class="inc-text"><strong>Notes PDF after every class</strong> — practice at your own pace between sessions</div></div>
+    <div class="inc-row"><div class="inc-icon">📹</div><div class="inc-text"><strong>Class recording</strong> — review your session anytime</div></div>
+    <div class="inc-row"><div class="inc-icon">💬</div><div class="inc-text"><strong>WhatsApp support</strong> — ask doubts between classes anytime</div></div>
+    <div class="inc-row"><div class="inc-icon">📅</div><div class="inc-text"><strong>Flexible scheduling</strong> — pick your class time, reschedule anytime</div></div>
+    <div class="inc-row"><div class="inc-icon">📖</div><div class="inc-text"><strong>Progress tracking</strong> — regular feedback to keep you improving</div></div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <div class="cta-title">Ready to Start Your Piano Journey?</div>
+    <div class="cta-sub">Message us on WhatsApp to schedule a free 15-min demo class</div>
+    <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hi!%20I%27m%20interested%20in%20Online%20Live%20Piano%20Classes.%20Can%20I%20get%20more%20details?" class="cta-wa" target="_blank">💬 WhatsApp Us to Enrol</a>
+    <div class="cta-note">📞 +91-79815 85309 · Responds within minutes</div>
+  </div>
+
+</div>
+
+<script>
+var INR = {
+  p1:'₹5,000', p2:'₹13,500', o2:'₹15,000', s2:'Save ₹1,500 · 10% off',
+  p3:'₹25,500', o3:'₹30,000', s3:'Save ₹4,500 · 15% off',
+  p4:'₹48,000', o4:'₹60,000', s4:'Save ₹12,000 · 20% off'
+};
+var USD = {
+  p1:'$75', p2:'$191', o2:'$225', s2:'Save $34 · 15% off',
+  p3:'$360', o3:'$450', s3:'Save $90 · 20% off',
+  p4:'$630', o4:'$900', s4:'Save $270 · 30% off'
+};
+
+function setCurr(c) {
+  var d = c === 'INR' ? INR : USD;
+  Object.keys(d).forEach(function(id){ document.getElementById(id).textContent = d[id]; });
+  document.getElementById('btnINR').classList.toggle('on', c==='INR');
+  document.getElementById('btnUSD').classList.toggle('on', c==='USD');
+}
+
+function bookClass(plan) {
+  var curr = document.getElementById('btnUSD').classList.contains('on') ? 'USD' : 'INR';
+  var price = curr === 'INR' ? INR['p' + plan.charAt(0)] : USD['p' + plan.charAt(0)];
+  var msg = encodeURIComponent('Hi! I want to enrol in the *' + plan + '* for Online Live Piano Classes.\n\nPlease share payment and schedule details. 🎹');
+  window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
+}
+</script>
+</body>
+</html>
