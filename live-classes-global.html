@@ -47,6 +47,11 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .plan-orig{font-size:0.72rem;color:#bbb;text-decoration:line-through;margin-top:2px}
 .plan-btn{background:#e74c3c;color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:0.78rem;font-weight:700;cursor:pointer;margin-top:8px;white-space:nowrap}
 
+/* Instrument image */
+.inst-img-wrap{margin-top:18px;border-radius:14px;overflow:hidden;height:190px;position:relative}
+.inst-img{width:100%;height:190px;object-fit:cover;display:block;transition:opacity .4s ease}
+.inst-img.fade{opacity:0}
+
 /* Instrument selector */
 .section-title{font-size:0.85rem;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px}
 .inst-btn{border:2px solid #e0e0e0;background:#fff;border-radius:24px;padding:9px 16px;font-size:0.8rem;font-weight:700;cursor:pointer;color:#666;transition:.2s;flex:1;min-width:130px}
@@ -104,6 +109,9 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
     <span class="pill">⏱ 40 Min / Class</span>
     <span class="pill">🎯 One-to-One</span>
     <span class="pill">🌍 Google Meet</span>
+  </div>
+  <div class="inst-img-wrap">
+    <img id="instImg" class="inst-img" src="" alt="Instrument" loading="eager">
   </div>
 </div>
 
@@ -250,33 +258,41 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 
 <script>
 var INSTRUMENTS = {
-  piano:  { icon:'🎹', name:'Piano & Keyboard', curriculum:[
-    ['🎹','Finger Techniques & Hand Development','Proper posture, hand coordination, speed & accuracy'],
-    ['🎵','Indian Classical & Ragas','Ragas, scales, Indian classical music foundations'],
-    ['🎶','Chords, Scales & Music Theory','Western & Indian scales, chord progressions, harmony'],
-    ['🎬','Songs — Your Favourites','Telugu, Hindi, Tamil, English & Western songs'],
-    ['📖','Staff Notation & Sheet Music','Read & write music professionally']
+  piano:  { icon:'🎹', name:'Piano & Keyboard',
+    img:'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=800&h=380&fit=crop&q=80',
+    curriculum:[
+      ['🎹','Finger Techniques & Hand Development','Proper posture, hand coordination, speed & accuracy'],
+      ['🎵','Indian Classical & Ragas','Ragas, scales, Indian classical music foundations'],
+      ['🎶','Chords, Scales & Music Theory','Western & Indian scales, chord progressions, harmony'],
+      ['🎬','Songs — Your Favourites','Telugu, Hindi, Tamil, English & Western songs'],
+      ['📖','Staff Notation & Sheet Music','Read & write music professionally']
   ]},
-  vocal:  { icon:'🎤', name:'Carnatic Vocals', curriculum:[
-    ['🎤','Sarali Varisai & Voice Training','Breathing, voice culture, pitch & tone development'],
-    ['🎵','Raga Alapana & Swaras','Introduction to ragas, swara gnanam, raga bhavam'],
-    ['🥁','Talam & Rhythm','Aadi, Rupaka, Misra Chapu and other key talams'],
-    ['🎶','Keerthanams & Compositions','Classical compositions of Thyagaraja, Dikshitar & more'],
-    ['🎬','Devotional & Film Songs','Bhajans, Carnatic film songs across languages']
+  vocal:  { icon:'🎤', name:'Carnatic Vocals',
+    img:'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=800&h=380&fit=crop&q=80',
+    curriculum:[
+      ['🎤','Sarali Varisai & Voice Training','Breathing, voice culture, pitch & tone development'],
+      ['🎵','Raga Alapana & Swaras','Introduction to ragas, swara gnanam, raga bhavam'],
+      ['🥁','Talam & Rhythm','Aadi, Rupaka, Misra Chapu and other key talams'],
+      ['🎶','Keerthanams & Compositions','Classical compositions of Thyagaraja, Dikshitar & more'],
+      ['🎬','Devotional & Film Songs','Bhajans, Carnatic film songs across languages']
   ]},
-  guitar: { icon:'🎸', name:'Guitar', curriculum:[
-    ['🎸','Open Chords & Basic Strumming','Beginner chords, strumming patterns, rhythm playing'],
-    ['🎵','Scales & Lead Guitar','Major, minor, pentatonic scales, melodies & solos'],
-    ['🎶','Music Theory for Guitar','Chord progressions, harmony, intervals'],
-    ['🎬','Songs — Your Favourites','Bollywood, Telugu, Tamil, English & Western songs'],
-    ['📖','Tabs & Chord Charts','Reading guitar tabs and chord diagrams']
+  guitar: { icon:'🎸', name:'Guitar',
+    img:'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800&h=380&fit=crop&q=80',
+    curriculum:[
+      ['🎸','Open Chords & Basic Strumming','Beginner chords, strumming patterns, rhythm playing'],
+      ['🎵','Scales & Lead Guitar','Major, minor, pentatonic scales, melodies & solos'],
+      ['🎶','Music Theory for Guitar','Chord progressions, harmony, intervals'],
+      ['🎬','Songs — Your Favourites','Bollywood, Telugu, Tamil, English & Western songs'],
+      ['📖','Tabs & Chord Charts','Reading guitar tabs and chord diagrams']
   ]},
-  drums:  { icon:'🥁', name:'Drums', curriculum:[
-    ['🥁','Basic Beats & Rudiments','Grip, posture, single/double stroke, paradiddles'],
-    ['🎵','Rhythm & Timing','Metronome training, time signatures, subdivisions'],
-    ['🎶','Styles — Rock, Jazz & Indian','Versatile drumming across multiple genres'],
-    ['🎬','Play Along with Songs','Telugu, Hindi, Tamil, English & Western tracks'],
-    ['📖','Reading Drum Notation','Understanding and reading drum sheet music']
+  drums:  { icon:'🥁', name:'Drums',
+    img:'https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=800&h=380&fit=crop&q=80',
+    curriculum:[
+      ['🥁','Basic Beats & Rudiments','Grip, posture, single/double stroke, paradiddles'],
+      ['🎵','Rhythm & Timing','Metronome training, time signatures, subdivisions'],
+      ['🎶','Styles — Rock, Jazz & Indian','Versatile drumming across multiple genres'],
+      ['🎬','Play Along with Songs','Telugu, Hindi, Tamil, English & Western tracks'],
+      ['📖','Reading Drum Notation','Understanding and reading drum sheet music']
   ]}
 };
 
@@ -291,6 +307,13 @@ function setInst(key) {
   document.getElementById('demoBannerIcon').textContent = d.icon;
   document.querySelectorAll('.inst-btn').forEach(function(b){ b.classList.remove('on'); });
   document.getElementById('inst-' + key).classList.add('on');
+  var img = document.getElementById('instImg');
+  img.classList.add('fade');
+  setTimeout(function(){
+    img.src = d.img;
+    img.alt = d.name;
+    img.onload = function(){ img.classList.remove('fade'); };
+  }, 200);
   var box = document.getElementById('curriculumBox');
   var rows = d.curriculum.map(function(r){
     return '<div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5"><span style="font-size:1.1rem">'+r[0]+'</span><div><div style="font-size:0.84rem;font-weight:700;color:#1a1a2e">'+r[1]+'</div><div style="font-size:0.73rem;color:#888">'+r[2]+'</div></div></div>';
