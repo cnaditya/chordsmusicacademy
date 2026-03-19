@@ -123,6 +123,32 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 /* Alert */
 .alert{background:#fff3cd;border:1.5px solid #ffc107;border-radius:10px;padding:10px 14px;font-size:0.78rem;color:#856404;margin-bottom:10px}
 
+/* Lead cards */
+.lcard{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:10px;border-left:4px solid #f39c12}
+.lcard.contacted{border-left-color:#3498db}
+.lcard.demo{border-left-color:#9b59b6}
+.lcard.joined{border-left-color:#27ae60}
+.lcard.not_interested{border-left-color:#95a5a6;opacity:0.6}
+.lc-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.lc-av{width:36px;height:36px;border-radius:50%;background:#f39c12;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:800;flex-shrink:0}
+.lc-name{font-size:0.9rem;font-weight:800;color:#1a1a2e}
+.lc-meta{font-size:0.7rem;color:#888;margin-top:2px}
+.lc-regid{font-size:0.6rem;color:#bbb;font-family:monospace}
+.lc-status{display:inline-block;font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:3px}
+.ls-new{background:#fff8e1;color:#f57f17}
+.ls-contacted{background:#e3f2fd;color:#1565c0}
+.ls-demo{background:#f3e5f5;color:#6a1b9a}
+.ls-joined{background:#e8f5e9;color:#2e7d32}
+.ls-not_interested{background:#f5f5f5;color:#888}
+.lc-pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.lc-pill{font-size:0.68rem;background:#f0f2f5;color:#555;padding:3px 8px;border-radius:8px}
+.lc-actions{display:flex;gap:6px}
+.btn-convert{background:#1a1a2e;color:#fff;flex:2}
+.lc-status-btns{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.lsb{border:1.5px solid #e0e0e0;background:#fff;border-radius:8px;padding:4px 8px;font-size:0.65rem;font-weight:700;cursor:pointer;color:#666}
+.lsb.on{background:#1a1a2e;border-color:#1a1a2e;color:#fff}
+.leads-filter{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+
 @media(min-width:768px){
   .page{max-width:780px;margin:0 auto;padding:20px 24px 80px}
   .stats{grid-template-columns:repeat(4,1fr)}
@@ -229,11 +255,24 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
     <div id="attendList"></div>
   </div>
 
+  <!-- Leads (Registrations) -->
+  <div class="page" id="pg-leads">
+    <div class="leads-filter">
+      <button class="fb on" onclick="setLeadFilter('all',this)">All</button>
+      <button class="fb" onclick="setLeadFilter('new',this)">🟡 New</button>
+      <button class="fb" onclick="setLeadFilter('contacted',this)">🔵 Contacted</button>
+      <button class="fb" onclick="setLeadFilter('demo',this)">🟣 Demo</button>
+      <button class="fb" onclick="setLeadFilter('joined',this)">🟢 Joined</button>
+    </div>
+    <div id="leadsList"></div>
+  </div>
+
   <!-- Bottom nav -->
   <div class="bnav">
     <button class="bnav-btn on" onclick="showPage('dash',this)"><span class="bi">🏠</span>Dashboard</button>
     <button class="bnav-btn" onclick="showPage('students',this)"><span class="bi">👥</span>Students</button>
-    <button class="bnav-btn" onclick="showPage('attend',this)"><span class="bi">✅</span>Attendance</button>
+    <button class="bnav-btn" onclick="showPage('leads',this)"><span class="bi">📋</span>Leads</button>
+    <button class="bnav-btn" onclick="showPage('attend',this)"><span class="bi">✅</span>Attend</button>
     <button class="bnav-btn" onclick="showPage('add',this)"><span class="bi">➕</span>Add</button>
   </div>
 
@@ -305,7 +344,9 @@ const SEED = [
 ];
 
 var allStudents = [];
+var allLeads = [];
 var currentFilter = 'all';
+var currentLeadFilter = 'all';
 var ADMIN_PASS = 'Sep@2012';
 
 // Load password
@@ -346,15 +387,23 @@ async function loadStudents() {
         allStudents.push({_id:ref.id,...s});
       }
     }
+    // Load registrations (leads)
+    var lsnap = await getDocs(collection(db,'registrations'));
+    allLeads = [];
+    lsnap.forEach(function(d){ allLeads.push({_id:d.id,...d.data()}); });
+    // Sort newest first
+    allLeads.sort(function(a,b){ return (b.createdAt||'') > (a.createdAt||'') ? 1 : -1; });
+
     renderDash();
     renderStudents();
     renderAttendance();
+    renderLeads();
   } catch(e) { alert('Error loading: '+e.message); }
 }
 
 window.syncData = async function() {
   await loadStudents();
-  alert('Synced! '+allStudents.length+' students loaded.');
+  alert('Synced! '+allStudents.length+' students, '+allLeads.length+' leads loaded.');
 };
 
 // ── Dashboard ──
@@ -363,12 +412,13 @@ function renderDash() {
   var active = allStudents.filter(function(s){ return s.status==='active'; }).length;
   var completed = allStudents.filter(function(s){ return s.classesCompleted>=s.totalClasses; }).length;
   var revenue = allStudents.reduce(function(a,s){ return a+(s.packageAmount||0); },0);
+  var newLeads = allLeads.filter(function(l){ return l.status==='new'; }).length;
 
   document.getElementById('statsGrid').innerHTML =
     stat(total,'👥','Total Students','#1a1a2e') +
     stat(active,'🟢','Active','#27ae60') +
-    stat(completed,'✅','Completed','#3498db') +
-    stat('₹'+Math.round(revenue/1000)+'K','💰','Total Revenue','#e74c3c');
+    stat(newLeads,'📋','New Leads','#f39c12') +
+    stat('₹'+Math.round(revenue/1000)+'K','💰','Revenue','#e74c3c');
 
   // Today's classes
   var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -563,6 +613,97 @@ window.showDetail = function(id) {
 };
 
 window.closeModal = function() { document.getElementById('modalBg').classList.remove('show'); };
+
+// ── Leads (Registrations) ──
+window.setLeadFilter = function(f, btn) {
+  currentLeadFilter = f;
+  document.querySelectorAll('.leads-filter .fb').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  renderLeads();
+};
+
+function renderLeads() {
+  var list = allLeads.filter(function(l){
+    return currentLeadFilter==='all' || l.status===currentLeadFilter;
+  });
+  var box = document.getElementById('leadsList');
+  if(!list.length){ box.innerHTML='<div style="color:#aaa;text-align:center;padding:40px 0">No leads found</div>'; return; }
+  box.innerHTML = list.map(function(l){ return buildLeadCard(l); }).join('');
+}
+
+function buildLeadCard(l) {
+  var name = l.full_name || l.name || 'Unknown';
+  var initials = name.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
+  var phone = (l.phone||'').replace(/\D/g,'');
+  var status = l.status || 'new';
+  var statusLabels = {new:'🟡 New',contacted:'🔵 Contacted',demo:'🟣 Demo Booked',joined:'🟢 Joined',not_interested:'⚫ Not Interested'};
+  var statusClass = {new:'ls-new',contacted:'ls-contacted',demo:'ls-demo',joined:'ls-joined',not_interested:'ls-not_interested'};
+  var waMsg = encodeURIComponent('Hi '+name.split(' ')[0]+'! I am Aditya from Chords Music Academy. Thank you for your interest in '+( l.instrument||'music')+' classes 🎵 When would you like to schedule a free demo?');
+  var dateStr = l.createdAt ? new Date(l.createdAt).toLocaleDateString('en-IN') : '—';
+
+  return '<div class="lcard '+status+'" id="lcard-'+l._id+'">'+
+    '<div class="lc-top">'+
+      '<div class="lc-av">'+initials+'</div>'+
+      '<div style="flex:1">'+
+        '<div class="lc-name">'+name+'</div>'+
+        '<div class="lc-meta">'+(l.phone||'—')+' · '+(l.email||'—')+'</div>'+
+        '<div class="lc-regid">'+(l.reg_id||l._id)+'</div>'+
+        '<span class="lc-status '+(statusClass[status]||'ls-new')+'">'+(statusLabels[status]||status)+'</span>'+
+      '</div>'+
+    '</div>'+
+    '<div class="lc-pills">'+
+      (l.instrument?'<span class="lc-pill">🎵 '+l.instrument+'</span>':'')+
+      (l.level?'<span class="lc-pill">📊 '+l.level+'</span>':'')+
+      (l.mode?'<span class="lc-pill">📍 '+l.mode+'</span>':'')+
+      (dateStr!=='—'?'<span class="lc-pill">📅 '+dateStr+'</span>':'')+
+    '</div>'+
+    '<div class="lc-status-btns">'+
+      '<button class="lsb'+(status==='new'?' on':'')+'" onclick="updateLeadStatus(\''+l._id+'\',\'new\')">🟡 New</button>'+
+      '<button class="lsb'+(status==='contacted'?' on':'')+'" onclick="updateLeadStatus(\''+l._id+'\',\'contacted\')">🔵 Contacted</button>'+
+      '<button class="lsb'+(status==='demo'?' on':'')+'" onclick="updateLeadStatus(\''+l._id+'\',\'demo\')">🟣 Demo</button>'+
+      '<button class="lsb'+(status==='joined'?' on':'')+'" onclick="updateLeadStatus(\''+l._id+'\',\'joined\')">🟢 Joined</button>'+
+      '<button class="lsb'+(status==='not_interested'?' on':'')+'" onclick="updateLeadStatus(\''+l._id+'\',\'not_interested\')">⚫ Not Int.</button>'+
+    '</div>'+
+    '<div class="lc-actions">'+
+      '<button class="sc-btn btn-convert" onclick="convertToStudent(\''+l._id+'\')">➕ Convert to Student</button>'+
+      '<a href="https://api.whatsapp.com/send?phone='+phone+'&text='+waMsg+'" class="sc-btn btn-wa" target="_blank">💬</a>'+
+    '</div>'+
+    (l.notes && l.notes!=='—'?'<div style="font-size:0.7rem;color:#888;margin-top:8px;padding-top:8px;border-top:1px solid #f5f5f5">📝 '+l.notes+'</div>':'')+
+  '</div>';
+}
+
+window.updateLeadStatus = async function(id, status) {
+  try {
+    await updateDoc(doc(db,'registrations',id), { status: status, updatedAt: new Date().toISOString() });
+    var l = allLeads.find(function(x){ return x._id===id; });
+    if(l) { l.status = status; }
+    renderDash();
+    renderLeads();
+  } catch(e){ alert('Error: '+e.message); }
+};
+
+window.convertToStudent = function(id) {
+  var l = allLeads.find(function(x){ return x._id===id; });
+  if(!l) return;
+  var name = l.full_name || l.name || '';
+  var parts = name.trim().split(' ');
+  var fname = parts[0] || '';
+  var lname = parts.slice(1).join(' ') || '';
+  // Map instrument label to CRM course key
+  var instMap = {'Piano & Keyboard':'Piano','Carnatic Vocals':'Vocals','Guitar':'Guitar','Drums':'Drums'};
+  var course = instMap[l.instrument] || 'Piano';
+  // Pre-fill add form
+  document.getElementById('af-fname').value = fname;
+  document.getElementById('af-lname').value = lname;
+  document.getElementById('af-phone').value = l.phone || '';
+  document.getElementById('af-email').value = l.email || '';
+  document.getElementById('af-course').value = course;
+  document.getElementById('af-notes').value = (l.level?'Level: '+l.level+'. ':'')+( l.notes && l.notes!=='—'?l.notes:'');
+  // Navigate to Add tab
+  var addBtn = document.querySelectorAll('.bnav-btn')[4];
+  showPage('add', addBtn);
+  window.scrollTo(0,0);
+};
 
 // ── Navigation ──
 window.showPage = function(name, btn) {
