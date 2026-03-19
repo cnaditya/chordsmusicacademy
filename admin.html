@@ -82,7 +82,6 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .act-wa{flex:1;background:#25d366;color:#fff;border:none;border-radius:10px;padding:9px;font-size:0.78rem;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:4px}
 .act-detail{flex:0 0 auto;background:#f0f2f5;color:#555;border:none;border-radius:10px;padding:9px 12px;font-size:0.78rem;font-weight:700;cursor:pointer}
 .act-del{flex:0 0 auto;background:#fff0f0;color:#e74c3c;border:1.5px solid #fdd;border-radius:10px;padding:9px 12px;font-size:0.78rem;font-weight:700;cursor:pointer}
-.act-del{flex:0 0 auto;background:#fff0f0;color:#e74c3c;border:1.5px solid #fdd;border-radius:10px;padding:9px 12px;font-size:0.78rem;font-weight:700;cursor:pointer}
 
 /* Detail modal */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
@@ -348,7 +347,6 @@ function buildCard(s) {
     '<div class="card-actions">' +
       '<a href="https://api.whatsapp.com/send?phone='+phone+'&text='+waMsg+'" class="act-wa" target="_blank">💬 WhatsApp</a>' +
       '<button class="act-detail" onclick="showDetail(\''+s.id+'\')">Details</button>' +
-      '<button class="act-del" onclick="deleteStudent(\''+s.id+'\',\''+s.full_name+'\')">🗑</button>' +
       '<button class="act-del" onclick="deleteStudent(\''+s.id+'\',\''+s.full_name+'\')">🗑</button>' +
     '</div>' +
   '</div>';
