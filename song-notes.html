@@ -96,13 +96,26 @@ body{display:flex;flex-direction:column;margin:0 auto}
 /* Top 50 cards */
 .t50{background:#fff;border-radius:13px;padding:13px;box-shadow:0 1px 6px rgba(0,0,0,0.08)}
 .t50-hdr{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.t50-toggle{cursor:pointer;user-select:none;margin-bottom:0}
+.t50-toggle:active{opacity:0.8}
+.t50-arrow{font-size:0.75rem;color:#aaa;transition:.2s;flex-shrink:0}
 .t50-em{font-size:1.4rem}
 .t50-name{font-size:0.9rem;font-weight:700;color:#1a1a2e}
 .t50-sub{font-size:0.65rem;color:#888}
+.t50-songlist{border-top:1px solid #f0f0f0;margin:8px 0;max-height:260px;overflow-y:auto}
+.t50-song{display:flex;align-items:baseline;gap:7px;padding:5px 2px;border-bottom:1px solid #fafafa}
+.t50-song-num{font-size:0.65rem;color:#bbb;font-weight:700;width:18px;flex-shrink:0;text-align:right}
+.t50-song-name{font-size:0.78rem;font-weight:600;color:#1a1a2e;flex:1}
+.t50-song-film{font-size:0.65rem;color:#999;font-style:italic;flex-shrink:0;max-width:40%;text-align:right}
 .t50-row{display:flex;align-items:center;padding:7px 0;border-top:1px solid #f0f0f0;gap:8px}
 .t50-lbl{font-size:0.75rem;color:#444;font-weight:600;flex:1}
 .t50-price{font-size:0.88rem;font-weight:800;color:#e74c3c;white-space:nowrap}
 .t50-row .btn-order{width:auto;padding:7px 13px;font-size:0.72rem;flex-shrink:0}
+/* Request cards */
+.t50-req{background:#fff;border-radius:13px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.08);border:2px dashed #e0e0e0;text-align:center}
+.t50-req-title{font-size:0.92rem;font-weight:800;color:#1a1a2e;margin-bottom:3px}
+.t50-req-sub{font-size:0.7rem;color:#888;margin-bottom:12px}
+.t50-req-btn{background:#1a1a2e;color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:0.82rem;font-weight:700;cursor:pointer;width:100%}
 
 /* ── Order Modal ── */
 #orderModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9000;align-items:flex-end;justify-content:center}
@@ -294,37 +307,149 @@ body{display:flex;flex-direction:column;margin:0 auto}
     <div class="col-title">
       <div class="col-title-icon">🎼</div>
       <div class="col-title-main">Top 50 Song Packs</div>
-      <div class="col-title-sub">Best 50 songs in one pack — Telugu, Hindi, English & more</div>
+      <div class="col-title-sub">Curated top 50 packs — notes + tutorial videos delivered on WhatsApp</div>
     </div>
 
+    <!-- AR Rahman Top 50 -->
     <div class="t50">
-      <div class="t50-hdr"><div class="t50-em">🎵</div><div><div class="t50-name">Telugu Top 50</div><div class="t50-sub">50 best Telugu songs</div></div></div>
-      <div class="t50-row"><span class="t50-lbl">📄 Notes Only</span><span class="t50-price">₹999</span><button class="btn-order" onclick="openOrder('Telugu Top 50 — Notes','999','CMA-Telugu-Notes')">🛒 Order</button></div>
-      <div class="t50-row"><span class="t50-lbl">🎬 Notes + Video</span><span class="t50-price">₹1,999</span><button class="btn-order" onclick="openOrder('Telugu Top 50 — Notes+Video','1999','CMA-Telugu-Top50')">🛒 Order</button></div>
-    </div>
-
-    <div class="t50">
-      <div class="t50-hdr"><div class="t50-em">🎶</div><div><div class="t50-name">Hindi Top 50</div><div class="t50-sub">50 best Hindi songs</div></div></div>
-      <div class="t50-row"><span class="t50-lbl">📄 Notes Only</span><span class="t50-price">₹999</span><button class="btn-order" onclick="openOrder('Hindi Top 50 — Notes','999','CMA-Hindi-Notes')">🛒 Order</button></div>
-      <div class="t50-row"><span class="t50-lbl">🎬 Notes + Video</span><span class="t50-price">₹1,999</span><button class="btn-order" onclick="openOrder('Hindi Top 50 — Notes+Video','1999','CMA-Hindi-Top50')">🛒 Order</button></div>
-    </div>
-
-    <div class="t50">
-      <div class="t50-hdr"><div class="t50-em">🎼</div><div><div class="t50-name">Tamil Top 50</div><div class="t50-sub">50 best Tamil songs</div></div></div>
-      <div class="t50-row"><span class="t50-lbl">📄 Notes Only</span><span class="t50-price">₹999</span><button class="btn-order" onclick="openOrder('Tamil Top 50 — Notes','999','CMA-Tamil-Notes')">🛒 Order</button></div>
-      <div class="t50-row"><span class="t50-lbl">🎬 Notes + Video</span><span class="t50-price">₹1,999</span><button class="btn-order" onclick="openOrder('Tamil Top 50 — Notes+Video','1999','CMA-Tamil-Top50')">🛒 Order</button></div>
-    </div>
-
-    <div class="t50">
-      <div class="t50-hdr"><div class="t50-em">🎤</div><div><div class="t50-name">AR Rahman Top 50</div><div class="t50-sub">50 iconic AR Rahman songs</div></div></div>
+      <div class="t50-hdr t50-toggle" onclick="toggleList('arr')">
+        <div class="t50-em">🎤</div>
+        <div style="flex:1"><div class="t50-name">AR Rahman Top 50</div><div class="t50-sub">50 iconic songs — tap to see the list</div></div>
+        <span class="t50-arrow" id="arr-arrow">▶</span>
+      </div>
+      <div class="t50-songlist" id="arr-list" style="display:none">
+        <div class="t50-song"><span class="t50-song-num">1</span><span class="t50-song-name">Chikiri Chikiri</span><span class="t50-song-film">Peddi</span></div>
+        <div class="t50-song"><span class="t50-song-num">2</span><span class="t50-song-name">Na Cheli Rojave</span><span class="t50-song-film">Roja</span></div>
+        <div class="t50-song"><span class="t50-song-num">3</span><span class="t50-song-name">Jai Ho</span><span class="t50-song-film">Slumdog Millionaire</span></div>
+        <div class="t50-song"><span class="t50-song-num">4</span><span class="t50-song-name">Chinna Chinna Aasha</span><span class="t50-song-film">Roja</span></div>
+        <div class="t50-song"><span class="t50-song-num">5</span><span class="t50-song-name">Anjali Anjali</span><span class="t50-song-film">Duet</span></div>
+        <div class="t50-song"><span class="t50-song-num">6</span><span class="t50-song-name">Kannanule</span><span class="t50-song-film">Bombay</span></div>
+        <div class="t50-song"><span class="t50-song-num">7</span><span class="t50-song-name">Pedave Palikina</span><span class="t50-song-film">Nani</span></div>
+        <div class="t50-song"><span class="t50-song-num">8</span><span class="t50-song-name">Vennelave Vennelave</span><span class="t50-song-film">Merupu Kalalu</span></div>
+        <div class="t50-song"><span class="t50-song-num">9</span><span class="t50-song-name">Laali Laali</span><span class="t50-song-film">Indira</span></div>
+        <div class="t50-song"><span class="t50-song-num">10</span><span class="t50-song-name">Poodota Poochindanta</span><span class="t50-song-film">Vanitha</span></div>
+        <div class="t50-song"><span class="t50-song-num">11</span><span class="t50-song-name">Vaalu Kanuladaanaa</span><span class="t50-song-film">Premikula Roju</span></div>
+        <div class="t50-song"><span class="t50-song-num">12</span><span class="t50-song-name">Pachani Chilukalu</span><span class="t50-song-film">Bharateeyudu</span></div>
+        <div class="t50-song"><span class="t50-song-num">13</span><span class="t50-song-name">E Devi Varamo</span><span class="t50-song-film">Amrutha</span></div>
+        <div class="t50-song"><span class="t50-song-num">14</span><span class="t50-song-name">Vande Mataram</span><span class="t50-song-film">Vande Mataram</span></div>
+        <div class="t50-song"><span class="t50-song-num">15</span><span class="t50-song-name">Manasuna Mansuga</span><span class="t50-song-film">Love Birds</span></div>
+        <div class="t50-song"><span class="t50-song-num">16</span><span class="t50-song-name">Nuvvunte Naa Jathagaa</span><span class="t50-song-film">I (Manoharudu)</span></div>
+        <div class="t50-song"><span class="t50-song-num">17</span><span class="t50-song-name">Kundanapu Bomma</span><span class="t50-song-film">Ye Maaya Chesave</span></div>
+        <div class="t50-song"><span class="t50-song-num">18</span><span class="t50-song-name">Vellipomaakey</span><span class="t50-song-film">Saahasam Swaasaga Saagipo</span></div>
+        <div class="t50-song"><span class="t50-song-num">19</span><span class="t50-song-name">Preminche Premava</span><span class="t50-song-film">Nuvvu Nenu Prema</span></div>
+        <div class="t50-song"><span class="t50-song-num">20</span><span class="t50-song-name">Vintunnavaa</span><span class="t50-song-film">Ye Maaya Chesave</span></div>
+        <div class="t50-song"><span class="t50-song-num">21</span><span class="t50-song-name">Snehithudaa</span><span class="t50-song-film">Sakhi</span></div>
+        <div class="t50-song"><span class="t50-song-num">22</span><span class="t50-song-name">Pachchadanamey</span><span class="t50-song-film">Sakhi</span></div>
+        <div class="t50-song"><span class="t50-song-num">23</span><span class="t50-song-name">Sasivadane</span><span class="t50-song-film">Iddaru</span></div>
+        <div class="t50-song"><span class="t50-song-num">24</span><span class="t50-song-name">Poovullo Daagunna</span><span class="t50-song-film">Jeans</span></div>
+        <div class="t50-song"><span class="t50-song-num">25</span><span class="t50-song-name">Nelluri Nerajana</span><span class="t50-song-film">Oke Okkadu</span></div>
+        <div class="t50-song"><span class="t50-song-num">26</span><span class="t50-song-name">New York Nagaram</span><span class="t50-song-film">Nuvvu Nenu Prema</span></div>
+        <div class="t50-song"><span class="t50-song-num">27</span><span class="t50-song-name">Yedemaina Sakhi</span><span class="t50-song-film">Vikramasimha</span></div>
+        <div class="t50-song"><span class="t50-song-num">28</span><span class="t50-song-name">Gunzukunnaa</span><span class="t50-song-film">Kadali</span></div>
+        <div class="t50-song"><span class="t50-song-num">29</span><span class="t50-song-name">Hamsaro</span><span class="t50-song-film">Cheliyaa</span></div>
+        <div class="t50-song"><span class="t50-song-num">30</span><span class="t50-song-name">Sahana</span><span class="t50-song-film">Sivaji</span></div>
+        <div class="t50-song"><span class="t50-song-num">31</span><span class="t50-song-name">Oorvasi</span><span class="t50-song-film">Premikudu</span></div>
+        <div class="t50-song"><span class="t50-song-num">32</span><span class="t50-song-name">Roja Roja</span><span class="t50-song-film">Premikula Roju</span></div>
+        <div class="t50-song"><span class="t50-song-num">33</span><span class="t50-song-name">Andamaina Premarani</span><span class="t50-song-film">Prema Desam</span></div>
+        <div class="t50-song"><span class="t50-song-num">34</span><span class="t50-song-name">Taal Se Taal</span><span class="t50-song-film">Taal</span></div>
+        <div class="t50-song"><span class="t50-song-num">35</span><span class="t50-song-name">Yedo Yedo</span><span class="t50-song-film">Nee Manasu Naaku Telusu</span></div>
+        <div class="t50-song"><span class="t50-song-num">36</span><span class="t50-song-name">Mental Madhilo</span><span class="t50-song-film">OK Bangaram</span></div>
+        <div class="t50-song"><span class="t50-song-num">37</span><span class="t50-song-name">Ponge Nadhi</span><span class="t50-song-film">Ponniyin Selvan-1</span></div>
+        <div class="t50-song"><span class="t50-song-num">38</span><span class="t50-song-name">Ale Ale</span><span class="t50-song-film">Boys</span></div>
+        <div class="t50-song"><span class="t50-song-num">39</span><span class="t50-song-name">Usure Poyene</span><span class="t50-song-film">Villain</span></div>
+        <div class="t50-song"><span class="t50-song-num">40</span><span class="t50-song-name">Chal Chayya</span><span class="t50-song-film">Dil Se</span></div>
+        <div class="t50-song"><span class="t50-song-num">41</span><span class="t50-song-name">Dilse</span><span class="t50-song-film">Dil Se</span></div>
+        <div class="t50-song"><span class="t50-song-num">42</span><span class="t50-song-name">Kotta Bangaru Lokam</span><span class="t50-song-film">Donga Donga</span></div>
+        <div class="t50-song"><span class="t50-song-num">43</span><span class="t50-song-name">Vastha Nee Venuka</span><span class="t50-song-film">Nani</span></div>
+        <div class="t50-song"><span class="t50-song-num">44</span><span class="t50-song-name">Nee Choope Naaku</span><span class="t50-song-film">Saahasam Swaasaga Saagipo</span></div>
+        <div class="t50-song"><span class="t50-song-num">45</span><span class="t50-song-name">Chakkori</span><span class="t50-song-film">Saahasam Swaasaga Saagipo</span></div>
+        <div class="t50-song"><span class="t50-song-num">46</span><span class="t50-song-name">Maayo</span><span class="t50-song-film">Adirindhi</span></div>
+        <div class="t50-song"><span class="t50-song-num">47</span><span class="t50-song-name">Chandruni Takinadi</span><span class="t50-song-film">Rakshakudu</span></div>
+        <div class="t50-song"><span class="t50-song-num">48</span><span class="t50-song-name">Paruvam Vanaga</span><span class="t50-song-film">Roja</span></div>
+        <div class="t50-song"><span class="t50-song-num">49</span><span class="t50-song-name">Pachani Thota</span><span class="t50-song-film">Kadali</span></div>
+        <div class="t50-song"><span class="t50-song-num">50</span><span class="t50-song-name">Yadike</span><span class="t50-song-film">Kadali</span></div>
+      </div>
       <div class="t50-row"><span class="t50-lbl">📄 Notes Only</span><span class="t50-price">₹999</span><button class="btn-order" onclick="openOrder('AR Rahman Top 50 — Notes','999','CMA-ARR-Notes')">🛒 Order</button></div>
       <div class="t50-row"><span class="t50-lbl">🎬 Notes + Video</span><span class="t50-price">₹1,999</span><button class="btn-order" onclick="openOrder('AR Rahman Top 50 — Notes+Video','1999','CMA-AR-Rahman-Top50')">🛒 Order</button></div>
     </div>
 
+    <!-- Ilaiyaraaja Top 50 -->
     <div class="t50">
-      <div class="t50-hdr"><div class="t50-em">🎹</div><div><div class="t50-name">Ilaiyaraaja Top 50</div><div class="t50-sub">50 evergreen classics</div></div></div>
+      <div class="t50-hdr t50-toggle" onclick="toggleList('ir')">
+        <div class="t50-em">🎹</div>
+        <div style="flex:1"><div class="t50-name">Ilaiyaraaja Top 50</div><div class="t50-sub">50 evergreen Telugu classics — tap to see the list</div></div>
+        <span class="t50-arrow" id="ir-arrow">▶</span>
+      </div>
+      <div class="t50-songlist" id="ir-list" style="display:none">
+        <div class="t50-song"><span class="t50-song-num">1</span><span class="t50-song-name">Maate Mantramu</span><span class="t50-song-film">Seethakoka Chilaka</span></div>
+        <div class="t50-song"><span class="t50-song-num">2</span><span class="t50-song-name">Minneti Suridu</span><span class="t50-song-film">Seethakoka Chilaka</span></div>
+        <div class="t50-song"><span class="t50-song-num">3</span><span class="t50-song-name">Mounamelanoyi</span><span class="t50-song-film">Sagara Sangamam</span></div>
+        <div class="t50-song"><span class="t50-song-num">4</span><span class="t50-song-name">Vedham Anuvanuvuna</span><span class="t50-song-film">Sagara Sangamam</span></div>
+        <div class="t50-song"><span class="t50-song-num">5</span><span class="t50-song-name">Thakita Thadhimi</span><span class="t50-song-film">Sagara Sangamam</span></div>
+        <div class="t50-song"><span class="t50-song-num">6</span><span class="t50-song-name">Om Namasivaaya</span><span class="t50-song-film">Sagara Sangamam</span></div>
+        <div class="t50-song"><span class="t50-song-num">7</span><span class="t50-song-name">Chinnari Ponnari</span><span class="t50-song-film">Swathi Muthyam</span></div>
+        <div class="t50-song"><span class="t50-song-num">8</span><span class="t50-song-name">Manasu Palike</span><span class="t50-song-film">Swathi Muthyam</span></div>
+        <div class="t50-song"><span class="t50-song-num">9</span><span class="t50-song-name">Suvvee Suvvee</span><span class="t50-song-film">Swathi Muthyam</span></div>
+        <div class="t50-song"><span class="t50-song-num">10</span><span class="t50-song-name">O Priya</span><span class="t50-song-film">Geethanjali</span></div>
+        <div class="t50-song"><span class="t50-song-num">11</span><span class="t50-song-name">Jallanta Kavvinta</span><span class="t50-song-film">Geethanjali</span></div>
+        <div class="t50-song"><span class="t50-song-num">12</span><span class="t50-song-name">Priyatama</span><span class="t50-song-film">Jagadeka Veerudu</span></div>
+        <div class="t50-song"><span class="t50-song-num">13</span><span class="t50-song-name">Jai Chiranjeeva</span><span class="t50-song-film">Jagadeka Veerudu</span></div>
+        <div class="t50-song"><span class="t50-song-num">14</span><span class="t50-song-name">Andalalo</span><span class="t50-song-film">Jagadeka Veerudu</span></div>
+        <div class="t50-song"><span class="t50-song-num">15</span><span class="t50-song-name">Abbanee</span><span class="t50-song-film">Jagadeka Veerudu</span></div>
+        <div class="t50-song"><span class="t50-song-num">16</span><span class="t50-song-name">Anando Brahma</span><span class="t50-song-film">Siva</span></div>
+        <div class="t50-song"><span class="t50-song-num">17</span><span class="t50-song-name">Sarasalu Chalu</span><span class="t50-song-film">Siva</span></div>
+        <div class="t50-song"><span class="t50-song-num">18</span><span class="t50-song-name">Botani Patamundi</span><span class="t50-song-film">Siva</span></div>
+        <div class="t50-song"><span class="t50-song-num">19</span><span class="t50-song-name">Kothaga Vundi</span><span class="t50-song-film">Swarna Kamalam</span></div>
+        <div class="t50-song"><span class="t50-song-num">20</span><span class="t50-song-name">Gallu Gallu</span><span class="t50-song-film">Swarna Kamalam</span></div>
+        <div class="t50-song"><span class="t50-song-num">21</span><span class="t50-song-name">Andhela Ravali</span><span class="t50-song-film">Swarna Kamalam</span></div>
+        <div class="t50-song"><span class="t50-song-num">22</span><span class="t50-song-name">Rangulalo</span><span class="t50-song-film">Abhinandana</span></div>
+        <div class="t50-song"><span class="t50-song-num">23</span><span class="t50-song-name">Eduta Neeve</span><span class="t50-song-film">Abhinandana</span></div>
+        <div class="t50-song"><span class="t50-song-num">24</span><span class="t50-song-name">Kanya Kumari</span><span class="t50-song-film">Bobbili Raja</span></div>
+        <div class="t50-song"><span class="t50-song-num">25</span><span class="t50-song-name">Balapam Patti</span><span class="t50-song-film">Bobbili Raja</span></div>
+        <div class="t50-song"><span class="t50-song-num">26</span><span class="t50-song-name">Jabilliki Vennelaki</span><span class="t50-song-film">Chanti</span></div>
+        <div class="t50-song"><span class="t50-song-num">27</span><span class="t50-song-name">Annula Minnala</span><span class="t50-song-film">Chanti</span></div>
+        <div class="t50-song"><span class="t50-song-num">28</span><span class="t50-song-name">Induvadana</span><span class="t50-song-film">Challenge</span></div>
+        <div class="t50-song"><span class="t50-song-num">29</span><span class="t50-song-name">Centurilu Kotte Vayasu</span><span class="t50-song-film">Aditya 369</span></div>
+        <div class="t50-song"><span class="t50-song-num">30</span><span class="t50-song-name">Jaanavule</span><span class="t50-song-film">Aditya 369</span></div>
+        <div class="t50-song"><span class="t50-song-num">31</span><span class="t50-song-name">Kolo Kolamma</span><span class="t50-song-film">Kondaveeti Donga</span></div>
+        <div class="t50-song"><span class="t50-song-num">32</span><span class="t50-song-name">Subhalekha</span><span class="t50-song-film">Kondaveeti Donga</span></div>
+        <div class="t50-song"><span class="t50-song-num">33</span><span class="t50-song-name">Arey Emaindi</span><span class="t50-song-film">Aradhana</span></div>
+        <div class="t50-song"><span class="t50-song-num">34</span><span class="t50-song-name">Thinganai Mallelu</span><span class="t50-song-film">Aradhana</span></div>
+        <div class="t50-song"><span class="t50-song-num">35</span><span class="t50-song-name">Malli Malli</span><span class="t50-song-film">Rakshasudu</span></div>
+        <div class="t50-song"><span class="t50-song-num">36</span><span class="t50-song-name">Jabilli Kosam</span><span class="t50-song-film">Manchi Manasulu</span></div>
+        <div class="t50-song"><span class="t50-song-num">37</span><span class="t50-song-name">Hello Guru</span><span class="t50-song-film">Nirnayam</span></div>
+        <div class="t50-song"><span class="t50-song-num">38</span><span class="t50-song-name">Matarani Mounamidi</span><span class="t50-song-film">Maharshi</span></div>
+        <div class="t50-song"><span class="t50-song-num">39</span><span class="t50-song-name">Sumam Prati Sumam</span><span class="t50-song-film">Maharshi</span></div>
+        <div class="t50-song"><span class="t50-song-num">40</span><span class="t50-song-name">Tella Cheeraku</span><span class="t50-song-film">Allari Poratam</span></div>
+        <div class="t50-song"><span class="t50-song-num">41</span><span class="t50-song-name">Singarala Pairullona</span><span class="t50-song-film">Dalapathi</span></div>
+        <div class="t50-song"><span class="t50-song-num">42</span><span class="t50-song-name">Jagadanandhakaraka</span><span class="t50-song-film">Sri Rama Rajyam</span></div>
+        <div class="t50-song"><span class="t50-song-num">43</span><span class="t50-song-name">Lalitha Priya Kamalam</span><span class="t50-song-film">Rudraveena</span></div>
+        <div class="t50-song"><span class="t50-song-num">44</span><span class="t50-song-name">Nammaku Nammaku</span><span class="t50-song-film">Rudraveena</span></div>
+        <div class="t50-song"><span class="t50-song-num">45</span><span class="t50-song-name">Enno Rathrulu</span><span class="t50-song-film">Dharma Kshetram</span></div>
+        <div class="t50-song"><span class="t50-song-num">46</span><span class="t50-song-name">Aakasam Eenatidho</span><span class="t50-song-film">Nireekshana</span></div>
+        <div class="t50-song"><span class="t50-song-num">47</span><span class="t50-song-name">Karigipoyanu</span><span class="t50-song-film">Marana Mrudangam</span></div>
+        <div class="t50-song"><span class="t50-song-num">48</span><span class="t50-song-name">Yurekha</span><span class="t50-song-film">Abhilasha</span></div>
+        <div class="t50-song"><span class="t50-song-num">49</span><span class="t50-song-name">Keeravani Chilakala Koliki</span><span class="t50-song-film">Anveshana</span></div>
+        <div class="t50-song"><span class="t50-song-num">50</span><span class="t50-song-name">Kammani Ee Premalekhale</span><span class="t50-song-film">Guna</span></div>
+      </div>
       <div class="t50-row"><span class="t50-lbl">📄 Notes Only</span><span class="t50-price">₹999</span><button class="btn-order" onclick="openOrder('Ilaiyaraaja Top 50 — Notes','999','CMA-Ilayaraja-Notes')">🛒 Order</button></div>
       <div class="t50-row"><span class="t50-lbl">🎬 Notes + Video</span><span class="t50-price">₹1,999</span><button class="btn-order" onclick="openOrder('Ilaiyaraaja Top 50 — Notes+Video','1999','CMA-Ilaiyaraaja-Top50')">🛒 Order</button></div>
+    </div>
+
+    <!-- Request: Telugu Top 50 -->
+    <div class="t50-req">
+      <div style="font-size:1.5rem;margin-bottom:6px">🎵</div>
+      <div class="t50-req-title">Top 50 Telugu Popular Songs</div>
+      <div class="t50-req-sub">Pack being curated — request to get notified when ready</div>
+      <button class="t50-req-btn" onclick="requestPack('Top 50 Telugu Popular Songs')">💬 Request This Pack</button>
+    </div>
+
+    <!-- Request: Hindi Top 50 -->
+    <div class="t50-req">
+      <div style="font-size:1.5rem;margin-bottom:6px">🎶</div>
+      <div class="t50-req-title">Top 50 Hindi Popular Songs</div>
+      <div class="t50-req-sub">Pack being curated — request to get notified when ready</div>
+      <button class="t50-req-btn" onclick="requestPack('Top 50 Hindi Popular Songs')">💬 Request This Pack</button>
     </div>
 
   </div>
@@ -417,6 +542,19 @@ var _pkg = '', _amount = 0, _ref = '', _orderId = '';
 function showTab(i) {
   document.querySelectorAll('.tab').forEach(function(t,j){ t.classList.toggle('on',j===i); });
   document.querySelectorAll('.panel').forEach(function(p,j){ p.classList.toggle('on',j===i); });
+}
+
+function toggleList(id) {
+  var list  = document.getElementById(id+'-list');
+  var arrow = document.getElementById(id+'-arrow');
+  var open  = list.style.display === 'none';
+  list.style.display  = open ? 'block' : 'none';
+  arrow.textContent   = open ? '▼' : '▶';
+}
+
+function requestPack(packName) {
+  var msg = encodeURIComponent('Hi! I\'d like to request the *' + packName + '* pack. Please notify me when it\'s ready.');
+  window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
 }
 
 // ── Order flow ──
