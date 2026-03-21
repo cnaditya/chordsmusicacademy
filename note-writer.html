@@ -122,6 +122,34 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .btn-pdf:hover{box-shadow:0 4px 20px rgba(142,68,173,0.5)}
 .btn-word{background:#2980b9;color:#fff}
 
+/* Floating music notes background */
+.music-bg{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.music-bg span{position:absolute;font-size:1.4rem;opacity:0;animation:floatNote linear infinite}
+@keyframes floatNote{
+  0%{opacity:0;transform:translateY(0) rotate(0deg)}
+  10%{opacity:0.07}
+  90%{opacity:0.07}
+  100%{opacity:0;transform:translateY(-100vh) rotate(20deg)}
+}
+.app-wrap,.hdr,.status-bar{position:relative;z-index:1}
+
+/* Piano keyboard decorative strip */
+.piano-strip{display:flex;align-items:flex-end;gap:2px;padding:0 32px;margin-bottom:-1px;opacity:0.08;pointer-events:none;height:28px;overflow:hidden}
+.pk-w{width:28px;height:24px;background:#ddd;border-radius:0 0 4px 4px;flex-shrink:0}
+.pk-b{width:18px;height:16px;background:#222;border-radius:0 0 3px 3px;flex-shrink:0;margin:0 -9px;z-index:2;position:relative}
+
+/* Instrument icons row */
+.instr-bar{display:flex;align-items:center;justify-content:center;gap:28px;padding:10px 32px 0;opacity:0.12;pointer-events:none;font-size:1.6rem;letter-spacing:4px}
+
+/* Seq box empty state */
+.seq-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:140px;opacity:0.18;gap:8px}
+.seq-empty-icon{font-size:2.8rem}
+.seq-empty-text{font-size:0.75rem;color:#888;letter-spacing:2px;text-transform:uppercase}
+
+/* Staff lines decoration on seq box */
+.seq-box{position:relative}
+.seq-box::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(transparent,transparent 35px,#ffffff06 35px,#ffffff06 36px);border-radius:12px;pointer-events:none}
+
 /* Print styles */
 @media print {
   @page{margin:20mm 18mm}
@@ -154,6 +182,24 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 </style>
 </head>
 <body>
+
+<!-- Floating music notes background -->
+<div class="music-bg" aria-hidden="true">
+  <span style="left:3%;animation-duration:18s;animation-delay:0s;font-size:1.2rem">♩</span>
+  <span style="left:8%;animation-duration:22s;animation-delay:3s;font-size:1.8rem">♪</span>
+  <span style="left:15%;animation-duration:16s;animation-delay:7s;font-size:1rem">♫</span>
+  <span style="left:22%;animation-duration:24s;animation-delay:1s;font-size:2rem">♬</span>
+  <span style="left:30%;animation-duration:19s;animation-delay:9s;font-size:1.3rem">𝄞</span>
+  <span style="left:38%;animation-duration:21s;animation-delay:4s;font-size:1rem">♩</span>
+  <span style="left:45%;animation-duration:17s;animation-delay:11s;font-size:1.6rem">🎵</span>
+  <span style="left:52%;animation-duration:23s;animation-delay:6s;font-size:1.2rem">♫</span>
+  <span style="left:60%;animation-duration:20s;animation-delay:2s;font-size:1.8rem">♬</span>
+  <span style="left:67%;animation-duration:15s;animation-delay:8s;font-size:1rem">𝄞</span>
+  <span style="left:74%;animation-duration:25s;animation-delay:5s;font-size:1.4rem">♪</span>
+  <span style="left:81%;animation-duration:18s;animation-delay:12s;font-size:2rem">🎶</span>
+  <span style="left:88%;animation-duration:22s;animation-delay:0s;font-size:1.2rem">♩</span>
+  <span style="left:94%;animation-duration:16s;animation-delay:10s;font-size:1.6rem">♫</span>
+</div>
 
 <!-- Password Gate -->
 <div id="pwGate" style="position:fixed;inset:0;background:#0f0f1a;z-index:9999;display:flex;align-items:center;justify-content:center">
@@ -201,6 +247,9 @@ function checkPw(){
     <button class="btn btn-connect" id="connectBtn" onclick="connectMIDI()" style="flex:none;padding:6px 18px;font-size:0.75rem;border-radius:20px;white-space:nowrap">🔌 Connect</button>
   </div>
 </div>
+
+<!-- Instrument icon bar -->
+<div class="instr-bar" aria-hidden="true">🎹 🎸 🎺 🎻 🥁 🪗 🎷 🪘 🎵 🎶 🎹 🎸 🎺 🎻 🥁 🪗 🎷 🪘 🎵 🎶</div>
 
 <!-- Status bar (text only, compact) -->
 <div class="status-bar">
@@ -589,7 +638,7 @@ function octDots(midiNote, dotSize) {
 function renderSeq() {
   var box = document.getElementById('seqBox');
   if (notes.length === 0) {
-    box.innerHTML = '<span class="seq-cursor"></span>';
+    box.innerHTML = '<div class="seq-empty"><div class="seq-empty-icon">🎹</div><div class="seq-empty-text">Play your MIDI keyboard to start</div></div><span class="seq-cursor"></span>';
     return;
   }
   var html = '';
