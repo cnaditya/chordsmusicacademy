@@ -404,7 +404,9 @@ function renderSeq() {
         var clickIdx = lastBarIdx; // pass to editChord
         html += '<span class="note-wrap">'
               + '<span class="note-chord-lbl ' + (chord ? 'has-chord' : 'no-chord') + '" '
-              + 'onclick="editChord(' + clickIdx + ')" title="Add/edit chord">'
+              + 'onclick="editChord(' + clickIdx + ')" '
+              + 'oncontextmenu="clearChord(' + clickIdx + ',event)" '
+              + 'title="' + (chord ? 'Click to edit · Right-click to clear' : 'Click to add chord') + '">'
               + (chord ? chord : '+') + '</span>'
               + noteSpan + '</span>';
         firstInBar = false;
@@ -485,6 +487,25 @@ function applyDetectedChord() {
 
 function addSpace() {
   notes.push({name:' ', chord: ''});
+  renderSeq();
+}
+
+function undoChord() {
+  // Find the last bar that has a chord and clear it
+  if (firstBarChord) { firstBarChord = ''; renderSeq(); return; }
+  for (var i = notes.length - 1; i >= 0; i--) {
+    if (notes[i].name === ' ' && notes[i].chord) {
+      notes[i].chord = '';
+      renderSeq();
+      return;
+    }
+  }
+}
+
+function clearChord(noteIndex, e) {
+  e.preventDefault(); // prevent default right-click menu
+  if (noteIndex === -1) { firstBarChord = ''; }
+  else { notes[noteIndex].chord = ''; }
   renderSeq();
 }
 
@@ -742,7 +763,11 @@ document.addEventListener('keydown', function(e) {
   }
   if (e.code === 'Backspace') {
     e.preventDefault();
-    undoNote();
+    if (currentMode === 'chord') {
+      undoChord();
+    } else {
+      undoNote();
+    }
   }
 });
 
