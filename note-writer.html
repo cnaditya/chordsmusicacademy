@@ -790,12 +790,13 @@ document.addEventListener('keydown', function(e) {
     e.preventDefault();
     undo();
   }
-  if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
+  if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+    e.preventDefault();
+    redo();
+  } else if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) {
     e.preventDefault();
     undo();
-  }
-  if ((e.code === 'KeyZ' && (e.ctrlKey || e.metaKey) && e.shiftKey) ||
-      (e.code === 'KeyY' && (e.ctrlKey || e.metaKey))) {
+  } else if (e.code === 'KeyY' && (e.ctrlKey || e.metaKey)) {
     e.preventDefault();
     redo();
   }
