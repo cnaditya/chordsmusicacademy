@@ -168,7 +168,7 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
   <div class="fmt-row">
     <div class="fmt-btn on" id="fmt-letter" onclick="setFmt('letter')">C D E F</div>
     <div class="fmt-btn" id="fmt-octave" onclick="setFmt('octave')">C4 D4 E4</div>
-    <div class="fmt-btn" id="fmt-indian" onclick="setFmt('indian')">Sa Re Ga Ma</div>
+    <div class="fmt-btn" id="fmt-indian" onclick="setFmt('indian')">Sa Ri Ga Ma</div>
     <div class="fmt-btn" id="fmt-dash" onclick="setFmt('dash')">C-D-E-F</div>
   </div>
   <div class="settings">
@@ -224,8 +224,14 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 
 <script>
 var NOTE_NAMES   = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-var INDIAN_NAMES = ['Sa','Re','Re','Ga','Ga','Ma','Ma','Pa','Dha','Dha','Ni','Ni'];
-// Sharps mapped to Indian: C=Sa, C#=Re(komal), D=Re, D#=Ga(komal), E=Ga, F=Ma, F#=Ma#, G=Pa, G#=Dha(komal), A=Dha, A#=Ni(komal), B=Ni
+// Indian (Sargam) notation — teacher's system:
+// White keys: Sa Ri Ga Ma Pa Da Ni
+// Black keys use superscript number: C#=Ri¹, D#=Ga¹, F#=Ma², G#=Da¹, A#=Ni¹
+// Pa and Sa have no variants
+var INDIAN_NAMES = ['Sa','Ri\u00B9','Ri','Ga\u00B9','Ga','Ma','Ma\u00B2','Pa','Da\u00B9','Da','Ni\u00B9','Ni'];
+// Unicode superscripts: \u00B9=¹, \u00B2=², \u00B3=³
+// For HTML rendering use INDIAN_NAMES_HTML which wraps superscript in <sup>
+var INDIAN_NAMES_HTML = ['Sa','Ri<sup>1</sup>','Ri','Ga<sup>1</sup>','Ga','Ma','Ma<sup>2</sup>','Pa','Da<sup>1</sup>','Da','Ni<sup>1</sup>','Ni'];
 
 var fmt = 'letter';
 var sep = ' ';
@@ -351,8 +357,9 @@ function updateLive(midiNote) {
   var idx  = midiNote % 12;
   var oct  = Math.floor(midiNote / 12) - 1;
   var name = NOTE_NAMES[idx];
-  var isSharp = name.includes('#');
-  document.getElementById('liveKey').textContent = fmt === 'indian' ? INDIAN_NAMES[idx] : name;
+  var isSharp = name.includes('#') || [1,3,6,8,10].indexOf(idx) >= 0;
+  if (fmt === 'indian') document.getElementById('liveKey').innerHTML = INDIAN_NAMES_HTML[idx];
+  else document.getElementById('liveKey').textContent = name;
   document.getElementById('liveKey').className = 'live-key' + (isSharp ? ' sharp' : '');
   document.getElementById('liveOctave').textContent = 'Octave ' + oct + '  (MIDI ' + midiNote + ')';
 }
@@ -362,10 +369,10 @@ function updateHeld() {
   row.innerHTML = '';
   Object.keys(heldKeys).sort(function(a,b){return a-b}).forEach(function(k) {
     var idx  = k % 12;
-    var name = fmt === 'indian' ? INDIAN_NAMES[idx] : NOTE_NAMES[idx];
     var chip = document.createElement('div');
     chip.className = 'held-chip';
-    chip.textContent = name;
+    if (fmt === 'indian') chip.innerHTML = INDIAN_NAMES_HTML[idx];
+    else chip.textContent = NOTE_NAMES[idx];
     row.appendChild(chip);
   });
 }
@@ -390,9 +397,11 @@ function renderSeq() {
     } else if (n.name === ' ') {
       html += '<span class="bar-sep"> | </span>';
     } else {
-      var isSharp = n.name.includes('#');
+      var isSharp = n.name.includes('#') || (n.midi !== undefined && [1,3,6,8,10].indexOf(n.midi % 12) >= 0);
       var chord   = n.chord || '';
       var showLbl = chord || currentMode === 'chord';
+      // For Indian format, render superscripts as <sup>
+      var displayName = n.name.replace(/([¹²³])/g, '<sup>$1</sup>');
       if (showLbl) {
         html += '<span class="note-wrap">'
               + '<span class="note-chord-lbl ' + (chord ? 'has-chord' : 'no-chord') + '" '
@@ -400,10 +409,10 @@ function renderSeq() {
               + 'oncontextmenu="clearChordOnNote(' + i + ',event)" '
               + 'title="' + (chord ? 'Click to edit · Right-click to clear' : 'Click to add chord') + '">'
               + (chord ? chord : '+') + '</span>'
-              + '<span class="' + (isSharp ? 's' : 'n') + '">' + n.name + '</span>'
+              + '<span class="' + (isSharp ? 's' : 'n') + '">' + displayName + '</span>'
               + '</span>';
       } else {
-        html += '<span class="' + (isSharp ? 's' : 'n') + '">' + n.name + '</span>';
+        html += '<span class="' + (isSharp ? 's' : 'n') + '">' + displayName + '</span>';
       }
       if (i < notes.length - 1 && notes[i+1].name !== ' ' && notes[i+1].name !== '\n') {
         html += '<span style="color:#333">' + (sep === ' ' ? ' ' : sep) + '</span>';
@@ -577,7 +586,7 @@ function setFmt(f) {
     var name = f === 'indian' ? INDIAN_NAMES[idx]
              : f === 'octave' ? NOTE_NAMES[idx] + oct
              : NOTE_NAMES[idx];
-    return {name: name, midi: n.midi};
+    return {name: name, midi: n.midi, chord: n.chord};
   });
   renderSeq();
 }
