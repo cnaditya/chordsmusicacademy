@@ -440,13 +440,13 @@ function updateLive(midiNote) {
   var isSharp = [1,3,6,8,10].indexOf(idx) >= 0;
   var noteLetter = (fmt === 'indian' || fmt === 'carnatic') ? getSargamHTML(idx) : NOTE_NAMES[idx];
   var liveOct = oct - MIDDLE_OCTAVE;
-  var liveDotStyle = 'display:block;text-align:center;font-size:0.3em;color:#aaa;letter-spacing:4px;line-height:1.4';
-  var liveAbove = liveOct >= 2 ? '<span style="'+liveDotStyle+'">\u00B7\u00B7</span>'
-                : liveOct === 1 ? '<span style="'+liveDotStyle+'">\u00B7</span>'
-                : '<span style="'+liveDotStyle+';opacity:0">\u00B7</span>';
-  var liveBelow = liveOct <= -2 ? '<span style="'+liveDotStyle+'">\u00B7\u00B7</span>'
-                : liveOct === -1 ? '<span style="'+liveDotStyle+'">\u00B7</span>'
-                : '<span style="'+liveDotStyle+';opacity:0">\u00B7</span>';
+  var lds = 'display:block;text-align:center;font-size:0.18em;color:#aaa;letter-spacing:6px;line-height:1.1';
+  var liveAbove = liveOct >= 2  ? '<span style="'+lds+'">\u25CF\u25CF</span>'
+                : liveOct === 1 ? '<span style="'+lds+'">\u25CF</span>'
+                : '<span style="'+lds+';opacity:0">\u25CF</span>';
+  var liveBelow = liveOct <= -2  ? '<span style="'+lds+'">\u25CF\u25CF</span>'
+                : liveOct === -1 ? '<span style="'+lds+'">\u25CF</span>'
+                : '<span style="'+lds+';opacity:0">\u25CF</span>';
   document.getElementById('liveKey').innerHTML = liveAbove + noteLetter + liveBelow;
   document.getElementById('liveKey').className = 'live-key' + (isSharp ? ' sharp' : '');
   document.getElementById('liveOctave').textContent = 'Octave ' + oct + '  (MIDI ' + midiNote + ')';
@@ -475,18 +475,21 @@ function addNote(name, midiNote) {
 var MIDDLE_OCTAVE = 4; // MIDI octave 4 = middle C (C4)
 
 function octDots(midiNote) {
-  // Returns HTML dot indicator above/below for octave relative to middle
-  if (midiNote === undefined || fmt === 'octave') return '';
+  // Returns {open, close} HTML wrapping a note with octave dots tight against it
+  if (midiNote === undefined || fmt === 'octave') return {open:'', close:''};
   var oct = Math.floor(midiNote / 12) - 1;
   var offset = oct - MIDDLE_OCTAVE;
-  if (offset === 0) return '';
-  var dot1 = '\u00B7', dot2 = '\u00B7\u00B7'; // middle dots
-  var ds = 'position:absolute;left:0;right:0;text-align:center;font-size:0.45em;color:#aaa;letter-spacing:2px;line-height:1.1';
-  if (offset >= 2)  return '<span style="position:relative;display:inline-block;padding-top:0.7em"><span style="'+ds+';top:0">'+dot2+'</span>';
-  if (offset === 1) return '<span style="position:relative;display:inline-block;padding-top:0.7em"><span style="'+ds+';top:0">'+dot1+'</span>';
-  if (offset === -1) return '<span style="position:relative;display:inline-block;padding-bottom:0.7em"><span style="'+ds+';bottom:0">'+dot1+'</span>';
-  if (offset <= -2) return '<span style="position:relative;display:inline-block;padding-bottom:0.7em"><span style="'+ds+';bottom:0">'+dot2+'</span>';
-  return '';
+  if (offset === 0) return {open:'', close:''};
+  // Use filled bullet ● for visibility; sup/sub keeps dots tight against the letter
+  var sup1 = '<sup style="font-size:0.5em;line-height:0;vertical-align:0.6em;color:#aaa">\u25CF</sup>';
+  var sup2 = '<sup style="font-size:0.5em;line-height:0;vertical-align:0.6em;color:#aaa">\u25CF\u25CF</sup>';
+  var sub1 = '<sub style="font-size:0.5em;line-height:0;vertical-align:-0.5em;color:#aaa">\u25CF</sub>';
+  var sub2 = '<sub style="font-size:0.5em;line-height:0;vertical-align:-0.5em;color:#aaa">\u25CF\u25CF</sub>';
+  if (offset >= 2)  return {open: sup2, close: ''};
+  if (offset === 1) return {open: sup1, close: ''};
+  if (offset === -1) return {open: '', close: sub1};
+  if (offset <= -2)  return {open: '', close: sub2};
+  return {open:'', close:''};
 }
 
 function renderSeq() {
@@ -507,10 +510,8 @@ function renderSeq() {
       var showLbl = chord || currentMode === 'chord';
       var displayName = n.name.replace(/([¹²³])/g, '<sup>$1</sup>')
                                .replace(/([SRGMPDNsrgmpdn])([123])/g, '$1<sup style="font-size:0.55em;vertical-align:super">$2</sup>');
-      // Wrap with octave dot (open span, note letter, close span)
-      var dotOpen = octDots(n.midi);
-      var dotClose = dotOpen ? '</span>' : '';
-      var noteHtml = dotOpen + '<span class="' + (isSharp ? 's' : 'n') + '">' + displayName + '</span>' + dotClose;
+      var od = octDots(n.midi);
+      var noteHtml = od.open + '<span class="' + (isSharp ? 's' : 'n') + '">' + displayName + '</span>' + od.close;
       if (showLbl) {
         html += '<span class="note-wrap">'
               + '<span class="note-chord-lbl ' + (chord ? 'has-chord' : 'no-chord') + '" '
