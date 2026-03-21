@@ -447,7 +447,7 @@ function setMode(mode) {
   document.getElementById('modeChord').style.color      = mode==='chord' ? '#fff' : '#666';
   document.getElementById('modeHint').textContent = mode==='notes'
     ? 'Playing notes into sequence'
-    : 'Hold keys → detects chord → click Apply';
+    : 'Hold chord → detected → click + above any bar to apply';
 }
 
 function updateChordDetection() {
@@ -489,6 +489,19 @@ function addSpace() {
 }
 
 function editChord(noteIndex) {
+  // If chord mode and a chord is detected — apply it directly, no prompt
+  if (currentMode === 'chord' && lastDetectedChord) {
+    if (noteIndex === -1) { firstBarChord = lastDetectedChord; }
+    else { notes[noteIndex].chord = lastDetectedChord; }
+    renderSeq();
+    // Flash feedback on apply button
+    var btn = document.getElementById('applyChordBtn');
+    btn.textContent = '✅ Applied!';
+    btn.style.background = '#27ae60';
+    setTimeout(function(){ btn.textContent = '↑ Apply'; btn.style.background = '#2ecc71'; }, 1200);
+    return;
+  }
+  // Otherwise manual prompt
   var current = noteIndex === -1 ? firstBarChord : (notes[noteIndex].chord || '');
   var val = prompt('Chord for this bar (e.g. Am, C, G7) — leave blank to remove:', current);
   if (val === null) return;
