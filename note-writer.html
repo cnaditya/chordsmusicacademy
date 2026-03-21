@@ -51,12 +51,13 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .chord-label{font-size:0.72rem;color:#666}
 .chord-preview{font-size:0.78rem;color:#f39c12;font-weight:700}
 
-/* Chord above bar in sequence */
-.bar-group{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 3px}
-.bar-chord-btn{font-size:0.62rem;font-weight:800;color:#f39c12;letter-spacing:1px;cursor:pointer;padding:1px 5px;border-radius:4px;border:1px dashed transparent;min-width:20px;text-align:center;line-height:1.4}
-.bar-chord-btn:hover{border-color:#f39c12;background:rgba(243,156,18,0.1)}
-.bar-chord-btn.empty{color:#444;font-weight:400;font-size:0.55rem}
-.bar-sep{color:#555;font-size:1.1rem}
+/* Note with chord above */
+.note-wrap{display:inline-flex;flex-direction:column;align-items:center;vertical-align:bottom}
+.note-chord-lbl{font-size:0.62rem;font-weight:800;letter-spacing:1px;cursor:pointer;padding:1px 4px;border-radius:3px;line-height:1.4;border:1px dashed transparent}
+.note-chord-lbl.has-chord{color:#f39c12}
+.note-chord-lbl.no-chord{color:#2a2a4a;font-size:0.5rem}
+.note-chord-lbl:hover{border-color:#f39c12;background:rgba(243,156,18,0.1)}
+.bar-sep{color:#444;font-size:1.1rem;vertical-align:bottom}
 
 /* Format toggle */
 .fmt-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
@@ -217,6 +218,7 @@ var sep = ' ';
 var notes = [];
 var heldKeys = {};
 var midiAccess = null;
+var firstBarChord = '';
 
 // Check browser support
 if (!navigator.requestMIDIAccess) {
@@ -328,19 +330,35 @@ function renderSeq() {
     return;
   }
   var html = '';
+  var lastBarIdx = -1;   // index of most recent | separator (-1 = bar 1)
+  var firstInBar = true; // next real note is first of its bar
+
   notes.forEach(function(n, i) {
-    if (n.name === ' ') {
-      var chord = n.chord || '';
-      var bi = i;
-      html += '<span class="bar-group">'
-            + '<span class="bar-chord-btn' + (chord?'':' empty') + '" onclick="editChord('+bi+')" title="Click to add chord">'
-            + (chord ? chord : '+chord') + '</span>'
-            + '<span class="bar-sep">|</span></span>';
-    } else if (n.name === '\n') {
+    if (n.name === '\n') {
       html += '<br>';
+      firstInBar = true;
+    } else if (n.name === ' ') {
+      lastBarIdx = i;
+      firstInBar = true;
+      html += '<span class="bar-sep"> | </span>';
     } else {
       var isSharp = n.name.includes('#');
-      html += '<span class="' + (isSharp ? 's' : 'n') + '">' + n.name + '</span>';
+      var noteSpan = '<span class="' + (isSharp ? 's' : 'n') + '">' + n.name + '</span>';
+
+      if (firstInBar) {
+        // chord stored on the preceding | note, or firstBarChord for bar 1
+        var chord = lastBarIdx === -1 ? firstBarChord : (notes[lastBarIdx].chord || '');
+        var clickIdx = lastBarIdx; // pass to editChord
+        html += '<span class="note-wrap">'
+              + '<span class="note-chord-lbl ' + (chord ? 'has-chord' : 'no-chord') + '" '
+              + 'onclick="editChord(' + clickIdx + ')" title="Add/edit chord">'
+              + (chord ? chord : '+') + '</span>'
+              + noteSpan + '</span>';
+        firstInBar = false;
+      } else {
+        html += noteSpan;
+      }
+
       if (i < notes.length - 1 && notes[i+1].name !== ' ' && notes[i+1].name !== '\n') {
         html += '<span style="color:#333">' + (sep === ' ' ? ' ' : sep) + '</span>';
       }
@@ -371,10 +389,11 @@ function addSpace() {
 }
 
 function editChord(noteIndex) {
-  var current = notes[noteIndex].chord || '';
-  var val = prompt('Chord name for this bar (e.g. Am, C, G7):', current);
-  if (val === null) return; // cancelled
-  notes[noteIndex].chord = val.trim();
+  var current = noteIndex === -1 ? firstBarChord : (notes[noteIndex].chord || '');
+  var val = prompt('Chord for this bar (e.g. Am, C, G7) — leave blank to remove:', current);
+  if (val === null) return;
+  if (noteIndex === -1) { firstBarChord = val.trim(); }
+  else { notes[noteIndex].chord = val.trim(); }
   renderSeq();
 }
 function undoNote() { notes.pop(); renderSeq(); }
@@ -389,6 +408,7 @@ function clearNotes() {
   localStorage.setItem('cma_notes_history', JSON.stringify(history));
   renderHistory();
   notes = [];
+  firstBarChord = '';
   renderSeq();
 }
 
@@ -489,25 +509,27 @@ function buildPrintBody() {
     html += '<div style="margin-bottom:18px">';
     // Line label
     html += '<div style="font-size:0.65rem;color:#bbb;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase">Line '+(gi+1)+'</div>';
-    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end">';
     bars.forEach(function(bar, bi) {
       if(bar.length===0) return;
-      var chord = bar[0] && bar[0].chord ? bar[0].chord : '';
-      // chord is stored on the bar separator, retrieve from notes array
-      // Find the separator note before this bar
-      html += '<div style="display:flex;flex-direction:column;align-items:center">';
-      html += '<div style="font-size:8pt;font-weight:800;color:#c0392b;letter-spacing:1px;min-height:16px;text-align:center">' + (bar.chordLabel||'') + '</div>';
-      html += '<div style="display:flex;align-items:center;flex-wrap:wrap;padding:8px 12px;gap:6px;border:1px solid #e0e0e0;border-radius:8px;background:'+(bi%2===0?'#fff':'#f5f5f5')+'">';
-      bar.forEach(function(n){
+      var chord = bi===0 ? firstBarChord : (bar.chordLabel||'');
+      html += '<div style="display:flex;gap:4px;align-items:flex-end;padding:6px 10px;border:1px solid #e0e0e0;border-radius:8px;background:'+(bi%2===0?'#fff':'#f5f5f5')+';position:relative">';
+      bar.forEach(function(n, ni){
         var isSharp = n.name.includes('#');
-        html += '<div style="text-align:center;min-width:24px">'
-              + '<span style="font-size:15pt;font-weight:800;color:'+(isSharp?'#c0392b':'#1a1a2e')+';font-family:Georgia,serif">'
+        html += '<div style="display:flex;flex-direction:column;align-items:center;min-width:22px">';
+        // chord above first note only
+        if(ni===0) {
+          html += '<span style="font-size:8pt;font-weight:800;color:#c0392b;letter-spacing:0.5px;min-height:14px;display:block">'+(chord||'')+'</span>';
+        } else {
+          html += '<span style="min-height:14px;display:block"></span>';
+        }
+        html += '<span style="font-size:15pt;font-weight:800;color:'+(isSharp?'#c0392b':'#1a1a2e')+';font-family:Georgia,serif">'
               + (isSharp ? n.name.replace('#','') : n.name)
               + '</span>'
               + (isSharp ? '<sup style="font-size:7pt;color:#c0392b;font-weight:700">#</sup>' : '')
               + '</div>';
       });
-      html += '</div></div>';
+      html += '</div>';
     });
     html += '</div></div>';
   });
