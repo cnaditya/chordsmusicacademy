@@ -52,9 +52,9 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .chord-preview{font-size:0.78rem;color:#f39c12;font-weight:700}
 
 /* Chord above bar in sequence */
-.bar-group{display:inline-block;vertical-align:top;text-align:center;margin-right:4px}
-.bar-chord{font-size:0.65rem;font-weight:800;color:#f39c12;letter-spacing:1px;display:block;margin-bottom:2px}
-.bar-sep{color:#555;font-size:1.1rem}
+.bar-group{display:inline-block;position:relative;vertical-align:middle;margin:0 2px}
+.bar-chord{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:0.6rem;font-weight:800;color:#f39c12;letter-spacing:1px;white-space:nowrap;line-height:1}
+.bar-sep{color:#555;font-size:1.1rem;vertical-align:middle}
 
 /* Format toggle */
 .fmt-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
