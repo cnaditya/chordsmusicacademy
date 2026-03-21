@@ -176,6 +176,7 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
     <div class="fmt-btn on" id="fmt-letter" onclick="setFmt('letter')">C D E F</div>
     <div class="fmt-btn" id="fmt-octave" onclick="setFmt('octave')">C4 D4 E4</div>
     <div class="fmt-btn" id="fmt-indian" onclick="setFmt('indian')">Sa Ri Ga Ma</div>
+    <div class="fmt-btn" id="fmt-carnatic" onclick="setFmt('carnatic')">Carnatic S R G M</div>
     <div class="fmt-btn" id="fmt-dash" onclick="setFmt('dash')">C-D-E-F</div>
   </div>
   <!-- Sa selector — shown only in Indian format -->
@@ -255,6 +256,11 @@ var INDIAN_NAMES = ['Sa','Ri\u00B9','Ri','Ga\u00B9','Ga','Ma','Ma\u00B2','Pa','D
 // Unicode superscripts: \u00B9=¹, \u00B2=², \u00B3=³
 // For HTML rendering use INDIAN_NAMES_HTML which wraps superscript in <sup>
 var INDIAN_NAMES_HTML = ['Sa','Ri<sup>1</sup>','Ri','Ga<sup>1</sup>','Ga','Ma','Ma<sup>2</sup>','Pa','Da<sup>1</sup>','Da','Ni<sup>1</sup>','Ni'];
+
+// Carnatic Sargam — full system with dual names for shared pitches
+// C=S, C#=R1, D=R2/G1, D#=G2/R3, E=G3, F=M1, F#=M2, G=P, G#=D1, A=D2/N1, A#=N2/D3, B=N3
+var CARNATIC_NAMES      = ['S','R1','R2/G1','G2/R3','G3','M1','M2','P','D1','D2/N1','N2/D3','N3'];
+var CARNATIC_NAMES_HTML = ['S','R1','R2<br><small>G1</small>','G2<br><small>R3</small>','G3','M1','M2','P','D1','D2<br><small>N1</small>','N2<br><small>D3</small>','N3'];
 
 var fmt = 'letter';
 var saTonic = 0; // MIDI index of Sa (0=C, 2=D, etc.)
@@ -372,23 +378,27 @@ function onMIDIMessage(event) {
 function getNoteName(midiNote) {
   var idx = midiNote % 12;
   var oct = Math.floor(midiNote / 12) - 1;
-  if (fmt === 'indian') return INDIAN_NAMES[(idx - saTonic + 12) % 12];
-  if (fmt === 'octave') return NOTE_NAMES[idx] + oct;
-  if (fmt === 'dash')   return NOTE_NAMES[idx];
+  var rel = (idx - saTonic + 12) % 12;
+  if (fmt === 'indian')   return INDIAN_NAMES[rel];
+  if (fmt === 'carnatic') return CARNATIC_NAMES[rel];
+  if (fmt === 'octave')   return NOTE_NAMES[idx] + oct;
   return NOTE_NAMES[idx];
 }
 
 function getSargamHTML(midiIdx) {
-  return INDIAN_NAMES_HTML[(midiIdx - saTonic + 12) % 12];
+  var rel = (midiIdx - saTonic + 12) % 12;
+  if (fmt === 'carnatic') return CARNATIC_NAMES_HTML[rel];
+  return INDIAN_NAMES_HTML[rel];
 }
 
 function updateLive(midiNote) {
   var idx  = midiNote % 12;
   var oct  = Math.floor(midiNote / 12) - 1;
-  var name = NOTE_NAMES[idx];
-  var isSharp = name.includes('#') || [1,3,6,8,10].indexOf(idx) >= 0;
-  if (fmt === 'indian') document.getElementById('liveKey').innerHTML = getSargamHTML(idx);
-  else document.getElementById('liveKey').textContent = name;
+  var isSharp = [1,3,6,8,10].indexOf(idx) >= 0;
+  if (fmt === 'indian' || fmt === 'carnatic')
+    document.getElementById('liveKey').innerHTML = getSargamHTML(idx);
+  else
+    document.getElementById('liveKey').textContent = NOTE_NAMES[idx];
   document.getElementById('liveKey').className = 'live-key' + (isSharp ? ' sharp' : '');
   document.getElementById('liveOctave').textContent = 'Octave ' + oct + '  (MIDI ' + midiNote + ')';
 }
@@ -397,10 +407,10 @@ function updateHeld() {
   var row = document.getElementById('heldRow');
   row.innerHTML = '';
   Object.keys(heldKeys).sort(function(a,b){return a-b}).forEach(function(k) {
-    var idx  = k % 12;
+    var idx  = parseInt(k) % 12;
     var chip = document.createElement('div');
     chip.className = 'held-chip';
-    if (fmt === 'indian') chip.innerHTML = getSargamHTML(idx);
+    if (fmt === 'indian' || fmt === 'carnatic') chip.innerHTML = getSargamHTML(idx);
     else chip.textContent = NOTE_NAMES[idx];
     row.appendChild(chip);
   });
@@ -611,10 +621,11 @@ function copyNotes() {
 
 function setFmt(f) {
   fmt = f;
-  ['letter','octave','indian','dash'].forEach(function(x){
-    document.getElementById('fmt-'+x).className = 'fmt-btn' + (x===f?' on':'');
+  ['letter','octave','indian','carnatic','dash'].forEach(function(x){
+    var el = document.getElementById('fmt-'+x);
+    if (el) el.className = 'fmt-btn' + (x===f?' on':'');
   });
-  document.getElementById('saRow').style.display = f === 'indian' ? 'flex' : 'none';
+  document.getElementById('saRow').style.display = (f === 'indian' || f === 'carnatic') ? 'flex' : 'none';
   remapNotes();
 }
 
@@ -631,8 +642,10 @@ function remapNotes() {
     if (n.name === ' ' || n.name === '\n') return n;
     var idx = n.midi % 12;
     var oct = Math.floor(n.midi / 12) - 1;
-    var name = fmt === 'indian' ? INDIAN_NAMES[(idx - saTonic + 12) % 12]
-             : fmt === 'octave' ? NOTE_NAMES[idx] + oct
+    var rel  = (idx - saTonic + 12) % 12;
+    var name = fmt === 'indian'   ? INDIAN_NAMES[rel]
+             : fmt === 'carnatic' ? CARNATIC_NAMES[rel]
+             : fmt === 'octave'   ? NOTE_NAMES[idx] + oct
              : NOTE_NAMES[idx];
     return {name: name, midi: n.midi, chord: n.chord};
   });
