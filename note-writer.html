@@ -69,6 +69,12 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .sa-label{font-size:0.8rem;color:#888;font-weight:700;margin-right:4px}
 .sa-btn{padding:6px 13px;border-radius:16px;border:1px solid #2a2a4a;background:transparent;color:#888;font-size:0.8rem;font-weight:700;cursor:pointer;transition:.15s}
 .sa-btn.on{background:#9b59b6;border-color:#9b59b6;color:#fff}
+/* Carnatic variant toggles */
+.cv-row{display:none;align-items:center;gap:14px;padding:0 0 14px;flex-wrap:wrap}
+.cv-group{display:flex;align-items:center;gap:5px}
+.cv-key-lbl{font-size:0.72rem;color:#666;min-width:22px}
+.cv-btn{padding:5px 11px;border-radius:14px;border:1px solid #2a2a4a;background:transparent;color:#888;font-size:0.78rem;font-weight:700;cursor:pointer;transition:.15s}
+.cv-btn.on{background:#e67e22;border-color:#e67e22;color:#fff}
 
 /* Action buttons */
 .actions{display:flex;gap:12px;padding:0 28px 24px;flex-wrap:wrap}
@@ -195,6 +201,30 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
     <div class="sa-btn" id="sa-10" onclick="setSa(10)">A#</div>
     <div class="sa-btn" id="sa-11" onclick="setSa(11)">B</div>
   </div>
+  <!-- Carnatic variant row — shown only in Carnatic format -->
+  <div class="cv-row" id="cvRow">
+    <span class="sa-label" style="color:#e67e22">Variants:</span>
+    <div class="cv-group">
+      <span class="cv-key-lbl">D :</span>
+      <div id="cv-2-R2" class="cv-btn on" onclick="setCarnaticVariant(2,'R2')">R2</div>
+      <div id="cv-2-G1" class="cv-btn"    onclick="setCarnaticVariant(2,'G1')">G1</div>
+    </div>
+    <div class="cv-group">
+      <span class="cv-key-lbl">D# :</span>
+      <div id="cv-3-R3" class="cv-btn"    onclick="setCarnaticVariant(3,'R3')">R3</div>
+      <div id="cv-3-G2" class="cv-btn on" onclick="setCarnaticVariant(3,'G2')">G2</div>
+    </div>
+    <div class="cv-group">
+      <span class="cv-key-lbl">A :</span>
+      <div id="cv-9-D2" class="cv-btn on" onclick="setCarnaticVariant(9,'D2')">D2</div>
+      <div id="cv-9-N1" class="cv-btn"    onclick="setCarnaticVariant(9,'N1')">N1</div>
+    </div>
+    <div class="cv-group">
+      <span class="cv-key-lbl">A# :</span>
+      <div id="cv-10-D3" class="cv-btn"    onclick="setCarnaticVariant(10,'D3')">D3</div>
+      <div id="cv-10-N2" class="cv-btn on" onclick="setCarnaticVariant(10,'N2')">N2</div>
+    </div>
+  </div>
   <div class="settings">
     <span class="setting-label">Separator:</span>
     <div class="toggle">
@@ -257,10 +287,20 @@ var INDIAN_NAMES = ['Sa','Ri\u00B9','Ri','Ga\u00B9','Ga','Ma','Ma\u00B2','Pa','D
 // For HTML rendering use INDIAN_NAMES_HTML which wraps superscript in <sup>
 var INDIAN_NAMES_HTML = ['Sa','Ri<sup>1</sup>','Ri','Ga<sup>1</sup>','Ga','Ma','Ma<sup>2</sup>','Pa','Da<sup>1</sup>','Da','Ni<sup>1</sup>','Ni'];
 
-// Carnatic Sargam — full system with dual names for shared pitches
-// C=S, C#=R1, D=R2/G1, D#=G2/R3, E=G3, F=M1, F#=M2, G=P, G#=D1, A=D2/N1, A#=N2/D3, B=N3
-var CARNATIC_NAMES      = ['S','R1','R2/G1','G2/R3','G3','M1','M2','P','D1','D2/N1','N2/D3','N3'];
-var CARNATIC_NAMES_HTML = ['S','R1','R2<br><small>G1</small>','G2<br><small>R3</small>','G3','M1','M2','P','D1','D2<br><small>N1</small>','N2<br><small>D3</small>','N3'];
+// Carnatic Sargam — 16 swaras across 12 pitches
+// Fixed positions: S R1 G3 M1 M2 P D1 N3 (no ambiguity)
+// Ambiguous pairs (same pitch, different raga names):
+//   pos 2 (D)  → R2 or G1
+//   pos 3 (D#) → R3 or G2
+//   pos 9 (A)  → D2 or N1
+//   pos 10(A#) → D3 or N2
+// In any given raga only ONE name is correct — set via variant toggles
+var CARNATIC_FIXED = {0:'S', 1:'R1', 4:'G3', 5:'M1', 6:'M2', 7:'P', 8:'D1', 11:'N3'};
+// User-configurable variants for the 4 ambiguous positions (defaults)
+var carnaticVariants = {2:'R2', 3:'G2', 9:'D2', 10:'N2'};
+function getCarnaticName(rel) {
+  return CARNATIC_FIXED[rel] !== undefined ? CARNATIC_FIXED[rel] : (carnaticVariants[rel] || '?');
+}
 
 var fmt = 'letter';
 var saTonic = 0; // MIDI index of Sa (0=C, 2=D, etc.)
@@ -380,14 +420,14 @@ function getNoteName(midiNote) {
   var oct = Math.floor(midiNote / 12) - 1;
   var rel = (idx - saTonic + 12) % 12;
   if (fmt === 'indian')   return INDIAN_NAMES[rel];
-  if (fmt === 'carnatic') return CARNATIC_NAMES[rel];
+  if (fmt === 'carnatic') return getCarnaticName(rel);
   if (fmt === 'octave')   return NOTE_NAMES[idx] + oct;
   return NOTE_NAMES[idx];
 }
 
 function getSargamHTML(midiIdx) {
   var rel = (midiIdx - saTonic + 12) % 12;
-  if (fmt === 'carnatic') return CARNATIC_NAMES_HTML[rel];
+  if (fmt === 'carnatic') return getCarnaticName(rel);
   return INDIAN_NAMES_HTML[rel];
 }
 
@@ -481,6 +521,16 @@ var lastDetectedChord = null;
 var currentMode = 'notes';
 var undoStack = [];
 var redoStack = [];
+
+function setCarnaticVariant(pos, name) {
+  carnaticVariants[pos] = name;
+  var pairs = {2:['R2','G1'], 3:['R3','G2'], 9:['D2','N1'], 10:['D3','N2']};
+  pairs[pos].forEach(function(n) {
+    var el = document.getElementById('cv-'+pos+'-'+n);
+    if (el) el.className = 'cv-btn' + (n === name ? ' on' : '');
+  });
+  remapNotes();
+}
 
 function toggleRecording() {
   isRecording = !isRecording;
@@ -626,6 +676,7 @@ function setFmt(f) {
     if (el) el.className = 'fmt-btn' + (x===f?' on':'');
   });
   document.getElementById('saRow').style.display = (f === 'indian' || f === 'carnatic') ? 'flex' : 'none';
+  document.getElementById('cvRow').style.display = f === 'carnatic' ? 'flex' : 'none';
   remapNotes();
 }
 
@@ -644,7 +695,7 @@ function remapNotes() {
     var oct = Math.floor(n.midi / 12) - 1;
     var rel  = (idx - saTonic + 12) % 12;
     var name = fmt === 'indian'   ? INDIAN_NAMES[rel]
-             : fmt === 'carnatic' ? CARNATIC_NAMES[rel]
+             : fmt === 'carnatic' ? getCarnaticName(rel)
              : fmt === 'octave'   ? NOTE_NAMES[idx] + oct
              : NOTE_NAMES[idx];
     return {name: name, midi: n.midi, chord: n.chord};
