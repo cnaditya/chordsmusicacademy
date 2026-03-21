@@ -43,6 +43,19 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .seq-cursor{display:inline-block;width:2px;height:1.2em;background:#e74c3c;vertical-align:middle;animation:blink .8s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
+/* Chord input */
+.chord-row{display:flex;align-items:center;gap:10px;padding:0 20px 12px}
+.chord-inp{background:#1a1a2e;border:1.5px solid #2a2a4a;border-radius:10px;padding:9px 14px;font-size:0.95rem;font-weight:700;color:#fff;outline:none;width:120px;text-align:center;letter-spacing:1px}
+.chord-inp:focus{border-color:#e74c3c}
+.chord-inp::placeholder{color:#444;font-weight:400;font-size:0.8rem}
+.chord-label{font-size:0.72rem;color:#666}
+.chord-preview{font-size:0.78rem;color:#f39c12;font-weight:700}
+
+/* Chord above bar in sequence */
+.bar-group{display:inline-block;vertical-align:top;text-align:center;margin-right:4px}
+.bar-chord{font-size:0.65rem;font-weight:800;color:#f39c12;letter-spacing:1px;display:block;margin-bottom:2px}
+.bar-sep{color:#555;font-size:1.1rem}
+
 /* Format toggle */
 .fmt-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .fmt-btn{padding:6px 14px;border-radius:20px;border:1px solid #2a2a4a;background:transparent;color:#888;font-size:0.75rem;font-weight:700;cursor:pointer;transition:.15s}
@@ -132,6 +145,13 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 
 <!-- Held keys -->
 <div class="held-row" id="heldRow"></div>
+
+<!-- Chord input -->
+<div class="chord-row">
+  <span class="chord-label">Chord label for next bar:</span>
+  <input class="chord-inp" id="chordInp" placeholder="e.g. Am, C, G7" maxlength="6" autocomplete="off" spellcheck="false">
+  <span class="chord-preview" id="chordPreview"></span>
+</div>
 
 <!-- Format & settings -->
 <div style="padding:14px 20px 0">
@@ -315,14 +335,15 @@ function renderSeq() {
   var html = '';
   notes.forEach(function(n, i) {
     if (n.name === ' ') {
-      html += '<span style="color:#333"> | </span>';
+      var chord = n.chord || '';
+      html += '<span class="bar-group"><span class="bar-chord">' + (chord ? chord : '&nbsp;') + '</span><span class="bar-sep"> | </span></span>';
     } else if (n.name === '\n') {
       html += '<br>';
     } else {
       var isSharp = n.name.includes('#');
       html += '<span class="' + (isSharp ? 's' : 'n') + '">' + n.name + '</span>';
       if (i < notes.length - 1 && notes[i+1].name !== ' ' && notes[i+1].name !== '\n') {
-        html += '<span style="color:#333">' + (sep === '\n' ? '' : sep === ' ' ? ' ' : sep) + '</span>';
+        html += '<span style="color:#333">' + (sep === ' ' ? ' ' : sep) + '</span>';
       }
     }
   });
@@ -345,7 +366,13 @@ function getPlainText() {
   return result;
 }
 
-function addSpace() { notes.push({name:' '}); renderSeq(); }
+function addSpace() {
+  var chord = document.getElementById('chordInp').value.trim();
+  notes.push({name:' ', chord: chord});
+  document.getElementById('chordInp').value = '';
+  document.getElementById('chordPreview').textContent = '';
+  renderSeq();
+}
 function undoNote() { notes.pop(); renderSeq(); }
 
 function clearNotes() {
@@ -444,19 +471,28 @@ function buildPrintBody() {
 
   groups.forEach(function(group, gi) {
     if(group.length===0) return;
-    // Split group by bars
+    // Split group by bars, carry chord label
     var bars = [[]];
+    bars[0].chordLabel = '';
     group.forEach(function(n){
-      if(n.name===' '){ bars.push([]); }
-      else { bars[bars.length-1].push(n); }
+      if(n.name===' '){
+        var nb = [];
+        nb.chordLabel = n.chord || '';
+        bars.push(nb);
+      } else { bars[bars.length-1].push(n); }
     });
 
     html += '<div style="margin-bottom:18px">';
     // Line label
     html += '<div style="font-size:0.65rem;color:#bbb;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase">Line '+(gi+1)+'</div>';
-    html += '<div style="display:flex;flex-wrap:wrap;gap:4px;">';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
     bars.forEach(function(bar, bi) {
       if(bar.length===0) return;
+      var chord = bar[0] && bar[0].chord ? bar[0].chord : '';
+      // chord is stored on the bar separator, retrieve from notes array
+      // Find the separator note before this bar
+      html += '<div style="display:flex;flex-direction:column;align-items:center">';
+      html += '<div style="font-size:8pt;font-weight:800;color:#c0392b;letter-spacing:1px;min-height:16px;text-align:center">' + (bar.chordLabel||'') + '</div>';
       html += '<div style="display:flex;align-items:center;flex-wrap:wrap;padding:8px 12px;gap:6px;border:1px solid #e0e0e0;border-radius:8px;background:'+(bi%2===0?'#fff':'#f5f5f5')+'">';
       bar.forEach(function(n){
         var isSharp = n.name.includes('#');
@@ -467,7 +503,7 @@ function buildPrintBody() {
               + (isSharp ? '<sup style="font-size:7pt;color:#c0392b;font-weight:700">#</sup>' : '')
               + '</div>';
       });
-      html += '</div>';
+      html += '</div></div>';
     });
     html += '</div></div>';
   });
@@ -502,21 +538,25 @@ function exportWord() {
   groups.forEach(function(group, gi){
     if(group.length===0) return;
     var bars = [[]];
+    bars[0].chordLabel = '';
     group.forEach(function(n){
-      if(n.name===' '){ bars.push([]); }
-      else { bars[bars.length-1].push(n); }
+      if(n.name===' '){
+        var nb = []; nb.chordLabel = n.chord||''; bars.push(nb);
+      } else { bars[bars.length-1].push(n); }
     });
     body += '<p style="font-size:9pt;color:#bbb;margin:16px 0 4px;font-family:Arial">LINE '+(gi+1)+'</p>';
-    body += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">';
+    body += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">';
     bars.forEach(function(bar,bi){
       if(bar.length===0) return;
+      body += '<div style="display:flex;flex-direction:column;align-items:center">';
+      body += '<div style="font-size:9pt;font-weight:800;color:#c0392b;min-height:16px;text-align:center;letter-spacing:1px">'+(bar.chordLabel||'&nbsp;')+'</div>';
       body += '<div style="display:inline-flex;flex-wrap:wrap;align-items:center;gap:5px;padding:8px 12px;border:1px solid #ddd;border-radius:6px;background:'+(bi%2===0?'#fff':'#f9f9f9')+'">';
       bar.forEach(function(n){
         var isSharp = n.name.includes('#');
         body += '<span style="font-size:16pt;font-weight:700;color:'+(isSharp?'#c0392b':'#1a1a2e')+';font-family:Georgia,serif">'
               + n.name + '</span>';
       });
-      body += '</div>';
+      body += '</div></div>';
     });
     body += '</div>';
   });
@@ -569,6 +609,15 @@ document.addEventListener('keydown', function(e) {
 // Prevent buttons from stealing focus so spacebar always works
 document.querySelectorAll('.btn, .fmt-btn, .toggle-opt').forEach(function(el) {
   el.addEventListener('mousedown', function(e){ e.preventDefault(); });
+});
+
+// Chord input preview + prevent spacebar from typing in input
+document.getElementById('chordInp').addEventListener('input', function() {
+  var v = this.value.trim();
+  document.getElementById('chordPreview').textContent = v ? '→ will label next bar as "' + v + '"' : '';
+});
+document.getElementById('chordInp').addEventListener('keydown', function(e) {
+  if (e.code === 'Space') { e.stopPropagation(); } // allow space inside input
 });
 
 renderHistory();
