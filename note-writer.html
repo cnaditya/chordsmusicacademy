@@ -149,6 +149,13 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 <!-- Held keys -->
 <div class="held-row" id="heldRow"></div>
 
+<!-- Chord detection -->
+<div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:6px 20px;min-height:36px">
+  <span style="font-size:0.7rem;color:#555">Chord detected:</span>
+  <span id="detectedChord" style="font-size:1.1rem;font-weight:900;color:#2ecc71;letter-spacing:2px;min-width:60px">—</span>
+  <button id="applyChordBtn" onclick="applyDetectedChord()" style="display:none;background:#2ecc71;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:0.75rem;font-weight:700;cursor:pointer">Apply above bar ↑</button>
+</div>
+
 <!-- Format & settings -->
 <div style="padding:14px 20px 0">
   <div class="fmt-row">
@@ -220,6 +227,41 @@ var heldKeys = {};
 var midiAccess = null;
 var firstBarChord = '';
 
+// Chord detection patterns [root intervals]
+var CHORD_PATTERNS = [
+  {name:'',      i:[0,4,7]},        // Major
+  {name:'m',     i:[0,3,7]},        // Minor
+  {name:'7',     i:[0,4,7,10]},     // Dominant 7th
+  {name:'maj7',  i:[0,4,7,11]},     // Major 7th
+  {name:'m7',    i:[0,3,7,10]},     // Minor 7th
+  {name:'dim',   i:[0,3,6]},        // Diminished
+  {name:'aug',   i:[0,4,8]},        // Augmented
+  {name:'sus2',  i:[0,2,7]},        // Sus2
+  {name:'sus4',  i:[0,5,7]},        // Sus4
+  {name:'6',     i:[0,4,7,9]},      // Major 6th
+  {name:'m6',    i:[0,3,7,9]},      // Minor 6th
+  {name:'dim7',  i:[0,3,6,9]},      // Diminished 7th
+  {name:'m7b5',  i:[0,3,6,10]},     // Half diminished
+  {name:'add9',  i:[0,2,4,7]},      // Add 9
+  {name:'9',     i:[0,2,4,7,10]},   // 9th
+];
+
+function detectChord() {
+  var keys = Object.keys(heldKeys).map(function(k){ return parseInt(k) % 12; });
+  var unique = keys.filter(function(v,i,a){ return a.indexOf(v)===i; }).sort(function(a,b){return a-b;});
+  if (unique.length < 2) return null;
+  for (var r = 0; r < unique.length; r++) {
+    var root = unique[r];
+    var intervals = unique.map(function(n){ return (n-root+12)%12; }).sort(function(a,b){return a-b;});
+    for (var p = 0; p < CHORD_PATTERNS.length; p++) {
+      if (JSON.stringify(intervals) === JSON.stringify(CHORD_PATTERNS[p].i)) {
+        return NOTE_NAMES[root] + CHORD_PATTERNS[p].name;
+      }
+    }
+  }
+  return null;
+}
+
 // Check browser support
 if (!navigator.requestMIDIAccess) {
   document.getElementById('noMidiNote').style.display = 'block';
@@ -274,10 +316,12 @@ function onMIDIMessage(event) {
     addNote(name, note);
     updateLive(note);
     updateHeld();
+    updateChordDetection();
   }
   if (noteOff) {
     delete heldKeys[note];
     updateHeld();
+    updateChordDetection();
     if (Object.keys(heldKeys).length === 0) {
       document.getElementById('liveKey').textContent = '—';
       document.getElementById('liveKey').className = 'live-key';
@@ -381,6 +425,41 @@ function getPlainText() {
     }
   });
   return result;
+}
+
+var lastDetectedChord = null;
+
+function updateChordDetection() {
+  var chord = detectChord();
+  lastDetectedChord = chord;
+  var el  = document.getElementById('detectedChord');
+  var btn = document.getElementById('applyChordBtn');
+  if (chord) {
+    el.textContent  = chord;
+    el.style.color  = '#2ecc71';
+    btn.style.display = 'inline-block';
+  } else {
+    el.textContent  = Object.keys(heldKeys).length > 0 ? '?' : '—';
+    el.style.color  = Object.keys(heldKeys).length > 0 ? '#f39c12' : '#555';
+    btn.style.display = 'none';
+  }
+}
+
+function applyDetectedChord() {
+  if (!lastDetectedChord) return;
+  // Find the last bar separator and set its chord
+  var lastBar = -1;
+  for (var i = notes.length - 1; i >= 0; i--) {
+    if (notes[i].name === ' ') { lastBar = i; break; }
+  }
+  if (lastBar === -1) { firstBarChord = lastDetectedChord; }
+  else { notes[lastBar].chord = lastDetectedChord; }
+  renderSeq();
+  // Flash feedback
+  var btn = document.getElementById('applyChordBtn');
+  btn.textContent = '✅ Applied!';
+  btn.style.background = '#27ae60';
+  setTimeout(function(){ btn.textContent = 'Apply above bar ↑'; btn.style.background = '#2ecc71'; }, 1500);
 }
 
 function addSpace() {
