@@ -443,6 +443,7 @@ function setMode(mode) {
   document.getElementById('modeHint').textContent = mode==='notes'
     ? 'Playing notes into sequence'
     : 'Hold chord → detected → click + above any note to apply';
+  renderSeq();
 }
 
 function updateChordDetection() {
