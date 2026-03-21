@@ -382,6 +382,23 @@ function renderHistory() {
   });
 }
 
+// Prevent spacebar from clicking buttons — use it as bar separator instead
+document.addEventListener('keydown', function(e) {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    addSpace();
+  }
+  if (e.code === 'Backspace') {
+    e.preventDefault();
+    undoNote();
+  }
+});
+
+// Prevent buttons from stealing focus so spacebar always works
+document.querySelectorAll('.btn, .fmt-btn, .toggle-opt').forEach(function(el) {
+  el.addEventListener('mousedown', function(e){ e.preventDefault(); });
+});
+
 renderHistory();
 renderSeq();
 </script>
