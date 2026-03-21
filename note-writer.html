@@ -591,6 +591,7 @@ function exportWord() {
 
 // Prevent spacebar from clicking buttons — use it as bar separator instead
 document.addEventListener('keydown', function(e) {
+  if (document.activeElement === document.getElementById('chordInp')) return;
   if (e.code === 'Space') {
     e.preventDefault();
     addSpace();
