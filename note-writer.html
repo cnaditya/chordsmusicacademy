@@ -825,38 +825,76 @@ function exportPDF() {
   setTimeout(function(){ window.print(); }, 100);
 }
 
+function buildWordNotes() {
+  // Build Word-safe inline-styled HTML from notes array
+  var fs = Math.round(noteFontSize * 12) + 'pt'; // convert rem to pt approx
+  var chordFs = Math.round(noteFontSize * 7) + 'pt';
+  var dotFs   = Math.round(noteFontSize * 4) + 'pt';
+  var body = '<div style="line-height:2.6;letter-spacing:1px;padding:14px;border:1px solid #ddd;border-radius:6px">';
+
+  notes.forEach(function(n, i) {
+    if (n.name === '\n') {
+      body += '<br>';
+      return;
+    }
+    if (n.name === ' ') {
+      body += '<span style="color:#aaa;font-size:'+fs+';font-weight:700;margin:0 6px">&nbsp;|&nbsp;</span>';
+      return;
+    }
+    var isSharp = n.midi !== undefined && [1,3,6,8,10].indexOf(n.midi % 12) >= 0;
+    var noteColor = isSharp ? '#c0392b' : '#1a4a8e';
+    var chord = n.chord || '';
+
+    // Octave dots (plain text, unicode)
+    var dotAbove = '', dotBelow = '';
+    if (n.midi !== undefined && fmt !== 'octave') {
+      var oct = Math.floor(n.midi / 12) - 1;
+      var offset = oct - MIDDLE_OCTAVE;
+      if (offset >= 2)  dotAbove = '\u25CF\u25CF';
+      else if (offset === 1)  dotAbove = '\u25CF';
+      else if (offset === -1) dotBelow = '\u25CF';
+      else if (offset <= -2)  dotBelow = '\u25CF\u25CF';
+    }
+
+    // Note display name — strip any residual HTML tags
+    var displayName = n.name.replace(/<[^>]+>/g, '');
+
+    body += '<span style="display:inline-block;text-align:center;vertical-align:middle;margin:0 2px">';
+    // chord label row
+    body += '<span style="display:block;font-size:'+chordFs+';font-weight:800;color:#c0392b;min-height:'+chordFs+';line-height:1.3">'+(chord||'&nbsp;')+'</span>';
+    // dot above
+    body += '<span style="display:block;font-size:'+dotFs+';color:#888;line-height:1;min-height:'+dotFs+'">'+(dotAbove||'&nbsp;')+'</span>';
+    // note letter
+    body += '<span style="font-size:'+fs+';font-weight:800;color:'+noteColor+';font-family:\'Segoe UI\',Arial,sans-serif">'+displayName+'</span>';
+    // dot below
+    body += '<span style="display:block;font-size:'+dotFs+';color:#888;line-height:1;min-height:'+dotFs+'">'+(dotBelow||'&nbsp;')+'</span>';
+    body += '</span>';
+  });
+
+  body += '</div>';
+  return body;
+}
+
 function exportWord() {
   if (notes.length === 0) { alert('No notes to export.'); return; }
   var date      = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
   var noteCount = notes.filter(function(n){return n.name!==' '&&n.name!=='\n';}).length;
   var fmtLabel  = {letter:'Letter',octave:'With Octave',indian:'Indian Sargam',carnatic:'Carnatic Sargam',dash:'Dash'}[fmt]||fmt;
-  var seqHtml   = document.getElementById('seqBox').innerHTML;
 
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'
-    + '@page{margin:20mm 18mm}'
-    + 'body{font-family:"Segoe UI",Arial,sans-serif;color:#000;background:#fff}'
-    + 'span.n{color:#1a1a2e!important}'
-    + 'span.s{color:#c0392b!important}'
-    + '.note-chord-lbl.has-chord{color:#c0392b!important;font-size:0.7em;font-weight:800}'
-    + '.note-chord-lbl.no-chord{display:none}'
-    + '.note-wrap{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle}'
-    + '.bar-sep{color:#999;font-weight:700}'
-    + '.seq-cursor{display:none}'
-    + '.ins-bar{display:none}'
+    + '@page{margin:20mm 18mm} body{font-family:"Segoe UI",Arial,sans-serif;color:#000;background:#fff}'
     + '</style></head><body>'
     + '<table style="width:100%;border-bottom:3px solid #1a1a2e;padding-bottom:12px;margin-bottom:14px;border-collapse:collapse"><tr>'
     + '<td><div style="font-size:18pt;font-weight:900;color:#1a1a2e">🎹 Chords Music Academy</div>'
     + '<div style="font-size:9pt;color:#888">Manikonda, Hyderabad &nbsp;|&nbsp; chordsmusicacademy.in &nbsp;|&nbsp; +91 79815 85309</div></td>'
     + '<td style="text-align:right;vertical-align:top"><div style="font-size:8pt;color:#aaa;text-transform:uppercase;letter-spacing:1px">Note Sheet</div>'
     + '<div style="font-size:10pt;font-weight:700;color:#1a1a2e">'+date+'</div></td></tr></table>'
-    + '<div style="display:flex;gap:24px;margin-bottom:14px;padding:8px 12px;background:#f7f7f7;border-radius:6px;font-size:9pt;color:#555">'
-    + '<span><strong>Format:</strong> '+fmtLabel+'</span>'
-    + '<span><strong>Notes:</strong> '+noteCount+'</span>'
-    + '<span><strong>Bars:</strong> '+(notes.filter(function(n){return n.name===' ';}).length+1)+'</span>'
-    + '</div>'
-    + '<div style="font-size:'+noteFontSize+'rem;font-weight:700;line-height:2.8;letter-spacing:2px;word-break:break-all;padding:16px;border:1px solid #ddd;border-radius:8px">'
-    + seqHtml
-    + '</div>'
+    + '<table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:9pt;color:#555"><tr>'
+    + '<td><strong>Format:</strong> '+fmtLabel+'</td>'
+    + '<td><strong>Notes:</strong> '+noteCount+'</td>'
+    + '<td><strong>Bars:</strong> '+(notes.filter(function(n){return n.name===' ';}).length+1)+'</td>'
+    + '</tr></table>'
+    + buildWordNotes()
     + '<p style="font-size:8pt;color:#bbb;text-align:center;margin-top:24px;border-top:1px solid #eee;padding-top:10px">'
     + 'Generated by Chords Music Academy MIDI Note Writer &nbsp;•&nbsp; chordsmusicacademy.in</p>'
     + '</body></html>';
