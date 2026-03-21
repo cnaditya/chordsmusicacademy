@@ -373,6 +373,7 @@ function updateHeld() {
 
 function addNote(name, midiNote) {
   notes.push({name: name, midi: midiNote});
+  undoStack.push({type:'note'});
   renderSeq();
 }
 
@@ -439,7 +440,8 @@ function getPlainText() {
 }
 
 var lastDetectedChord = null;
-var currentMode = 'notes'; // 'notes' or 'chord'
+var currentMode = 'notes';
+var undoStack = [];
 
 function setMode(mode) {
   currentMode = mode;
@@ -486,51 +488,51 @@ function applyDetectedChord() {
 }
 
 function addSpace() {
-  notes.push({name:' ', chord: ''});
+  notes.push({name:' ', chord:''});
+  undoStack.push({type:'note'});
   renderSeq();
 }
 
-function undoChord() {
-  // Find the last bar that has a chord and clear it
-  if (firstBarChord) { firstBarChord = ''; renderSeq(); return; }
-  for (var i = notes.length - 1; i >= 0; i--) {
-    if (notes[i].name === ' ' && notes[i].chord) {
-      notes[i].chord = '';
-      renderSeq();
-      return;
-    }
-  }
+function applyChordTo(noteIndex, chord) {
+  var prev = noteIndex === -1 ? firstBarChord : (notes[noteIndex].chord || '');
+  undoStack.push({type:'chord', noteIndex:noteIndex, prev:prev});
+  if (noteIndex === -1) { firstBarChord = chord; }
+  else { notes[noteIndex].chord = chord; }
+  renderSeq();
 }
 
 function clearChord(noteIndex, e) {
-  e.preventDefault(); // prevent default right-click menu
-  if (noteIndex === -1) { firstBarChord = ''; }
-  else { notes[noteIndex].chord = ''; }
-  renderSeq();
+  e.preventDefault();
+  applyChordTo(noteIndex, '');
 }
 
 function editChord(noteIndex) {
-  // If chord mode and a chord is detected — apply it directly, no prompt
   if (currentMode === 'chord' && lastDetectedChord) {
-    if (noteIndex === -1) { firstBarChord = lastDetectedChord; }
-    else { notes[noteIndex].chord = lastDetectedChord; }
-    renderSeq();
-    // Flash feedback on apply button
+    applyChordTo(noteIndex, lastDetectedChord);
     var btn = document.getElementById('applyChordBtn');
     btn.textContent = '✅ Applied!';
     btn.style.background = '#27ae60';
     setTimeout(function(){ btn.textContent = '↑ Apply'; btn.style.background = '#2ecc71'; }, 1200);
     return;
   }
-  // Otherwise manual prompt
   var current = noteIndex === -1 ? firstBarChord : (notes[noteIndex].chord || '');
   var val = prompt('Chord for this bar (e.g. Am, C, G7) — leave blank to remove:', current);
   if (val === null) return;
-  if (noteIndex === -1) { firstBarChord = val.trim(); }
-  else { notes[noteIndex].chord = val.trim(); }
-  renderSeq();
+  applyChordTo(noteIndex, val.trim());
 }
-function undoNote() { notes.pop(); renderSeq(); }
+
+function undo() {
+  if (undoStack.length === 0) return;
+  var action = undoStack.pop();
+  if (action.type === 'note') {
+    notes.pop();
+    renderSeq();
+  } else if (action.type === 'chord') {
+    if (action.noteIndex === -1) { firstBarChord = action.prev; }
+    else { notes[action.noteIndex].chord = action.prev; }
+    renderSeq();
+  }
+}
 
 function clearNotes() {
   if (notes.length === 0) return;
@@ -543,6 +545,7 @@ function clearNotes() {
   renderHistory();
   notes = [];
   firstBarChord = '';
+  undoStack = [];
   renderSeq();
 }
 
@@ -759,15 +762,16 @@ document.addEventListener('keydown', function(e) {
   if (e.code === 'Enter') {
     e.preventDefault();
     notes.push({name:'\n'});
+    undoStack.push({type:'note'});
     renderSeq();
   }
   if (e.code === 'Backspace') {
     e.preventDefault();
-    if (currentMode === 'chord') { undoChord(); } else { undoNote(); }
+    undo();
   }
   if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) {
     e.preventDefault();
-    if (currentMode === 'chord') { undoChord(); } else { undoNote(); }
+    undo();
   }
 });
 
