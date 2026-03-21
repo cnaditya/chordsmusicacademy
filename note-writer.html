@@ -477,21 +477,25 @@ function addNote(name, midiNote) {
 var MIDDLE_OCTAVE = 4; // MIDI octave 4 = middle C (C4)
 
 function octDots(midiNote) {
-  if (midiNote === undefined || fmt === 'octave') return {open:'', close:''};
-  var oct = Math.floor(midiNote / 12) - 1;
-  var offset = oct - MIDDLE_OCTAVE;
-  if (offset === 0) return {open:'', close:''};
-  var ds = 'font-size:0.28em;line-height:1.3;color:#aaa;letter-spacing:2px;display:block;text-align:center';
-  var dot1 = '<span style="'+ds+'">\u25CF</span>';
-  var dot2 = '<span style="'+ds+'">\u25CF\u25CF</span>';
-  var gap  = '<span style="'+ds+';opacity:0">\u25CF</span>'; // invisible spacer for balance
+  // Always wraps note in flex column so ALL notes have identical height/alignment
+  var ds = 'font-size:0.28em;line-height:1.3;letter-spacing:2px;display:block;text-align:center';
   var wo = '<span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;vertical-align:middle">';
   var wc = '</span>';
-  if (offset >= 2)  return {open: wo + dot2, close: gap  + wc};
-  if (offset === 1) return {open: wo + dot1, close: gap  + wc};
+  if (midiNote === undefined || fmt === 'octave') {
+    var gap = '<span style="'+ds+';opacity:0">\u25CF</span>';
+    return {open: wo + gap, close: gap + wc};
+  }
+  var oct = Math.floor(midiNote / 12) - 1;
+  var offset = oct - MIDDLE_OCTAVE;
+  var dot1 = '<span style="'+ds+';color:#aaa">\u25CF</span>';
+  var dot2 = '<span style="'+ds+';color:#aaa">\u25CF\u25CF</span>';
+  var gap  = '<span style="'+ds+';opacity:0">\u25CF</span>';
+  if (offset >= 2)   return {open: wo + dot2, close: gap  + wc};
+  if (offset === 1)  return {open: wo + dot1, close: gap  + wc};
+  if (offset === 0)  return {open: wo + gap,  close: gap  + wc};
   if (offset === -1) return {open: wo + gap,  close: dot1 + wc};
   if (offset <= -2)  return {open: wo + gap,  close: dot2 + wc};
-  return {open:'', close:''};
+  return {open: wo + gap, close: gap + wc};
 }
 
 function renderSeq() {
@@ -505,7 +509,8 @@ function renderSeq() {
     if (n.name === '\n') {
       html += '<br>';
     } else if (n.name === ' ') {
-      html += '<span class="bar-sep"> | </span>';
+      var bds = 'font-size:0.28em;line-height:1.3;display:block;text-align:center;opacity:0';
+      html += '<span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;vertical-align:middle"><span style="'+bds+'">\u25CF</span><span class="bar-sep"> | </span><span style="'+bds+'">\u25CF</span></span>';
     } else {
       var isSharp = n.name.includes('#') || (n.midi !== undefined && [1,3,6,8,10].indexOf(n.midi % 12) >= 0);
       var chord   = n.chord || '';
