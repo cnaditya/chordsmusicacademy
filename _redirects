@@ -10,4 +10,5 @@
 /register            /registration.html          200
 /admin               /admin.html                 200
 /crm                 /crm.html                   200
-/note-writer         /note-writer.html           200
+/swarasheet          /swarasheet.html            200
+/note-writer         /swarasheet.html            200

@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SwaraSheet — Chords Music Academy</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:18px}
+body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#e8e8ff;min-height:100vh}
+.app-wrap{padding:0 32px 48px}
+
+/* Header */
+.hdr{background:linear-gradient(135deg,#10102a 0%,#1a1a38 100%);padding:14px 28px;display:flex;align-items:center;gap:16px;border-bottom:2px solid #e74c3c;position:sticky;top:0;z-index:100}
+.hdr-icon{width:40px;height:40px;background:linear-gradient(135deg,#e74c3c,#c0392b);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;box-shadow:0 2px 12px rgba(231,76,60,0.4)}
+.hdr-brand{display:flex;flex-direction:column}
+.hdr-title{font-size:1.3rem;font-weight:900;background:linear-gradient(90deg,#ff6b6b,#f39c12);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.5px}
+.hdr-sub{font-size:0.65rem;color:#444;margin-top:1px;letter-spacing:0.5px}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+/* Status bar */
+.status-bar{padding:8px 28px;background:#0c0c20;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid #1a1a30}
+.status-dot{width:10px;height:10px;border-radius:50%;background:#333;flex-shrink:0;transition:.3s}
+.status-dot.connected{background:#2ecc71;box-shadow:0 0 8px #2ecc71}
+.status-dot.waiting{background:#f39c12;animation:pulse 1s infinite}
+.status-text{font-size:0.78rem;color:#666}
+.device-name{font-size:0.75rem;background:#12122a;border:1px solid #2a2a4a;padding:3px 10px;border-radius:20px;color:#7eb3ff}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* Live key display — compact horizontal strip */
+.live-section{padding:14px 28px;display:flex;align-items:center;gap:20px;background:#0e0e24;border-bottom:1px solid #1a1a30}
+.live-label{font-size:0.62rem;color:#444;letter-spacing:2px;text-transform:uppercase;white-space:nowrap}
+.live-key{font-size:3rem;font-weight:900;color:#e74c3c;min-width:80px;text-align:center;letter-spacing:2px;text-shadow:0 0 24px rgba(231,76,60,0.5);transition:all .05s;line-height:1}
+.live-key.sharp{color:#f39c12;text-shadow:0 0 24px rgba(243,156,18,0.5)}
+.live-octave{font-size:0.7rem;color:#444;margin-left:-8px}
+.live-divider{width:1px;height:36px;background:#1e1e3a;flex-shrink:0}
+
+/* Keys held */
+.held-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex:1}
+.held-chip{background:#12122a;border:1px solid #e74c3c;color:#e74c3c;border-radius:6px;padding:3px 10px;font-size:0.8rem;font-weight:700}
+
+/* Card sections */
+.card{background:#0e0e24;border:1px solid #1a1a30;border-radius:14px;margin-top:16px;padding:16px 20px}
+.card-label{font-size:0.62rem;color:#444;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;font-weight:700}
+
+/* Note sequence */
+.seq-section{padding:16px 28px 0}
+.seq-label{font-size:0.62rem;color:#444;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-weight:700}
+.seq-box{background:#0a0a1a;border:1px solid #1e1e3a;border-radius:12px;padding:20px;min-height:160px;font-size:1.4rem;font-weight:700;color:#fff;line-height:2.8;letter-spacing:2px;word-break:break-all;position:relative;transition:border-color .2s}
+.seq-box:focus-within{border-color:#e74c3c30}
+.seq-box span.n{color:#7eb3ff}
+.seq-box span.s{color:#f39c12}
+.seq-cursor{display:inline-block;width:2px;height:1.2em;background:#e74c3c;vertical-align:middle;animation:blink .8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* Chord input */
+.chord-row{display:flex;align-items:center;gap:12px;padding:0 28px 14px}
+.chord-inp{background:#0e0e24;border:1.5px solid #1a1a30;border-radius:10px;padding:10px 16px;font-size:1rem;font-weight:700;color:#fff;outline:none;width:130px;text-align:center;letter-spacing:1px}
+.chord-inp:focus{border-color:#e74c3c}
+.chord-inp::placeholder{color:#333;font-weight:400;font-size:0.85rem}
+.chord-label{font-size:0.8rem;color:#555}
+.chord-preview{font-size:0.85rem;color:#f39c12;font-weight:700}
+
+/* Note with chord above */
+.note-wrap{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle}
+.note-chord-lbl{font-size:0.7em;font-weight:800;letter-spacing:1px;cursor:pointer;padding:2px 5px;border-radius:3px;line-height:1.4;border:1px dashed transparent}
+.note-chord-lbl.has-chord{color:#f39c12}
+.note-chord-lbl.no-chord{color:#0a0a1a;font-size:0.55em}
+.note-chord-lbl:hover{border-color:#f39c12;background:rgba(243,156,18,0.1)}
+.bar-sep{color:#2a2a4a;font-size:1.4rem;vertical-align:bottom}
+.ins-bar{display:inline-block;width:10px;text-align:center;color:transparent;font-size:0.7em;font-weight:900;cursor:pointer;vertical-align:middle;transition:.15s;user-select:none}
+.ins-bar:hover{color:#2ecc71;text-shadow:0 0 6px #2ecc71}
+
+/* Format toggle */
+.fmt-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.fmt-btn{padding:7px 16px;border-radius:20px;border:1px solid #1e1e3a;background:transparent;color:#555;font-size:0.78rem;font-weight:700;cursor:pointer;transition:.2s}
+.fmt-btn:hover{border-color:#333;color:#888}
+.fmt-btn.on{background:#e74c3c;border-color:#e74c3c;color:#fff;box-shadow:0 2px 10px rgba(231,76,60,0.3)}
+
+/* Sa selector */
+.sa-row{display:none;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.sa-label{font-size:0.75rem;color:#666;font-weight:700;margin-right:4px}
+.sa-btn{padding:5px 11px;border-radius:14px;border:1px solid #1e1e3a;background:transparent;color:#555;font-size:0.75rem;font-weight:700;cursor:pointer;transition:.2s}
+.sa-btn:hover{color:#888}
+.sa-btn.on{background:#9b59b6;border-color:#9b59b6;color:#fff;box-shadow:0 2px 8px rgba(155,89,182,0.3)}
+
+/* Carnatic variant toggles */
+.cv-row{display:none;align-items:center;gap:14px;padding:0 0 14px;flex-wrap:wrap}
+.cv-group{display:flex;align-items:center;gap:5px}
+.cv-key-lbl{font-size:0.7rem;color:#555;min-width:22px}
+.cv-btn{padding:4px 10px;border-radius:12px;border:1px solid #1e1e3a;background:transparent;color:#555;font-size:0.75rem;font-weight:700;cursor:pointer;transition:.2s}
+.cv-btn.on{background:#e67e22;border-color:#e67e22;color:#fff}
+
+/* Action buttons */
+.actions{display:flex;gap:10px;padding:0 28px 16px;flex-wrap:wrap}
+.btn{flex:1;padding:12px 16px;border:none;border-radius:10px;font-size:0.88rem;font-weight:700;cursor:pointer;min-width:90px;transition:.2s;letter-spacing:0.3px}
+.btn:active{transform:scale(0.97)}
+.btn-copy{background:#1a3a2a;border:1px solid #2ecc71;color:#2ecc71}
+.btn-copy:hover{background:#2ecc71;color:#fff}
+.btn-clear{background:#1e1e30;border:1px solid #2a2a4a;color:#666}
+.btn-clear:hover{border-color:#e74c3c;color:#e74c3c}
+.btn-space{background:#0e1a2e;border:1px solid #1e3a5a;color:#7eb3ff}
+.btn-space:hover{background:#1a2a4a}
+.btn-undo{background:#1e1a0e;border:1px solid #3a2a10;color:#f39c12}
+.btn-undo:hover{background:#2a2010}
+.btn-connect{background:#e74c3c;color:#fff;box-shadow:0 2px 10px rgba(231,76,60,0.3)}
+.btn-connect:hover{background:#c0392b}
+
+/* Settings row */
+.settings{display:flex;gap:12px;padding:0 28px 14px;flex-wrap:wrap;align-items:center}
+.setting-label{font-size:0.75rem;color:#555}
+.toggle{display:flex;background:#0a0a1a;border:1px solid #1e1e3a;border-radius:20px;overflow:hidden}
+.toggle-opt{padding:6px 13px;font-size:0.75rem;font-weight:700;cursor:pointer;color:#444;transition:.15s}
+.toggle-opt.on{background:#1e1e3a;color:#e8e8ff}
+
+/* No MIDI warning */
+.no-midi{background:#1a0e0e;border:1px solid #3a1a1a;border-radius:12px;padding:16px;margin:16px 28px;font-size:0.85rem;color:#c88;line-height:1.7}
+.no-midi strong{color:#e74c3c}
+
+/* Export buttons */
+.btn-pdf{background:linear-gradient(135deg,#8e44ad,#6c3483);color:#fff;box-shadow:0 2px 12px rgba(142,68,173,0.3);border:none}
+.btn-pdf:hover{box-shadow:0 4px 20px rgba(142,68,173,0.5)}
+.btn-word{background:#2980b9;color:#fff}
+
+/* Floating music notes background */
+.music-bg{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.music-bg span{position:absolute;font-size:1.4rem;opacity:0;animation:floatNote linear infinite}
+@keyframes floatNote{
+  0%{opacity:0;transform:translateY(0) rotate(0deg)}
+  10%{opacity:0.07}
+  90%{opacity:0.07}
+  100%{opacity:0;transform:translateY(-100vh) rotate(20deg)}
+}
+.app-wrap,.hdr,.status-bar{position:relative;z-index:1}
+
+/* Piano keyboard decorative strip */
+.piano-strip{display:flex;align-items:flex-end;gap:2px;padding:0 32px;margin-bottom:-1px;opacity:0.08;pointer-events:none;height:28px;overflow:hidden}
+.pk-w{width:28px;height:24px;background:#ddd;border-radius:0 0 4px 4px;flex-shrink:0}
+.pk-b{width:18px;height:16px;background:#222;border-radius:0 0 3px 3px;flex-shrink:0;margin:0 -9px;z-index:2;position:relative}
+
+/* Instrument icons row */
+.instr-bar{display:flex;align-items:center;justify-content:center;gap:28px;padding:10px 32px 0;opacity:0.12;pointer-events:none;font-size:1.6rem;letter-spacing:4px}
+
+/* Seq box empty state */
+.seq-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:140px;opacity:0.18;gap:8px}
+.seq-empty-icon{font-size:2.8rem}
+.seq-empty-text{font-size:0.75rem;color:#888;letter-spacing:2px;text-transform:uppercase}
+
+/* Staff lines decoration on seq box */
+.seq-box{position:relative}
+.seq-box::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(transparent,transparent 35px,#ffffff06 35px,#ffffff06 36px);border-radius:12px;pointer-events:none}
+
+/* Print styles */
+@media print {
+  @page{margin:20mm 18mm}
+  body{background:#fff;color:#000;font-family:'Segoe UI',Arial,sans-serif}
+  .hdr,.status-bar,.live-section,.held-row,.fmt-row,.sa-row,.cv-row,.settings,.actions,.history,.no-midi,.ins-bar,.mode-row{display:none!important}
+  .app-wrap{max-width:100%;padding:0;margin:0}
+  .seq-section{display:none}
+  .print-header{display:block!important}
+  .print-body{display:block!important}
+  /* Recolor notes for white background */
+  .print-body span.n{color:#1a4a8e!important}
+  .print-body span.s{color:#c0392b!important}
+  .print-body .note-chord-lbl.has-chord{color:#c0392b!important}
+  .print-body .note-chord-lbl.no-chord{visibility:hidden!important} /* preserve height so alignment stays consistent */
+  .print-body .bar-sep{color:#999!important}
+  .print-body .seq-cursor{display:none!important}
+  .print-body .ins-bar{display:none!important}
+}
+.print-header{display:none}
+.print-body{display:none}
+
+/* History */
+.history{padding:0 20px 20px}
+.history-label{font-size:0.7rem;color:#666;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.history-item{background:#1a1a2e;border-radius:10px;padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.history-item:hover{background:#1f1f3a}
+.history-notes{font-size:0.78rem;color:#7eb3ff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-time{font-size:0.65rem;color:#555;flex-shrink:0}
+.history-restore{font-size:0.7rem;color:#e74c3c;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- Floating music notes background -->
+<div class="music-bg" aria-hidden="true">
+  <span style="left:3%;animation-duration:18s;animation-delay:0s;font-size:1.2rem">♩</span>
+  <span style="left:8%;animation-duration:22s;animation-delay:3s;font-size:1.8rem">♪</span>
+  <span style="left:15%;animation-duration:16s;animation-delay:7s;font-size:1rem">♫</span>
+  <span style="left:22%;animation-duration:24s;animation-delay:1s;font-size:2rem">♬</span>
+  <span style="left:30%;animation-duration:19s;animation-delay:9s;font-size:1.3rem">𝄞</span>
+  <span style="left:38%;animation-duration:21s;animation-delay:4s;font-size:1rem">♩</span>
+  <span style="left:45%;animation-duration:17s;animation-delay:11s;font-size:1.6rem">🎵</span>
+  <span style="left:52%;animation-duration:23s;animation-delay:6s;font-size:1.2rem">♫</span>
+  <span style="left:60%;animation-duration:20s;animation-delay:2s;font-size:1.8rem">♬</span>
+  <span style="left:67%;animation-duration:15s;animation-delay:8s;font-size:1rem">𝄞</span>
+  <span style="left:74%;animation-duration:25s;animation-delay:5s;font-size:1.4rem">♪</span>
+  <span style="left:81%;animation-duration:18s;animation-delay:12s;font-size:2rem">🎶</span>
+  <span style="left:88%;animation-duration:22s;animation-delay:0s;font-size:1.2rem">♩</span>
+  <span style="left:94%;animation-duration:16s;animation-delay:10s;font-size:1.6rem">♫</span>
+</div>
+
+<!-- Password Gate -->
+<div id="pwGate" style="position:fixed;inset:0;background:#0f0f1a;z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:16px;padding:40px 36px;max-width:360px;width:90%;text-align:center">
+    <div style="font-size:2rem;margin-bottom:12px">🎹</div>
+    <div style="font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:4px">SwaraSheet</div>
+    <div style="font-size:0.78rem;color:#666;margin-bottom:28px">Chords Music Academy</div>
+    <input id="pwInput" type="password" placeholder="Enter password"
+           onkeydown="if(event.key==='Enter')checkPw()"
+           style="width:100%;background:#0f0f1a;border:1px solid #2a2a4a;color:#fff;border-radius:10px;padding:10px 14px;font-size:1rem;outline:none;margin-bottom:12px;text-align:center">
+    <div id="pwError" style="font-size:0.78rem;color:#e74c3c;margin-bottom:10px;min-height:18px"></div>
+    <button onclick="checkPw()" style="width:100%;background:#e74c3c;color:#fff;border:none;border-radius:10px;padding:11px;font-size:1rem;font-weight:700;cursor:pointer">Enter</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  if(sessionStorage.getItem('sw_auth')==='1'){
+    document.getElementById('pwGate').style.display='none';
+  }
+})();
+function checkPw(){
+  var v=document.getElementById('pwInput').value;
+  if(v==='Sep@2012'){
+    sessionStorage.setItem('sw_auth','1');
+    document.getElementById('pwGate').style.display='none';
+  } else {
+    document.getElementById('pwError').textContent='Incorrect password. Try again.';
+    document.getElementById('pwInput').value='';
+    document.getElementById('pwInput').focus();
+  }
+}
+</script>
+
+<!-- Header -->
+<div class="hdr">
+  <div class="hdr-icon">🎹</div>
+  <div class="hdr-brand">
+    <div class="hdr-title">SwaraSheet</div>
+    <div class="hdr-sub">Indian · Carnatic · Western notation</div>
+  </div>
+  <div class="hdr-right">
+    <div class="status-dot waiting" id="statusDot" style="width:10px;height:10px;border-radius:50%;background:#333;flex-shrink:0;transition:.3s"></div>
+    <div class="device-name" id="deviceName" style="display:none"></div>
+    <button class="btn btn-connect" id="connectBtn" onclick="connectMIDI()" style="flex:none;padding:6px 18px;font-size:0.75rem;border-radius:20px;white-space:nowrap">🔌 Connect</button>
+  </div>
+</div>
+
+<!-- Instrument icon bar -->
+<div class="instr-bar" aria-hidden="true">🎹 🎸 🎺 🎻 🥁 🪗 🎷 🪘 🎵 🎶 🎹 🎸 🎺 🎻 🥁 🪗 🎷 🪘 🎵 🎶</div>
+
+<!-- Status bar (text only, compact) -->
+<div class="status-bar">
+  <div class="status-text" id="statusText">Connect your MIDI keyboard via USB, then click Connect</div>
+</div>
+
+<div class="app-wrap">
+
+<!-- No MIDI notice (Chrome/Edge only) -->
+<div class="no-midi" id="noMidiNote" style="display:none;margin:16px 0">
+  <strong>⚠️ Browser not supported.</strong> Web MIDI API requires <strong>Chrome or Edge</strong>. Firefox and Safari do not support it.
+</div>
+
+<!-- Live key display — compact horizontal strip -->
+<div class="live-section" style="margin:16px 0 0;border-radius:14px;border:1px solid #1a1a30">
+  <div class="live-label">Now</div>
+  <div class="live-key" id="liveKey">—</div>
+  <div class="live-octave" id="liveOctave"></div>
+  <div class="live-divider"></div>
+  <div class="held-row" id="heldRow" style="padding:0"></div>
+</div>
+
+<!-- Controls card -->
+<div class="card" style="margin-top:14px">
+
+<!-- Mode toggle + Chord detection -->
+<div class="mode-row" style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+  <div style="display:flex;border-radius:8px;overflow:hidden;border:1px solid #1e1e3a">
+    <button id="modeNotes" onclick="setMode('notes')" style="padding:6px 14px;font-size:0.75rem;font-weight:700;border:none;cursor:pointer;background:#e74c3c;color:#fff">🎵 Notes</button>
+    <button id="modeChord" onclick="setMode('chord')" style="padding:6px 14px;font-size:0.75rem;font-weight:700;border:none;cursor:pointer;background:transparent;color:#444">🎸 Chord</button>
+  </div>
+  <span style="font-size:0.7rem;color:#444" id="modeHint">Playing notes into sequence</span>
+  <button id="recBtn" onclick="toggleRecording()" style="padding:6px 14px;font-size:0.75rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;background:#e74c3c;color:#fff;display:flex;align-items:center;gap:5px">⏸ Pause</button>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+    <span style="font-size:0.68rem;color:#444">Detected:</span>
+    <span id="detectedChord" style="font-size:1rem;font-weight:900;color:#444;letter-spacing:2px;min-width:44px">—</span>
+    <button id="applyChordBtn" onclick="applyDetectedChord()" style="display:none;background:#2ecc71;color:#fff;border:none;border-radius:8px;padding:4px 10px;font-size:0.72rem;font-weight:700;cursor:pointer">↑ Apply</button>
+  </div>
+</div>
+
+<!-- Format & settings -->
+<div style="padding:0">
+  <div class="fmt-row">
+    <div class="fmt-btn on" id="fmt-letter" onclick="setFmt('letter')">C D E F</div>
+    <div class="fmt-btn" id="fmt-octave" onclick="setFmt('octave')">C4 D4 E4</div>
+    <div class="fmt-btn" id="fmt-indian" onclick="setFmt('indian')">Sa Ri Ga Ma</div>
+    <div class="fmt-btn" id="fmt-carnatic" onclick="setFmt('carnatic')">Carnatic S R G M</div>
+    <div class="fmt-btn" id="fmt-dash" onclick="setFmt('dash')">C-D-E-F</div>
+  </div>
+  <!-- Sa selector — shown only in Indian format -->
+  <div class="sa-row" id="saRow">
+    <span class="sa-label">Scale =</span>
+    <div class="sa-btn on" id="sa-0"  onclick="setSa(0)">C</div>
+    <div class="sa-btn" id="sa-1"  onclick="setSa(1)">C#</div>
+    <div class="sa-btn" id="sa-2"  onclick="setSa(2)">D</div>
+    <div class="sa-btn" id="sa-3"  onclick="setSa(3)">D#</div>
+    <div class="sa-btn" id="sa-4"  onclick="setSa(4)">E</div>
+    <div class="sa-btn" id="sa-5"  onclick="setSa(5)">F</div>
+    <div class="sa-btn" id="sa-6"  onclick="setSa(6)">F#</div>
+    <div class="sa-btn" id="sa-7"  onclick="setSa(7)">G</div>
+    <div class="sa-btn" id="sa-8"  onclick="setSa(8)">G#</div>
+    <div class="sa-btn" id="sa-9"  onclick="setSa(9)">A</div>
+    <div class="sa-btn" id="sa-10" onclick="setSa(10)">A#</div>
+    <div class="sa-btn" id="sa-11" onclick="setSa(11)">B</div>
+  </div>
+  <!-- Carnatic variant row — shown only in Carnatic format -->
+  <div class="cv-row" id="cvRow">
+    <span class="sa-label" style="color:#e67e22">Variants:</span>
+    <div class="cv-group">
+      <span class="cv-key-lbl">D :</span>
+      <div id="cv-2-R2" class="cv-btn on" onclick="setCarnaticVariant(2,'R2')">R2</div>
+      <div id="cv-2-G1" class="cv-btn"    onclick="setCarnaticVariant(2,'G1')">G1</div>
+    </div>
+    <div class="cv-group">
+      <span class="cv-key-lbl">D# :</span>
+      <div id="cv-3-R3" class="cv-btn"    onclick="setCarnaticVariant(3,'R3')">R3</div>
+      <div id="cv-3-G2" class="cv-btn on" onclick="setCarnaticVariant(3,'G2')">G2</div>
+    </div>
+    <div class="cv-group">
+      <span class="cv-key-lbl">A :</span>
+      <div id="cv-9-D2" class="cv-btn on" onclick="setCarnaticVariant(9,'D2')">D2</div>
+      <div id="cv-9-N1" class="cv-btn"    onclick="setCarnaticVariant(9,'N1')">N1</div>
+    </div>
+    <div class="cv-group">
+      <span class="cv-key-lbl">A# :</span>
+      <div id="cv-10-D3" class="cv-btn"    onclick="setCarnaticVariant(10,'D3')">D3</div>
+      <div id="cv-10-N2" class="cv-btn on" onclick="setCarnaticVariant(10,'N2')">N2</div>
+    </div>
+  </div>
+  <div class="settings" style="padding:0;margin-top:4px">
+    <span class="setting-label">Separator:</span>
+    <div class="toggle">
+      <div class="toggle-opt on" id="sep-space" onclick="setSep(' ')">Space</div>
+      <div class="toggle-opt" id="sep-comma" onclick="setSep(', ')">Comma</div>
+      <div class="toggle-opt" id="sep-dash" onclick="setSep('-')">Dash</div>
+      <div class="toggle-opt" id="sep-newline" onclick="setSep('\n')">New line</div>
+    </div>
+  </div>
+</div><!-- end controls card -->
+
+<!-- Sequence box -->
+<div class="seq-section" style="margin-top:14px;padding:0">
+  <div style="display:flex;align-items:center;margin-bottom:10px;gap:10px">
+    <div class="seq-label" style="margin-bottom:0">Note Sequence</div>
+    <input id="songTitle" type="text" placeholder="Song title… (press Enter when done)" maxlength="80"
+           onkeydown="if(event.key==='Enter'||event.key==='Escape'){this.blur();event.preventDefault();}"
+           style="flex:1;background:#0e0e24;border:1px solid #1e1e3a;color:#dde;border-radius:8px;padding:5px 12px;font-size:0.85rem;font-weight:600;outline:none;min-width:0">
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="font-size:0.7rem;color:#444">Size:</span>
+      <button onclick="changeNoteSize(-0.1)" style="background:#0e0e24;border:1px solid #1e1e3a;color:#666;border-radius:6px;padding:3px 9px;font-size:0.85rem;font-weight:700;cursor:pointer">A−</button>
+      <input id="noteSizeInput" type="number" min="0.6" max="3" step="0.1" value="1.4"
+             onchange="setNoteSize(parseFloat(this.value))"
+             onkeydown="if(event.key==='Enter'||event.key==='Escape'){this.blur();event.preventDefault();}"
+             style="width:48px;text-align:center;background:#0e0e24;border:1px solid #1e1e3a;color:#888;border-radius:6px;padding:3px 4px;font-size:0.82rem;font-weight:700;-moz-appearance:textfield">
+      <button onclick="changeNoteSize(0.1)" style="background:#0e0e24;border:1px solid #1e1e3a;color:#666;border-radius:6px;padding:3px 9px;font-size:1rem;font-weight:700;cursor:pointer">A+</button>
+    </div>
+  </div>
+  <div class="seq-box" id="seqBox"><span class="seq-cursor"></span></div>
+</div>
+
+<!-- Print layout (visible only when printing) -->
+<div class="print-header" style="border-bottom:3px solid #1a1a2e;padding-bottom:14px;margin:0 0 20px">
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">
+    <div style="width:44px;height:44px;background:#1a1a2e;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem">🎹</div>
+    <div>
+      <div style="font-size:1.3rem;font-weight:900;color:#1a1a2e;letter-spacing:0.5px">Chords Music Academy</div>
+      <div style="font-size:0.78rem;color:#888">Manikonda, Hyderabad &nbsp;|&nbsp; chordsmusicacademy.in &nbsp;|&nbsp; +91 79815 85309</div>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div style="font-size:0.75rem;color:#aaa;text-transform:uppercase;letter-spacing:1px">Note Sheet</div>
+      <div style="font-size:0.85rem;font-weight:700;color:#1a1a2e" id="printDate"></div>
+    </div>
+  </div>
+  <div id="printTitle" style="font-size:1.5rem;font-weight:900;color:#1a1a2e;letter-spacing:1px;margin-top:10px;display:none"></div>
+</div>
+<div class="print-body" id="printBody"></div>
+
+<!-- Action buttons -->
+<div class="actions" style="margin-top:14px;padding:0;gap:8px">
+  <button class="btn btn-copy" onclick="copyNotes()" style="min-width:0">📋 Copy</button>
+  <button class="btn btn-space" onclick="addSpace()" style="min-width:0">⎵ Bar</button>
+  <button class="btn btn-undo" onclick="undoNote()" style="min-width:0">↩ Undo</button>
+  <button class="btn btn-clear" onclick="clearNotes()" style="min-width:0">🗑 Clear</button>
+  <button class="btn btn-pdf" onclick="exportPDF()" style="flex:2;min-width:0">📄 Export PDF</button>
+</div>
+
+<!-- History -->
+<div class="history" id="historySection" style="display:none;margin-top:16px;padding:0">
+  <div class="history-label">Saved Sequences</div>
+  <div id="historyList"></div>
+</div>
+
+</div><!-- end app-wrap -->
+
+<script>
+var NOTE_NAMES   = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+// Indian (Sargam) notation — teacher's system:
+// White keys: Sa Ri Ga Ma Pa Da Ni
+// Black keys use superscript number: C#=Ri¹, D#=Ga¹, F#=Ma², G#=Da¹, A#=Ni¹
+// Pa and Sa have no variants
+var INDIAN_NAMES = ['Sa','Ri\u00B9','Ri','Ga\u00B9','Ga','Ma','Ma\u00B2','Pa','Da\u00B9','Da','Ni\u00B9','Ni'];
+// Unicode superscripts: \u00B9=¹, \u00B2=², \u00B3=³
+// For HTML rendering use INDIAN_NAMES_HTML which wraps superscript in <sup>
+var INDIAN_NAMES_HTML = ['Sa','Ri<sup>1</sup>','Ri','Ga<sup>1</sup>','Ga','Ma','Ma<sup>2</sup>','Pa','Da<sup>1</sup>','Da','Ni<sup>1</sup>','Ni'];
+
+// Carnatic Sargam — 16 swaras across 12 pitches
+// Fixed positions: S R1 G3 M1 M2 P D1 N3 (no ambiguity)
+// Ambiguous pairs (same pitch, different raga names):
+//   pos 2 (D)  → R2 or G1
+//   pos 3 (D#) → R3 or G2
+//   pos 9 (A)  → D2 or N1
+//   pos 10(A#) → D3 or N2
+// In any given raga only ONE name is correct — set via variant toggles
+var CARNATIC_FIXED = {0:'S', 1:'R1', 4:'G3', 5:'M1', 6:'M2', 7:'P', 8:'D1', 11:'N3'};
+// User-configurable variants for the 4 ambiguous positions (defaults)
+var carnaticVariants = {2:'R2', 3:'G2', 9:'D2', 10:'N2'};
+function getCarnaticName(rel) {
+  return CARNATIC_FIXED[rel] !== undefined ? CARNATIC_FIXED[rel] : (carnaticVariants[rel] || '?');
+}
+
+var fmt = 'letter';
+var saTonic = 0; // MIDI index of Sa (0=C, 2=D, etc.)
+var sep = ' ';
+var notes = [];
+var heldKeys = {};
+var isRecording = true;
+var midiAccess = null;
+
+// Chord detection patterns [root intervals]
+var CHORD_PATTERNS = [
+  {name:'',      i:[0,4,7]},        // Major
+  {name:'m',     i:[0,3,7]},        // Minor
+  {name:'7',     i:[0,4,7,10]},     // Dominant 7th
+  {name:'maj7',  i:[0,4,7,11]},     // Major 7th
+  {name:'m7',    i:[0,3,7,10]},     // Minor 7th
+  {name:'dim',   i:[0,3,6]},        // Diminished
+  {name:'aug',   i:[0,4,8]},        // Augmented
+  {name:'sus2',  i:[0,2,7]},        // Sus2
+  {name:'sus4',  i:[0,5,7]},        // Sus4
+  {name:'6',     i:[0,4,7,9]},      // Major 6th
+  {name:'m6',    i:[0,3,7,9]},      // Minor 6th
+  {name:'dim7',  i:[0,3,6,9]},      // Diminished 7th
+  {name:'m7b5',  i:[0,3,6,10]},     // Half diminished
+  {name:'add9',  i:[0,2,4,7]},      // Add 9
+  {name:'9',     i:[0,2,4,7,10]},   // 9th
+];
+
+function detectChord() {
+  var keys = Object.keys(heldKeys).map(function(k){ return parseInt(k) % 12; });
+  var unique = keys.filter(function(v,i,a){ return a.indexOf(v)===i; }).sort(function(a,b){return a-b;});
+  if (unique.length < 2) return null;
+  for (var r = 0; r < unique.length; r++) {
+    var root = unique[r];
+    var intervals = unique.map(function(n){ return (n-root+12)%12; }).sort(function(a,b){return a-b;});
+    for (var p = 0; p < CHORD_PATTERNS.length; p++) {
+      if (JSON.stringify(intervals) === JSON.stringify(CHORD_PATTERNS[p].i)) {
+        return NOTE_NAMES[root] + CHORD_PATTERNS[p].name;
+      }
+    }
+  }
+  return null;
+}
+
+// Check browser support
+if (!navigator.requestMIDIAccess) {
+  document.getElementById('noMidiNote').style.display = 'block';
+  document.getElementById('connectBtn').style.display = 'none';
+}
+
+function connectMIDI() {
+  if (!navigator.requestMIDIAccess) return;
+  document.getElementById('statusText').textContent = 'Requesting MIDI access...';
+  navigator.requestMIDIAccess().then(function(access) {
+    midiAccess = access;
+    setupMIDI();
+    access.onstatechange = setupMIDI;
+  }, function(err) {
+    document.getElementById('statusDot').className = 'status-dot';
+    document.getElementById('statusText').textContent = 'MIDI access denied. Please allow permission.';
+  });
+}
+
+function setupMIDI() {
+  var inputs = midiAccess.inputs;
+  var count = 0;
+  inputs.forEach(function(input) {
+    input.onmidimessage = onMIDIMessage;
+    count++;
+    document.getElementById('deviceName').textContent = '🎹 ' + input.name;
+    document.getElementById('deviceName').style.display = 'block';
+  });
+  if (count > 0) {
+    document.getElementById('statusDot').className = 'status-dot connected';
+    document.getElementById('statusText').textContent = 'Connected! Start playing...';
+    document.getElementById('connectBtn').style.display = 'none';
+  } else {
+    document.getElementById('statusDot').className = 'status-dot waiting';
+    document.getElementById('statusText').textContent = 'No MIDI device found. Plug in your keyboard and click Connect.';
+    document.getElementById('deviceName').style.display = 'none';
+    document.getElementById('connectBtn').style.display = 'block';
+  }
+}
+
+function onMIDIMessage(event) {
+  var cmd  = event.data[0] >> 4;
+  var note = event.data[1];
+  var vel  = event.data[2];
+
+  var noteOn  = (cmd === 9 && vel > 0);
+  var noteOff = (cmd === 8 || (cmd === 9 && vel === 0));
+
+  if (noteOn) {
+    heldKeys[note] = true;
+    updateLive(note);
+    updateHeld();
+    if (currentMode === 'notes' && isRecording) {
+      var name = getNoteName(note);
+      addNote(name, note);
+    }
+    updateChordDetection();
+  }
+  if (noteOff) {
+    delete heldKeys[note];
+    updateHeld();
+    updateChordDetection();
+    if (Object.keys(heldKeys).length === 0) {
+      document.getElementById('liveKey').textContent = '—';
+      document.getElementById('liveKey').className = 'live-key';
+      document.getElementById('liveOctave').textContent = '';
+    }
+  }
+}
+
+function getNoteName(midiNote) {
+  var idx = midiNote % 12;
+  var oct = Math.floor(midiNote / 12) - 1;
+  var rel = (idx - saTonic + 12) % 12;
+  if (fmt === 'indian')   return INDIAN_NAMES[rel];
+  if (fmt === 'carnatic') return getCarnaticName(rel);
+  if (fmt === 'octave')   return NOTE_NAMES[idx] + oct;
+  return NOTE_NAMES[idx];
+}
+
+function smallNums(str) {
+  return str.replace(/([SRGMPDNsrgmpdn])([123])/g, '$1<sup style="font-size:0.55em;vertical-align:super">$2</sup>');
+}
+function getSargamHTML(midiIdx) {
+  var rel = (midiIdx - saTonic + 12) % 12;
+  if (fmt === 'carnatic') return smallNums(getCarnaticName(rel));
+  return INDIAN_NAMES_HTML[rel];
+}
+
+function updateLive(midiNote) {
+  var idx  = midiNote % 12;
+  var oct  = Math.floor(midiNote / 12) - 1;
+  var isSharp = [1,3,6,8,10].indexOf(idx) >= 0;
+  var noteLetter = (fmt === 'indian' || fmt === 'carnatic') ? getSargamHTML(idx) : NOTE_NAMES[idx];
+  var liveOct = oct - MIDDLE_OCTAVE;
+  var lds = 'display:block;text-align:center;font-size:0.14em;color:#aaa;letter-spacing:5px;line-height:1.2';
+  var liveAbove = liveOct >= 2  ? '<span style="'+lds+'">\u25CF\u25CF</span>'
+                : liveOct === 1 ? '<span style="'+lds+'">\u25CF</span>'
+                : '<span style="'+lds+';opacity:0">\u25CF</span>';
+  var liveBelow = liveOct <= -2  ? '<span style="'+lds+'">\u25CF\u25CF</span>'
+                : liveOct === -1 ? '<span style="'+lds+'">\u25CF</span>'
+                : '<span style="'+lds+';opacity:0">\u25CF</span>';
+  document.getElementById('liveKey').innerHTML =
+    '<span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1">'
+    + liveAbove + '<span>' + noteLetter + '</span>' + liveBelow + '</span>';
+  document.getElementById('liveKey').className = 'live-key' + (isSharp ? ' sharp' : '');
+  document.getElementById('liveOctave').textContent = 'Octave ' + oct + '  (MIDI ' + midiNote + ')';
+}
+
+function updateHeld() {
+  var row = document.getElementById('heldRow');
+  row.innerHTML = '';
+  Object.keys(heldKeys).sort(function(a,b){return a-b}).forEach(function(k) {
+    var idx  = parseInt(k) % 12;
+    var chip = document.createElement('div');
+    chip.className = 'held-chip';
+    if (fmt === 'indian' || fmt === 'carnatic') chip.innerHTML = getSargamHTML(idx);
+    else chip.textContent = NOTE_NAMES[idx];
+    row.appendChild(chip);
+  });
+}
+
+function addNote(name, midiNote) {
+  notes.push({name: name, midi: midiNote});
+  undoStack.push({type:'note', note:{name:name, midi:midiNote}});
+  redoStack = [];
+  renderSeq();
+}
+
+var MIDDLE_OCTAVE = 4; // MIDI octave 4 = middle C (C4)
+var noteFontSize = 1.4; // rem — adjustable
+
+function setNoteSize(val) {
+  if (isNaN(val)) return;
+  noteFontSize = Math.min(3, Math.max(0.6, +val.toFixed(1)));
+  document.getElementById('seqBox').style.fontSize = noteFontSize + 'rem';
+  var inp = document.getElementById('noteSizeInput');
+  if (inp) inp.value = noteFontSize;
+}
+function changeNoteSize(delta) {
+  setNoteSize(noteFontSize + delta);
+}
+
+function octDots(midiNote, dotSize) {
+  // Dots are absolutely positioned — do NOT affect the note's baseline at all
+  if (midiNote === undefined || fmt === 'octave') return {open:'', close:''};
+  var oct = Math.floor(midiNote / 12) - 1;
+  var offset = oct - MIDDLE_OCTAVE;
+  if (offset === 0) return {open:'', close:''};
+  var sz = dotSize || '0.26em';
+  var d = '\u25CF';
+  var aboveStyle = 'position:absolute;left:0;right:0;bottom:100%;margin-bottom:2px;text-align:center;font-size:'+sz+';color:#aaa;line-height:1;letter-spacing:3px';
+  var belowStyle = 'position:absolute;left:0;right:0;top:100%;margin-top:2px;text-align:center;font-size:'+sz+';color:#aaa;line-height:1;letter-spacing:3px';
+  var wo = '<span style="display:inline-block;position:relative;vertical-align:baseline;line-height:1">';
+  var wc = '</span>';
+  if (offset >= 2)   return {open: wo + '<span style="'+aboveStyle+'">' + d+d + '</span>', close: wc};
+  if (offset === 1)  return {open: wo + '<span style="'+aboveStyle+'">' + d   + '</span>', close: wc};
+  if (offset === -1) return {open: wo,  close: '<span style="'+belowStyle+'">' + d   + '</span>' + wc};
+  if (offset <= -2)  return {open: wo,  close: '<span style="'+belowStyle+'">' + d+d + '</span>' + wc};
+  return {open:'', close:''};
+}
+
+function renderSeq() {
+  var box = document.getElementById('seqBox');
+  if (notes.length === 0) {
+    box.innerHTML = '<div class="seq-empty"><div class="seq-empty-icon">🎹</div><div class="seq-empty-text">Play your MIDI keyboard to start</div></div><span class="seq-cursor"></span>';
+    return;
+  }
+  var html = '';
+  notes.forEach(function(n, i) {
+    if (n.name === '\n') {
+      html += '<br>';
+    } else if (n.name === ' ') {
+      html += '<span class="bar-sep" oncontextmenu="deleteNoteAt(' + i + ',event)" title="Right-click to delete bar"> | </span>';
+    } else {
+      var isSharp = n.name.includes('#') || (n.midi !== undefined && [1,3,6,8,10].indexOf(n.midi % 12) >= 0);
+      var chord   = n.chord || '';
+      var showLbl = chord || currentMode === 'chord';
+      var displayName = n.name.replace(/([¹²³])/g, '<sup>$1</sup>')
+                               .replace(/([SRGMPDNsrgmpdn])([123])/g, '$1<sup style="font-size:0.55em;vertical-align:super">$2</sup>');
+      var od = octDots(n.midi);
+      var noteHtml = od.open + '<span class="' + (isSharp ? 's' : 'n') + '" oncontextmenu="deleteNoteAt(' + i + ',event)" title="Right-click to delete">' + displayName + '</span>' + od.close;
+      if (showLbl) {
+        html += '<span class="note-wrap">'
+              + '<span class="note-chord-lbl ' + (chord ? 'has-chord' : 'no-chord') + '" '
+              + 'onclick="editChordOnNote(' + i + ')" '
+              + 'oncontextmenu="clearChordOnNote(' + i + ',event)" '
+              + 'title="' + (chord ? 'Click to edit · Right-click to clear' : 'Click to add chord') + '">'
+              + (chord ? chord : '+') + '</span>'
+              + noteHtml
+              + '</span>';
+      } else {
+        html += noteHtml;
+      }
+      if (i < notes.length - 1 && notes[i+1].name !== ' ' && notes[i+1].name !== '\n') {
+        html += '<span style="color:#333">' + (sep === ' ' ? ' ' : sep) + '</span>';
+        html += '<span class="ins-bar" onclick="insertBarAt(' + (i+1) + ')" title="Insert bar line here">|</span>';
+      }
+    }
+  });
+  html += '<span class="seq-cursor"></span>';
+  box.innerHTML = html;
+}
+
+function getPlainText() {
+  var result = '';
+  notes.forEach(function(n, i) {
+    if (n.name === ' ') { result += ' | '; }
+    else if (n.name === '\n') { result += '\n'; }
+    else {
+      result += n.name;
+      if (i < notes.length - 1 && notes[i+1].name !== ' ' && notes[i+1].name !== '\n') {
+        result += sep;
+      }
+    }
+  });
+  return result;
+}
+
+var lastDetectedChord = null;
+var currentMode = 'notes';
+var undoStack = [];
+var redoStack = [];
+
+function setCarnaticVariant(pos, name) {
+  carnaticVariants[pos] = name;
+  var pairs = {2:['R2','G1'], 3:['R3','G2'], 9:['D2','N1'], 10:['D3','N2']};
+  pairs[pos].forEach(function(n) {
+    var el = document.getElementById('cv-'+pos+'-'+n);
+    if (el) el.className = 'cv-btn' + (n === name ? ' on' : '');
+  });
+  remapNotes();
+}
+
+function toggleRecording() {
+  isRecording = !isRecording;
+  var btn = document.getElementById('recBtn');
+  btn.textContent = isRecording ? '⏸ Pause' : '⏺ Record';
+  btn.style.background = isRecording ? '#e74c3c' : '#555';
+}
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeNotes').style.background = mode==='notes' ? '#e74c3c' : '#1a1a2e';
+  document.getElementById('modeNotes').style.color      = mode==='notes' ? '#fff' : '#666';
+  document.getElementById('modeChord').style.background = mode==='chord' ? '#2ecc71' : '#1a1a2e';
+  document.getElementById('modeChord').style.color      = mode==='chord' ? '#fff' : '#666';
+  document.getElementById('modeHint').textContent = mode==='notes'
+    ? 'Playing notes into sequence'
+    : 'Hold chord → detected → click + above any note to apply';
+  renderSeq();
+}
+
+function updateChordDetection() {
+  var chord = detectChord();
+  lastDetectedChord = chord;
+  var el  = document.getElementById('detectedChord');
+  var btn = document.getElementById('applyChordBtn');
+  if (chord) {
+    el.textContent  = chord;
+    el.style.color  = '#2ecc71';
+    btn.style.display = 'inline-block';
+  } else {
+    el.textContent  = Object.keys(heldKeys).length > 0 ? '?' : '—';
+    el.style.color  = Object.keys(heldKeys).length > 0 ? '#f39c12' : '#555';
+    btn.style.display = 'none';
+  }
+}
+
+function applyDetectedChord() {
+  if (!lastDetectedChord) return;
+  // Find the last real note and apply chord there
+  for (var i = notes.length - 1; i >= 0; i--) {
+    if (notes[i].name !== ' ' && notes[i].name !== '\n') {
+      applyChordTo(i, lastDetectedChord);
+      break;
+    }
+  }
+  var btn = document.getElementById('applyChordBtn');
+  btn.textContent = '✅ Applied!';
+  btn.style.background = '#27ae60';
+  setTimeout(function(){ btn.textContent = 'Apply above bar ↑'; btn.style.background = '#2ecc71'; }, 1500);
+}
+
+function addSpace() {
+  notes.push({name:' ', chord:''});
+  undoStack.push({type:'note', note:{name:' ', chord:''}});
+  redoStack = [];
+  renderSeq();
+}
+
+function insertBarAt(index) {
+  var bar = {name:' ', chord:''};
+  notes.splice(index, 0, bar);
+  undoStack.push({type:'note', note:bar});
+  redoStack = [];
+  renderSeq();
+}
+
+function applyChordTo(noteIndex, chord) {
+  var prev = notes[noteIndex].chord || '';
+  undoStack.push({type:'chord', noteIndex:noteIndex, prev:prev, next:chord});
+  redoStack = [];
+  notes[noteIndex].chord = chord;
+  renderSeq();
+}
+
+function clearChordOnNote(noteIndex, e) {
+  e.preventDefault();
+  applyChordTo(noteIndex, '');
+}
+
+function deleteNoteAt(index, e) {
+  e.preventDefault();
+  var removed = notes.splice(index, 1)[0];
+  undoStack.push({type:'delete', index:index, note:removed});
+  redoStack = [];
+  renderSeq();
+}
+
+function editChordOnNote(noteIndex) {
+  if (currentMode === 'chord' && lastDetectedChord) {
+    applyChordTo(noteIndex, lastDetectedChord);
+    var btn = document.getElementById('applyChordBtn');
+    btn.textContent = '✅ Applied!';
+    btn.style.background = '#27ae60';
+    setTimeout(function(){ btn.textContent = '↑ Apply'; btn.style.background = '#2ecc71'; }, 1200);
+    return;
+  }
+  var current = notes[noteIndex].chord || '';
+  var val = prompt('Chord above this note (e.g. Am, C, G7) — leave blank to remove:', current);
+  if (val === null) return;
+  applyChordTo(noteIndex, val.trim());
+}
+
+function undo() {
+  if (undoStack.length === 0) return;
+  var action = undoStack.pop();
+  redoStack.push(action);
+  if (action.type === 'note') {
+    var removed = notes.pop();
+    action.note = removed;
+    renderSeq();
+  } else if (action.type === 'chord') {
+    notes[action.noteIndex].chord = action.prev;
+    renderSeq();
+  } else if (action.type === 'delete') {
+    notes.splice(action.index, 0, action.note);
+    renderSeq();
+  }
+}
+
+function redo() {
+  if (redoStack.length === 0) return;
+  var action = redoStack.pop();
+  undoStack.push(action);
+  if (action.type === 'note') {
+    notes.push(action.note);
+    renderSeq();
+  } else if (action.type === 'chord') {
+    notes[action.noteIndex].chord = action.next;
+    renderSeq();
+  } else if (action.type === 'delete') {
+    notes.splice(action.index, 1);
+    renderSeq();
+  }
+}
+
+function clearNotes() {
+  if (notes.length === 0) return;
+  // Save to history
+  var text = getPlainText();
+  var history = JSON.parse(localStorage.getItem('cma_notes_history') || '[]');
+  history.unshift({text: text, time: new Date().toLocaleTimeString()});
+  if (history.length > 5) history = history.slice(0,5);
+  localStorage.setItem('cma_notes_history', JSON.stringify(history));
+  renderHistory();
+  notes = [];
+  undoStack = [];
+  redoStack = [];
+  renderSeq();
+}
+
+function copyNotes() {
+  var text = getPlainText();
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.querySelector('.btn-copy');
+    btn.textContent = '✅ Copied!';
+    setTimeout(function(){ btn.textContent = '📋 Copy'; }, 2000);
+  });
+}
+
+function setFmt(f) {
+  fmt = f;
+  ['letter','octave','indian','carnatic','dash'].forEach(function(x){
+    var el = document.getElementById('fmt-'+x);
+    if (el) el.className = 'fmt-btn' + (x===f?' on':'');
+  });
+  document.getElementById('saRow').style.display = (f === 'indian' || f === 'carnatic') ? 'flex' : 'none';
+  document.getElementById('cvRow').style.display = f === 'carnatic' ? 'flex' : 'none';
+  remapNotes();
+}
+
+function setSa(tonic) {
+  saTonic = tonic;
+  for (var i = 0; i < 12; i++) {
+    document.getElementById('sa-'+i).className = 'sa-btn' + (i===tonic?' on':'');
+  }
+  remapNotes();
+}
+
+function remapNotes() {
+  notes = notes.map(function(n) {
+    if (n.name === ' ' || n.name === '\n') return n;
+    var idx = n.midi % 12;
+    var oct = Math.floor(n.midi / 12) - 1;
+    var rel  = (idx - saTonic + 12) % 12;
+    var name = fmt === 'indian'   ? INDIAN_NAMES[rel]
+             : fmt === 'carnatic' ? getCarnaticName(rel)
+             : fmt === 'octave'   ? NOTE_NAMES[idx] + oct
+             : NOTE_NAMES[idx];
+    return {name: name, midi: n.midi, chord: n.chord};
+  });
+  renderSeq();
+}
+
+function setSep(s) {
+  sep = s;
+  var map = {' ':'sep-space', ', ':'sep-comma', '-':'sep-dash', '\n':'sep-newline'};
+  Object.values(map).forEach(function(id){ document.getElementById(id).className='toggle-opt'; });
+  if (map[s]) document.getElementById(map[s]).className = 'toggle-opt on';
+  renderSeq();
+}
+
+function renderHistory() {
+  var history = JSON.parse(localStorage.getItem('cma_notes_history') || '[]');
+  var section = document.getElementById('historySection');
+  var list    = document.getElementById('historyList');
+  if (history.length === 0) { section.style.display='none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = '';
+  history.forEach(function(h, i) {
+    var item = document.createElement('div');
+    item.className = 'history-item';
+    item.innerHTML = '<div class="history-notes">' + h.text.substring(0,80) + (h.text.length>80?'…':'') + '</div>'
+      + '<div class="history-time">' + h.time + '</div>'
+      + '<div class="history-restore">Restore</div>';
+    item.querySelector('.history-restore').onclick = function(e) {
+      e.stopPropagation();
+      // Restore as plain text (letter format)
+      notes = h.text.split('').map(function(c){return {name:c, midi:0}});
+      fmt = 'letter';
+      renderSeq();
+    };
+    list.appendChild(item);
+  });
+}
+
+function buildPrintSeqHtml() {
+  // Build print-specific sequence HTML where EVERY note has a note-wrap,
+  // so all cells are the same height and notes align on a consistent baseline.
+  var html = '';
+  notes.forEach(function(n, i) {
+    if (n.name === '\n') {
+      html += '<br>';
+    } else if (n.name === ' ') {
+      html += '<span class="bar-sep"> | </span>';
+    } else {
+      var isSharp = n.name.includes('#') || (n.midi !== undefined && [1,3,6,8,10].indexOf(n.midi % 12) >= 0);
+      var chord = n.chord || '';
+      var displayName = n.name.replace(/([¹²³])/g, '<sup>$1</sup>')
+                               .replace(/([SRGMPDNsrgmpdn])([123])/g, '$1<sup style="font-size:0.55em;vertical-align:super">$2</sup>');
+      var od = octDots(n.midi, '0.45em');
+      var noteHtml = od.open + '<span class="' + (isSharp ? 's' : 'n') + '">' + displayName + '</span>' + od.close;
+      // Always wrap so all cells have identical height → notes on same baseline
+      html += '<span class="note-wrap">'
+            + '<span class="note-chord-lbl ' + (chord ? 'has-chord' : 'no-chord') + '">'
+            + (chord ? chord : '+') + '</span>'
+            + noteHtml
+            + '</span>';
+    }
+  });
+  return html;
+}
+
+function buildPrintBody() {
+  var noteCount = notes.filter(function(n){return n.name!==' '&&n.name!=='\n';}).length;
+  var fmtLabel  = {letter:'Letter',octave:'With Octave',indian:'Indian Sargam',carnatic:'Carnatic Sargam',dash:'Dash'}[fmt]||fmt;
+  var date      = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('printDate').textContent = date;
+  var title = (document.getElementById('songTitle').value || '').trim();
+  var titleEl = document.getElementById('printTitle');
+  titleEl.textContent = title;
+  titleEl.style.display = title ? 'block' : 'none';
+
+  var seqHtml = buildPrintSeqHtml();
+
+  var html = '<div style="display:flex;gap:24px;margin-bottom:16px;padding:8px 12px;background:#f7f7f7;border-radius:6px;font-size:0.78rem;color:#555">'
+           + '<span><strong>Format:</strong> '+fmtLabel+'</span>'
+           + '<span><strong>Notes:</strong> '+noteCount+'</span>'
+           + '<span><strong>Bars:</strong> '+(notes.filter(function(n){return n.name===' ';}).length+1)+'</span>'
+           + '</div>'
+           + '<div style="font-size:'+noteFontSize+'rem;font-weight:700;line-height:2.8;letter-spacing:2px;word-break:break-all;padding:16px;border:1px solid #ddd;border-radius:10px;background:#fff">'
+           + seqHtml
+           + '</div>'
+           + '<div style="margin-top:24px;padding-top:10px;border-top:1px solid #eee;font-size:0.7rem;color:#bbb;text-align:center">'
+           + 'Generated by Chords Music Academy SwaraSheet &nbsp;•&nbsp; chordsmusicacademy.in</div>';
+
+  document.getElementById('printBody').innerHTML = html;
+}
+
+function exportPDF() {
+  if (notes.length === 0) { alert('No notes to export.'); return; }
+  buildPrintBody();
+  setTimeout(function(){ window.print(); }, 100);
+}
+
+function buildWordNotes() {
+  // Build Word-safe inline-styled HTML from notes array
+  var fs = Math.round(noteFontSize * 12) + 'pt'; // convert rem to pt approx
+  var chordFs = Math.round(noteFontSize * 7) + 'pt';
+  var dotFs   = Math.round(noteFontSize * 4) + 'pt';
+  var body = '<div style="line-height:2.6;letter-spacing:1px;padding:14px;border:1px solid #ddd;border-radius:6px">';
+
+  notes.forEach(function(n, i) {
+    if (n.name === '\n') {
+      body += '<br>';
+      return;
+    }
+    if (n.name === ' ') {
+      body += '<span style="color:#aaa;font-size:'+fs+';font-weight:700;margin:0 6px">&nbsp;|&nbsp;</span>';
+      return;
+    }
+    var isSharp = n.midi !== undefined && [1,3,6,8,10].indexOf(n.midi % 12) >= 0;
+    var noteColor = isSharp ? '#c0392b' : '#1a4a8e';
+    var chord = n.chord || '';
+
+    // Octave dots (plain text, unicode)
+    var dotAbove = '', dotBelow = '';
+    if (n.midi !== undefined && fmt !== 'octave') {
+      var oct = Math.floor(n.midi / 12) - 1;
+      var offset = oct - MIDDLE_OCTAVE;
+      if (offset >= 2)  dotAbove = '\u25CF\u25CF';
+      else if (offset === 1)  dotAbove = '\u25CF';
+      else if (offset === -1) dotBelow = '\u25CF';
+      else if (offset <= -2)  dotBelow = '\u25CF\u25CF';
+    }
+
+    // Note display name — strip any residual HTML tags
+    var displayName = n.name.replace(/<[^>]+>/g, '');
+
+    body += '<span style="display:inline-block;text-align:center;vertical-align:middle;margin:0 2px">';
+    // chord label row
+    body += '<span style="display:block;font-size:'+chordFs+';font-weight:800;color:#c0392b;min-height:'+chordFs+';line-height:1.3">'+(chord||'&nbsp;')+'</span>';
+    // dot above
+    body += '<span style="display:block;font-size:'+dotFs+';color:#888;line-height:1;min-height:'+dotFs+'">'+(dotAbove||'&nbsp;')+'</span>';
+    // note letter
+    body += '<span style="font-size:'+fs+';font-weight:800;color:'+noteColor+';font-family:\'Segoe UI\',Arial,sans-serif">'+displayName+'</span>';
+    // dot below
+    body += '<span style="display:block;font-size:'+dotFs+';color:#888;line-height:1;min-height:'+dotFs+'">'+(dotBelow||'&nbsp;')+'</span>';
+    body += '</span>';
+  });
+
+  body += '</div>';
+  return body;
+}
+
+function exportWord() {
+  if (notes.length === 0) { alert('No notes to export.'); return; }
+  var date      = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+  var noteCount = notes.filter(function(n){return n.name!==' '&&n.name!=='\n';}).length;
+  var fmtLabel  = {letter:'Letter',octave:'With Octave',indian:'Indian Sargam',carnatic:'Carnatic Sargam',dash:'Dash'}[fmt]||fmt;
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'
+    + '@page{margin:20mm 18mm} body{font-family:"Segoe UI",Arial,sans-serif;color:#000;background:#fff}'
+    + '</style></head><body>'
+    + '<table style="width:100%;border-bottom:3px solid #1a1a2e;padding-bottom:12px;margin-bottom:14px;border-collapse:collapse"><tr>'
+    + '<td><div style="font-size:18pt;font-weight:900;color:#1a1a2e">🎹 Chords Music Academy</div>'
+    + '<div style="font-size:9pt;color:#888">Manikonda, Hyderabad &nbsp;|&nbsp; chordsmusicacademy.in &nbsp;|&nbsp; +91 79815 85309</div></td>'
+    + '<td style="text-align:right;vertical-align:top"><div style="font-size:8pt;color:#aaa;text-transform:uppercase;letter-spacing:1px">Note Sheet</div>'
+    + '<div style="font-size:10pt;font-weight:700;color:#1a1a2e">'+date+'</div></td></tr></table>'
+    + '<table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:9pt;color:#555"><tr>'
+    + '<td><strong>Format:</strong> '+fmtLabel+'</td>'
+    + '<td><strong>Notes:</strong> '+noteCount+'</td>'
+    + '<td><strong>Bars:</strong> '+(notes.filter(function(n){return n.name===' ';}).length+1)+'</td>'
+    + '</tr></table>'
+    + buildWordNotes()
+    + '<p style="font-size:8pt;color:#bbb;text-align:center;margin-top:24px;border-top:1px solid #eee;padding-top:10px">'
+    + 'Generated by Chords Music Academy SwaraSheet &nbsp;•&nbsp; chordsmusicacademy.in</p>'
+    + '</body></html>';
+
+  var blob = new Blob([html], {type:'application/msword'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href   = url;
+  a.download = 'CMA-Notes-' + new Date().toISOString().slice(0,10) + '.doc';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Prevent spacebar from clicking buttons — use it as bar separator instead
+document.addEventListener('keydown', function(e) {
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+  if (e.code === 'Space') {
+    e.preventDefault();
+    addSpace();
+  }
+  if (e.code === 'Enter') {
+    e.preventDefault();
+    notes.push({name:'\n'});
+    undoStack.push({type:'note'});
+    renderSeq();
+  }
+  if (e.code === 'Backspace') {
+    e.preventDefault();
+    undo();
+  }
+  if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+    e.preventDefault();
+    redo();
+  } else if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    undo();
+  } else if (e.code === 'KeyY' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    redo();
+  }
+});
+
+// Prevent buttons from stealing focus so spacebar always works
+document.querySelectorAll('.btn, .fmt-btn, .toggle-opt').forEach(function(el) {
+  el.addEventListener('mousedown', function(e){ e.preventDefault(); });
+});
+
+
+renderHistory();
+renderSeq();
+</script>
+</body>
+</html>
