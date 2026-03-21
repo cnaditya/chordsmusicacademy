@@ -483,9 +483,9 @@ function octDots(midiNote) {
   var offset = oct - MIDDLE_OCTAVE;
   if (offset === 0) return {open:'', close:''};
   var d = '\u25CF';
-  var aboveStyle = 'position:absolute;left:0;right:0;bottom:105%;text-align:center;font-size:0.26em;color:#aaa;line-height:1;letter-spacing:3px';
-  var belowStyle = 'position:absolute;left:0;right:0;top:105%;text-align:center;font-size:0.26em;color:#aaa;line-height:1;letter-spacing:3px';
-  var wo = '<span style="display:inline-block;position:relative;vertical-align:baseline">';
+  var aboveStyle = 'position:absolute;left:0;right:0;bottom:100%;margin-bottom:2px;text-align:center;font-size:0.26em;color:#aaa;line-height:1;letter-spacing:3px';
+  var belowStyle = 'position:absolute;left:0;right:0;top:100%;margin-top:2px;text-align:center;font-size:0.26em;color:#aaa;line-height:1;letter-spacing:3px';
+  var wo = '<span style="display:inline-block;position:relative;vertical-align:baseline;line-height:1">';
   var wc = '</span>';
   if (offset >= 2)   return {open: wo + '<span style="'+aboveStyle+'">' + d+d + '</span>', close: wc};
   if (offset === 1)  return {open: wo + '<span style="'+aboveStyle+'">' + d   + '</span>', close: wc};
