@@ -136,6 +136,39 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 </head>
 <body>
 
+<!-- Password Gate -->
+<div id="pwGate" style="position:fixed;inset:0;background:#0f0f1a;z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:16px;padding:40px 36px;max-width:360px;width:90%;text-align:center">
+    <div style="font-size:2rem;margin-bottom:12px">🎹</div>
+    <div style="font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:4px">SwaraSheet</div>
+    <div style="font-size:0.78rem;color:#666;margin-bottom:28px">Chords Music Academy</div>
+    <input id="pwInput" type="password" placeholder="Enter password"
+           onkeydown="if(event.key==='Enter')checkPw()"
+           style="width:100%;background:#0f0f1a;border:1px solid #2a2a4a;color:#fff;border-radius:10px;padding:10px 14px;font-size:1rem;outline:none;margin-bottom:12px;text-align:center">
+    <div id="pwError" style="font-size:0.78rem;color:#e74c3c;margin-bottom:10px;min-height:18px"></div>
+    <button onclick="checkPw()" style="width:100%;background:#e74c3c;color:#fff;border:none;border-radius:10px;padding:11px;font-size:1rem;font-weight:700;cursor:pointer">Enter</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  if(sessionStorage.getItem('sw_auth')==='1'){
+    document.getElementById('pwGate').style.display='none';
+  }
+})();
+function checkPw(){
+  var v=document.getElementById('pwInput').value;
+  if(v==='Sep@2012'){
+    sessionStorage.setItem('sw_auth','1');
+    document.getElementById('pwGate').style.display='none';
+  } else {
+    document.getElementById('pwError').textContent='Incorrect password. Try again.';
+    document.getElementById('pwInput').value='';
+    document.getElementById('pwInput').focus();
+  }
+}
+</script>
+
 <!-- Header -->
 <div class="hdr">
   <div class="hdr-icon">🎹</div>
