@@ -763,11 +763,11 @@ document.addEventListener('keydown', function(e) {
   }
   if (e.code === 'Backspace') {
     e.preventDefault();
-    if (currentMode === 'chord') {
-      undoChord();
-    } else {
-      undoNote();
-    }
+    if (currentMode === 'chord') { undoChord(); } else { undoNote(); }
+  }
+  if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    if (currentMode === 'chord') { undoChord(); } else { undoNote(); }
   }
 });
 
