@@ -496,15 +496,16 @@ function changeNoteSize(delta) {
   document.getElementById('seqBox').style.fontSize = noteFontSize + 'rem';
 }
 
-function octDots(midiNote) {
+function octDots(midiNote, dotSize) {
   // Dots are absolutely positioned — do NOT affect the note's baseline at all
   if (midiNote === undefined || fmt === 'octave') return {open:'', close:''};
   var oct = Math.floor(midiNote / 12) - 1;
   var offset = oct - MIDDLE_OCTAVE;
   if (offset === 0) return {open:'', close:''};
+  var sz = dotSize || '0.26em';
   var d = '\u25CF';
-  var aboveStyle = 'position:absolute;left:0;right:0;bottom:100%;margin-bottom:2px;text-align:center;font-size:0.26em;color:#aaa;line-height:1;letter-spacing:3px';
-  var belowStyle = 'position:absolute;left:0;right:0;top:100%;margin-top:2px;text-align:center;font-size:0.26em;color:#aaa;line-height:1;letter-spacing:3px';
+  var aboveStyle = 'position:absolute;left:0;right:0;bottom:100%;margin-bottom:2px;text-align:center;font-size:'+sz+';color:#aaa;line-height:1;letter-spacing:3px';
+  var belowStyle = 'position:absolute;left:0;right:0;top:100%;margin-top:2px;text-align:center;font-size:'+sz+';color:#aaa;line-height:1;letter-spacing:3px';
   var wo = '<span style="display:inline-block;position:relative;vertical-align:baseline;line-height:1">';
   var wc = '</span>';
   if (offset >= 2)   return {open: wo + '<span style="'+aboveStyle+'">' + d+d + '</span>', close: wc};
@@ -811,7 +812,7 @@ function buildPrintSeqHtml() {
       var chord = n.chord || '';
       var displayName = n.name.replace(/([¹²³])/g, '<sup>$1</sup>')
                                .replace(/([SRGMPDNsrgmpdn])([123])/g, '$1<sup style="font-size:0.55em;vertical-align:super">$2</sup>');
-      var od = octDots(n.midi);
+      var od = octDots(n.midi, '0.45em');
       var noteHtml = od.open + '<span class="' + (isSharp ? 's' : 'n') + '">' + displayName + '</span>' + od.close;
       // Always wrap so all cells have identical height → notes on same baseline
       html += '<span class="note-wrap">'
