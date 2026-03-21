@@ -161,6 +161,7 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
     <button id="modeChord" onclick="setMode('chord')" style="padding:7px 14px;font-size:0.78rem;font-weight:700;border:none;cursor:pointer;background:#1a1a2e;color:#666">🎸 Chord</button>
   </div>
   <span style="font-size:0.7rem;color:#555" id="modeHint">Playing notes into sequence</span>
+  <button id="recBtn" onclick="toggleRecording()" style="padding:7px 16px;font-size:0.78rem;font-weight:700;border:none;border-radius:10px;cursor:pointer;background:#e74c3c;color:#fff;display:flex;align-items:center;gap:5px">⏸ Pause</button>
   <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
     <span style="font-size:0.7rem;color:#555">Detected:</span>
     <span id="detectedChord" style="font-size:1.1rem;font-weight:900;color:#555;letter-spacing:2px;min-width:50px">—</span>
@@ -259,6 +260,7 @@ var saTonic = 0; // MIDI index of Sa (0=C, 2=D, etc.)
 var sep = ' ';
 var notes = [];
 var heldKeys = {};
+var isRecording = true;
 var midiAccess = null;
 
 // Chord detection patterns [root intervals]
@@ -348,7 +350,7 @@ function onMIDIMessage(event) {
     heldKeys[note] = true;
     updateLive(note);
     updateHeld();
-    if (currentMode === 'notes') {
+    if (currentMode === 'notes' && isRecording) {
       var name = getNoteName(note);
       addNote(name, note);
     }
@@ -468,6 +470,13 @@ var lastDetectedChord = null;
 var currentMode = 'notes';
 var undoStack = [];
 var redoStack = [];
+
+function toggleRecording() {
+  isRecording = !isRecording;
+  var btn = document.getElementById('recBtn');
+  btn.textContent = isRecording ? '⏸ Pause' : '⏺ Record';
+  btn.style.background = isRecording ? '#e74c3c' : '#555';
+}
 
 function setMode(mode) {
   currentMode = mode;
