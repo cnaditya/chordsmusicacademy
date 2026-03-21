@@ -52,9 +52,11 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .chord-preview{font-size:0.78rem;color:#f39c12;font-weight:700}
 
 /* Chord above bar in sequence */
-.bar-group{display:inline-block;position:relative;vertical-align:middle;margin:0 2px}
-.bar-chord{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:0.6rem;font-weight:800;color:#f39c12;letter-spacing:1px;white-space:nowrap;line-height:1}
-.bar-sep{color:#555;font-size:1.1rem;vertical-align:middle}
+.bar-group{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 3px}
+.bar-chord-btn{font-size:0.62rem;font-weight:800;color:#f39c12;letter-spacing:1px;cursor:pointer;padding:1px 5px;border-radius:4px;border:1px dashed transparent;min-width:20px;text-align:center;line-height:1.4}
+.bar-chord-btn:hover{border-color:#f39c12;background:rgba(243,156,18,0.1)}
+.bar-chord-btn.empty{color:#444;font-weight:400;font-size:0.55rem}
+.bar-sep{color:#555;font-size:1.1rem}
 
 /* Format toggle */
 .fmt-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
@@ -145,13 +147,6 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 
 <!-- Held keys -->
 <div class="held-row" id="heldRow"></div>
-
-<!-- Chord input -->
-<div class="chord-row">
-  <span class="chord-label">Chord label for next bar:</span>
-  <input class="chord-inp" id="chordInp" placeholder="e.g. Am, C, G7" maxlength="6" autocomplete="off" spellcheck="false">
-  <span class="chord-preview" id="chordPreview"></span>
-</div>
 
 <!-- Format & settings -->
 <div style="padding:14px 20px 0">
@@ -336,7 +331,11 @@ function renderSeq() {
   notes.forEach(function(n, i) {
     if (n.name === ' ') {
       var chord = n.chord || '';
-      html += '<span class="bar-group"><span class="bar-chord">' + (chord ? chord : '&nbsp;') + '</span><span class="bar-sep"> | </span></span>';
+      var bi = i;
+      html += '<span class="bar-group">'
+            + '<span class="bar-chord-btn' + (chord?'':' empty') + '" onclick="editChord('+bi+')" title="Click to add chord">'
+            + (chord ? chord : '+chord') + '</span>'
+            + '<span class="bar-sep">|</span></span>';
     } else if (n.name === '\n') {
       html += '<br>';
     } else {
@@ -367,10 +366,15 @@ function getPlainText() {
 }
 
 function addSpace() {
-  var chord = document.getElementById('chordInp').value.trim();
-  notes.push({name:' ', chord: chord});
-  document.getElementById('chordInp').value = '';
-  document.getElementById('chordPreview').textContent = '';
+  notes.push({name:' ', chord: ''});
+  renderSeq();
+}
+
+function editChord(noteIndex) {
+  var current = notes[noteIndex].chord || '';
+  var val = prompt('Chord name for this bar (e.g. Am, C, G7):', current);
+  if (val === null) return; // cancelled
+  notes[noteIndex].chord = val.trim();
   renderSeq();
 }
 function undoNote() { notes.pop(); renderSeq(); }
@@ -591,7 +595,7 @@ function exportWord() {
 
 // Prevent spacebar from clicking buttons — use it as bar separator instead
 document.addEventListener('keydown', function(e) {
-  if (document.activeElement === document.getElementById('chordInp')) return;
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
   if (e.code === 'Space') {
     e.preventDefault();
     addSpace();
@@ -612,14 +616,6 @@ document.querySelectorAll('.btn, .fmt-btn, .toggle-opt').forEach(function(el) {
   el.addEventListener('mousedown', function(e){ e.preventDefault(); });
 });
 
-// Chord input preview + prevent spacebar from typing in input
-document.getElementById('chordInp').addEventListener('input', function() {
-  var v = this.value.trim();
-  document.getElementById('chordPreview').textContent = v ? '→ will label next bar as "' + v + '"' : '';
-});
-document.getElementById('chordInp').addEventListener('keydown', function(e) {
-  if (e.code === 'Space') { e.stopPropagation(); } // allow space inside input
-});
 
 renderHistory();
 renderSeq();
