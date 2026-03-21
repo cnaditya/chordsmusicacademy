@@ -454,18 +454,17 @@ function buildPrintBody() {
     html += '<div style="margin-bottom:18px">';
     // Line label
     html += '<div style="font-size:0.65rem;color:#bbb;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase">Line '+(gi+1)+'</div>';
-    html += '<div style="display:flex;flex-wrap:wrap;gap:0;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden">';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:4px;">';
     bars.forEach(function(bar, bi) {
       if(bar.length===0) return;
-      html += '<div style="display:flex;align-items:center;padding:10px 16px;gap:10px;border-right:2px solid #e0e0e0;background:'+(bi%2===0?'#fff':'#fafafa')+'">';
+      html += '<div style="display:flex;align-items:center;flex-wrap:wrap;padding:8px 12px;gap:6px;border:1px solid #e0e0e0;border-radius:8px;background:'+(bi%2===0?'#fff':'#f5f5f5')+'">';
       bar.forEach(function(n){
         var isSharp = n.name.includes('#');
-        var parts   = n.name.replace('#','').split('');
-        html += '<div style="text-align:center;min-width:28px">'
-              + '<span style="font-size:16pt;font-weight:800;color:'+(isSharp?'#c0392b':'#1a1a2e')+';font-family:Georgia,serif">'
+        html += '<div style="text-align:center;min-width:24px">'
+              + '<span style="font-size:15pt;font-weight:800;color:'+(isSharp?'#c0392b':'#1a1a2e')+';font-family:Georgia,serif">'
               + (isSharp ? n.name.replace('#','') : n.name)
               + '</span>'
-              + (isSharp ? '<sup style="font-size:8pt;color:#c0392b;font-weight:700">#</sup>' : '')
+              + (isSharp ? '<sup style="font-size:7pt;color:#c0392b;font-weight:700">#</sup>' : '')
               + '</div>';
       });
       html += '</div>';
@@ -508,18 +507,18 @@ function exportWord() {
       else { bars[bars.length-1].push(n); }
     });
     body += '<p style="font-size:9pt;color:#bbb;margin:16px 0 4px;font-family:Arial">LINE '+(gi+1)+'</p>';
-    body += '<table style="border-collapse:collapse;width:100%;margin-bottom:8px"><tr>';
+    body += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">';
     bars.forEach(function(bar,bi){
       if(bar.length===0) return;
-      body += '<td style="border:1px solid #ddd;padding:10px 14px;background:'+(bi%2===0?'#fff':'#f9f9f9')+';vertical-align:middle">';
+      body += '<div style="display:inline-flex;flex-wrap:wrap;align-items:center;gap:5px;padding:8px 12px;border:1px solid #ddd;border-radius:6px;background:'+(bi%2===0?'#fff':'#f9f9f9')+'">';
       bar.forEach(function(n){
         var isSharp = n.name.includes('#');
-        body += '<span style="font-size:18pt;font-weight:700;color:'+(isSharp?'#c0392b':'#1a1a2e')+';font-family:Georgia,serif;margin-right:8px">'
+        body += '<span style="font-size:16pt;font-weight:700;color:'+(isSharp?'#c0392b':'#1a1a2e')+';font-family:Georgia,serif">'
               + n.name + '</span>';
       });
-      body += '</td>';
+      body += '</div>';
     });
-    body += '</tr></table>';
+    body += '</div>';
   });
 
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
