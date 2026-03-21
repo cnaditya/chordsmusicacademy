@@ -425,9 +425,12 @@ function getNoteName(midiNote) {
   return NOTE_NAMES[idx];
 }
 
+function smallNums(str) {
+  return str.replace(/([SRGMPDNsrgmpdn])([123])/g, '$1<sup style="font-size:0.55em;vertical-align:super">$2</sup>');
+}
 function getSargamHTML(midiIdx) {
   var rel = (midiIdx - saTonic + 12) % 12;
-  if (fmt === 'carnatic') return getCarnaticName(rel);
+  if (fmt === 'carnatic') return smallNums(getCarnaticName(rel));
   return INDIAN_NAMES_HTML[rel];
 }
 
@@ -480,7 +483,8 @@ function renderSeq() {
       var chord   = n.chord || '';
       var showLbl = chord || currentMode === 'chord';
       // For Indian format, render superscripts as <sup>
-      var displayName = n.name.replace(/([¹²³])/g, '<sup>$1</sup>');
+      var displayName = n.name.replace(/([¹²³])/g, '<sup>$1</sup>')
+                               .replace(/([SRGMPDNsrgmpdn])([123])/g, '$1<sup style="font-size:0.55em;vertical-align:super">$2</sup>');
       if (showLbl) {
         html += '<span class="note-wrap">'
               + '<span class="note-chord-lbl ' + (chord ? 'has-chord' : 'no-chord') + '" '
