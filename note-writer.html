@@ -232,7 +232,6 @@ var sep = ' ';
 var notes = [];
 var heldKeys = {};
 var midiAccess = null;
-var firstBarChord = '';
 
 // Chord detection patterns [root intervals]
 var CHORD_PATTERNS = [
@@ -385,37 +384,27 @@ function renderSeq() {
     return;
   }
   var html = '';
-  var lastBarIdx = -1;   // index of most recent | separator (-1 = bar 1)
-  var firstInBar = true; // next real note is first of its bar
-
   notes.forEach(function(n, i) {
     if (n.name === '\n') {
       html += '<br>';
-      firstInBar = true;
     } else if (n.name === ' ') {
-      lastBarIdx = i;
-      firstInBar = true;
       html += '<span class="bar-sep"> | </span>';
     } else {
       var isSharp = n.name.includes('#');
-      var noteSpan = '<span class="' + (isSharp ? 's' : 'n') + '">' + n.name + '</span>';
-
-      if (firstInBar) {
-        // chord stored on the preceding | note, or firstBarChord for bar 1
-        var chord = lastBarIdx === -1 ? firstBarChord : (notes[lastBarIdx].chord || '');
-        var clickIdx = lastBarIdx; // pass to editChord
+      var chord   = n.chord || '';
+      var showLbl = chord || currentMode === 'chord';
+      if (showLbl) {
         html += '<span class="note-wrap">'
               + '<span class="note-chord-lbl ' + (chord ? 'has-chord' : 'no-chord') + '" '
-              + 'onclick="editChord(' + clickIdx + ')" '
-              + 'oncontextmenu="clearChord(' + clickIdx + ',event)" '
+              + 'onclick="editChordOnNote(' + i + ')" '
+              + 'oncontextmenu="clearChordOnNote(' + i + ',event)" '
               + 'title="' + (chord ? 'Click to edit · Right-click to clear' : 'Click to add chord') + '">'
               + (chord ? chord : '+') + '</span>'
-              + noteSpan + '</span>';
-        firstInBar = false;
+              + '<span class="' + (isSharp ? 's' : 'n') + '">' + n.name + '</span>'
+              + '</span>';
       } else {
-        html += noteSpan;
+        html += '<span class="' + (isSharp ? 's' : 'n') + '">' + n.name + '</span>';
       }
-
       if (i < notes.length - 1 && notes[i+1].name !== ' ' && notes[i+1].name !== '\n') {
         html += '<span style="color:#333">' + (sep === ' ' ? ' ' : sep) + '</span>';
       }
@@ -453,7 +442,7 @@ function setMode(mode) {
   document.getElementById('modeChord').style.color      = mode==='chord' ? '#fff' : '#666';
   document.getElementById('modeHint').textContent = mode==='notes'
     ? 'Playing notes into sequence'
-    : 'Hold chord → detected → click + above any bar to apply';
+    : 'Hold chord → detected → click + above any note to apply';
 }
 
 function updateChordDetection() {
@@ -474,15 +463,13 @@ function updateChordDetection() {
 
 function applyDetectedChord() {
   if (!lastDetectedChord) return;
-  // Find the last bar separator and set its chord
-  var lastBar = -1;
+  // Find the last real note and apply chord there
   for (var i = notes.length - 1; i >= 0; i--) {
-    if (notes[i].name === ' ') { lastBar = i; break; }
+    if (notes[i].name !== ' ' && notes[i].name !== '\n') {
+      applyChordTo(i, lastDetectedChord);
+      break;
+    }
   }
-  if (lastBar === -1) { firstBarChord = lastDetectedChord; }
-  else { notes[lastBar].chord = lastDetectedChord; }
-  renderSeq();
-  // Flash feedback
   var btn = document.getElementById('applyChordBtn');
   btn.textContent = '✅ Applied!';
   btn.style.background = '#27ae60';
@@ -497,20 +484,19 @@ function addSpace() {
 }
 
 function applyChordTo(noteIndex, chord) {
-  var prev = noteIndex === -1 ? firstBarChord : (notes[noteIndex].chord || '');
+  var prev = notes[noteIndex].chord || '';
   undoStack.push({type:'chord', noteIndex:noteIndex, prev:prev, next:chord});
   redoStack = [];
-  if (noteIndex === -1) { firstBarChord = chord; }
-  else { notes[noteIndex].chord = chord; }
+  notes[noteIndex].chord = chord;
   renderSeq();
 }
 
-function clearChord(noteIndex, e) {
+function clearChordOnNote(noteIndex, e) {
   e.preventDefault();
   applyChordTo(noteIndex, '');
 }
 
-function editChord(noteIndex) {
+function editChordOnNote(noteIndex) {
   if (currentMode === 'chord' && lastDetectedChord) {
     applyChordTo(noteIndex, lastDetectedChord);
     var btn = document.getElementById('applyChordBtn');
@@ -519,8 +505,8 @@ function editChord(noteIndex) {
     setTimeout(function(){ btn.textContent = '↑ Apply'; btn.style.background = '#2ecc71'; }, 1200);
     return;
   }
-  var current = noteIndex === -1 ? firstBarChord : (notes[noteIndex].chord || '');
-  var val = prompt('Chord for this bar (e.g. Am, C, G7) — leave blank to remove:', current);
+  var current = notes[noteIndex].chord || '';
+  var val = prompt('Chord above this note (e.g. Am, C, G7) — leave blank to remove:', current);
   if (val === null) return;
   applyChordTo(noteIndex, val.trim());
 }
@@ -534,8 +520,7 @@ function undo() {
     action.note = removed;
     renderSeq();
   } else if (action.type === 'chord') {
-    if (action.noteIndex === -1) { firstBarChord = action.prev; }
-    else { notes[action.noteIndex].chord = action.prev; }
+    notes[action.noteIndex].chord = action.prev;
     renderSeq();
   }
 }
@@ -548,8 +533,7 @@ function redo() {
     notes.push(action.note);
     renderSeq();
   } else if (action.type === 'chord') {
-    if (action.noteIndex === -1) { firstBarChord = action.next; }
-    else { notes[action.noteIndex].chord = action.next; }
+    notes[action.noteIndex].chord = action.next;
     renderSeq();
   }
 }
@@ -564,7 +548,6 @@ function clearNotes() {
   localStorage.setItem('cma_notes_history', JSON.stringify(history));
   renderHistory();
   notes = [];
-  firstBarChord = '';
   undoStack = [];
   redoStack = [];
   renderSeq();
