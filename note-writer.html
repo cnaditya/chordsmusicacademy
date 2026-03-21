@@ -6,72 +6,73 @@
 <title>MIDI Note Writer — Chords Music Academy</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
+html{font-size:18px}
 body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;min-height:100vh;display:flex;flex-direction:column}
 
 /* Header */
-.hdr{background:#1a1a2e;padding:12px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #2a2a4a}
-.hdr-icon{width:36px;height:36px;background:#e74c3c;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
-.hdr-title{font-size:1rem;font-weight:800}
-.hdr-sub{font-size:0.7rem;color:#888}
+.hdr{background:#1a1a2e;padding:16px 28px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #2a2a4a}
+.hdr-icon{width:48px;height:48px;background:#e74c3c;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.hdr-title{font-size:1.3rem;font-weight:800}
+.hdr-sub{font-size:0.78rem;color:#888}
 
 /* Status bar */
-.status-bar{padding:10px 20px;background:#12122a;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.status-dot{width:10px;height:10px;border-radius:50%;background:#555;flex-shrink:0;transition:.3s}
+.status-bar{padding:12px 28px;background:#12122a;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.status-dot{width:12px;height:12px;border-radius:50%;background:#555;flex-shrink:0;transition:.3s}
 .status-dot.connected{background:#2ecc71;box-shadow:0 0 8px #2ecc71}
 .status-dot.waiting{background:#f39c12;animation:pulse 1s infinite}
-.status-text{font-size:0.8rem;color:#aaa}
-.device-name{font-size:0.75rem;background:#1a1a2e;border:1px solid #2a2a4a;padding:3px 10px;border-radius:20px;color:#7eb3ff}
+.status-text{font-size:0.88rem;color:#aaa}
+.device-name{font-size:0.82rem;background:#1a1a2e;border:1px solid #2a2a4a;padding:4px 12px;border-radius:20px;color:#7eb3ff}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 
 /* Live key display */
-.live-section{padding:20px;display:flex;flex-direction:column;align-items:center;gap:8px}
-.live-label{font-size:0.7rem;color:#666;letter-spacing:2px;text-transform:uppercase}
-.live-key{font-size:5rem;font-weight:900;color:#e74c3c;min-height:100px;display:flex;align-items:center;justify-content:center;letter-spacing:4px;text-shadow:0 0 40px rgba(231,76,60,0.4);transition:all .05s}
+.live-section{padding:24px 28px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.live-label{font-size:0.78rem;color:#666;letter-spacing:2px;text-transform:uppercase}
+.live-key{font-size:6.5rem;font-weight:900;color:#e74c3c;min-height:120px;display:flex;align-items:center;justify-content:center;letter-spacing:4px;text-shadow:0 0 40px rgba(231,76,60,0.4);transition:all .05s}
 .live-key.sharp{color:#f39c12;text-shadow:0 0 40px rgba(243,156,18,0.4)}
-.live-octave{font-size:0.75rem;color:#555;margin-top:-8px}
+.live-octave{font-size:0.82rem;color:#555;margin-top:-8px}
 
 /* Keys held */
-.held-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;min-height:32px;padding:0 20px}
-.held-chip{background:#1a1a2e;border:1px solid #e74c3c;color:#e74c3c;border-radius:8px;padding:4px 12px;font-size:0.82rem;font-weight:700}
+.held-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;min-height:38px;padding:0 28px}
+.held-chip{background:#1a1a2e;border:1px solid #e74c3c;color:#e74c3c;border-radius:8px;padding:5px 14px;font-size:0.9rem;font-weight:700}
 
 /* Note sequence */
-.seq-section{flex:1;padding:16px 20px}
-.seq-label{font-size:0.7rem;color:#666;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
-.seq-box{background:#1a1a2e;border:1px solid #2a2a4a;border-radius:14px;padding:16px;min-height:120px;font-size:1.1rem;font-weight:700;color:#fff;line-height:2;letter-spacing:2px;word-break:break-all;position:relative}
+.seq-section{flex:1;padding:18px 28px}
+.seq-label{font-size:0.78rem;color:#666;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+.seq-box{background:#1a1a2e;border:1px solid #2a2a4a;border-radius:14px;padding:20px;min-height:150px;font-size:1.4rem;font-weight:700;color:#fff;line-height:2.2;letter-spacing:2px;word-break:break-all;position:relative}
 .seq-box span.n{color:#7eb3ff}
 .seq-box span.s{color:#f39c12}
 .seq-cursor{display:inline-block;width:2px;height:1.2em;background:#e74c3c;vertical-align:middle;animation:blink .8s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
 /* Chord input */
-.chord-row{display:flex;align-items:center;gap:10px;padding:0 20px 12px}
-.chord-inp{background:#1a1a2e;border:1.5px solid #2a2a4a;border-radius:10px;padding:9px 14px;font-size:0.95rem;font-weight:700;color:#fff;outline:none;width:120px;text-align:center;letter-spacing:1px}
+.chord-row{display:flex;align-items:center;gap:12px;padding:0 28px 14px}
+.chord-inp{background:#1a1a2e;border:1.5px solid #2a2a4a;border-radius:10px;padding:10px 16px;font-size:1rem;font-weight:700;color:#fff;outline:none;width:130px;text-align:center;letter-spacing:1px}
 .chord-inp:focus{border-color:#e74c3c}
-.chord-inp::placeholder{color:#444;font-weight:400;font-size:0.8rem}
-.chord-label{font-size:0.72rem;color:#666}
-.chord-preview{font-size:0.78rem;color:#f39c12;font-weight:700}
+.chord-inp::placeholder{color:#444;font-weight:400;font-size:0.85rem}
+.chord-label{font-size:0.8rem;color:#666}
+.chord-preview{font-size:0.85rem;color:#f39c12;font-weight:700}
 
 /* Note with chord above */
 .note-wrap{display:inline-flex;flex-direction:column;align-items:center;vertical-align:bottom}
-.note-chord-lbl{font-size:0.62rem;font-weight:800;letter-spacing:1px;cursor:pointer;padding:1px 4px;border-radius:3px;line-height:1.4;border:1px dashed transparent}
+.note-chord-lbl{font-size:0.72rem;font-weight:800;letter-spacing:1px;cursor:pointer;padding:2px 5px;border-radius:3px;line-height:1.4;border:1px dashed transparent}
 .note-chord-lbl.has-chord{color:#f39c12}
-.note-chord-lbl.no-chord{color:#2a2a4a;font-size:0.5rem}
+.note-chord-lbl.no-chord{color:#2a2a4a;font-size:0.6rem}
 .note-chord-lbl:hover{border-color:#f39c12;background:rgba(243,156,18,0.1)}
-.bar-sep{color:#444;font-size:1.1rem;vertical-align:bottom}
+.bar-sep{color:#444;font-size:1.4rem;vertical-align:bottom}
 
 /* Format toggle */
-.fmt-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.fmt-btn{padding:6px 14px;border-radius:20px;border:1px solid #2a2a4a;background:transparent;color:#888;font-size:0.75rem;font-weight:700;cursor:pointer;transition:.15s}
+.fmt-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.fmt-btn{padding:8px 18px;border-radius:20px;border:1px solid #2a2a4a;background:transparent;color:#888;font-size:0.82rem;font-weight:700;cursor:pointer;transition:.15s}
 .fmt-btn.on{background:#e74c3c;border-color:#e74c3c;color:#fff}
 /* Sa selector */
-.sa-row{display:none;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap}
-.sa-label{font-size:0.72rem;color:#888;font-weight:700;margin-right:4px}
-.sa-btn{padding:4px 10px;border-radius:16px;border:1px solid #2a2a4a;background:transparent;color:#888;font-size:0.72rem;font-weight:700;cursor:pointer;transition:.15s}
+.sa-row{display:none;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.sa-label{font-size:0.8rem;color:#888;font-weight:700;margin-right:4px}
+.sa-btn{padding:6px 13px;border-radius:16px;border:1px solid #2a2a4a;background:transparent;color:#888;font-size:0.8rem;font-weight:700;cursor:pointer;transition:.15s}
 .sa-btn.on{background:#9b59b6;border-color:#9b59b6;color:#fff}
 
 /* Action buttons */
-.actions{display:flex;gap:10px;padding:0 20px 20px;flex-wrap:wrap}
-.btn{flex:1;padding:12px;border:none;border-radius:12px;font-size:0.88rem;font-weight:700;cursor:pointer;min-width:100px}
+.actions{display:flex;gap:12px;padding:0 28px 24px;flex-wrap:wrap}
+.btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:0.95rem;font-weight:700;cursor:pointer;min-width:110px}
 .btn-copy{background:#2ecc71;color:#fff}
 .btn-copy:active{opacity:0.8}
 .btn-clear{background:#2a2a4a;color:#aaa}
@@ -81,14 +82,14 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .btn-connect{background:#e74c3c;color:#fff}
 
 /* Settings row */
-.settings{display:flex;gap:10px;padding:0 20px 14px;flex-wrap:wrap;align-items:center}
-.setting-label{font-size:0.72rem;color:#666}
+.settings{display:flex;gap:12px;padding:0 28px 16px;flex-wrap:wrap;align-items:center}
+.setting-label{font-size:0.8rem;color:#666}
 .toggle{display:flex;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;overflow:hidden}
-.toggle-opt{padding:5px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;color:#666;transition:.15s}
+.toggle-opt{padding:7px 15px;font-size:0.8rem;font-weight:700;cursor:pointer;color:#666;transition:.15s}
 .toggle-opt.on{background:#2a2a4a;color:#fff}
 
 /* No MIDI warning */
-.no-midi{background:#2a1a1a;border:1px solid #5a2a2a;border-radius:12px;padding:14px;margin:20px;font-size:0.82rem;color:#e88;line-height:1.7}
+.no-midi{background:#2a1a1a;border:1px solid #5a2a2a;border-radius:12px;padding:18px;margin:24px;font-size:0.9rem;color:#e88;line-height:1.7}
 .no-midi strong{color:#e74c3c}
 
 /* Export buttons */
@@ -155,7 +156,7 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 <div class="held-row" id="heldRow"></div>
 
 <!-- Mode toggle + Chord detection -->
-<div style="display:flex;align-items:center;gap:10px;padding:8px 20px;background:#12122a;flex-wrap:wrap">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 28px;background:#12122a;flex-wrap:wrap">
   <div style="display:flex;border-radius:10px;overflow:hidden;border:1px solid #2a2a4a">
     <button id="modeNotes" onclick="setMode('notes')" style="padding:7px 14px;font-size:0.78rem;font-weight:700;border:none;cursor:pointer;background:#e74c3c;color:#fff">🎵 Notes</button>
     <button id="modeChord" onclick="setMode('chord')" style="padding:7px 14px;font-size:0.78rem;font-weight:700;border:none;cursor:pointer;background:#1a1a2e;color:#666">🎸 Chord</button>
@@ -170,7 +171,7 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 </div>
 
 <!-- Format & settings -->
-<div style="padding:14px 20px 0">
+<div style="padding:16px 28px 0">
   <div class="fmt-row">
     <div class="fmt-btn on" id="fmt-letter" onclick="setFmt('letter')">C D E F</div>
     <div class="fmt-btn" id="fmt-octave" onclick="setFmt('octave')">C4 D4 E4</div>
