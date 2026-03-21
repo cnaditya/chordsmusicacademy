@@ -63,6 +63,11 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .fmt-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .fmt-btn{padding:6px 14px;border-radius:20px;border:1px solid #2a2a4a;background:transparent;color:#888;font-size:0.75rem;font-weight:700;cursor:pointer;transition:.15s}
 .fmt-btn.on{background:#e74c3c;border-color:#e74c3c;color:#fff}
+/* Sa selector */
+.sa-row{display:none;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.sa-label{font-size:0.72rem;color:#888;font-weight:700;margin-right:4px}
+.sa-btn{padding:4px 10px;border-radius:16px;border:1px solid #2a2a4a;background:transparent;color:#888;font-size:0.72rem;font-weight:700;cursor:pointer;transition:.15s}
+.sa-btn.on{background:#9b59b6;border-color:#9b59b6;color:#fff}
 
 /* Action buttons */
 .actions{display:flex;gap:10px;padding:0 20px 20px;flex-wrap:wrap}
@@ -171,6 +176,22 @@ body{background:#0f0f1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
     <div class="fmt-btn" id="fmt-indian" onclick="setFmt('indian')">Sa Ri Ga Ma</div>
     <div class="fmt-btn" id="fmt-dash" onclick="setFmt('dash')">C-D-E-F</div>
   </div>
+  <!-- Sa selector — shown only in Indian format -->
+  <div class="sa-row" id="saRow">
+    <span class="sa-label">Sa =</span>
+    <div class="sa-btn on" id="sa-0"  onclick="setSa(0)">C</div>
+    <div class="sa-btn" id="sa-1"  onclick="setSa(1)">C#</div>
+    <div class="sa-btn" id="sa-2"  onclick="setSa(2)">D</div>
+    <div class="sa-btn" id="sa-3"  onclick="setSa(3)">D#</div>
+    <div class="sa-btn" id="sa-4"  onclick="setSa(4)">E</div>
+    <div class="sa-btn" id="sa-5"  onclick="setSa(5)">F</div>
+    <div class="sa-btn" id="sa-6"  onclick="setSa(6)">F#</div>
+    <div class="sa-btn" id="sa-7"  onclick="setSa(7)">G</div>
+    <div class="sa-btn" id="sa-8"  onclick="setSa(8)">G#</div>
+    <div class="sa-btn" id="sa-9"  onclick="setSa(9)">A</div>
+    <div class="sa-btn" id="sa-10" onclick="setSa(10)">A#</div>
+    <div class="sa-btn" id="sa-11" onclick="setSa(11)">B</div>
+  </div>
   <div class="settings">
     <span class="setting-label">Separator:</span>
     <div class="toggle">
@@ -234,6 +255,7 @@ var INDIAN_NAMES = ['Sa','Ri\u00B9','Ri','Ga\u00B9','Ga','Ma','Ma\u00B2','Pa','D
 var INDIAN_NAMES_HTML = ['Sa','Ri<sup>1</sup>','Ri','Ga<sup>1</sup>','Ga','Ma','Ma<sup>2</sup>','Pa','Da<sup>1</sup>','Da','Ni<sup>1</sup>','Ni'];
 
 var fmt = 'letter';
+var saTonic = 0; // MIDI index of Sa (0=C, 2=D, etc.)
 var sep = ' ';
 var notes = [];
 var heldKeys = {};
@@ -347,10 +369,14 @@ function onMIDIMessage(event) {
 function getNoteName(midiNote) {
   var idx = midiNote % 12;
   var oct = Math.floor(midiNote / 12) - 1;
-  if (fmt === 'indian') return INDIAN_NAMES[idx];
+  if (fmt === 'indian') return INDIAN_NAMES[(idx - saTonic + 12) % 12];
   if (fmt === 'octave') return NOTE_NAMES[idx] + oct;
   if (fmt === 'dash')   return NOTE_NAMES[idx];
   return NOTE_NAMES[idx];
+}
+
+function getSargamHTML(midiIdx) {
+  return INDIAN_NAMES_HTML[(midiIdx - saTonic + 12) % 12];
 }
 
 function updateLive(midiNote) {
@@ -358,7 +384,7 @@ function updateLive(midiNote) {
   var oct  = Math.floor(midiNote / 12) - 1;
   var name = NOTE_NAMES[idx];
   var isSharp = name.includes('#') || [1,3,6,8,10].indexOf(idx) >= 0;
-  if (fmt === 'indian') document.getElementById('liveKey').innerHTML = INDIAN_NAMES_HTML[idx];
+  if (fmt === 'indian') document.getElementById('liveKey').innerHTML = getSargamHTML(idx);
   else document.getElementById('liveKey').textContent = name;
   document.getElementById('liveKey').className = 'live-key' + (isSharp ? ' sharp' : '');
   document.getElementById('liveOctave').textContent = 'Octave ' + oct + '  (MIDI ' + midiNote + ')';
@@ -371,7 +397,7 @@ function updateHeld() {
     var idx  = k % 12;
     var chip = document.createElement('div');
     chip.className = 'held-chip';
-    if (fmt === 'indian') chip.innerHTML = INDIAN_NAMES_HTML[idx];
+    if (fmt === 'indian') chip.innerHTML = getSargamHTML(idx);
     else chip.textContent = NOTE_NAMES[idx];
     row.appendChild(chip);
   });
@@ -578,13 +604,25 @@ function setFmt(f) {
   ['letter','octave','indian','dash'].forEach(function(x){
     document.getElementById('fmt-'+x).className = 'fmt-btn' + (x===f?' on':'');
   });
-  // Re-map existing notes
+  document.getElementById('saRow').style.display = f === 'indian' ? 'flex' : 'none';
+  remapNotes();
+}
+
+function setSa(tonic) {
+  saTonic = tonic;
+  for (var i = 0; i < 12; i++) {
+    document.getElementById('sa-'+i).className = 'sa-btn' + (i===tonic?' on':'');
+  }
+  remapNotes();
+}
+
+function remapNotes() {
   notes = notes.map(function(n) {
     if (n.name === ' ' || n.name === '\n') return n;
     var idx = n.midi % 12;
     var oct = Math.floor(n.midi / 12) - 1;
-    var name = f === 'indian' ? INDIAN_NAMES[idx]
-             : f === 'octave' ? NOTE_NAMES[idx] + oct
+    var name = fmt === 'indian' ? INDIAN_NAMES[(idx - saTonic + 12) % 12]
+             : fmt === 'octave' ? NOTE_NAMES[idx] + oct
              : NOTE_NAMES[idx];
     return {name: name, midi: n.midi, chord: n.chord};
   });
