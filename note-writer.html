@@ -388,6 +388,11 @@ document.addEventListener('keydown', function(e) {
     e.preventDefault();
     addSpace();
   }
+  if (e.code === 'Enter') {
+    e.preventDefault();
+    notes.push({name:'\n'});
+    renderSeq();
+  }
   if (e.code === 'Backspace') {
     e.preventDefault();
     undoNote();
