@@ -373,7 +373,8 @@ function updateHeld() {
 
 function addNote(name, midiNote) {
   notes.push({name: name, midi: midiNote});
-  undoStack.push({type:'note'});
+  undoStack.push({type:'note', note:{name:name, midi:midiNote}});
+  redoStack = [];
   renderSeq();
 }
 
@@ -442,6 +443,7 @@ function getPlainText() {
 var lastDetectedChord = null;
 var currentMode = 'notes';
 var undoStack = [];
+var redoStack = [];
 
 function setMode(mode) {
   currentMode = mode;
@@ -489,13 +491,15 @@ function applyDetectedChord() {
 
 function addSpace() {
   notes.push({name:' ', chord:''});
-  undoStack.push({type:'note'});
+  undoStack.push({type:'note', note:{name:' ', chord:''}});
+  redoStack = [];
   renderSeq();
 }
 
 function applyChordTo(noteIndex, chord) {
   var prev = noteIndex === -1 ? firstBarChord : (notes[noteIndex].chord || '');
-  undoStack.push({type:'chord', noteIndex:noteIndex, prev:prev});
+  undoStack.push({type:'chord', noteIndex:noteIndex, prev:prev, next:chord});
+  redoStack = [];
   if (noteIndex === -1) { firstBarChord = chord; }
   else { notes[noteIndex].chord = chord; }
   renderSeq();
@@ -524,12 +528,28 @@ function editChord(noteIndex) {
 function undo() {
   if (undoStack.length === 0) return;
   var action = undoStack.pop();
+  redoStack.push(action);
   if (action.type === 'note') {
-    notes.pop();
+    var removed = notes.pop();
+    action.note = removed;
     renderSeq();
   } else if (action.type === 'chord') {
     if (action.noteIndex === -1) { firstBarChord = action.prev; }
     else { notes[action.noteIndex].chord = action.prev; }
+    renderSeq();
+  }
+}
+
+function redo() {
+  if (redoStack.length === 0) return;
+  var action = redoStack.pop();
+  undoStack.push(action);
+  if (action.type === 'note') {
+    notes.push(action.note);
+    renderSeq();
+  } else if (action.type === 'chord') {
+    if (action.noteIndex === -1) { firstBarChord = action.next; }
+    else { notes[action.noteIndex].chord = action.next; }
     renderSeq();
   }
 }
@@ -546,6 +566,7 @@ function clearNotes() {
   notes = [];
   firstBarChord = '';
   undoStack = [];
+  redoStack = [];
   renderSeq();
 }
 
@@ -769,9 +790,14 @@ document.addEventListener('keydown', function(e) {
     e.preventDefault();
     undo();
   }
-  if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) {
+  if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
     e.preventDefault();
     undo();
+  }
+  if ((e.code === 'KeyZ' && (e.ctrlKey || e.metaKey) && e.shiftKey) ||
+      (e.code === 'KeyY' && (e.ctrlKey || e.metaKey))) {
+    e.preventDefault();
+    redo();
   }
 });
 
