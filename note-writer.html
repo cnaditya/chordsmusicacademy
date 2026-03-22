@@ -72,7 +72,7 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .ins-bar:hover{color:#2ecc71;text-shadow:0 0 6px #2ecc71}
 
 /* Section labels */
-.sec-label{display:block;width:100%;margin:10px 0 4px;padding:4px 10px;border-left:3px solid #e67e22;background:rgba(230,126,34,0.08);color:#e67e22;font-size:0.82rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;border-radius:0 6px 6px 0;cursor:context-menu;user-select:none}
+.sec-label{display:flex;align-items:center;justify-content:space-between;width:100%;margin:10px 0 4px;padding:4px 10px;border-left:3px solid #e67e22;background:rgba(230,126,34,0.08);color:#e67e22;font-size:0.82rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;border-radius:0 6px 6px 0;cursor:context-menu;user-select:none}
 .sec-label.repeat{border-color:#2ecc71;background:rgba(46,204,113,0.08);color:#2ecc71}
 .sec-label:hover{opacity:0.75}
 
@@ -711,7 +711,7 @@ function renderSeq() {
     if (n.label !== undefined) {
       html += '<span class="sec-label' + (n.isRepeat ? ' repeat' : '') + '" oncontextmenu="deleteNoteAt(' + i + ',event)" title="Right-click to delete">'
             + n.label
-            + '<span onclick="copySectionAt(' + i + ')" title="Copy this section\'s notes" style="margin-left:10px;font-size:0.75em;opacity:0.6;cursor:pointer;font-weight:400;letter-spacing:0;text-transform:none" id="sec-copy-' + i + '">📋 copy</span>'
+            + '<span onclick="copySectionAt(' + i + ')" title="Copy this section\'s notes" style="font-size:0.72em;opacity:0.55;cursor:pointer;font-weight:400;letter-spacing:0;text-transform:none;flex-shrink:0" id="sec-copy-' + i + '">📋 copy</span>'
             + '</span>';
     } else if (n.name === '\n') {
       html += '<br>';
