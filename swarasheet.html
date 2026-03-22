@@ -71,6 +71,19 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .ins-bar{display:inline-block;width:10px;text-align:center;color:transparent;font-size:0.7em;font-weight:900;cursor:pointer;vertical-align:middle;transition:.15s;user-select:none}
 .ins-bar:hover{color:#2ecc71;text-shadow:0 0 6px #2ecc71}
 
+/* Section labels */
+.sec-label{display:block;width:100%;margin:10px 0 4px;padding:4px 10px;border-left:3px solid #e67e22;background:rgba(230,126,34,0.08);color:#e67e22;font-size:0.82rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;border-radius:0 6px 6px 0;cursor:context-menu;user-select:none}
+.sec-label.repeat{border-color:#2ecc71;background:rgba(46,204,113,0.08);color:#2ecc71}
+.sec-label:hover{opacity:0.75}
+
+/* Section label picker panel */
+.label-panel{display:none;background:#0e0e24;border:1px solid #2a2a4a;border-radius:12px;padding:12px 14px;margin-top:8px;gap:8px;flex-wrap:wrap;align-items:center}
+.label-panel.open{display:flex}
+.lbl-preset{padding:5px 12px;border-radius:16px;border:1px solid #2a2a4a;background:transparent;color:#888;font-size:0.75rem;font-weight:700;cursor:pointer;transition:.15s;white-space:nowrap}
+.lbl-preset:hover{border-color:#e67e22;color:#e67e22}
+.lbl-preset.repeat{border-color:#1a3a2a;color:#2ecc71}
+.lbl-preset.repeat:hover{border-color:#2ecc71}
+
 /* Format toggle */
 .fmt-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .fmt-btn{padding:7px 16px;border-radius:20px;border:1px solid #1e1e3a;background:transparent;color:#555;font-size:0.78rem;font-weight:700;cursor:pointer;transition:.2s}
@@ -167,6 +180,8 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
   .print-body .bar-sep{color:#999!important}
   .print-body .seq-cursor{display:none!important}
   .print-body .ins-bar{display:none!important}
+  .print-body .sec-label{border-left:3px solid #e67e22!important;color:#c0570a!important;background:#fff8f0!important}
+  .print-body .sec-label.repeat{border-left-color:#27ae60!important;color:#1a7a40!important;background:#f0fff4!important}
   /* Watermark */
   .print-watermark{display:block!important}
   .print-copyright{display:block!important}
@@ -414,9 +429,35 @@ function checkPw(){
 <div class="actions" style="margin-top:14px;padding:0;gap:8px">
   <button class="btn btn-copy" onclick="copyNotes()" style="min-width:0">📋 Copy</button>
   <button class="btn btn-space" onclick="addSpace()" style="min-width:0">⎵ Bar</button>
+  <button class="btn" onclick="toggleLabelPanel()" id="labelToggleBtn" style="min-width:0;background:#1a1a0e;border:1px solid #3a2a10;color:#e67e22;font-weight:700">§ Section</button>
   <button class="btn btn-undo" onclick="undoNote()" style="min-width:0">↩ Undo</button>
   <button class="btn btn-clear" onclick="clearNotes()" style="min-width:0">🗑 Clear</button>
   <button class="btn btn-pdf" onclick="exportPDF()" style="flex:2;min-width:0">📄 Export PDF</button>
+</div>
+
+<!-- Section label picker -->
+<div class="label-panel" id="labelPanel">
+  <span style="font-size:0.7rem;color:#555;font-weight:700;white-space:nowrap">Indian:</span>
+  <button class="lbl-preset" onclick="addLabel('Pallavi')">Pallavi</button>
+  <button class="lbl-preset" onclick="addLabel('Anupallavi')">Anupallavi</button>
+  <button class="lbl-preset" onclick="addLabel('Charanam')">Charanam</button>
+  <button class="lbl-preset" onclick="addLabel('Sthayi')">Sthayi</button>
+  <button class="lbl-preset" onclick="addLabel('Antara')">Antara</button>
+  <button class="lbl-preset" onclick="addLabel('Sanchari')">Sanchari</button>
+  <span style="font-size:0.7rem;color:#555;font-weight:700;white-space:nowrap;margin-left:4px">Western:</span>
+  <button class="lbl-preset" onclick="addLabel('Intro')">Intro</button>
+  <button class="lbl-preset" onclick="addLabel('Verse')">Verse</button>
+  <button class="lbl-preset" onclick="addLabel('Chorus')">Chorus</button>
+  <button class="lbl-preset" onclick="addLabel('Bridge')">Bridge</button>
+  <button class="lbl-preset" onclick="addLabel('Outro')">Outro</button>
+  <button class="lbl-preset repeat" onclick="addLabel('Repeat',true)">↺ Repeat</button>
+  <button class="lbl-preset repeat" onclick="addLabel('Repeat x2',true)">↺ ×2</button>
+  <button class="lbl-preset repeat" onclick="addLabel('Repeat x3',true)">↺ ×3</button>
+  <span style="font-size:0.7rem;color:#555;font-weight:700;white-space:nowrap;margin-left:4px">Custom:</span>
+  <input id="customLabelInput" type="text" maxlength="30" placeholder="Type label…"
+         style="background:#12122a;border:1px solid #2a2a4a;color:#dde;border-radius:8px;padding:4px 10px;font-size:0.78rem;width:120px;outline:none"
+         onkeydown="if(event.key==='Enter'){addCustomLabel();event.preventDefault();}">
+  <button class="lbl-preset" onclick="addCustomLabel()" style="border-color:#555;color:#aaa">+ Add</button>
 </div>
 
 <!-- History -->
@@ -666,7 +707,9 @@ function renderSeq() {
   }
   var html = '';
   notes.forEach(function(n, i) {
-    if (n.name === '\n') {
+    if (n.label !== undefined) {
+      html += '<span class="sec-label' + (n.isRepeat ? ' repeat' : '') + '" oncontextmenu="deleteNoteAt(' + i + ',event)" title="Right-click to delete">' + n.label + '</span>';
+    } else if (n.name === '\n') {
       html += '<br>';
     } else if (n.name === ' ') {
       html += '<span class="bar-sep" oncontextmenu="deleteNoteAt(' + i + ',event)" title="Right-click to delete bar"> | </span>';
@@ -690,7 +733,7 @@ function renderSeq() {
       } else {
         html += noteHtml;
       }
-      if (i < notes.length - 1 && notes[i+1].name !== ' ' && notes[i+1].name !== '\n') {
+      if (i < notes.length - 1 && notes[i+1] && notes[i+1].name !== ' ' && notes[i+1].name !== '\n' && notes[i+1].label === undefined) {
         html += '<span style="color:#333">' + (sep === ' ' ? ' ' : sep) + '</span>';
         html += '<span class="ins-bar" onclick="insertBarAt(' + (i+1) + ')" title="Insert bar line here">|</span>';
       }
@@ -703,11 +746,12 @@ function renderSeq() {
 function getPlainText() {
   var result = '';
   notes.forEach(function(n, i) {
-    if (n.name === ' ') { result += ' | '; }
+    if (n.label !== undefined) { result += '\n[ ' + n.label + ' ]\n'; }
+    else if (n.name === ' ') { result += ' | '; }
     else if (n.name === '\n') { result += '\n'; }
     else {
       result += n.name;
-      if (i < notes.length - 1 && notes[i+1].name !== ' ' && notes[i+1].name !== '\n') {
+      if (i < notes.length - 1 && notes[i+1] && notes[i+1].name !== ' ' && notes[i+1].name !== '\n' && notes[i+1].label === undefined) {
         result += sep;
       }
     }
@@ -793,6 +837,27 @@ function insertBarAt(index) {
   undoStack.push({type:'note', note:bar});
   redoStack = [];
   renderSeq();
+}
+
+function toggleLabelPanel() {
+  var p = document.getElementById('labelPanel');
+  p.classList.toggle('open');
+}
+
+function addLabel(text, isRepeat) {
+  var entry = {label: text, isRepeat: !!isRepeat};
+  notes.push(entry);
+  undoStack.push({type:'note', note:entry});
+  redoStack = [];
+  renderSeq();
+}
+
+function addCustomLabel() {
+  var inp = document.getElementById('customLabelInput');
+  var text = inp.value.trim();
+  if (!text) return;
+  addLabel(text, false);
+  inp.value = '';
 }
 
 function applyChordTo(noteIndex, chord) {
@@ -960,7 +1025,9 @@ function buildPrintSeqHtml() {
   // so all cells are the same height and notes align on a consistent baseline.
   var html = '';
   notes.forEach(function(n, i) {
-    if (n.name === '\n') {
+    if (n.label !== undefined) {
+      html += '<span class="sec-label' + (n.isRepeat ? ' repeat' : '') + '">' + n.label + '</span>';
+    } else if (n.name === '\n') {
       html += '<br>';
     } else if (n.name === ' ') {
       html += '<span class="bar-sep"> | </span>';
@@ -983,7 +1050,7 @@ function buildPrintSeqHtml() {
 }
 
 function buildPrintBody() {
-  var noteCount = notes.filter(function(n){return n.name!==' '&&n.name!=='\n';}).length;
+  var noteCount = notes.filter(function(n){return n.label===undefined&&n.name!==' '&&n.name!=='\n';}).length;
   var fmtLabel  = {letter:'Letter',octave:'With Octave',indian:'Indian Sargam',carnatic:'Carnatic Sargam',dash:'Dash'}[fmt]||fmt;
   var date      = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
   document.getElementById('printDate').textContent = date;
@@ -1068,7 +1135,7 @@ function buildWordNotes() {
 function exportWord() {
   if (notes.length === 0) { alert('No notes to export.'); return; }
   var date      = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
-  var noteCount = notes.filter(function(n){return n.name!==' '&&n.name!=='\n';}).length;
+  var noteCount = notes.filter(function(n){return n.label===undefined&&n.name!==' '&&n.name!=='\n';}).length;
   var fmtLabel  = {letter:'Letter',octave:'With Octave',indian:'Indian Sargam',carnatic:'Carnatic Sargam',dash:'Dash'}[fmt]||fmt;
 
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'
