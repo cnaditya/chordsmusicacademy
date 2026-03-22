@@ -1179,8 +1179,9 @@ function renderHistory() {
     };
     item.querySelector('.history-delete').onclick = function(e) {
       e.stopPropagation();
+      var ts = h.savedAt;
       var s = JSON.parse(localStorage.getItem('swarasheet_saves') || '[]');
-      s.splice(i, 1);
+      s = s.filter(function(x){ return x.savedAt !== ts; });
       localStorage.setItem('swarasheet_saves', JSON.stringify(s));
       renderHistory();
     };
