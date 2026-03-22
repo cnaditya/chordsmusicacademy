@@ -1228,12 +1228,21 @@ function buildPrintBody() {
     } else {
       openLine();
       var noteName = n.name.replace(/<[^>]+>/g,'');
-      var od = octDots(n.midi, '0.5em');
+      var dotAbove = '', dotBelow = '';
+      if (n.midi !== undefined && fmt !== 'octave') {
+        var off = Math.floor(n.midi/12) - 1 - MIDDLE_OCTAVE;
+        var d = '\u25CF';
+        if (off >= 2)      dotAbove = d+d;
+        else if (off === 1) dotAbove = d;
+        else if (off === -1) dotBelow = d;
+        else if (off <= -2)  dotBelow = d+d;
+      }
+      var dotRowStyle = 'display:block;font-size:7pt;color:#aaa;line-height:1.2;min-height:9pt;text-align:center;letter-spacing:2px';
       html += '<span style="'+cellStyle+'">'
+            + '<span style="'+dotRowStyle+'">'+(dotAbove||'')+'</span>'
             + '<span style="'+chordRow+'">'+(n.chord||'')+'</span>'
-            + od.open
             + '<span style="font-size:'+noteSize+';font-weight:800;color:#000">'+noteName+'</span>'
-            + od.close
+            + '<span style="'+dotRowStyle+'">'+(dotBelow||'')+'</span>'
             + '</span>';
     }
   });
