@@ -898,12 +898,6 @@ function copyLine(startIdx, endIdx) {
 
 function pasteNotes() {
   if (!noteClipboard.length) return;
-  // Add newline before pasted line if last note isn't already a newline
-  if (notes.length > 0 && notes[notes.length-1].name !== '\n') {
-    var nl = {name:'\n', chord:''};
-    notes.push(nl);
-    undoStack.push({type:'note', note:nl});
-  }
   noteClipboard.forEach(function(n) {
     var copy = JSON.parse(JSON.stringify(n));
     notes.push(copy);
