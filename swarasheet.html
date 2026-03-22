@@ -430,6 +430,7 @@ function checkPw(){
   <button class="btn btn-copy" onclick="copyNotes()" style="min-width:0">📋 Copy</button>
   <button class="btn btn-space" onclick="addSpace()" style="min-width:0">⎵ Bar</button>
   <button class="btn" onclick="toggleLabelPanel()" id="labelToggleBtn" style="min-width:0;background:#1a1a0e;border:1px solid #3a2a10;color:#e67e22;font-weight:700">§ Section</button>
+  <button class="btn" id="pasteBtn" onclick="pasteNotes()" style="min-width:0;display:none;background:#0e1a2e;border:1px solid #3a8abf;color:#7eb3ff;font-weight:700">⎘ Paste</button>
   <button class="btn btn-undo" onclick="undoNote()" style="min-width:0">↩ Undo</button>
   <button class="btn btn-clear" onclick="clearNotes()" style="min-width:0">🗑 Clear</button>
   <button class="btn btn-pdf" onclick="exportPDF()" style="flex:2;min-width:0">📄 Export PDF</button>
@@ -708,7 +709,10 @@ function renderSeq() {
   var html = '';
   notes.forEach(function(n, i) {
     if (n.label !== undefined) {
-      html += '<span class="sec-label' + (n.isRepeat ? ' repeat' : '') + '" oncontextmenu="deleteNoteAt(' + i + ',event)" title="Right-click to delete">' + n.label + '</span>';
+      html += '<span class="sec-label' + (n.isRepeat ? ' repeat' : '') + '" oncontextmenu="deleteNoteAt(' + i + ',event)" title="Right-click to delete">'
+            + n.label
+            + '<span onclick="copySectionAt(' + i + ')" title="Copy this section\'s notes" style="margin-left:10px;font-size:0.75em;opacity:0.6;cursor:pointer;font-weight:400;letter-spacing:0;text-transform:none" id="sec-copy-' + i + '">📋 copy</span>'
+            + '</span>';
     } else if (n.name === '\n') {
       html += '<br>';
     } else if (n.name === ' ') {
@@ -858,6 +862,34 @@ function addCustomLabel() {
   if (!text) return;
   addLabel(text, false);
   inp.value = '';
+}
+
+var noteClipboard = [];
+
+function copySectionAt(labelIndex) {
+  // Collect notes from this label to the next label (or end)
+  noteClipboard = [];
+  for (var i = labelIndex + 1; i < notes.length; i++) {
+    if (notes[i].label !== undefined) break;
+    noteClipboard.push(JSON.parse(JSON.stringify(notes[i])));
+  }
+  if (noteClipboard.length === 0) return;
+  // Show paste button
+  document.getElementById('pasteBtn').style.display = '';
+  // Flash feedback on the copy icon
+  var el = document.getElementById('sec-copy-' + labelIndex);
+  if (el) { el.textContent = '✅ copied'; setTimeout(function(){ renderSeq(); }, 1200); }
+}
+
+function pasteNotes() {
+  if (!noteClipboard.length) return;
+  noteClipboard.forEach(function(n) {
+    var copy = JSON.parse(JSON.stringify(n));
+    notes.push(copy);
+    undoStack.push({type:'note', note:copy});
+  });
+  redoStack = [];
+  renderSeq();
 }
 
 function applyChordTo(noteIndex, chord) {
