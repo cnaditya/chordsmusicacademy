@@ -965,8 +965,14 @@ function editChordOnNote(noteIndex) {
   applyChordTo(noteIndex, val.trim());
 }
 
+function undoNote() { undo(); }
+
 function undo() {
-  if (undoStack.length === 0) return;
+  if (undoStack.length === 0) {
+    // fallback: just pop last note (e.g. after loading a session)
+    if (notes.length > 0) { notes.pop(); renderSeq(); }
+    return;
+  }
   var action = undoStack.pop();
   redoStack.push(action);
   if (action.type === 'note') {
@@ -1387,7 +1393,7 @@ document.addEventListener('keydown', function(e) {
     undoStack.push({type:'note'});
     renderSeq();
   }
-  if (e.code === 'Backspace') {
+  if (e.code === 'Backspace' || e.code === 'Delete') {
     e.preventDefault();
     undo();
   }
