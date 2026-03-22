@@ -388,6 +388,7 @@ function checkPw(){
     </div>
   </div>
   <div class="seq-box" id="seqBox"><span class="seq-cursor"></span></div>
+  <div style="font-size:0.65rem;color:#333;margin-top:6px;letter-spacing:0.3px">💡 Right-click any note to delete it &nbsp;·&nbsp; ↩ Undo removes last added note</div>
 </div>
 
 <!-- Print layout (visible only when printing) -->
@@ -1091,6 +1092,8 @@ function setSa(tonic) {
 
 function restoreSession(h) {
   notes = h.notes || [];
+  undoStack = [];
+  redoStack = [];
   // Set variables directly — no remapNotes, notes already have correct names
   fmt      = h.fmt      || 'letter';
   saTonic  = h.saTonic  !== undefined ? h.saTonic : 0;
