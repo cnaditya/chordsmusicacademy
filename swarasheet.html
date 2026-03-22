@@ -1187,7 +1187,6 @@ function renderHistory() {
 function buildPrintBody() {
   var fmtLabel = {letter:'Letter',octave:'With Octave',indian:'Indian Sargam',carnatic:'Carnatic Sargam',dash:'Dash'}[fmt]||fmt;
   var date     = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('printDate').textContent = date;
   document.getElementById('printYear').textContent = new Date().getFullYear();
   var title = (document.getElementById('songTitle').value || '').trim() || 'Note Sheet';
   document.getElementById('printTitle').textContent = title;
