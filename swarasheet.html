@@ -423,6 +423,7 @@ function checkPw(){
   <button class="btn" id="pasteBtn" onclick="pasteNotes()" style="min-width:0;display:none;background:#0e1a2e;border:1px solid #3a8abf;color:#7eb3ff;font-weight:700">⎘ Paste</button>
   <button class="btn btn-undo" onclick="undoNote()" style="min-width:0">↩ Undo</button>
   <button class="btn btn-clear" onclick="clearNotes()" style="min-width:0">🗑 Clear</button>
+  <button class="btn" onclick="saveNamedSession()" style="min-width:0;background:#0e1a2e;border:1px solid #1e3a5a;color:#7eb3ff;font-weight:700">💾 Save</button>
   <button class="btn btn-pdf" onclick="exportPDF()" style="flex:2;min-width:0">📄 Export PDF</button>
 </div>
 
@@ -451,9 +452,9 @@ function checkPw(){
   <button class="lbl-preset" onclick="addCustomLabel()" style="border-color:#555;color:#aaa">+ Add</button>
 </div>
 
-<!-- History -->
+<!-- Saved Sessions -->
 <div class="history" id="historySection" style="display:none;margin-top:16px;padding:0">
-  <div class="history-label">Saved Sequences</div>
+  <div class="history-label">Saved Sessions</div>
   <div id="historyList"></div>
 </div>
 
@@ -758,6 +759,7 @@ function renderSeq() {
   });
   html += '<span class="seq-cursor"></span>';
   box.innerHTML = html;
+  scheduleAutoSave();
 }
 
 function getPlainText() {
@@ -975,17 +977,77 @@ function redo() {
 
 function clearNotes() {
   if (notes.length === 0) return;
-  // Save to history
-  var text = getPlainText();
-  var history = JSON.parse(localStorage.getItem('cma_notes_history') || '[]');
-  history.unshift({text: text, time: new Date().toLocaleTimeString()});
-  if (history.length > 5) history = history.slice(0,5);
-  localStorage.setItem('cma_notes_history', JSON.stringify(history));
-  renderHistory();
+  autoSave(); // save before clearing
   notes = [];
   undoStack = [];
   redoStack = [];
   renderSeq();
+}
+
+// ── AUTO-SAVE ──────────────────────────────────────────────
+var autoSaveTimer = null;
+function scheduleAutoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(autoSave, 1500);
+}
+
+function autoSave() {
+  if (notes.length === 0) return;
+  var state = {
+    notes: notes,
+    fmt: fmt,
+    saTonic: saTonic,
+    sep: sep,
+    title: (document.getElementById('songTitle') || {}).value || '',
+    noteFontSize: noteFontSize,
+    carnaticVariants: carnaticVariants,
+    savedAt: new Date().toISOString()
+  };
+  localStorage.setItem('swarasheet_autosave', JSON.stringify(state));
+}
+
+function autoRestore() {
+  try {
+    var saved = localStorage.getItem('swarasheet_autosave');
+    if (!saved) return;
+    var state = JSON.parse(saved);
+    if (!state.notes || state.notes.length === 0) return;
+    notes = state.notes;
+    if (state.fmt) setFmt(state.fmt);
+    if (state.saTonic !== undefined) setSa(state.saTonic);
+    if (state.sep) setSep(state.sep);
+    if (state.title && document.getElementById('songTitle')) document.getElementById('songTitle').value = state.title;
+    if (state.noteFontSize) setNoteSize(state.noteFontSize);
+    if (state.carnaticVariants) {
+      carnaticVariants = state.carnaticVariants;
+      Object.keys(carnaticVariants).forEach(function(pos) {
+        setCarnaticVariant(parseInt(pos), carnaticVariants[pos]);
+      });
+    }
+    renderSeq();
+  } catch(e) {}
+}
+
+// ── NAMED SAVES ────────────────────────────────────────────
+function saveNamedSession() {
+  if (notes.length === 0) return;
+  var title = ((document.getElementById('songTitle') || {}).value || '').trim() || 'Untitled';
+  var saves = JSON.parse(localStorage.getItem('swarasheet_saves') || '[]');
+  var state = {
+    notes: notes, fmt: fmt, saTonic: saTonic, sep: sep,
+    title: title, noteFontSize: noteFontSize,
+    carnaticVariants: carnaticVariants,
+    savedAt: new Date().toLocaleString('en-IN')
+  };
+  // Update existing entry if same title, else prepend
+  var idx = saves.findIndex(function(s){ return s.title === title; });
+  if (idx >= 0) saves[idx] = state; else saves.unshift(state);
+  if (saves.length > 10) saves = saves.slice(0, 10);
+  localStorage.setItem('swarasheet_saves', JSON.stringify(saves));
+  renderHistory();
+  // Flash feedback
+  var btn = document.querySelector('[onclick="saveNamedSession()"]');
+  if (btn) { btn.textContent = '✅ Saved!'; setTimeout(function(){ btn.textContent = '💾 Save'; }, 2000); }
 }
 
 function copyNotes() {
@@ -1041,24 +1103,49 @@ function setSep(s) {
 }
 
 function renderHistory() {
-  var history = JSON.parse(localStorage.getItem('cma_notes_history') || '[]');
+  var saves = JSON.parse(localStorage.getItem('swarasheet_saves') || '[]');
   var section = document.getElementById('historySection');
   var list    = document.getElementById('historyList');
-  if (history.length === 0) { section.style.display='none'; return; }
+  if (saves.length === 0) { section.style.display='none'; return; }
   section.style.display = 'block';
   list.innerHTML = '';
-  history.forEach(function(h, i) {
+  saves.forEach(function(h, i) {
+    var preview = (h.notes || []).filter(function(n){ return n.name && n.name !== ' ' && n.name !== '\n' && !n.label; })
+                                 .slice(0,12).map(function(n){ return n.name.replace(/<[^>]+>/g,''); }).join(' ');
     var item = document.createElement('div');
     item.className = 'history-item';
-    item.innerHTML = '<div class="history-notes">' + h.text.substring(0,80) + (h.text.length>80?'…':'') + '</div>'
-      + '<div class="history-time">' + h.time + '</div>'
-      + '<div class="history-restore">Restore</div>';
+    item.innerHTML = '<div style="flex:1;min-width:0">'
+      + '<div style="font-weight:700;color:#dde;font-size:0.85rem;margin-bottom:2px">' + h.title + '</div>'
+      + '<div class="history-notes">' + preview.substring(0,60) + (preview.length>60?'…':'') + '</div>'
+      + '</div>'
+      + '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">'
+      + '<div class="history-time">' + h.savedAt + '</div>'
+      + '<div style="display:flex;gap:6px">'
+      + '<div class="history-restore">▶ Load</div>'
+      + '<div class="history-delete" style="font-size:0.7rem;color:#e74c3c;cursor:pointer;padding:2px 6px;border:1px solid #e74c3c33;border-radius:4px">✕</div>'
+      + '</div></div>';
     item.querySelector('.history-restore').onclick = function(e) {
       e.stopPropagation();
-      // Restore as plain text (letter format)
-      notes = h.text.split('').map(function(c){return {name:c, midi:0}});
-      fmt = 'letter';
+      notes = h.notes || [];
+      if (h.fmt) setFmt(h.fmt);
+      if (h.saTonic !== undefined) setSa(h.saTonic);
+      if (h.sep) setSep(h.sep);
+      if (h.title && document.getElementById('songTitle')) document.getElementById('songTitle').value = h.title;
+      if (h.noteFontSize) setNoteSize(h.noteFontSize);
+      if (h.carnaticVariants) {
+        carnaticVariants = h.carnaticVariants;
+        Object.keys(carnaticVariants).forEach(function(pos){
+          setCarnaticVariant(parseInt(pos), carnaticVariants[pos]);
+        });
+      }
       renderSeq();
+    };
+    item.querySelector('.history-delete').onclick = function(e) {
+      e.stopPropagation();
+      var s = JSON.parse(localStorage.getItem('swarasheet_saves') || '[]');
+      s.splice(i, 1);
+      localStorage.setItem('swarasheet_saves', JSON.stringify(s));
+      renderHistory();
     };
     list.appendChild(item);
   });
@@ -1248,7 +1335,8 @@ document.querySelectorAll('.btn, .fmt-btn, .toggle-opt').forEach(function(el) {
 
 
 renderHistory();
-renderSeq();
+autoRestore();
+if (notes.length === 0) renderSeq();
 </script>
 </body>
 </html>
