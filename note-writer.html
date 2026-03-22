@@ -1186,60 +1186,63 @@ function renderHistory() {
 
 function buildPrintBody() {
   var fmtLabel = {letter:'Letter',octave:'With Octave',indian:'Indian Sargam',carnatic:'Carnatic Sargam',dash:'Dash'}[fmt]||fmt;
-  var date     = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
   document.getElementById('printYear').textContent = new Date().getFullYear();
   var title = (document.getElementById('songTitle').value || '').trim() || 'Note Sheet';
   document.getElementById('printTitle').textContent = title;
 
-  // Build compact text-style body — same as Copy All but with HTML styling
-  var lines = []; // array of line-html strings
-  var currentLine = '';
+  // Note cell: chord above, note below — same as app but compact
+  var noteSize  = '14pt';
+  var chordSize = '8pt';
+  var cellStyle = 'display:inline-block;text-align:center;vertical-align:bottom;margin:0 2px 4px';
+  var chordRow  = 'display:block;font-size:'+chordSize+';color:#c0392b;font-weight:700;line-height:1.4;min-height:1.4em';
+  var sepStyle  = 'display:inline-block;vertical-align:bottom;color:#999;font-size:12pt;font-weight:400;margin:0 4px 4px';
 
-  function flushLine() {
-    if (currentLine.trim()) { lines.push(currentLine); currentLine = ''; }
+  var html = '';
+  var lineOpen = false;
+
+  function openLine() {
+    if (!lineOpen) { html += '<div style="margin:2px 0 6px;line-height:1">'; lineOpen = true; }
+  }
+  function closeLine() {
+    if (lineOpen) { html += '</div>'; lineOpen = false; }
   }
 
   notes.forEach(function(n) {
     if (n.label !== undefined) {
       if (n.isRepeat) {
-        currentLine += ' <span style="border:1px solid #27ae60;border-radius:4px;padding:0 5px;color:#1a7a40;font-size:0.8em;font-weight:700">↺ '+n.label+'</span> ';
+        openLine();
+        html += '<span style="display:inline-block;vertical-align:bottom;border:1px solid #27ae60;border-radius:4px;padding:1px 6px;color:#1a7a40;font-size:8pt;font-weight:700;margin:0 4px 4px">↺ '+n.label+'</span>';
       } else {
-        flushLine();
-        lines.push('<div style="font-weight:900;color:#b45309;letter-spacing:2px;text-transform:uppercase;margin:10px 0 2px;font-size:0.82em;border-left:3px solid #e67e22;padding-left:8px">'+n.label+'</div>');
+        closeLine();
+        html += '<div style="font-weight:900;color:#b45309;letter-spacing:2px;text-transform:uppercase;margin:10px 0 3px;font-size:8pt;border-left:3px solid #e67e22;padding-left:7px">'+n.label+'</div>';
       }
     } else if (n.name === '\n') {
-      flushLine();
+      closeLine();
     } else if (n.name === ' ') {
-      currentLine += ' <span style="color:#999;font-weight:400">|</span> ';
+      openLine();
+      html += '<span style="'+sepStyle+'">|</span>';
     } else {
+      openLine();
       var noteName = n.name.replace(/<[^>]+>/g,'');
       var isSharp  = n.midi !== undefined && [1,3,6,8,10].indexOf(n.midi%12) >= 0;
-      var color    = isSharp ? '#c0392b' : '#1a3a6e';
-      // octave mark
+      var noteColor = isSharp ? '#c0392b' : '#1a3a6e';
       var octMark = '';
       if (n.midi !== undefined && fmt !== 'octave') {
         var off = Math.floor(n.midi/12) - 1 - MIDDLE_OCTAVE;
         if (off===1) octMark="'"; else if (off>=2) octMark="''";
         else if (off===-1) octMark=','; else if (off<=-2) octMark=',,';
       }
-      var noteStr = '<span style="color:'+color+';font-weight:800">'+noteName+'</span>'
-                  + (octMark ? '<sup style="color:#999;font-size:0.6em">'+octMark+'</sup>' : '');
-      if (n.chord) {
-        currentLine += '<span style="color:#8e44ad;font-size:0.78em;font-weight:700">['+n.chord+']</span>'+noteStr+' ';
-      } else {
-        currentLine += noteStr + ' ';
-      }
+      html += '<span style="'+cellStyle+'">'
+            + '<span style="'+chordRow+'">'+(n.chord||'')+'</span>'
+            + '<span style="font-size:'+noteSize+';font-weight:800;color:'+noteColor+'">'+noteName+'</span>'
+            + (octMark ? '<sup style="font-size:7pt;color:#888">'+octMark+'</sup>' : '')
+            + '</span>';
     }
   });
-  flushLine();
+  closeLine();
 
-  var bodyHtml = lines.map(function(l){
-    return l.startsWith('<div') ? l : '<p style="margin:4px 0;line-height:1.9;letter-spacing:1.5px;word-break:break-word">'+l+'</p>';
-  }).join('');
-
-  var infoBar = '<div style="font-size:0.72rem;color:#888;margin-bottom:12px">Format: <strong>'+fmtLabel+'</strong></div>';
-
-  document.getElementById('printBody').innerHTML = infoBar + bodyHtml;
+  var infoBar = '<div style="font-size:8pt;color:#aaa;margin-bottom:10px">Format: '+fmtLabel+'</div>';
+  document.getElementById('printBody').innerHTML = infoBar + html;
 }
 
 function exportPDF() {
