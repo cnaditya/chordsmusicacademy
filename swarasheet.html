@@ -1038,19 +1038,7 @@ function autoRestore() {
     if (!saved) return;
     var state = JSON.parse(saved);
     if (!state.notes || state.notes.length === 0) return;
-    notes = state.notes;
-    if (state.fmt) setFmt(state.fmt);
-    if (state.saTonic !== undefined) setSa(state.saTonic);
-    if (state.sep) setSep(state.sep);
-    if (state.title && document.getElementById('songTitle')) document.getElementById('songTitle').value = state.title;
-    if (state.noteFontSize) setNoteSize(state.noteFontSize);
-    if (state.carnaticVariants) {
-      carnaticVariants = state.carnaticVariants;
-      Object.keys(carnaticVariants).forEach(function(pos) {
-        setCarnaticVariant(parseInt(pos), carnaticVariants[pos]);
-      });
-    }
-    renderSeq();
+    restoreSession(state);
   } catch(e) {}
 }
 
@@ -1105,9 +1093,48 @@ function setSa(tonic) {
   remapNotes();
 }
 
+function restoreSession(h) {
+  notes = h.notes || [];
+  // Set variables directly — no remapNotes, notes already have correct names
+  fmt      = h.fmt      || 'letter';
+  saTonic  = h.saTonic  !== undefined ? h.saTonic : 0;
+  sep      = h.sep      || ' ';
+  if (h.carnaticVariants) carnaticVariants = h.carnaticVariants;
+  // Update format buttons
+  ['letter','octave','indian','carnatic','dash'].forEach(function(x){
+    var el = document.getElementById('fmt-'+x);
+    if (el) el.className = 'fmt-btn' + (x===fmt?' on':'');
+  });
+  document.getElementById('saRow').style.display = (fmt==='indian'||fmt==='carnatic') ? 'flex' : 'none';
+  document.getElementById('cvRow').style.display = fmt==='carnatic' ? 'flex' : 'none';
+  // Update Sa buttons
+  for (var j=0; j<12; j++) {
+    var el = document.getElementById('sa-'+j);
+    if (el) el.className = 'sa-btn' + (j===saTonic?' on':'');
+  }
+  // Update sep buttons
+  var sepMap = {' ':'sep-space', ', ':'sep-comma', '-':'sep-dash', '\n':'sep-newline'};
+  Object.keys(sepMap).forEach(function(k){ var e=document.getElementById(sepMap[k]); if(e) e.className='toggle-opt'+(k===sep?' on':''); });
+  // Update Carnatic variant buttons
+  if (h.carnaticVariants) {
+    Object.keys(carnaticVariants).forEach(function(pos){
+      var pairs = {2:['R2','G1'],3:['R3','G2'],9:['D2','N1'],10:['D3','N2']};
+      if (pairs[pos]) pairs[pos].forEach(function(n){
+        var btn=document.getElementById('cv-'+pos+'-'+n);
+        if(btn) btn.className='cv-btn'+(n===carnaticVariants[pos]?' on':'');
+      });
+    });
+  }
+  if (h.title && document.getElementById('songTitle')) document.getElementById('songTitle').value = h.title;
+  if (h.noteFontSize) setNoteSize(h.noteFontSize);
+  renderSeq();
+}
+
 function remapNotes() {
   notes = notes.map(function(n) {
+    if (n.label !== undefined) return n;        // preserve section labels
     if (n.name === ' ' || n.name === '\n') return n;
+    if (n.midi === undefined || n.midi === null) return n;
     var idx = n.midi % 12;
     var oct = Math.floor(n.midi / 12) - 1;
     var rel  = (idx - saTonic + 12) % 12;
@@ -1152,19 +1179,7 @@ function renderHistory() {
       + '</div></div>';
     item.querySelector('.history-restore').onclick = function(e) {
       e.stopPropagation();
-      notes = h.notes || [];
-      if (h.fmt) setFmt(h.fmt);
-      if (h.saTonic !== undefined) setSa(h.saTonic);
-      if (h.sep) setSep(h.sep);
-      if (h.title && document.getElementById('songTitle')) document.getElementById('songTitle').value = h.title;
-      if (h.noteFontSize) setNoteSize(h.noteFontSize);
-      if (h.carnaticVariants) {
-        carnaticVariants = h.carnaticVariants;
-        Object.keys(carnaticVariants).forEach(function(pos){
-          setCarnaticVariant(parseInt(pos), carnaticVariants[pos]);
-        });
-      }
-      renderSeq();
+      restoreSession(h);
     };
     item.querySelector('.history-delete').onclick = function(e) {
       e.stopPropagation();
