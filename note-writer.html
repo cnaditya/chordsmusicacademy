@@ -765,13 +765,39 @@ function renderSeq() {
 function getPlainText() {
   var result = '';
   notes.forEach(function(n, i) {
-    if (n.label !== undefined) { result += '\n[ ' + n.label + ' ]\n'; }
-    else if (n.name === ' ') { result += ' | '; }
-    else if (n.name === '\n') { result += '\n'; }
-    else {
-      result += n.name;
+    if (n.label !== undefined) {
+      result += n.isRepeat ? ' ↺ ' + n.label + ' ' : '\n[ ' + n.label + ' ]\n';
+    } else if (n.name === ' ') {
+      result += ' | ';
+    } else if (n.name === '\n') {
+      result += '\n';
+    } else {
+      // chord prefix
+      if (n.chord) result += '[' + n.chord + ']';
+      // note name (strip HTML tags)
+      var noteName = n.name.replace(/<[^>]+>/g, '');
+      // octave dots
+      var dotStr = '';
+      if (n.midi !== undefined && fmt !== 'octave') {
+        var oct = Math.floor(n.midi / 12) - 1;
+        var offset = oct - MIDDLE_OCTAVE;
+        if (offset === 1)       dotStr = '·';
+        else if (offset >= 2)   dotStr = '··';
+        else if (offset === -1) dotStr = '̣';   // dot below using combining char — fallback
+        else if (offset <= -2)  dotStr = '̣̣';
+      }
+      // Use simple up/down arrows for octave in plain text
+      var octMark = '';
+      if (n.midi !== undefined && fmt !== 'octave') {
+        var off = Math.floor(n.midi / 12) - 1 - MIDDLE_OCTAVE;
+        if (off === 1)      octMark = "'";
+        else if (off >= 2)  octMark = "''";
+        else if (off === -1) octMark = ',';
+        else if (off <= -2)  octMark = ',,';
+      }
+      result += noteName + octMark;
       if (i < notes.length - 1 && notes[i+1] && notes[i+1].name !== ' ' && notes[i+1].name !== '\n' && notes[i+1].label === undefined) {
-        result += sep;
+        result += ' ';
       }
     }
   });
