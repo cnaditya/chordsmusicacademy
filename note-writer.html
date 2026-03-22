@@ -1080,7 +1080,12 @@ function buildPrintSeqHtml() {
   var html = '';
   notes.forEach(function(n, i) {
     if (n.label !== undefined) {
-      html += '<span class="sec-label' + (n.isRepeat ? ' repeat' : '') + '">' + n.label + '</span>';
+      if (n.isRepeat) {
+        html += '<span style="display:inline-block;vertical-align:middle;margin:0 6px;padding:2px 10px;border:1px solid #27ae60;border-radius:10px;color:#1a7a40;font-size:0.65rem;font-weight:800;letter-spacing:1px">'
+              + '↺ ' + n.label + '</span>';
+      } else {
+        html += '<span class="sec-label">' + n.label + '</span>';
+      }
     } else if (n.name === '\n') {
       html += '<br>';
     } else if (n.name === ' ') {
