@@ -46,7 +46,7 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 /* Note sequence */
 .seq-section{padding:16px 28px 0}
 .seq-label{font-size:0.62rem;color:#444;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-weight:700}
-.seq-box{background:#0a0a1a;border:1px solid #1e1e3a;border-radius:12px;padding:20px;min-height:160px;font-size:1.4rem;font-weight:700;color:#fff;line-height:2.8;letter-spacing:2px;word-break:break-all;position:relative;transition:border-color .2s}
+.seq-box{background:#0a0a1a;border:1px solid #1e1e3a;border-radius:12px;padding:20px;min-height:180px;font-size:1.4rem;font-weight:700;color:#fff;line-height:2.8;letter-spacing:2px;word-break:break-all;position:relative;transition:border-color .2s}
 .seq-box:focus-within{border-color:#e74c3c30}
 .seq-box span.n{color:#7eb3ff}
 .seq-box span.s{color:#f39c12}
@@ -62,11 +62,12 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .chord-preview{font-size:0.85rem;color:#f39c12;font-weight:700}
 
 /* Note with chord above */
-.note-wrap{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle}
+.note-wrap{display:inline-flex;flex-direction:column;align-items:center;vertical-align:bottom}
 .note-chord-lbl{font-size:0.7em;font-weight:800;letter-spacing:1px;cursor:pointer;padding:2px 5px;border-radius:3px;line-height:1.4;border:1px dashed transparent}
 .note-chord-lbl.has-chord{color:#f39c12}
 .note-chord-lbl.no-chord{color:#0a0a1a;font-size:0.55em}
 .note-chord-lbl:hover{border-color:#f39c12;background:rgba(243,156,18,0.1)}
+.note-dot{font-size:0.26em;color:#aaa;line-height:1;text-align:center;letter-spacing:3px;min-height:0.9em;display:block}
 .bar-sep{color:#2a2a4a;font-size:1.4rem;vertical-align:bottom}
 .ins-bar{display:inline-block;width:10px;text-align:center;color:transparent;font-size:0.7em;font-weight:900;cursor:pointer;vertical-align:middle;transition:.15s;user-select:none}
 .ins-bar:hover{color:#2ecc71;text-shadow:0 0 6px #2ecc71}
@@ -159,9 +160,19 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .seq-empty-icon{font-size:2.8rem}
 .seq-empty-text{font-size:0.75rem;color:#888;letter-spacing:2px;text-transform:uppercase}
 
+/* Replace mode highlight */
+.replacing-note{outline:2px solid #f39c12;outline-offset:2px;border-radius:3px;background:rgba(243,156,18,0.15);animation:replBlink .5s infinite alternate}
+@keyframes replBlink{from{outline-color:#f39c12}to{outline-color:#e67e22}}
+.replace-hint{position:fixed;bottom:80px;right:24px;background:#1a1a0e;border:1px solid #f39c12;border-radius:10px;padding:10px 16px;font-size:0.78rem;color:#f39c12;z-index:9998;display:none}
+.replace-hint.show{display:block}
+
 /* Staff lines decoration on seq box */
 .seq-box{position:relative}
 .seq-box::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(transparent,transparent 35px,#ffffff06 35px,#ffffff06 36px);border-radius:12px;pointer-events:none}
+.seq-box-a4-label{font-size:0.58rem;color:#e74c3c66;letter-spacing:2px;text-transform:uppercase;text-align:right;margin-top:3px}
+/* A4 page break lines drawn by JS */
+.a4-break{position:absolute;left:0;right:0;height:1px;background:repeating-linear-gradient(90deg,#e74c3c55 0,#e74c3c55 8px,transparent 8px,transparent 16px);pointer-events:none;z-index:2}
+.a4-break::after{content:'— page —';position:absolute;right:8px;top:-9px;font-size:0.52rem;color:#e74c3c55;letter-spacing:2px;text-transform:uppercase}
 
 /* Print styles */
 @media print {
@@ -176,6 +187,45 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
   .print-watermark{display:block!important}
   .print-copyright{display:block!important}
 }
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+@media (max-width:768px){
+  .app-wrap{padding:0 14px 48px}
+  .hdr{padding:10px 14px;gap:10px}
+  .hdr-sub{display:none}
+  .live-section{padding:10px 14px;gap:12px}
+  .live-key{font-size:2.2rem;min-width:60px}
+  .actions{gap:6px}
+  .btn{padding:10px 10px;font-size:0.8rem;min-width:0}
+  .fmt-row{gap:5px}
+  .fmt-btn{padding:6px 10px;font-size:0.72rem}
+  .sa-row{gap:4px}
+  .sa-btn{padding:4px 8px;font-size:0.7rem}
+  .seq-box{padding:14px;letter-spacing:1px}
+  .card{padding:12px 14px}
+  .history{padding:0 0 20px}
+  .ins-bar{width:20px;padding:0 5px}
+}
+@media (max-width:480px){
+  .app-wrap{padding:0 8px 48px}
+  .hdr{padding:8px 10px;gap:8px}
+  .hdr-icon{width:32px;height:32px;font-size:1rem}
+  .hdr-title{font-size:1.1rem}
+  .hdr-right{gap:6px}
+  .btn-connect{padding:5px 12px;font-size:0.72rem}
+  .actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .btn-pdf{grid-column:1/-1}
+  .btn{min-width:0;font-size:0.75rem;padding:9px 6px}
+  .live-section{gap:8px;padding:8px 10px}
+  .live-key{font-size:1.8rem;min-width:48px}
+  .instr-bar,.music-bg,.piano-strip{display:none!important}
+  .seq-box{font-size:1.1rem!important;letter-spacing:0;padding:12px}
+  .fmt-btn{padding:5px 8px;font-size:0.7rem}
+  .card{padding:10px 10px}
+  .settings{padding:0 0 10px;gap:8px}
+  .actions{padding:0}
+  .storage-warn{margin:6px 0}
+}
+
 .print-watermark{display:none;position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden}
 .print-watermark-inner{
   position:absolute;top:50%;left:50%;
@@ -191,8 +241,61 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .print-header{display:none}
 .print-body{display:none}
 
+/* PDF export modal */
+.pdf-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:8500;align-items:center;justify-content:center}
+.pdf-modal.show{display:flex}
+.pdf-card{background:#12122a;border:1px solid #2a2a4a;border-radius:16px;padding:28px 28px;max-width:380px;width:90%}
+.pdf-card h3{font-size:1rem;font-weight:900;color:#fff;margin-bottom:18px;letter-spacing:0.5px}
+.pdf-field{margin-bottom:14px}
+.pdf-field label{display:block;font-size:0.7rem;color:#555;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;font-weight:700}
+.pdf-field input,.pdf-field select{width:100%;background:#0a0a1a;border:1px solid #1e1e3a;border-radius:8px;padding:7px 10px;font-size:0.85rem;color:#dde;outline:none}
+.pdf-field input:focus,.pdf-field select:focus{border-color:#e74c3c}
+.pdf-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1a1a30}
+.pdf-toggle-row:last-child{border-bottom:none}
+.pdf-toggle-label{font-size:0.8rem;color:#888}
+.pdf-toggle{width:36px;height:20px;background:#1e1e3a;border-radius:10px;cursor:pointer;position:relative;transition:.2s;flex-shrink:0}
+.pdf-toggle.on{background:#e74c3c}
+.pdf-toggle::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:3px;left:3px;transition:.2s}
+.pdf-toggle.on::after{left:19px}
+
+/* Metronome */
+.metro-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #1a1a30;margin-top:6px}
+
+/* On-screen piano keyboard */
+.onscreen-piano{background:#0e0e24;border:1px solid #1a1a30;border-radius:14px;padding:14px 20px;margin-top:14px;display:none}
+.onscreen-piano.show{display:block}
+.piano-keys{display:flex;position:relative;height:72px;gap:0;user-select:none}
+.pk-white{width:36px;height:72px;background:linear-gradient(180deg,#e8e8f0,#fff);border:1px solid #ccc;border-radius:0 0 5px 5px;cursor:pointer;flex-shrink:0;position:relative;z-index:1;transition:background .08s;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px}
+.pk-white:hover,.pk-white:active{background:linear-gradient(180deg,#d0e4ff,#b8d4ff)}
+.pk-white .pk-label{font-size:0.5rem;color:#999;font-weight:700;pointer-events:none}
+.pk-black{width:24px;height:44px;background:linear-gradient(180deg,#1a1a2e,#111);border-radius:0 0 4px 4px;cursor:pointer;position:absolute;z-index:2;transition:background .08s;top:0}
+.pk-black:hover,.pk-black:active{background:linear-gradient(180deg,#2a2a4e,#1a1a3e)}
+.piano-row-label{font-size:0.6rem;color:#444;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-weight:700}
+
+/* Welcome modal */
+.welcome-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:8000;align-items:center;justify-content:center}
+.welcome-modal.show{display:flex}
+.welcome-card{background:#12122a;border:1px solid #2a2a4a;border-radius:18px;padding:36px 32px;max-width:400px;width:90%;text-align:center}
+
+/* Toast notifications */
+.toast{position:fixed;bottom:28px;right:24px;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:10px;padding:12px 18px;font-size:0.8rem;color:#dde;z-index:99999;max-width:340px;box-shadow:0 4px 24px rgba(0,0,0,0.5);animation:toastIn .2s ease;pointer-events:none}
+.toast.warn{border-color:#f39c12;color:#f39c12}
+.toast.err{border-color:#e74c3c;color:#e74c3c}
+.toast.ok{border-color:#2ecc71;color:#2ecc71}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Storage warning banner */
+.storage-warn{display:none;background:#1e1a0e;border:1px solid #f39c12;border-radius:10px;padding:10px 16px;margin:8px 28px;font-size:0.78rem;color:#f39c12;gap:8px;align-items:center}
+.storage-warn.show{display:flex}
+
 /* History */
 .history{padding:0 20px 20px}
+.fmt-badge{display:inline-block;padding:1px 6px;border-radius:8px;font-size:0.6rem;font-weight:700;letter-spacing:0.5px;margin-right:4px}
+.fmt-badge-letter{background:#1a2a1e;color:#2ecc71;border:1px solid #2ecc7133}
+.fmt-badge-octave{background:#1a1a2e;color:#7eb3ff;border:1px solid #7eb3ff33}
+.fmt-badge-indian{background:#2a1a0e;color:#e67e22;border:1px solid #e67e2233}
+.fmt-badge-carnatic{background:#2a0e1a;color:#e74c3c;border:1px solid #e74c3c33}
+.fmt-badge-dash{background:#1a1a1a;color:#888;border:1px solid #33333388}
 .history-label{font-size:0.7rem;color:#666;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
 .history-item{background:#1a1a2e;border-radius:10px;padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;cursor:pointer}
 .history-item:hover{background:#1f1f3a}
@@ -243,9 +346,12 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
     document.getElementById('pwGate').style.display='none';
   }
 })();
-function checkPw(){
+async function checkPw(){
   var v=document.getElementById('pwInput').value;
-  if(v==='Sep@2012'){
+  var encoded=new TextEncoder().encode(v);
+  var hashBuffer=await crypto.subtle.digest('SHA-256',encoded);
+  var hashHex=Array.from(new Uint8Array(hashBuffer)).map(function(b){return b.toString(16).padStart(2,'0')}).join('');
+  if(hashHex==='2c3da00c33dfb8d8b8dd48d648eb756313ed5b0b0db19d9b189d4c74cb307c76'){
     sessionStorage.setItem('sw_auth','1');
     document.getElementById('pwGate').style.display='none';
   } else {
@@ -419,6 +525,11 @@ function checkPw(){
 
 <div class="app-wrap">
 
+<!-- Storage warning banner -->
+<div class="storage-warn" id="storageWarn">
+  ⚠️ Storage is nearly full. <strong>Download your sessions</strong> as .swarasheet files to avoid data loss.
+</div>
+
 <!-- No MIDI notice (Chrome/Edge only) -->
 <div class="no-midi" id="noMidiNote" style="display:none;margin:16px 0">
   <strong>⚠️ Browser not supported.</strong> Web MIDI API requires <strong>Chrome or Edge</strong>. Firefox and Safari do not support it.
@@ -431,6 +542,12 @@ function checkPw(){
   <div class="live-octave" id="liveOctave"></div>
   <div class="live-divider"></div>
   <div class="held-row" id="heldRow" style="padding:0"></div>
+</div>
+
+<!-- On-screen piano keyboard -->
+<div class="onscreen-piano" id="onscreenPiano">
+  <div class="piano-row-label">On-Screen Keyboard — click to play</div>
+  <div class="piano-keys" id="pianoKeys"></div>
 </div>
 
 <!-- Controls card -->
@@ -509,6 +626,34 @@ function checkPw(){
       <div class="toggle-opt" id="sep-newline" onclick="setSep('\n')">New line</div>
     </div>
   </div>
+
+  <!-- Transpose row -->
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:14px;border-top:1px solid #1a1a30;margin-top:2px">
+    <span style="font-size:0.75rem;color:#555;font-weight:700">Transpose:</span>
+    <button onclick="transposeNotes(-2)" style="padding:4px 10px;border-radius:8px;border:1px solid #1e1e3a;background:#0a0a1a;color:#7eb3ff;font-size:0.78rem;font-weight:700;cursor:pointer">▼ −2</button>
+    <button onclick="transposeNotes(-1)" style="padding:4px 10px;border-radius:8px;border:1px solid #1e1e3a;background:#0a0a1a;color:#7eb3ff;font-size:0.78rem;font-weight:700;cursor:pointer">▼ −1</button>
+    <button onclick="transposeNotes(1)" style="padding:4px 10px;border-radius:8px;border:1px solid #1e1e3a;background:#0a0a1a;color:#7eb3ff;font-size:0.78rem;font-weight:700;cursor:pointer">▲ +1</button>
+    <button onclick="transposeNotes(2)" style="padding:4px 10px;border-radius:8px;border:1px solid #1e1e3a;background:#0a0a1a;color:#7eb3ff;font-size:0.78rem;font-weight:700;cursor:pointer">▲ +2</button>
+    <span id="transposeStatus" style="font-size:0.7rem;color:#444;margin-left:4px"></span>
+  </div>
+
+  <!-- Metronome row -->
+  <div class="metro-row">
+    <span style="font-size:0.75rem;color:#555;font-weight:700">Metronome:</span>
+    <input id="metroBpmInput" type="number" value="80" min="40" max="200"
+      onchange="updateMetroBpm(this.value)"
+      style="width:58px;background:#0a0a1a;border:1px solid #1e1e3a;border-radius:8px;padding:4px 8px;font-size:0.85rem;color:#dde;outline:none;text-align:center">
+    <span style="font-size:0.7rem;color:#444">BPM</span>
+    <select id="metroTimeSig" style="background:#0a0a1a;border:1px solid #1e1e3a;border-radius:8px;padding:4px 8px;font-size:0.78rem;color:#dde;outline:none">
+      <option value="4">4/4</option>
+      <option value="3">3/4</option>
+      <option value="6">6/8</option>
+      <option value="2">2/4</option>
+      <option value="5">5/4</option>
+      <option value="7">7/8</option>
+    </select>
+    <button id="metroStartBtn" onclick="toggleMetronome()" style="padding:4px 14px;border-radius:8px;border:none;background:#e74c3c;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer">▶ Start</button>
+  </div>
 </div><!-- end controls card -->
 
 <!-- Sequence box -->
@@ -538,6 +683,7 @@ function checkPw(){
     <div style="font-size:0.72rem;color:#888;letter-spacing:1px">CHORDS MUSIC ACADEMY &nbsp;·&nbsp; chordsmusicacademy.in &nbsp;·&nbsp; +91 79815 85309</div>
   </div>
   <div id="printTitle" style="font-size:1.3rem;font-weight:900;color:#1a1a2e;letter-spacing:0.5px"></div>
+  <div id="printMeta" style="display:none;font-size:0.7rem;color:#777;margin-top:4px;letter-spacing:0.5px"></div>
 </div>
 <div class="print-body" id="printBody"></div>
 <div class="print-copyright">
@@ -556,12 +702,15 @@ function checkPw(){
   <button class="btn" onclick="toggleLabelPanel()" id="labelToggleBtn" style="min-width:0;background:#1a1a0e;border:1px solid #3a2a10;color:#e67e22;font-weight:700">§ Section</button>
   <button class="btn" id="pasteBtn" onclick="pasteNotes()" style="min-width:0;display:none;background:#0e1a2e;border:1px solid #3a8abf;color:#7eb3ff;font-weight:700">⎘ Paste</button>
   <button class="btn btn-undo" onclick="undoNote()" style="min-width:0">↩ Undo</button>
-  <button class="btn btn-clear" onclick="clearNotes()" style="min-width:0">+ New</button>
+  <button class="btn" onclick="clearNotes()" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700" title="Save current notes to history, then start fresh">+ New Song</button>
+  <button class="btn btn-clear" onclick="clearNotesHard()" style="min-width:0" title="Discard all notes without saving">🗑 Clear</button>
   <button class="btn" onclick="saveNamedSession()" style="min-width:0;background:#0e1a2e;border:1px solid #1e3a5a;color:#7eb3ff;font-weight:700">💾 Save</button>
   <button class="btn" onclick="downloadSession()" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700">⬇ Download</button>
   <label class="btn" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center">
     ⬆ Import<input type="file" accept=".swarasheet,.json" onchange="importSession(event)" style="display:none">
   </label>
+  <button class="btn" onclick="togglePiano()" id="pianoToggleBtn" style="min-width:0;background:#1a0e1a;border:1px solid #3a1a3a;color:#c39bd3;font-weight:700">🎹 Keys</button>
+  <button class="btn" id="shareBtn" onclick="copyWhatsApp()" style="min-width:0;background:#1a2e1a;border:1px solid #25d366;color:#25d366;font-weight:700">📱 Share</button>
   <button class="btn btn-pdf" onclick="exportPDF()" style="flex:2;min-width:0">📄 Export PDF</button>
 </div>
 
@@ -592,7 +741,11 @@ function checkPw(){
 
 <!-- Saved Sessions -->
 <div class="history" id="historySection" style="display:none;margin-top:16px;padding:0">
-  <div class="history-label">Saved Sessions</div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+    <div class="history-label" style="margin-bottom:0">Saved Sessions</div>
+    <input id="historySearch" type="text" placeholder="Search..." oninput="renderHistory()"
+      style="flex:1;background:#0a0a1a;border:1px solid #1e1e3a;border-radius:8px;padding:4px 10px;font-size:0.75rem;color:#dde;outline:none;min-width:0">
+  </div>
   <div id="historyList"></div>
 </div>
 
@@ -604,7 +757,98 @@ function checkPw(){
 
 </div><!-- end app-wrap -->
 
+<!-- PDF Export Modal -->
+<div class="pdf-modal" id="pdfModal">
+  <div class="pdf-card">
+    <h3>📄 Export PDF</h3>
+    <div class="pdf-field">
+      <label>Sheet Title</label>
+      <input id="pdfTitle" type="text" placeholder="Song title...">
+    </div>
+    <div class="pdf-field">
+      <label>Raag / Scale <span style="color:#333;font-size:0.65rem;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <input id="pdfRaag" type="text" placeholder="e.g. Yaman, C Major...">
+    </div>
+    <div class="pdf-field">
+      <label>Taal / Time <span style="color:#333;font-size:0.65rem;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <input id="pdfTaal" type="text" placeholder="e.g. Teentaal, 4/4...">
+    </div>
+    <div style="margin-bottom:14px">
+      <div class="pdf-toggle-row">
+        <span class="pdf-toggle-label">Include chords</span>
+        <div class="pdf-toggle on" id="pdfToggleChords" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="pdf-toggle-row">
+        <span class="pdf-toggle-label">Include section labels</span>
+        <div class="pdf-toggle on" id="pdfToggleLabels" onclick="this.classList.toggle('on')"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closePdfModal()" style="flex:1;padding:10px;background:#1e1e30;border:1px solid #2a2a4a;border-radius:10px;color:#888;font-size:0.85rem;font-weight:700;cursor:pointer">Cancel</button>
+      <button onclick="doPrintPDF()" style="flex:2;padding:10px;background:linear-gradient(135deg,#8e44ad,#6c3483);border:none;border-radius:10px;color:#fff;font-size:0.85rem;font-weight:700;cursor:pointer">Print / Save PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- Chord suggestions datalist -->
+<datalist id="chordSuggestions">
+  <option value="C"><option value="Cm"><option value="C7"><option value="Cmaj7"><option value="Cm7">
+  <option value="D"><option value="Dm"><option value="D7"><option value="Dmaj7"><option value="Dm7">
+  <option value="E"><option value="Em"><option value="E7"><option value="Emaj7"><option value="Em7">
+  <option value="F"><option value="Fm"><option value="F7"><option value="Fmaj7"><option value="Fm7">
+  <option value="G"><option value="Gm"><option value="G7"><option value="Gmaj7"><option value="Gm7">
+  <option value="A"><option value="Am"><option value="A7"><option value="Amaj7"><option value="Am7">
+  <option value="B"><option value="Bm"><option value="B7"><option value="Bmaj7"><option value="Bm7">
+  <option value="C#"><option value="C#m"><option value="Db"><option value="Dbm">
+  <option value="F#"><option value="F#m"><option value="Gb"><option value="Gbm">
+  <option value="Bb"><option value="Bbm"><option value="Eb"><option value="Ebm">
+  <option value="Cdim"><option value="Caug"><option value="Csus2"><option value="Csus4">
+</datalist>
+
+<!-- Replace mode hint -->
+<div class="replace-hint" id="replaceHint">
+  🎹 Play a key to replace the highlighted note — or <span onclick="cancelReplace()" style="cursor:pointer;text-decoration:underline">cancel</span>
+</div>
+
 <script>
+// ── TOAST & STORAGE UTILS ──────────────────────────────────
+function showToast(msg, type, duration) {
+  var t = document.createElement('div');
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, duration || 4000);
+}
+
+function safeLocalSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch(e) {
+    if (e.name === 'QuotaExceededError' || e.code === 22) {
+      // Try freeing space by trimming bin
+      try {
+        var bin = JSON.parse(localStorage.getItem('swarasheet_bin') || '[]');
+        if (bin.length > 0) {
+          bin = bin.slice(0, Math.floor(bin.length / 2));
+          safeLocalSet('swarasheet_bin', JSON.stringify(bin));
+          localStorage.setItem(key, value); // retry
+        }
+      } catch(e2) {}
+      showToast('⚠️ Storage full! Download your sessions as .swarasheet files to avoid data loss.', 'warn', 6000);
+      document.getElementById('storageWarn').classList.add('show');
+    }
+  }
+}
+
+function checkStorageHealth() {
+  try {
+    var used = JSON.stringify(localStorage).length;
+    if (used > 3500000) { // ~3.5MB of ~5MB
+      document.getElementById('storageWarn').classList.add('show');
+    }
+  } catch(e) {}
+}
+
 var NOTE_NAMES   = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 // Indian (Sargam) notation — teacher's system:
 // White keys: Sa Ri Ga Ma Pa Da Ni
@@ -692,6 +936,8 @@ function connectMIDI() {
   });
 }
 
+var prevMIDIDeviceCount = 0;
+
 function setupMIDI() {
   var inputs = midiAccess.inputs;
   var count = 0;
@@ -705,12 +951,21 @@ function setupMIDI() {
     document.getElementById('statusDot').className = 'status-dot connected';
     document.getElementById('statusText').textContent = 'Connected! Start playing...';
     document.getElementById('connectBtn').style.display = 'none';
+    if (prevMIDIDeviceCount === 0 && count > 0) {
+      showToast('🎹 MIDI keyboard connected!', 'ok', 3000);
+      // Auto-hide on-screen keyboard when real MIDI connects
+      if (pianoVisible) togglePiano();
+    }
   } else {
     document.getElementById('statusDot').className = 'status-dot waiting';
     document.getElementById('statusText').textContent = 'No MIDI device found. Plug in your keyboard and click Connect.';
     document.getElementById('deviceName').style.display = 'none';
     document.getElementById('connectBtn').style.display = 'block';
+    if (prevMIDIDeviceCount > 0) {
+      showToast('⚠️ MIDI keyboard disconnected. Plug it back in and click Connect.', 'warn', 6000);
+    }
   }
+  prevMIDIDeviceCount = count;
 }
 
 function onMIDIMessage(event) {
@@ -725,7 +980,18 @@ function onMIDIMessage(event) {
     heldKeys[note] = true;
     updateLive(note);
     updateHeld();
-    if (currentMode === 'notes' && isRecording) {
+    if (replacingIndex !== null) {
+      // Replace mode — swap the highlighted note
+      var prevNote = JSON.parse(JSON.stringify(notes[replacingIndex]));
+      var newName = getNoteName(note);
+      var newChord = notes[replacingIndex].chord || '';
+      undoStack.push({type:'replace', index:replacingIndex, prev:prevNote, next:{name:newName, midi:note, chord:newChord}});
+      redoStack = [];
+      notes[replacingIndex] = {name:newName, midi:note, chord:newChord};
+      replacingIndex = null;
+      document.getElementById('replaceHint').classList.remove('show');
+      renderSeq();
+    } else if (currentMode === 'notes' && isRecording) {
       var name = getNoteName(note);
       addNote(name, note);
     }
@@ -878,15 +1144,27 @@ function renderSeq() {
       var displayName = n.name.replace(/([¹²³])/g, '<sup>$1</sup>')
                                .replace(/([SRGMPDNsrgmpdn])([123])/g, '$1<sup style="font-size:0.55em;vertical-align:super">$2</sup>');
       var od = octDots(n.midi);
-      var noteHtml = od.open + '<span class="' + (isSharp ? 's' : 'n') + '" oncontextmenu="deleteNoteAt(' + i + ',event)" title="Right-click to delete">' + displayName + '</span>' + od.close;
+      var isReplacing = (replacingIndex === i);
+      var noteSpan = '<span class="' + (isSharp ? 's' : 'n') + (isReplacing ? ' replacing-note' : '') + '" data-note-index="' + i + '" oncontextmenu="deleteNoteAt(' + i + ',event)" ondblclick="replaceNoteAt(' + i + ')" title="Double-click to replace · Right-click to delete">' + displayName + '</span>';
+      var noteHtml = od.open + noteSpan + od.close;
       if (showLbl) {
+        // Compute inline dots for consistent height inside note-wrap
+        var dotA = '', dotB = '';
+        if (n.midi !== undefined && fmt !== 'octave') {
+          var off2 = Math.floor(n.midi/12) - 1 - MIDDLE_OCTAVE;
+          var dd = '\u25CF';
+          if (off2 >= 2) dotA = dd+dd; else if (off2 === 1) dotA = dd;
+          else if (off2 === -1) dotB = dd; else if (off2 <= -2) dotB = dd+dd;
+        }
         html += '<span class="note-wrap">'
               + '<span class="note-chord-lbl ' + (chord ? 'has-chord' : 'no-chord') + '" '
               + 'onclick="editChordOnNote(' + i + ')" '
               + 'oncontextmenu="clearChordOnNote(' + i + ',event)" '
               + 'title="' + (chord ? 'Click to edit · Right-click to clear' : 'Click to add chord') + '">'
               + (chord ? chord : '+') + '</span>'
-              + noteHtml
+              + '<span class="note-dot">' + dotA + '</span>'
+              + noteSpan
+              + '<span class="note-dot">' + dotB + '</span>'
               + '</span>';
       } else {
         html += noteHtml;
@@ -1028,6 +1306,112 @@ function insertBarAt(index) {
   renderSeq();
 }
 
+// ── ON-SCREEN PIANO ────────────────────────────────────────
+// Renders C3 (MIDI 48) through B4 (MIDI 71) — 2 octaves
+var pianoVisible = false;
+
+function buildPianoKeys() {
+  var container = document.getElementById('pianoKeys');
+  if (container.children.length > 0) return; // already built
+  // White key MIDI offsets within octave: C D E F G A B = 0,2,4,5,7,9,11
+  var whiteOffsets = [0,2,4,5,7,9,11];
+  // Black key positions relative to white keys: between W0-W1, W1-W2, W3-W4, W4-W5, W5-W6
+  // (no black between E-F and B-C)
+  var blackMap = {1:1, 3:2, 6:4, 8:5, 10:6}; // chromatic offset -> white key index gap position
+  var startMidi = 48; // C3
+  var noteNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+  container.style.position = 'relative';
+  var whiteWidth = 36;
+  var whiteIdx = 0;
+  // We need to place black keys absolutely, so track white key positions
+  var whitePositions = []; // x positions of each white key
+
+  for (var octave = 0; octave < 2; octave++) {
+    for (var i = 0; i < 12; i++) {
+      var midi = startMidi + octave * 12 + i;
+      var isBlack = [1,3,6,8,10].indexOf(i) >= 0;
+      if (!isBlack) {
+        var wk = document.createElement('div');
+        wk.className = 'pk-white';
+        wk.dataset.midi = midi;
+        var noteName = noteNames[i] + (Math.floor(midi/12)-1);
+        wk.innerHTML = '<span class="pk-label">' + noteName + '</span>';
+        wk.addEventListener('mousedown', function(e){
+          e.preventDefault();
+          addVirtualNote(parseInt(this.dataset.midi));
+        });
+        container.appendChild(wk);
+        whitePositions.push({midi: midi, idx: whiteIdx});
+        whiteIdx++;
+      }
+    }
+  }
+  // Now add black keys absolutely positioned
+  whiteIdx = 0;
+  for (var octave2 = 0; octave2 < 2; octave2++) {
+    var wIdx = octave2 * 7; // white key index within container for this octave
+    for (var i2 = 0; i2 < 12; i2++) {
+      var midi2 = startMidi + octave2 * 12 + i2;
+      var isBlack2 = [1,3,6,8,10].indexOf(i2) >= 0;
+      if (isBlack2) {
+        // Find the white key to the left
+        var leftWhiteOffset = {1:0, 3:1, 6:3, 8:4, 10:5}[i2];
+        var leftX = (wIdx + leftWhiteOffset) * (whiteWidth + 1) + whiteWidth - 12;
+        var bk = document.createElement('div');
+        bk.className = 'pk-black';
+        bk.dataset.midi = midi2;
+        bk.style.left = leftX + 'px';
+        bk.addEventListener('mousedown', function(e){
+          e.preventDefault();
+          addVirtualNote(parseInt(this.dataset.midi));
+        });
+        container.appendChild(bk);
+      }
+    }
+    wIdx += 7;
+  }
+}
+
+function addVirtualNote(midiNote) {
+  var name = getNoteName(midiNote);
+  updateLive(midiNote);
+  if (replacingIndex !== null) {
+    var prevNote = JSON.parse(JSON.stringify(notes[replacingIndex]));
+    var newChord = notes[replacingIndex].chord || '';
+    undoStack.push({type:'replace', index:replacingIndex, prev:prevNote, next:{name:name, midi:midiNote, chord:newChord}});
+    redoStack = [];
+    notes[replacingIndex] = {name:name, midi:midiNote, chord:newChord};
+    replacingIndex = null;
+    document.getElementById('replaceHint').classList.remove('show');
+    renderSeq();
+    return;
+  }
+  if (currentMode === 'notes' && isRecording) {
+    addNote(name, midiNote);
+  } else if (currentMode === 'chord') {
+    heldKeys[midiNote] = true;
+    updateHeld();
+    updateChordDetection();
+    setTimeout(function(){
+      delete heldKeys[midiNote];
+      updateHeld();
+      updateChordDetection();
+    }, 400);
+  }
+}
+
+function togglePiano() {
+  pianoVisible = !pianoVisible;
+  var el = document.getElementById('onscreenPiano');
+  el.classList.toggle('show', pianoVisible);
+  var btn = document.getElementById('pianoToggleBtn');
+  btn.style.background = pianoVisible ? '#3a1a3a' : '#1a0e1a';
+  btn.style.borderColor = pianoVisible ? '#9b59b6' : '#3a1a3a';
+  btn.style.color = pianoVisible ? '#c39bd3' : '#c39bd3';
+  if (pianoVisible) buildPianoKeys();
+}
+
 function toggleLabelPanel() {
   var p = document.getElementById('labelPanel');
   p.classList.toggle('open');
@@ -1106,10 +1490,31 @@ function editChordOnNote(noteIndex) {
     setTimeout(function(){ btn.textContent = '↑ Apply'; btn.style.background = '#2ecc71'; }, 1200);
     return;
   }
-  var current = notes[noteIndex].chord || '';
-  var val = prompt('Chord above this note (e.g. Am, C, G7) — leave blank to remove:', current);
-  if (val === null) return;
-  applyChordTo(noteIndex, val.trim());
+  // Inline chord input — no browser prompt()
+  var old = document.getElementById('inlineChordInput');
+  if (old) old.remove();
+  var noteEl = document.querySelector('[data-note-index="' + noteIndex + '"]');
+  if (!noteEl) return;
+  var inp = document.createElement('input');
+  inp.id = 'inlineChordInput';
+  inp.value = notes[noteIndex].chord || '';
+  inp.placeholder = 'Am, C, G7...';
+  inp.setAttribute('list', 'chordSuggestions');
+  inp.style.cssText = 'position:fixed;z-index:9990;background:#1a1a2e;border:1.5px solid #f39c12;border-radius:8px;padding:5px 10px;font-size:0.85rem;font-weight:700;color:#fff;outline:none;width:120px;text-align:center;letter-spacing:1px';
+  var rect = noteEl.getBoundingClientRect();
+  inp.style.left = Math.min(rect.left, window.innerWidth - 140) + 'px';
+  inp.style.top = (rect.top - 44) + 'px';
+  inp.addEventListener('keydown', function(e) {
+    e.stopPropagation();
+    if (e.key === 'Enter') { applyChordTo(noteIndex, inp.value.trim()); inp.remove(); }
+    if (e.key === 'Escape') { inp.remove(); }
+  });
+  inp.addEventListener('blur', function() {
+    setTimeout(function(){ if (inp.parentNode) { applyChordTo(noteIndex, inp.value.trim()); inp.remove(); } }, 150);
+  });
+  document.body.appendChild(inp);
+  inp.focus();
+  inp.select();
 }
 
 function undoNote() { undo(); }
@@ -1123,14 +1528,20 @@ function undo() {
   var action = undoStack.pop();
   redoStack.push(action);
   if (action.type === 'note') {
-    var removed = notes.pop();
-    action.note = removed;
+    notes.pop();
     renderSeq();
   } else if (action.type === 'chord') {
     notes[action.noteIndex].chord = action.prev;
     renderSeq();
   } else if (action.type === 'delete') {
     notes.splice(action.index, 0, action.note);
+    renderSeq();
+  } else if (action.type === 'replace') {
+    notes[action.index] = action.prev;
+    renderSeq();
+  } else if (action.type === 'transpose') {
+    notes = JSON.parse(JSON.stringify(action.prev));
+    transposeOffset -= action.semitones;
     renderSeq();
   }
 }
@@ -1148,18 +1559,44 @@ function redo() {
   } else if (action.type === 'delete') {
     notes.splice(action.index, 1);
     renderSeq();
+  } else if (action.type === 'replace') {
+    notes[action.index] = action.next;
+    renderSeq();
+  } else if (action.type === 'transpose') {
+    notes = notes.map(function(n) {
+      if (n.label !== undefined || n.name === ' ' || n.name === '\n') return n;
+      if (n.midi === undefined) return n;
+      var newMidi = n.midi + action.semitones;
+      if (newMidi < 0 || newMidi > 127) return n;
+      return {name: getNoteName(newMidi), midi: newMidi, chord: transposeChordName(n.chord, action.semitones)};
+    });
+    transposeOffset += action.semitones;
+    renderSeq();
   }
 }
 
 function clearNotes() {
   if (notes.length === 0) return;
-  autoSave(); // save before clearing
+  autoSave(); // save to history before clearing
   notes = [];
   undoStack = [];
   redoStack = [];
   var t = document.getElementById('songTitle');
   if (t) t.value = '';
   renderSeq();
+  showToast('Saved to history. Starting new song.', 'success');
+}
+
+function clearNotesHard() {
+  if (notes.length === 0) return;
+  if (!confirm('Discard all notes? This cannot be undone.')) return;
+  notes = [];
+  undoStack = [];
+  redoStack = [];
+  var t = document.getElementById('songTitle');
+  if (t) t.value = '';
+  renderSeq();
+  showToast('Cleared.', 'info');
 }
 
 // ── AUTO-SAVE ──────────────────────────────────────────────
@@ -1181,7 +1618,7 @@ function autoSave() {
     carnaticVariants: carnaticVariants,
     savedAt: new Date().toISOString()
   };
-  localStorage.setItem('swarasheet_autosave', JSON.stringify(state));
+  safeLocalSet('swarasheet_autosave', JSON.stringify(state));
 }
 
 function autoRestore() {
@@ -1199,17 +1636,19 @@ function saveNamedSession() {
   if (notes.length === 0) return;
   var title = ((document.getElementById('songTitle') || {}).value || '').trim() || 'Untitled';
   var saves = JSON.parse(localStorage.getItem('swarasheet_saves') || '[]');
+  var noteCount = notes.filter(function(n){ return n.name && n.name !== ' ' && n.name !== '\n' && !n.label; }).length;
   var state = {
     notes: notes, fmt: fmt, saTonic: saTonic, sep: sep,
     title: title, noteFontSize: noteFontSize,
     carnaticVariants: carnaticVariants,
+    noteCount: noteCount,
     savedAt: new Date().toLocaleString('en-IN')
   };
   // Update existing entry if same title, else prepend
   var idx = saves.findIndex(function(s){ return s.title === title; });
   if (idx >= 0) saves[idx] = state; else saves.unshift(state);
-  if (saves.length > 10) saves = saves.slice(0, 10);
-  localStorage.setItem('swarasheet_saves', JSON.stringify(saves));
+  if (saves.length > 25) saves = saves.slice(0, 25);
+  safeLocalSet('swarasheet_saves', JSON.stringify(saves));
   renderHistory();
   // Flash feedback
   var btn = document.querySelector('[onclick="saveNamedSession()"]');
@@ -1315,14 +1754,25 @@ function renderHistory() {
   var list    = document.getElementById('historyList');
   if (saves.length === 0) { section.style.display='none'; return; }
   section.style.display = 'block';
+  // Search filter
+  var searchEl = document.getElementById('historySearch');
+  var q = searchEl ? searchEl.value.toLowerCase() : '';
+  var filtered = q ? saves.filter(function(s){ return s.title.toLowerCase().includes(q); }) : saves;
   list.innerHTML = '';
-  saves.forEach(function(h, i) {
+  filtered.forEach(function(h, i) {
     var preview = (h.notes || []).filter(function(n){ return n.name && n.name !== ' ' && n.name !== '\n' && !n.label; })
                                  .slice(0,12).map(function(n){ return n.name.replace(/<[^>]+>/g,''); }).join(' ');
     var item = document.createElement('div');
     item.className = 'history-item';
+    var fmtLabel = {letter:'Letter',octave:'Octave',indian:'Sargam',carnatic:'Carnatic',dash:'Dash'}[h.fmt||'letter']||'Letter';
+    var fmtClass = 'fmt-badge fmt-badge-' + (h.fmt || 'letter');
+    var noteCountTxt = h.noteCount ? h.noteCount + ' notes' : '';
     item.innerHTML = '<div style="flex:1;min-width:0">'
-      + '<div style="font-weight:700;color:#dde;font-size:0.85rem;margin-bottom:2px">' + h.title + '</div>'
+      + '<div style="font-weight:700;color:#dde;font-size:0.85rem;margin-bottom:3px">' + h.title + '</div>'
+      + '<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">'
+      + '<span class="' + fmtClass + '">' + fmtLabel + '</span>'
+      + (noteCountTxt ? '<span style="font-size:0.6rem;color:#555">' + noteCountTxt + '</span>' : '')
+      + '</div>'
       + '<div class="history-notes">' + preview.substring(0,60) + (preview.length>60?'…':'') + '</div>'
       + '</div>'
       + '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">'
@@ -1341,11 +1791,11 @@ function renderHistory() {
       var ts = h.savedAt;
       var s = JSON.parse(localStorage.getItem('swarasheet_saves') || '[]');
       s = s.filter(function(x){ return x.savedAt !== ts; });
-      localStorage.setItem('swarasheet_saves', JSON.stringify(s));
+      safeLocalSet('swarasheet_saves', JSON.stringify(s));
       var bin = JSON.parse(localStorage.getItem('swarasheet_bin') || '[]');
       bin.unshift(h);
       if (bin.length > 20) bin = bin.slice(0, 20);
-      localStorage.setItem('swarasheet_bin', JSON.stringify(bin));
+      safeLocalSet('swarasheet_bin', JSON.stringify(bin));
       renderHistory();
       renderBin();
     };
@@ -1381,11 +1831,11 @@ function renderBin() {
       var ts = h.savedAt;
       var bin2 = JSON.parse(localStorage.getItem('swarasheet_bin') || '[]');
       bin2 = bin2.filter(function(x){ return x.savedAt !== ts; });
-      localStorage.setItem('swarasheet_bin', JSON.stringify(bin2));
+      safeLocalSet('swarasheet_bin', JSON.stringify(bin2));
       var saves = JSON.parse(localStorage.getItem('swarasheet_saves') || '[]');
       saves.unshift(h);
-      if (saves.length > 10) saves = saves.slice(0, 10);
-      localStorage.setItem('swarasheet_saves', JSON.stringify(saves));
+      if (saves.length > 25) saves = saves.slice(0, 25);
+      safeLocalSet('swarasheet_saves', JSON.stringify(saves));
       renderHistory();
       renderBin();
     };
@@ -1394,24 +1844,36 @@ function renderBin() {
       var ts = h.savedAt;
       var bin2 = JSON.parse(localStorage.getItem('swarasheet_bin') || '[]');
       bin2 = bin2.filter(function(x){ return x.savedAt !== ts; });
-      localStorage.setItem('swarasheet_bin', JSON.stringify(bin2));
+      safeLocalSet('swarasheet_bin', JSON.stringify(bin2));
       renderBin();
     };
     list.appendChild(item);
   });
 }
 
-function buildPrintBody() {
+function buildPrintBody(titleOverride, raag, taal, inclChords, inclLabels) {
   var fmtLabel = {letter:'Letter',octave:'With Octave',indian:'Indian Sargam',carnatic:'Carnatic Sargam',dash:'Dash'}[fmt]||fmt;
   document.getElementById('printYear').textContent = new Date().getFullYear();
-  var title = (document.getElementById('songTitle').value || '').trim() || 'Note Sheet';
+  var title = titleOverride || (document.getElementById('songTitle').value || '').trim() || 'Note Sheet';
   document.getElementById('printTitle').textContent = title;
+  // Show raag/taal metadata in print header
+  var metaEl = document.getElementById('printMeta');
+  if (metaEl) {
+    var metaParts = [];
+    if (raag) metaParts.push('Raag: ' + raag);
+    if (taal) metaParts.push('Taal: ' + taal);
+    metaParts.push('Format: ' + fmtLabel);
+    metaEl.textContent = metaParts.join('  ·  ');
+    metaEl.style.display = 'block';
+  }
+  if (inclChords === undefined) inclChords = true;
+  if (inclLabels === undefined) inclLabels = true;
 
   // Note cell: chord above, note below — same as app but compact
-  var noteSize  = '14pt';
-  var chordSize = '8pt';
+  var noteSize  = Math.round(noteFontSize * 9) + 'pt'; // scale with user's font size
+  var chordSize = Math.round(noteFontSize * 5.5) + 'pt';
   var cellStyle = 'display:inline-block;text-align:center;vertical-align:bottom;margin:0 3px 8px;position:relative';
-  var chordRow  = 'display:block;font-size:'+chordSize+';color:#8b0000;font-weight:700;line-height:1.4;min-height:1.4em';
+  var chordRow  = 'display:block;font-size:'+chordSize+';color:#8b0000;font-weight:700;line-height:1.4;min-height:1.4em;white-space:nowrap;overflow:hidden';
   var sepStyle  = 'display:inline-block;vertical-align:bottom;color:#000;font-size:16pt;font-weight:600;margin:0 4px 8px';
 
   var html = '';
@@ -1426,6 +1888,7 @@ function buildPrintBody() {
 
   notes.forEach(function(n) {
     if (n.label !== undefined) {
+      if (!inclLabels) return;
       if (n.isRepeat) {
         openLine();
         html += '<span style="display:inline-block;vertical-align:bottom;border:1px solid #27ae60;border-radius:4px;padding:1px 6px;color:#1a7a40;font-size:8pt;font-weight:700;margin:0 4px 4px">↺ '+n.label+'</span>';
@@ -1450,19 +1913,20 @@ function buildPrintBody() {
         else if (off === -1) dotBelow = d;
         else if (off <= -2)  dotBelow = d+d;
       }
-      var dotRowStyle = 'display:block;font-size:7pt;color:#aaa;line-height:1;text-align:center;letter-spacing:2px';
+      var dotRowStyle = 'display:block;font-size:7pt;color:#aaa;line-height:1;text-align:center;letter-spacing:2px;min-height:1em';
+      var chordDisplay = inclChords ? (n.chord || '') : '';
+      // Always render both dot rows so every cell has identical structure → consistent baseline
       html += '<span style="'+cellStyle+'">'
-            + '<span style="'+chordRow+'">'+(n.chord||'')+'</span>'
-            + (dotAbove ? '<span style="'+dotRowStyle+'">'+dotAbove+'</span>' : '')
-            + '<span style="font-size:'+noteSize+';font-weight:800;color:#000">'+noteName+'</span>'
-            + (dotBelow ? '<span style="'+dotRowStyle+'">'+dotBelow+'</span>' : '')
+            + '<span style="'+chordRow+'">'+chordDisplay+'</span>'
+            + '<span style="'+dotRowStyle+'">'+(dotAbove||'')+'</span>'
+            + '<span style="display:block;font-size:'+noteSize+';font-weight:800;color:#000;text-align:center;line-height:1.2">'+noteName+'</span>'
+            + '<span style="'+dotRowStyle+'">'+(dotBelow||'')+'</span>'
             + '</span>';
     }
   });
   closeLine();
 
-  var infoBar = '<div style="font-size:8pt;color:#aaa;margin-bottom:10px">Format: '+fmtLabel+'</div>';
-  document.getElementById('printBody').innerHTML = infoBar + html;
+  document.getElementById('printBody').innerHTML = html;
 }
 
 function downloadSession() {
@@ -1479,10 +1943,19 @@ function downloadSession() {
     carnaticVariants: carnaticVariants,
     savedAt: new Date().toISOString()
   };
-  var blob = new Blob([JSON.stringify(state, null, 2)], {type: 'application/json'});
+  var json = JSON.stringify(state, null, 2);
+  var filename = title.replace(/[^a-z0-9]/gi,'_') + '.swarasheet';
+  // Use native save dialog on desktop
+  if (window.electronApp && window.electronApp.saveFile) {
+    window.electronApp.saveFile(json, filename).then(function(res){
+      if (res && res.success) showToast('Session saved!', 'ok', 2000);
+    });
+    return;
+  }
+  var blob = new Blob([json], {type: 'application/json'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = title.replace(/[^a-z0-9]/gi,'_') + '.swarasheet';
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(a.href);
 }
@@ -1494,20 +1967,36 @@ function importSession(event) {
   reader.onload = function(e) {
     try {
       var state = JSON.parse(e.target.result);
-      if (!state.notes) { alert('Invalid SwaraSheet file.'); return; }
+      if (!state.notes) { showToast('Invalid SwaraSheet file.', 'err'); return; }
       restoreSession(state);
       event.target.value = ''; // reset file input
     } catch(err) {
-      alert('Could not read file. Make sure it is a .swarasheet file.');
+      showToast('Could not read file. Make sure it is a .swarasheet file.', 'err');
     }
   };
   reader.readAsText(file);
 }
 
 function exportPDF() {
-  if (notes.length === 0) { alert('No notes to export.'); return; }
-  buildPrintBody();
-  setTimeout(function(){ window.print(); }, 100);
+  if (notes.length === 0) { showToast('No notes to export yet.', 'warn'); return; }
+  var titleVal = ((document.getElementById('songTitle') || {}).value || '').trim();
+  document.getElementById('pdfTitle').value = titleVal;
+  document.getElementById('pdfModal').classList.add('show');
+}
+
+function closePdfModal() {
+  document.getElementById('pdfModal').classList.remove('show');
+}
+
+function doPrintPDF() {
+  var title      = document.getElementById('pdfTitle').value.trim() || 'Note Sheet';
+  var raag       = document.getElementById('pdfRaag').value.trim();
+  var taal       = document.getElementById('pdfTaal').value.trim();
+  var inclChords = document.getElementById('pdfToggleChords').classList.contains('on');
+  var inclLabels = document.getElementById('pdfToggleLabels').classList.contains('on');
+  closePdfModal();
+  buildPrintBody(title, raag, taal, inclChords, inclLabels);
+  setTimeout(function(){ window.print(); }, 150);
 }
 
 function buildWordNotes() {
@@ -1561,7 +2050,7 @@ function buildWordNotes() {
 }
 
 function exportWord() {
-  if (notes.length === 0) { alert('No notes to export.'); return; }
+  if (notes.length === 0) { showToast('No notes to export yet.', 'warn'); return; }
   var date      = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
   var noteCount = notes.filter(function(n){return n.label===undefined&&n.name!==' '&&n.name!=='\n';}).length;
   var fmtLabel  = {letter:'Letter',octave:'With Octave',indian:'Indian Sargam',carnatic:'Carnatic Sargam',dash:'Dash'}[fmt]||fmt;
@@ -1620,6 +2109,19 @@ document.addEventListener('keydown', function(e) {
     e.preventDefault();
     redo();
   }
+  // Transpose: Cmd/Ctrl + Up/Down
+  if (e.code === 'ArrowUp' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    if (notes.length > 0) transposeNotes(1);
+  }
+  if (e.code === 'ArrowDown' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    if (notes.length > 0) transposeNotes(-1);
+  }
+  // Escape cancels replace mode
+  if (e.code === 'Escape' && replacingIndex !== null) {
+    cancelReplace();
+  }
 });
 
 // Prevent buttons from stealing focus so spacebar always works
@@ -1631,6 +2133,8 @@ document.querySelectorAll('.btn, .fmt-btn, .toggle-opt').forEach(function(el) {
 renderHistory();
 renderBin();
 renderSeq();
+checkStorageHealth();
+
 
 function openManual() {
   document.getElementById('manualModal').style.display = 'block';
@@ -1667,6 +2171,163 @@ function printManual() {
 document.getElementById('manualModal').addEventListener('click', function(e){
   if (e.target === this) closeManual();
 });
+
+// ── NOTE REPLACE (double-click) ─────────────────────────────
+var replacingIndex = null;
+
+function replaceNoteAt(index) {
+  replacingIndex = index;
+  renderSeq(); // re-render to apply highlight class
+  document.getElementById('replaceHint').classList.add('show');
+}
+
+function cancelReplace() {
+  replacingIndex = null;
+  document.getElementById('replaceHint').classList.remove('show');
+  renderSeq();
+}
+
+// ── METRONOME ──────────────────────────────────────────────
+var metronomeTimer = null;
+var metroBpm = 80;
+var metroBeat = 0;
+var audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playClick(accent) {
+  var ctx = getAudioCtx();
+  var osc = ctx.createOscillator();
+  var gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.frequency.value = accent ? 1200 : 880;
+  gain.gain.setValueAtTime(accent ? 0.4 : 0.25, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.07);
+}
+
+function startMetronome() {
+  if (metronomeTimer) return;
+  var beatsPerBar = parseInt((document.getElementById('metroTimeSig') || {}).value || 4);
+  var dot = document.getElementById('statusDot');
+  metroBeat = 0;
+  metronomeTimer = setInterval(function() {
+    var isAccent = (metroBeat % beatsPerBar === 0);
+    playClick(isAccent);
+    if (dot) {
+      dot.style.transform = 'scale(1.5)';
+      setTimeout(function(){ dot.style.transform = ''; }, 80);
+    }
+    metroBeat++;
+  }, Math.round(60000 / metroBpm));
+  document.getElementById('metroStartBtn').textContent = '■ Stop';
+  document.getElementById('metroStartBtn').style.background = '#555';
+  showToast('Metronome started — ' + metroBpm + ' BPM', 'ok', 2000);
+}
+
+function stopMetronome() {
+  if (metronomeTimer) { clearInterval(metronomeTimer); metronomeTimer = null; }
+  document.getElementById('metroStartBtn').textContent = '▶ Start';
+  document.getElementById('metroStartBtn').style.background = '#e74c3c';
+}
+
+function toggleMetronome() {
+  if (metronomeTimer) stopMetronome(); else startMetronome();
+}
+
+function updateMetroBpm(val) {
+  metroBpm = Math.min(200, Math.max(40, parseInt(val) || 80));
+  document.getElementById('metroBpmInput').value = metroBpm;
+  if (metronomeTimer) { stopMetronome(); startMetronome(); }
+}
+
+// ── WHATSAPP SHARE ─────────────────────────────────────────
+function copyWhatsApp() {
+  var title = ((document.getElementById('songTitle') || {}).value || '').trim() || 'Note Sheet';
+  var date  = new Date().toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
+  var fmtLabel = {letter:'Letter',octave:'Octave',indian:'Indian Sargam',carnatic:'Carnatic Sargam',dash:'Dash'}[fmt] || fmt;
+
+  var result = '🎹 *' + title + '*\n';
+  result += '📅 ' + date + '  |  🎵 ' + fmtLabel + '\n\n';
+
+  notes.forEach(function(n, i) {
+    if (n.label !== undefined) {
+      result += n.isRepeat ? ' ↺ ' + n.label + ' ' : '\n*[ ' + n.label + ' ]*\n';
+    } else if (n.name === ' ') {
+      result += ' | ';
+    } else if (n.name === '\n') {
+      result += '\n';
+    } else {
+      if (n.chord) result += '_' + n.chord + '_';
+      var noteName = n.name.replace(/<[^>]+>/g,'');
+      var octMark = '';
+      if (n.midi !== undefined && fmt !== 'octave') {
+        var off = Math.floor(n.midi/12) - 1 - MIDDLE_OCTAVE;
+        if (off === 1)      octMark = "'";
+        else if (off >= 2)  octMark = "''";
+        else if (off === -1) octMark = ',';
+        else if (off <= -2)  octMark = ',,';
+      }
+      result += noteName + octMark;
+      var next = notes[i+1];
+      if (next && next.name !== ' ' && next.name !== '\n' && next.label === undefined) result += ' ';
+    }
+  });
+  result += '\n\n—\n_Chords Music Academy_\nchordsmusicacademy.in';
+
+  navigator.clipboard.writeText(result).then(function() {
+    showToast('📱 Copied for WhatsApp!', 'ok', 3000);
+    var btn = document.getElementById('shareBtn');
+    if (btn) { btn.textContent = '✅ Copied!'; setTimeout(function(){ btn.textContent = '📱 Share'; }, 2000); }
+  });
+}
+
+// ── TRANSPOSE ──────────────────────────────────────────────
+var transposeOffset = 0;
+
+function transposeChordName(chord, semitones) {
+  if (!chord) return chord;
+  var noteNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  var match = chord.match(/^([A-G][#b]?)(.*)/);
+  if (!match) return chord;
+  var root = match[1];
+  var quality = match[2];
+  // Find root index
+  var rootIdx = noteNames.indexOf(root);
+  if (rootIdx < 0) {
+    // try flat to sharp conversion
+    var flatMap = {'Db':1,'Eb':3,'Gb':6,'Ab':8,'Bb':10};
+    rootIdx = flatMap[root] !== undefined ? flatMap[root] : -1;
+  }
+  if (rootIdx < 0) return chord;
+  var newRoot = noteNames[((rootIdx + semitones) % 12 + 12) % 12];
+  return newRoot + quality;
+}
+
+function transposeNotes(semitones) {
+  var prevNotes = JSON.parse(JSON.stringify(notes));
+  notes = notes.map(function(n) {
+    if (n.label !== undefined || n.name === ' ' || n.name === '\n') return n;
+    if (n.midi === undefined || n.midi === null) return n;
+    var newMidi = n.midi + semitones;
+    if (newMidi < 0 || newMidi > 127) return n;
+    var newChord = transposeChordName(n.chord, semitones);
+    return {name: getNoteName(newMidi), midi: newMidi, chord: newChord};
+  });
+  undoStack.push({type:'transpose', prev: prevNotes, semitones: semitones});
+  redoStack = [];
+  transposeOffset += semitones;
+  var statusEl = document.getElementById('transposeStatus');
+  if (statusEl) statusEl.textContent = transposeOffset === 0 ? '' : (transposeOffset > 0 ? '+' : '') + transposeOffset + ' st from original';
+  renderSeq();
+  showToast('Transposed ' + (semitones > 0 ? '+' : '') + semitones + ' semitone' + (Math.abs(semitones) > 1 ? 's' : ''), 'ok', 2000);
+}
+
 </script>
 </body>
 </html>
