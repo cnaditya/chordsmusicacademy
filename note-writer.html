@@ -1194,7 +1194,7 @@ function buildPrintBody() {
   var noteSize  = '14pt';
   var chordSize = '8pt';
   var cellStyle = 'display:inline-block;text-align:center;vertical-align:bottom;margin:0 2px 4px';
-  var chordRow  = 'display:block;font-size:'+chordSize+';color:#c0392b;font-weight:700;line-height:1.4;min-height:1.4em';
+  var chordRow  = 'display:block;font-size:'+chordSize+';color:#8b0000;font-weight:700;line-height:1.4;min-height:1.4em';
   var sepStyle  = 'display:inline-block;vertical-align:bottom;color:#999;font-size:12pt;font-weight:400;margin:0 4px 4px';
 
   var html = '';
@@ -1224,8 +1224,7 @@ function buildPrintBody() {
     } else {
       openLine();
       var noteName = n.name.replace(/<[^>]+>/g,'');
-      var isSharp  = n.midi !== undefined && [1,3,6,8,10].indexOf(n.midi%12) >= 0;
-      var noteColor = isSharp ? '#c0392b' : '#1a3a6e';
+      var noteColor = '#000';
       var octMark = '';
       if (n.midi !== undefined && fmt !== 'octave') {
         var off = Math.floor(n.midi/12) - 1 - MIDDLE_OCTAVE;
