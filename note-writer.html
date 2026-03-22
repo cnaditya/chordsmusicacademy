@@ -1528,7 +1528,8 @@ function undo() {
   var action = undoStack.pop();
   redoStack.push(action);
   if (action.type === 'note') {
-    notes.pop();
+    var removed = notes.pop();
+    if (removed !== undefined) action.note = removed; // ensure redo can restore it
     renderSeq();
   } else if (action.type === 'chord') {
     notes[action.noteIndex].chord = action.prev;
@@ -2092,7 +2093,7 @@ document.addEventListener('keydown', function(e) {
   if (e.code === 'Enter') {
     e.preventDefault();
     notes.push({name:'\n'});
-    undoStack.push({type:'note'});
+    undoStack.push({type:'note', note:{name:'\n'}});
     renderSeq();
   }
   if (e.code === 'Backspace' || e.code === 'Delete') {
