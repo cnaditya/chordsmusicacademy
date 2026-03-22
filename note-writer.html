@@ -416,6 +416,10 @@ function checkPw(){
   <button class="btn btn-undo" onclick="undoNote()" style="min-width:0">↩ Undo</button>
   <button class="btn btn-clear" onclick="clearNotes()" style="min-width:0">🗑 Clear</button>
   <button class="btn" onclick="saveNamedSession()" style="min-width:0;background:#0e1a2e;border:1px solid #1e3a5a;color:#7eb3ff;font-weight:700">💾 Save</button>
+  <button class="btn" onclick="downloadSession()" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700">⬇ Download</button>
+  <label class="btn" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center">
+    ⬆ Import<input type="file" accept=".swarasheet,.json" onchange="importSession(event)" style="display:none">
+  </label>
   <button class="btn btn-pdf" onclick="exportPDF()" style="flex:2;min-width:0">📄 Export PDF</button>
 </div>
 
@@ -1242,6 +1246,45 @@ function buildPrintBody() {
 
   var infoBar = '<div style="font-size:8pt;color:#aaa;margin-bottom:10px">Format: '+fmtLabel+'</div>';
   document.getElementById('printBody').innerHTML = infoBar + html;
+}
+
+function downloadSession() {
+  if (notes.length === 0) return;
+  var title = ((document.getElementById('songTitle')||{}).value||'').trim() || 'notes';
+  var state = {
+    version: 1,
+    title: title,
+    notes: notes,
+    fmt: fmt,
+    saTonic: saTonic,
+    sep: sep,
+    noteFontSize: noteFontSize,
+    carnaticVariants: carnaticVariants,
+    savedAt: new Date().toISOString()
+  };
+  var blob = new Blob([JSON.stringify(state, null, 2)], {type: 'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = title.replace(/[^a-z0-9]/gi,'_') + '.swarasheet';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importSession(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var state = JSON.parse(e.target.result);
+      if (!state.notes) { alert('Invalid SwaraSheet file.'); return; }
+      restoreSession(state);
+      event.target.value = ''; // reset file input
+    } catch(err) {
+      alert('Could not read file. Make sure it is a .swarasheet file.');
+    }
+  };
+  reader.readAsText(file);
 }
 
 function exportPDF() {
