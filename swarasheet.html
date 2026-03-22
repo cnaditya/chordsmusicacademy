@@ -1086,22 +1086,21 @@ function changeNoteSize(delta) {
 }
 
 function octDots(midiNote, dotSize) {
-  // Dots are absolutely positioned — do NOT affect the note's baseline at all
-  if (midiNote === undefined || fmt === 'octave') return {open:'', close:''};
-  var oct = Math.floor(midiNote / 12) - 1;
-  var offset = oct - MIDDLE_OCTAVE;
-  if (offset === 0) return {open:'', close:''};
-  var sz = dotSize || '0.26em';
-  var d = '\u25CF';
-  var aboveStyle = 'position:absolute;left:0;right:0;bottom:100%;margin-bottom:2px;text-align:center;font-size:'+sz+';color:#aaa;line-height:1;letter-spacing:3px';
-  var belowStyle = 'position:absolute;left:0;right:0;top:100%;margin-top:2px;text-align:center;font-size:'+sz+';color:#aaa;line-height:1;letter-spacing:3px';
-  var wo = '<span style="display:inline-block;position:relative;vertical-align:baseline;line-height:1">';
-  var wc = '</span>';
-  if (offset >= 2)   return {open: wo + '<span style="'+aboveStyle+'">' + d+d + '</span>', close: wc};
-  if (offset === 1)  return {open: wo + '<span style="'+aboveStyle+'">' + d   + '</span>', close: wc};
-  if (offset === -1) return {open: wo,  close: '<span style="'+belowStyle+'">' + d   + '</span>' + wc};
-  if (offset <= -2)  return {open: wo,  close: '<span style="'+belowStyle+'">' + d+d + '</span>' + wc};
-  return {open:'', close:''};
+  return {open:'', close:''}; // replaced by octPrime marks in app display
+}
+
+// Prime marks: Sa' = high octave, Sa, = low octave (traditional Indian notation)
+function octPrime(midiNote) {
+  if (midiNote === undefined || fmt === 'octave') return '';
+  var offset = Math.floor(midiNote / 12) - 1 - MIDDLE_OCTAVE;
+  if (offset === 0) return '';
+  var hiStyle = 'font-size:0.55em;color:#7eb3ff;vertical-align:super;font-weight:900;letter-spacing:0';
+  var loStyle = 'font-size:0.55em;color:#f39c12;vertical-align:sub;font-weight:900;letter-spacing:0';
+  if (offset >= 2)  return '<span style="'+hiStyle+'">\u2032\u2032</span>'; // ′′
+  if (offset === 1) return '<span style="'+hiStyle+'">\u2032</span>';        // ′
+  if (offset === -1)return '<span style="'+loStyle+'">\u002C</span>';        // ,
+  if (offset <= -2) return '<span style="'+loStyle+'">\u002C\u002C</span>'; // ,,
+  return '';
 }
 
 function renderSeq() {
@@ -1146,31 +1145,20 @@ function renderSeq() {
       var showLbl = chord || currentMode === 'chord';
       var displayName = n.name.replace(/([¹²³])/g, '<sup>$1</sup>')
                                .replace(/([SRGMPDNsrgmpdn])([123])/g, '$1<sup style="font-size:0.55em;vertical-align:super">$2</sup>');
-      var od = octDots(n.midi);
+      var prime = octPrime(n.midi);
       var isReplacing = (replacingIndex === i);
-      var noteSpan = '<span class="' + (isSharp ? 's' : 'n') + (isReplacing ? ' replacing-note' : '') + '" data-note-index="' + i + '" oncontextmenu="deleteNoteAt(' + i + ',event)" ondblclick="replaceNoteAt(' + i + ')" title="Double-click to replace · Right-click to delete">' + displayName + '</span>';
-      var noteHtml = od.open + noteSpan + od.close;
+      var noteSpan = '<span class="' + (isSharp ? 's' : 'n') + (isReplacing ? ' replacing-note' : '') + '" data-note-index="' + i + '" oncontextmenu="deleteNoteAt(' + i + ',event)" ondblclick="replaceNoteAt(' + i + ')" title="Double-click to replace · Right-click to delete">' + displayName + prime + '</span>';
       if (showLbl) {
-        // Compute inline dots for consistent height inside note-wrap
-        var dotA = '', dotB = '';
-        if (n.midi !== undefined && fmt !== 'octave') {
-          var off2 = Math.floor(n.midi/12) - 1 - MIDDLE_OCTAVE;
-          var dd = '\u25CF';
-          if (off2 >= 2) dotA = dd+dd; else if (off2 === 1) dotA = dd;
-          else if (off2 === -1) dotB = dd; else if (off2 <= -2) dotB = dd+dd;
-        }
         html += '<span class="note-wrap">'
               + '<span class="note-chord-lbl ' + (chord ? 'has-chord' : 'no-chord') + '" '
               + 'onclick="editChordOnNote(' + i + ')" '
               + 'oncontextmenu="clearChordOnNote(' + i + ',event)" '
               + 'title="' + (chord ? 'Click to edit · Right-click to clear' : 'Click to add chord') + '">'
               + (chord ? chord : '+') + '</span>'
-              + '<span class="note-dot">' + dotA + '</span>'
               + noteSpan
-              + '<span class="note-dot">' + dotB + '</span>'
               + '</span>';
       } else {
-        html += noteHtml;
+        html += noteSpan;
       }
       if (i < notes.length - 1 && notes[i+1] && notes[i+1].name !== ' ' && notes[i+1].name !== '\n' && notes[i+1].label === undefined) {
         html += '<span style="color:#333">' + (sep === ' ' ? ' ' : sep) + '</span>';
