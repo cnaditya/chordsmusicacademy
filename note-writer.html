@@ -1097,7 +1097,7 @@ function setSa(tonic) {
 }
 
 function restoreSession(h) {
-  notes = h.notes || [];
+  notes = JSON.parse(JSON.stringify(h.notes || []));
   undoStack = [];
   redoStack = [];
   // Set variables directly — no remapNotes, notes already have correct names
