@@ -266,7 +266,146 @@ function checkPw(){
   <div class="hdr-right">
     <div class="status-dot waiting" id="statusDot" style="width:10px;height:10px;border-radius:50%;background:#333;flex-shrink:0;transition:.3s"></div>
     <div class="device-name" id="deviceName" style="display:none"></div>
+    <button onclick="openManual()" style="flex:none;padding:6px 14px;font-size:0.75rem;font-weight:700;border-radius:20px;border:1px solid #2a2a4a;background:transparent;color:#888;cursor:pointer">? Help</button>
     <button class="btn btn-connect" id="connectBtn" onclick="connectMIDI()" style="flex:none;padding:6px 18px;font-size:0.75rem;border-radius:20px;white-space:nowrap">🔌 Connect</button>
+  </div>
+</div>
+
+<!-- User Manual Modal -->
+<div id="manualModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9000;overflow-y:auto;padding:24px 16px">
+  <div style="background:#12122a;border:1px solid #2a2a4a;border-radius:16px;max-width:720px;margin:0 auto;padding:32px 36px;position:relative;color:#dde">
+    <button onclick="closeManual()" style="position:absolute;top:16px;right:20px;background:transparent;border:none;color:#666;font-size:1.4rem;cursor:pointer;line-height:1">✕</button>
+    <button onclick="printManual()" style="position:absolute;top:16px;right:60px;background:#1a3a2a;border:1px solid #2ecc71;color:#2ecc71;font-size:0.72rem;font-weight:700;border-radius:8px;padding:5px 12px;cursor:pointer">⬇ Download PDF</button>
+
+    <div id="manualContent">
+    <div style="text-align:center;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid #2a2a4a">
+      <div style="font-size:2rem;margin-bottom:6px">🎹</div>
+      <div style="font-size:1.5rem;font-weight:900;color:#ff6b6b;letter-spacing:1px">SwaraSheet</div>
+      <div style="font-size:0.78rem;color:#666;margin-top:4px">User Manual — Chords Music Academy</div>
+    </div>
+
+    <div style="display:grid;gap:22px">
+
+    <div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">1. What is SwaraSheet?</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">SwaraSheet captures notes from your MIDI keyboard and converts them into text notation in real time — Western (C D E F), Indian Sargam (Sa Ri Ga Ma), and Carnatic. Use it to transcribe songs, create note sheets, and export as PDF.</div>
+    </div>
+
+    <div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">2. Connecting Your MIDI Keyboard</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
+        <b style="color:#dde">Step 1:</b> Connect keyboard via USB cable to your computer.<br>
+        <b style="color:#dde">Step 2:</b> Click the <b style="color:#e74c3c">🔌 Connect</b> button (top right).<br>
+        <b style="color:#dde">Step 3:</b> Allow MIDI access when browser asks.<br>
+        <b style="color:#dde">Step 4:</b> Status dot turns green — you're ready.<br><br>
+        <span style="color:#f39c12">⚠️ Only works in Chrome or Edge browser (not Firefox/Safari).</span>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">3. Notation Formats</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">Choose your format from the buttons in the Controls section:
+        <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:0.78rem">
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:6px 8px;color:#dde;font-weight:700">Letter</td><td style="padding:6px 8px;color:#888">C D E F G A B C#</td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:6px 8px;color:#dde;font-weight:700">With Octave</td><td style="padding:6px 8px;color:#888">C4 D4 E4 F4 (includes octave number)</td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:6px 8px;color:#dde;font-weight:700">Indian Sargam</td><td style="padding:6px 8px;color:#888">Sa Ri Ga Ma Pa Da Ni (with dot for octave)</td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:6px 8px;color:#dde;font-weight:700">Carnatic</td><td style="padding:6px 8px;color:#888">S R1 R2 G1 G2 G3 M1 M2 P D1 D2 N3…</td></tr>
+          <tr><td style="padding:6px 8px;color:#dde;font-weight:700">Dash</td><td style="padding:6px 8px;color:#888">C-D-E-F (hyphen separated)</td></tr>
+        </table>
+        <br>You can switch format any time — notes automatically re-convert.
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">4. Indian / Carnatic Settings</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
+        <b style="color:#dde">Sa (Root note):</b> Select which key is Sa — C, C#, D, D#… up to B. This shifts all Indian/Carnatic note names accordingly.<br><br>
+        <b style="color:#dde">Carnatic Variants:</b> For ambiguous pitches, choose between:<br>
+        &nbsp;• D → R2 or G1 &nbsp;• D# → R3 or G2<br>
+        &nbsp;• A → D2 or N1 &nbsp;• A# → D3 or N2<br><br>
+        <b style="color:#dde">Octave dots:</b> Middle octave = no dot. One dot above = octave higher. One dot below = octave lower.
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">5. Recording Notes</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
+        Once connected, just play your keyboard — notes appear in the sequence box automatically.<br><br>
+        <b style="color:#dde">⏸ Pause:</b> Temporarily stop recording (keyboard won't add notes). Click again to resume.<br><br>
+        <b style="color:#dde">Separator:</b> Choose how notes are separated — Space, Comma, Dash, or New Line.
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">6. Editing Notes</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
+        <b style="color:#dde">Delete last note:</b> Press <b>Delete</b> or <b>Backspace</b> key, or click <b>↩ Undo</b> button.<br>
+        <b style="color:#dde">Delete any note:</b> Right-click on the note → it is removed.<br>
+        <b style="color:#dde">Font size:</b> Use <b>A−</b> and <b>A+</b> buttons, or type a value directly in the size box.<br>
+        <b style="color:#dde">New line:</b> Press <b>Enter</b> key to start a new line.<br>
+        <b style="color:#dde">Bar line ( | ):</b> Press <b>Space</b> key, or click the <b>Bar</b> button.
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">7. Section Labels</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
+        Click the <b style="color:#e67e22">§ Label</b> button to open the label panel.<br><br>
+        <b style="color:#dde">Indian labels:</b> Pallavi, Anupallavi, Charanam, Sthayi, Antara, Sanchari<br>
+        <b style="color:#dde">Western labels:</b> Intro, Verse, Chorus, Bridge, Outro<br>
+        <b style="color:#dde">Repeat markers:</b> ↺ Repeat, ×2, ×3 — appear inline on the same line as notes<br><br>
+        You can also type a custom label and click <b>+ Add</b>.
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">8. Chords</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
+        Switch to <b style="color:#dde">🎸 Chord mode</b> and hold keys on your keyboard — the detected chord appears in the "Detected" display.<br><br>
+        Click <b>↑ Apply</b> to apply it to the last note, or click any note's chord label (shown in orange above the note) to assign/change it.<br><br>
+        Chords appear above notes in the sequence and in the PDF export.
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">9. Copy, Export &amp; Share</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
+        <b style="color:#dde">📋 Copy All:</b> Copies all notes as plain text (includes chords, octave marks, section labels, bar lines) — paste into WhatsApp, Word, etc.<br><br>
+        <b style="color:#dde">Copy line 📋:</b> Each line has a copy icon at the end — copies just that one line.<br><br>
+        <b style="color:#dde">Export PDF:</b> Generates a formatted note sheet with academy header, watermark, and copyright. Print or save as PDF from the browser dialog.
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">10. Saving &amp; Loading Sessions</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
+        <b style="color:#dde">💾 Save:</b> Type a song title and click Save — stores the full session (notes, format, Sa setting, chords) in your browser.<br><br>
+        <b style="color:#dde">▶ Load:</b> Opens a saved session. Your current notes are not overwritten — load any time.<br><br>
+        <b style="color:#dde">+ New:</b> Clears everything to start a fresh song.<br><br>
+        <b style="color:#dde">⬇ Download:</b> Saves a <code style="color:#7eb3ff">.swarasheet</code> file to your computer.<br>
+        <b style="color:#dde">⬆ Import:</b> Load a <code style="color:#7eb3ff">.swarasheet</code> file back — works across devices.<br><br>
+        <b style="color:#dde">🗑 Bin:</b> Deleted sessions go to Bin first. Click ↩ Restore to recover, or 🗑 Delete to permanently remove.
+      </div>
+    </div>
+
+    <div style="background:#0e0e24;border-radius:10px;padding:16px;border:1px solid #2a2a4a">
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e67e22;font-weight:800;margin-bottom:8px">Quick Keyboard Shortcuts</div>
+      <div style="font-size:0.78rem;color:#aaa;line-height:2;display:grid;grid-template-columns:1fr 1fr;gap:0 24px">
+        <div><b style="color:#dde">Space</b> — Add bar line ( | )</div>
+        <div><b style="color:#dde">Enter</b> — New line</div>
+        <div><b style="color:#dde">Delete / Backspace</b> — Undo last note</div>
+        <div><b style="color:#dde">Cmd+Z / Ctrl+Z</b> — Undo</div>
+        <div><b style="color:#dde">Cmd+Shift+Z</b> — Redo</div>
+        <div><b style="color:#dde">Right-click note</b> — Delete that note</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding-top:16px;border-top:1px solid #2a2a4a;font-size:0.72rem;color:#444">
+      © 2026 SwaraSheet · Chords Music Academy, Hyderabad · chordsmusicacademy.in
+    </div>
+
+    </div><!-- end grid -->
+    </div><!-- end manualContent -->
   </div>
 </div>
 
@@ -1492,6 +1631,42 @@ document.querySelectorAll('.btn, .fmt-btn, .toggle-opt').forEach(function(el) {
 renderHistory();
 renderBin();
 renderSeq();
+
+function openManual() {
+  document.getElementById('manualModal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+function closeManual() {
+  document.getElementById('manualModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function printManual() {
+  var w = window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>SwaraSheet User Manual</title>'
+    + '<style>body{font-family:Segoe UI,Arial,sans-serif;color:#111;max-width:700px;margin:0 auto;padding:32px 24px;font-size:13px;line-height:1.7}'
+    + 'h1{font-size:22px;color:#e74c3c;margin-bottom:4px} .sub{color:#999;font-size:11px;margin-bottom:28px}'
+    + 'h2{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin:22px 0 8px;border-bottom:1px solid #eee;padding-bottom:4px}'
+    + 'table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}'
+    + 'td{padding:5px 8px;border-bottom:1px solid #eee}'
+    + 'td:first-child{font-weight:700;width:140px}'
+    + '.box{background:#f8f8f8;border-radius:8px;padding:14px;border:1px solid #eee;margin-top:10px}'
+    + '.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}'
+    + 'b{color:#222} code{color:#1a5cb5}'
+    + '.footer{text-align:center;margin-top:32px;padding-top:12px;border-top:1px solid #eee;color:#aaa;font-size:10px}'
+    + '@media print{body{padding:10px}}'
+    + '</style></head><body>'
+    + '<h1>🎹 SwaraSheet</h1><div class="sub">User Manual — Chords Music Academy, Hyderabad</div>'
+    + document.getElementById('manualContent').innerHTML
+      .replace(/style="[^"]*color:#[0-9a-fA-F]{3,6}[^"]*"/g, '')  // strip dark colors for print
+    + '<div class="footer">© 2026 SwaraSheet · Chords Music Academy · chordsmusicacademy.in</div>'
+    + '</body></html>');
+  w.document.close();
+  w.focus();
+  setTimeout(function(){ w.print(); }, 600);
+}
+document.getElementById('manualModal').addEventListener('click', function(e){
+  if (e.target === this) closeManual();
+});
 </script>
 </body>
 </html>
