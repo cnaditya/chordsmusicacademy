@@ -1397,6 +1397,7 @@ function buildPianoKeys() {
 
 function addVirtualNote(midiNote) {
   var name = getNoteName(midiNote);
+  playPianoNote(midiNote);
   updateLive(midiNote);
   if (replacingIndex !== null) {
     var prevNote = JSON.parse(JSON.stringify(notes[replacingIndex]));
@@ -2215,6 +2216,36 @@ var audioCtx = null;
 function getAudioCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   return audioCtx;
+}
+
+// Play a piano-like tone for the given MIDI note number
+function playPianoNote(midi) {
+  try {
+    var ctx = getAudioCtx();
+    var freq = 440 * Math.pow(2, (midi - 69) / 12);
+    var now = ctx.currentTime;
+
+    // Master gain with fast decay envelope (piano-like)
+    var master = ctx.createGain();
+    master.gain.setValueAtTime(0.001, now);
+    master.gain.exponentialRampToValueAtTime(0.45, now + 0.008); // fast attack
+    master.gain.exponentialRampToValueAtTime(0.18, now + 0.1);   // quick decay
+    master.gain.exponentialRampToValueAtTime(0.001, now + 1.2);  // natural release
+    master.connect(ctx.destination);
+
+    // Fundamental + harmonics for richer piano timbre
+    [[1, 0.7], [2, 0.2], [3, 0.08], [4, 0.04]].forEach(function(h) {
+      var osc = ctx.createOscillator();
+      var g   = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq * h[0], now);
+      g.gain.setValueAtTime(h[1], now);
+      osc.connect(g);
+      g.connect(master);
+      osc.start(now);
+      osc.stop(now + 1.4);
+    });
+  } catch(e) {}
 }
 
 function playClick(accent) {
