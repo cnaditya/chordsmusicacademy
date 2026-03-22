@@ -1197,9 +1197,9 @@ function buildPrintBody() {
   // Note cell: chord above, note below — same as app but compact
   var noteSize  = '14pt';
   var chordSize = '8pt';
-  var cellStyle = 'display:inline-block;text-align:center;vertical-align:bottom;margin:0 2px 4px';
+  var cellStyle = 'display:inline-block;text-align:center;vertical-align:bottom;margin:0 3px 8px;position:relative';
   var chordRow  = 'display:block;font-size:'+chordSize+';color:#8b0000;font-weight:700;line-height:1.4;min-height:1.4em';
-  var sepStyle  = 'display:inline-block;vertical-align:bottom;color:#999;font-size:12pt;font-weight:400;margin:0 4px 4px';
+  var sepStyle  = 'display:inline-block;vertical-align:bottom;color:#999;font-size:12pt;font-weight:400;margin:0 4px 8px';
 
   var html = '';
   var lineOpen = false;
@@ -1228,17 +1228,12 @@ function buildPrintBody() {
     } else {
       openLine();
       var noteName = n.name.replace(/<[^>]+>/g,'');
-      var noteColor = '#000';
-      var octMark = '';
-      if (n.midi !== undefined && fmt !== 'octave') {
-        var off = Math.floor(n.midi/12) - 1 - MIDDLE_OCTAVE;
-        if (off===1) octMark="'"; else if (off>=2) octMark="''";
-        else if (off===-1) octMark=','; else if (off<=-2) octMark=',,';
-      }
+      var od = octDots(n.midi, '0.5em');
       html += '<span style="'+cellStyle+'">'
             + '<span style="'+chordRow+'">'+(n.chord||'')+'</span>'
-            + '<span style="font-size:'+noteSize+';font-weight:800;color:'+noteColor+'">'+noteName+'</span>'
-            + (octMark ? '<sup style="font-size:7pt;color:#888">'+octMark+'</sup>' : '')
+            + od.open
+            + '<span style="font-size:'+noteSize+';font-weight:800;color:#000">'+noteName+'</span>'
+            + od.close
             + '</span>';
     }
   });
