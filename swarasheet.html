@@ -264,7 +264,8 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 /* On-screen piano keyboard */
 .onscreen-piano{background:#0e0e24;border:1px solid #1a1a30;border-radius:14px;padding:14px 20px;margin-top:14px;display:none}
 .onscreen-piano.show{display:block}
-.piano-keys{display:flex;position:relative;height:72px;gap:0;user-select:none}
+.piano-keys-wrap{overflow-x:auto;padding-bottom:6px}
+.piano-keys{display:flex;position:relative;height:72px;gap:0;user-select:none;width:max-content}
 .pk-white{width:36px;height:72px;background:linear-gradient(180deg,#e8e8f0,#fff);border:1px solid #ccc;border-radius:0 0 5px 5px;cursor:pointer;flex-shrink:0;position:relative;z-index:1;transition:background .08s;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px}
 .pk-white:hover,.pk-white:active{background:linear-gradient(180deg,#d0e4ff,#b8d4ff)}
 .pk-white .pk-label{font-size:0.5rem;color:#999;font-weight:700;pointer-events:none}
@@ -546,8 +547,10 @@ async function checkPw(){
 
 <!-- On-screen piano keyboard -->
 <div class="onscreen-piano" id="onscreenPiano">
-  <div class="piano-row-label">On-Screen Keyboard — click to play</div>
-  <div class="piano-keys" id="pianoKeys"></div>
+  <div class="piano-row-label">On-Screen Keyboard — click to play &nbsp;<span style="color:#555;font-size:0.55rem">C3 · C4 (middle) · C5</span></div>
+  <div class="piano-keys-wrap">
+    <div class="piano-keys" id="pianoKeys"></div>
+  </div>
 </div>
 
 <!-- Controls card -->
@@ -1307,12 +1310,12 @@ function insertBarAt(index) {
 }
 
 // ── ON-SCREEN PIANO ────────────────────────────────────────
-// Renders C3 (MIDI 48) through B4 (MIDI 71) — 2 octaves
+// Renders C3 (MIDI 48) through B5 (MIDI 83) — 3 octaves (below middle, middle, above middle)
 var pianoVisible = false;
 
 function buildPianoKeys() {
   var container = document.getElementById('pianoKeys');
-  if (container.children.length > 0) return; // already built
+  container.innerHTML = ''; // always rebuild (octave count may have changed)
   // White key MIDI offsets within octave: C D E F G A B = 0,2,4,5,7,9,11
   var whiteOffsets = [0,2,4,5,7,9,11];
   // Black key positions relative to white keys: between W0-W1, W1-W2, W3-W4, W4-W5, W5-W6
@@ -1327,7 +1330,7 @@ function buildPianoKeys() {
   // We need to place black keys absolutely, so track white key positions
   var whitePositions = []; // x positions of each white key
 
-  for (var octave = 0; octave < 2; octave++) {
+  for (var octave = 0; octave < 3; octave++) {
     for (var i = 0; i < 12; i++) {
       var midi = startMidi + octave * 12 + i;
       var isBlack = [1,3,6,8,10].indexOf(i) >= 0;
@@ -1349,7 +1352,7 @@ function buildPianoKeys() {
   }
   // Now add black keys absolutely positioned
   whiteIdx = 0;
-  for (var octave2 = 0; octave2 < 2; octave2++) {
+  for (var octave2 = 0; octave2 < 3; octave2++) {
     var wIdx = octave2 * 7; // white key index within container for this octave
     for (var i2 = 0; i2 < 12; i2++) {
       var midi2 = startMidi + octave2 * 12 + i2;
