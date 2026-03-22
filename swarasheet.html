@@ -1094,8 +1094,8 @@ function octPrime(midiNote) {
   if (midiNote === undefined || fmt === 'octave') return '';
   var offset = Math.floor(midiNote / 12) - 1 - MIDDLE_OCTAVE;
   if (offset === 0) return '';
-  var hiStyle = 'font-size:0.55em;color:#7eb3ff;vertical-align:super;font-weight:900;letter-spacing:0';
-  var loStyle = 'font-size:0.55em;color:#f39c12;vertical-align:sub;font-weight:900;letter-spacing:0';
+  var hiStyle = 'font-size:0.55em;color:#7eb3ff;position:relative;top:-0.45em;font-weight:900;line-height:0';
+  var loStyle = 'font-size:0.55em;color:#f39c12;position:relative;top:0.25em;font-weight:900;line-height:0';
   if (offset >= 2)  return '<span style="'+hiStyle+'">\u2032\u2032</span>'; // ′′
   if (offset === 1) return '<span style="'+hiStyle+'">\u2032</span>';        // ′
   if (offset === -1)return '<span style="'+loStyle+'">\u002C</span>';        // ,
@@ -1900,10 +1900,10 @@ function buildPrintBody(titleOverride, raag, taal, inclChords, inclLabels) {
       var prime = '';
       if (n.midi !== undefined && fmt !== 'octave') {
         var off = Math.floor(n.midi/12) - 1 - MIDDLE_OCTAVE;
-        if (off >= 2)        prime = '<span style="font-size:0.75em;color:#1a56b0;vertical-align:super;font-weight:900">\u2032\u2032</span>';
-        else if (off === 1)  prime = '<span style="font-size:0.75em;color:#1a56b0;vertical-align:super;font-weight:900">\u2032</span>';
-        else if (off === -1) prime = '<span style="font-size:0.75em;color:#b45309;vertical-align:sub;font-weight:900">\u002C</span>';
-        else if (off <= -2)  prime = '<span style="font-size:0.75em;color:#b45309;vertical-align:sub;font-weight:900">\u002C\u002C</span>';
+        if (off >= 2)        prime = '<span style="font-size:0.75em;color:#1a56b0;position:relative;top:-0.45em;font-weight:900;line-height:0">\u2032\u2032</span>';
+        else if (off === 1)  prime = '<span style="font-size:0.75em;color:#1a56b0;position:relative;top:-0.45em;font-weight:900;line-height:0">\u2032</span>';
+        else if (off === -1) prime = '<span style="font-size:0.75em;color:#b45309;position:relative;top:0.25em;font-weight:900;line-height:0">\u002C</span>';
+        else if (off <= -2)  prime = '<span style="font-size:0.75em;color:#b45309;position:relative;top:0.25em;font-weight:900;line-height:0">\u002C\u002C</span>';
       }
       var chordDisplay = inclChords ? (n.chord || '') : '';
       html += '<span style="'+cellStyle+'">'
