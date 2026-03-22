@@ -717,11 +717,18 @@ function renderSeq() {
 
   notes.forEach(function(n, i) {
     if (n.label !== undefined) {
-      // Before label, close previous line if any notes exist
-      if (i > lineStart) html += copyLineBtn(lineStart, i - 1);
-      html += '<span class="sec-label' + (n.isRepeat ? ' repeat' : '') + '" oncontextmenu="deleteNoteAt(' + i + ',event)" title="Right-click to delete">'
-            + n.label + '</span>';
-      lineStart = i + 1;
+      if (n.isRepeat) {
+        // Repeat markers stay inline on same line
+        html += '<span oncontextmenu="deleteNoteAt(' + i + ',event)" title="Right-click to delete" '
+              + 'style="display:inline-block;vertical-align:middle;margin:0 6px;padding:2px 10px;border:1px solid #2ecc71;border-radius:10px;color:#2ecc71;font-size:0.65rem;font-weight:800;letter-spacing:1px;cursor:context-menu;user-select:none">'
+              + '↺ ' + n.label + '</span>';
+      } else {
+        // Section headers (Pallavi, Verse etc.) are full-width blocks
+        if (i > lineStart) html += copyLineBtn(lineStart, i - 1);
+        html += '<span class="sec-label" oncontextmenu="deleteNoteAt(' + i + ',event)" title="Right-click to delete">'
+              + n.label + '</span>';
+        lineStart = i + 1;
+      }
     } else if (n.name === '\n') {
       // End of line — add copy button before the line break
       if (i > lineStart) html += copyLineBtn(lineStart, i - 1);
