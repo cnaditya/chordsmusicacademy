@@ -1896,23 +1896,19 @@ function buildPrintBody(titleOverride, raag, taal, inclChords, inclLabels) {
     } else {
       openLine();
       var noteName = n.name.replace(/<[^>]+>/g,'');
-      var dotAbove = '', dotBelow = '';
+      // Prime marks — same as app display
+      var prime = '';
       if (n.midi !== undefined && fmt !== 'octave') {
         var off = Math.floor(n.midi/12) - 1 - MIDDLE_OCTAVE;
-        var d = '\u25CF';
-        if (off >= 2)       dotAbove = d+d;
-        else if (off === 1)  dotAbove = d;
-        else if (off === -1) dotBelow = d;
-        else if (off <= -2)  dotBelow = d+d;
+        if (off >= 2)        prime = '<span style="font-size:0.55em;color:#1a56b0;vertical-align:super;font-weight:900">\u2032\u2032</span>';
+        else if (off === 1)  prime = '<span style="font-size:0.55em;color:#1a56b0;vertical-align:super;font-weight:900">\u2032</span>';
+        else if (off === -1) prime = '<span style="font-size:0.55em;color:#b45309;vertical-align:sub;font-weight:900">\u002C</span>';
+        else if (off <= -2)  prime = '<span style="font-size:0.55em;color:#b45309;vertical-align:sub;font-weight:900">\u002C\u002C</span>';
       }
-      var dotRowStyle = 'display:block;font-size:7pt;color:#aaa;line-height:1;text-align:center;letter-spacing:2px;min-height:1em';
       var chordDisplay = inclChords ? (n.chord || '') : '';
-      // Always render both dot rows so every cell has identical structure → consistent baseline
       html += '<span style="'+cellStyle+'">'
             + '<span style="'+chordRow+'">'+chordDisplay+'</span>'
-            + '<span style="'+dotRowStyle+'">'+(dotAbove||'')+'</span>'
-            + '<span style="display:block;font-size:'+noteSize+';font-weight:800;color:#000;text-align:center;line-height:1.2">'+noteName+'</span>'
-            + '<span style="'+dotRowStyle+'">'+(dotBelow||'')+'</span>'
+            + '<span style="display:block;font-size:'+noteSize+';font-weight:800;color:#000;text-align:center;line-height:1.2">'+noteName+prime+'</span>'
             + '</span>';
     }
   });
