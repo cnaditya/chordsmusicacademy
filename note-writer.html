@@ -920,6 +920,12 @@ function showToast(msg, type, duration) {
   setTimeout(function(){ t.remove(); }, duration || 4000);
 }
 
+// Returns user-specific storage key so each Google account has isolated sessions
+function sk(name) {
+  var uid = currentUser ? currentUser.uid : 'guest';
+  return 'sw_' + name + '_' + uid;
+}
+
 function safeLocalSet(key, value) {
   try {
     localStorage.setItem(key, value);
@@ -927,10 +933,10 @@ function safeLocalSet(key, value) {
     if (e.name === 'QuotaExceededError' || e.code === 22) {
       // Try freeing space by trimming bin
       try {
-        var bin = JSON.parse(localStorage.getItem('swarasheet_bin') || '[]');
+        var bin = JSON.parse(localStorage.getItem(sk('bin')) || '[]');
         if (bin.length > 0) {
           bin = bin.slice(0, Math.floor(bin.length / 2));
-          safeLocalSet('swarasheet_bin', JSON.stringify(bin));
+          safeLocalSet(sk('bin'), JSON.stringify(bin));
           localStorage.setItem(key, value); // retry
         }
       } catch(e2) {}
@@ -1708,12 +1714,12 @@ function autoSave() {
     carnaticVariants: carnaticVariants,
     savedAt: new Date().toISOString()
   };
-  safeLocalSet('swarasheet_autosave', JSON.stringify(state));
+  safeLocalSet(sk('autosave'), JSON.stringify(state));
 }
 
 function autoRestore() {
   try {
-    var saved = localStorage.getItem('swarasheet_autosave');
+    var saved = localStorage.getItem(sk('autosave'));
     if (!saved) return;
     var state = JSON.parse(saved);
     if (!state.notes || state.notes.length === 0) return;
@@ -1725,7 +1731,7 @@ function autoRestore() {
 function saveNamedSession() {
   if (notes.length === 0) return;
   var title = ((document.getElementById('songTitle') || {}).value || '').trim() || 'Untitled';
-  var saves = JSON.parse(localStorage.getItem('swarasheet_saves') || '[]');
+  var saves = JSON.parse(localStorage.getItem(sk('saves')) || '[]');
   var noteCount = notes.filter(function(n){ return n.name && n.name !== ' ' && n.name !== '\n' && !n.label; }).length;
   var state = {
     notes: notes, fmt: fmt, saTonic: saTonic, sep: sep,
@@ -1738,7 +1744,7 @@ function saveNamedSession() {
   var idx = saves.findIndex(function(s){ return s.title === title; });
   if (idx >= 0) saves[idx] = state; else saves.unshift(state);
   if (saves.length > 25) saves = saves.slice(0, 25);
-  safeLocalSet('swarasheet_saves', JSON.stringify(saves));
+  safeLocalSet(sk('saves'), JSON.stringify(saves));
   renderHistory();
   // Flash feedback
   var btn = document.querySelector('[onclick="saveNamedSession()"]');
@@ -1839,7 +1845,7 @@ function setSep(s) {
 }
 
 function renderHistory() {
-  var saves = JSON.parse(localStorage.getItem('swarasheet_saves') || '[]');
+  var saves = JSON.parse(localStorage.getItem(sk('saves')) || '[]');
   var section = document.getElementById('historySection');
   var list    = document.getElementById('historyList');
   if (saves.length === 0) { section.style.display='none'; return; }
@@ -1879,13 +1885,13 @@ function renderHistory() {
     item.querySelector('.history-delete').onclick = function(e) {
       e.stopPropagation();
       var ts = h.savedAt;
-      var s = JSON.parse(localStorage.getItem('swarasheet_saves') || '[]');
+      var s = JSON.parse(localStorage.getItem(sk('saves')) || '[]');
       s = s.filter(function(x){ return x.savedAt !== ts; });
-      safeLocalSet('swarasheet_saves', JSON.stringify(s));
-      var bin = JSON.parse(localStorage.getItem('swarasheet_bin') || '[]');
+      safeLocalSet(sk('saves'), JSON.stringify(s));
+      var bin = JSON.parse(localStorage.getItem(sk('bin')) || '[]');
       bin.unshift(h);
       if (bin.length > 20) bin = bin.slice(0, 20);
-      safeLocalSet('swarasheet_bin', JSON.stringify(bin));
+      safeLocalSet(sk('bin'), JSON.stringify(bin));
       renderHistory();
       renderBin();
     };
@@ -1894,7 +1900,7 @@ function renderHistory() {
 }
 
 function renderBin() {
-  var bin = JSON.parse(localStorage.getItem('swarasheet_bin') || '[]');
+  var bin = JSON.parse(localStorage.getItem(sk('bin')) || '[]');
   var section = document.getElementById('binSection');
   var list    = document.getElementById('binList');
   if (bin.length === 0) { section.style.display='none'; return; }
@@ -1919,22 +1925,22 @@ function renderBin() {
     item.querySelector('.bin-restore').onclick = function(e) {
       e.stopPropagation();
       var ts = h.savedAt;
-      var bin2 = JSON.parse(localStorage.getItem('swarasheet_bin') || '[]');
+      var bin2 = JSON.parse(localStorage.getItem(sk('bin')) || '[]');
       bin2 = bin2.filter(function(x){ return x.savedAt !== ts; });
-      safeLocalSet('swarasheet_bin', JSON.stringify(bin2));
-      var saves = JSON.parse(localStorage.getItem('swarasheet_saves') || '[]');
+      safeLocalSet(sk('bin'), JSON.stringify(bin2));
+      var saves = JSON.parse(localStorage.getItem(sk('saves')) || '[]');
       saves.unshift(h);
       if (saves.length > 25) saves = saves.slice(0, 25);
-      safeLocalSet('swarasheet_saves', JSON.stringify(saves));
+      safeLocalSet(sk('saves'), JSON.stringify(saves));
       renderHistory();
       renderBin();
     };
     item.querySelector('.bin-delete').onclick = function(e) {
       e.stopPropagation();
       var ts = h.savedAt;
-      var bin2 = JSON.parse(localStorage.getItem('swarasheet_bin') || '[]');
+      var bin2 = JSON.parse(localStorage.getItem(sk('bin')) || '[]');
       bin2 = bin2.filter(function(x){ return x.savedAt !== ts; });
-      safeLocalSet('swarasheet_bin', JSON.stringify(bin2));
+      safeLocalSet(sk('bin'), JSON.stringify(bin2));
       renderBin();
     };
     list.appendChild(item);
