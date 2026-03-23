@@ -350,8 +350,11 @@ var currentUser = null;
 var firebaseAuth = null;
 
 (function initAuth() {
-  // Skip auth in Electron desktop app
-  if (window.electronApp) return;
+  // Skip auth in Electron desktop app — hide gate and go straight in
+  if (window.electronApp) {
+    document.getElementById('authGate').style.display = 'none';
+    return;
+  }
 
   var firebaseConfig = {
     apiKey: "AIzaSyDvuCr7IHM7oLYY6e675P_KtcTxsNEJr1c",
