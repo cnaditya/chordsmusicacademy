@@ -453,11 +453,6 @@
     if (saved) {
       document.getElementById('apiKey').value = saved;
       document.getElementById('apiSaved').style.display = 'inline';
-    } else {
-      const defaultKey = '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';
-      document.getElementById('apiKey').value = defaultKey;
-      localStorage.setItem('anthropic_key', defaultKey);
-      document.getElementById('apiSaved').style.display = 'inline';
     }
   };
 
