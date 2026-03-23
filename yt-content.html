@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Content Generator — Chords Music Academy</title>
+  <style>
+    #passwordOverlay {
+      position: fixed; inset: 0;
+      background: #0f0f0f;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+    }
+    .pwd-box {
+      background: #1a1a2e;
+      border-radius: 14px;
+      padding: 36px 32px;
+      width: 320px;
+      text-align: center;
+      border: 1px solid #333;
+    }
+    .pwd-box h2 { color: #fff; font-size: 1.2rem; margin-bottom: 6px; }
+    .pwd-box p { color: #888; font-size: 0.82rem; margin-bottom: 20px; }
+    .pwd-box input {
+      width: 100%; padding: 10px 14px;
+      background: #0f0f0f; border: 1px solid #444;
+      border-radius: 8px; color: #fff; font-size: 1rem;
+      text-align: center; letter-spacing: 2px; margin-bottom: 12px;
+    }
+    .pwd-box input:focus { outline: none; border-color: #e63946; }
+    .pwd-box button {
+      width: 100%; padding: 11px;
+      background: #e63946; color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 0.95rem; cursor: pointer;
+    }
+    .pwd-error { color: #e63946; font-size: 0.8rem; margin-top: 8px; display: none; }
+  </style>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      padding: 20px 30px;
+      border-bottom: 2px solid #e63946;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header h1 { font-size: 1.4rem; color: #fff; }
+    header span { font-size: 0.85rem; color: #aaa; }
+
+    .api-bar {
+      background: #1a1a2e;
+      padding: 10px 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #333;
+    }
+    .api-bar label { font-size: 0.8rem; color: #aaa; white-space: nowrap; }
+    .api-bar input {
+      flex: 1;
+      padding: 6px 10px;
+      background: #0f0f0f;
+      border: 1px solid #444;
+      border-radius: 6px;
+      color: #e0e0e0;
+      font-size: 0.85rem;
+    }
+    .api-bar button {
+      padding: 6px 14px;
+      background: #e63946;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .api-saved { color: #4caf50; font-size: 0.8rem; display: none; }
+
+    .tabs {
+      display: flex;
+      background: #1a1a1a;
+      border-bottom: 1px solid #333;
+      padding: 0 30px;
+    }
+    .tab {
+      padding: 14px 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: #888;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab.active { color: #e63946; border-bottom-color: #e63946; }
+    .tab:hover { color: #fff; }
+
+    .page { display: none; padding: 24px 30px; max-width: 900px; margin: 0 auto; }
+    .page.active { display: block; }
+
+    .channel-toggle {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .ch-btn {
+      padding: 10px 20px;
+      border: 2px solid #444;
+      border-radius: 8px;
+      background: transparent;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .ch-btn.active { border-color: #e63946; color: #e63946; background: rgba(230,57,70,0.1); }
+
+    .form-section {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .form-section h3 { font-size: 0.95rem; color: #aaa; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .form-row { margin-bottom: 14px; }
+    .form-row label { display: block; font-size: 0.82rem; color: #888; margin-bottom: 5px; }
+    .form-row input, .form-row select, .form-row textarea {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0f0f0f;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      resize: vertical;
+    }
+    .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+      outline: none;
+      border-color: #e63946;
+    }
+    .form-row select option { background: #1a1a2e; }
+
+    .gen-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #e63946, #c1121f);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .gen-btn:hover { opacity: 0.9; }
+    .gen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 30px;
+      color: #888;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #333;
+      border-top-color: #e63946;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .output-area { display: none; }
+
+    .output-card {
+      background: #1a1a2e;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .output-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: rgba(230,57,70,0.1);
+      border-bottom: 1px solid #333;
+    }
+    .output-card-header h4 { font-size: 0.85rem; color: #e63946; text-transform: uppercase; letter-spacing: 0.5px; }
+    .copy-btn {
+      padding: 4px 12px;
+      background: #333;
+      color: #ccc;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { background: #555; }
+    .copy-btn.copied { background: #4caf50; color: #fff; }
+
+    .output-content {
+      padding: 16px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      color: #d0d0d0;
+    }
+
+    /* Topics page */
+    .topic-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .topic-card {
+      background: #1a1a2e;
+      border-radius: 10px;
+      padding: 14px;
+      border: 1px solid #333;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.1s;
+    }
+    .topic-card:hover { border-color: #e63946; transform: translateY(-1px); }
+    .topic-card h4 { font-size: 0.9rem; color: #fff; margin-bottom: 6px; }
+    .topic-card p { font-size: 0.78rem; color: #888; line-height: 1.5; }
+    .topic-card .use-btn {
+      margin-top: 10px;
+      padding: 5px 12px;
+      background: rgba(230,57,70,0.15);
+      color: #e63946;
+      border: 1px solid #e63946;
+      border-radius: 5px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+    }
+    .alert-error { background: rgba(230,57,70,0.15); color: #e63946; border: 1px solid #e63946; }
+    .alert-info { background: rgba(76,175,80,0.15); color: #4caf50; border: 1px solid #4caf50; }
+  </style>
+</head>
+<body>
+
+<!-- Password Gate -->
+<div id="passwordOverlay">
+  <div class="pwd-box">
+    <h2>🎵 YouTube Generator</h2>
+    <p>Chords Music Academy — Private Tool</p>
+    <input type="password" id="pwdInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPwd()" autofocus />
+    <button onclick="checkPwd()">Enter</button>
+    <div class="pwd-error" id="pwdError">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<header>
+  <div>
+    <h1>🎵 YouTube Content Generator</h1>
+    <span>Music Composer Channel &amp; Piano Teaching Channel</span>
+  </div>
+</header>
+
+<div class="api-bar">
+  <label>Anthropic API Key:</label>
+  <input type="password" id="apiKey" placeholder="sk-ant-..." />
+  <button onclick="saveKey()">Save</button>
+  <span class="api-saved" id="apiSaved">✓ Saved</span>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('topics')">💡 Topic Ideas</div>
+  <div class="tab" onclick="switchTab('generator')">✍️ Content Generator</div>
+</div>
+
+<!-- TOPICS PAGE -->
+<div class="page active" id="page-topics">
+  <div class="channel-toggle">
+    <button class="ch-btn active" id="topicCh1" onclick="setTopicChannel('teaching')">🎹 Piano Teaching</button>
+    <button class="ch-btn" id="topicCh2" onclick="setTopicChannel('music')">🎼 Music / Composer</button>
+  </div>
+
+  <div class="form-section">
+    <h3>Get Topic Suggestions</h3>
+    <div class="form-row">
+      <label>Your focus / style / preference (optional)</label>
+      <input type="text" id="topicFocus" placeholder="e.g. Carnatic music, beginners, film songs, devotional..." />
+    </div>
+    <div class="form-row">
+      <label>Language for topics</label>
+      <select id="topicLang">
+        <option value="Telugu">Telugu</option>
+        <option value="English">English</option>
+        <option value="Mixed Telugu and English">Mixed Telugu + English</option>
+        <option value="Tamil">Tamil</option>
+        <option value="Hindi">Hindi</option>
+        <option value="Mixed (English + Tamil)">Mixed (English + Tamil)</option>
+      </select>
+    </div>
+    <button class="gen-btn" onclick="getTopics()">Get 12 Topic Ideas</button>
+  </div>
+
+  <div class="loading" id="topicLoading">
+    <div class="spinner"></div>
+    <p>Generating topic ideas...</p>
+  </div>
+
+  <div id="topicOutput"></div>
+</div>
+
+<!-- CONTENT GENERATOR PAGE -->
+<div class="page" id="page-generator">
+  <div class="channel-toggle">
+    <button class="ch-btn active" id="genCh1" onclick="setGenChannel('teaching')">🎹 Piano Teaching</button>
+    <button class="ch-btn" id="genCh2" onclick="setGenChannel('music')">🎼 Music / Composer</button>
+  </div>
+
+  <!-- Teaching fields -->
+  <div id="teachingFields">
+    <div class="form-section">
+      <h3>Video Details</h3>
+      <div class="form-row">
+        <label>Lesson Topic *</label>
+        <input type="text" id="t_topic" placeholder="e.g. How to play C major scale with both hands" />
+      </div>
+      <div class="form-row">
+        <label>Student Level</label>
+        <select id="t_level">
+          <option value="Complete Beginner">Complete Beginner</option>
+          <option value="Beginner">Beginner</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Advanced">Advanced</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Music Style</label>
+        <select id="t_style">
+          <option value="Western / Classical">Western / Classical</option>
+          <option value="Carnatic">Carnatic</option>
+          <option value="Hindustani">Hindustani</option>
+          <option value="Indian Film Songs">Indian Film Songs</option>
+          <option value="Devotional">Devotional</option>
+          <option value="Mix of all">Mix of all</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Video Duration (approximate)</label>
+        <select id="t_duration">
+          <option value="5 minutes">5 minutes</option>
+          <option value="10 minutes" selected>10 minutes</option>
+          <option value="15 minutes">15 minutes</option>
+          <option value="20 minutes">20 minutes</option>
+          <option value="30 minutes">30 minutes</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Chapter timestamps (optional)</label>
+        <textarea id="t_chapters" rows="3" placeholder="e.g.&#10;0:00 - Introduction&#10;1:30 - Right hand practice&#10;5:00 - Left hand practice"></textarea>
+      </div>
+      <div class="form-row">
+        <label>Script language</label>
+        <select id="t_lang">
+          <option value="Telugu">Telugu</option>
+          <option value="English">English</option>
+          <option value="Mixed Telugu and English">Mixed Telugu + English</option>
+          <option value="Tamil">Tamil</option>
+          <option value="Hindi">Hindi</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Music/Composer fields -->
+  <div id="musicFields" style="display:none">
+    <div class="form-section">
+      <h3>Song / Video Details</h3>
+      <div class="form-row">
+        <label>Song Name / Title *</label>
+        <input type="text" id="m_title" placeholder="e.g. Yaman Raag Exploration" />
+      </div>
+      <div class="form-row">
+        <label>Genre / Raga / Mood</label>
+        <input type="text" id="m_genre" placeholder="e.g. Carnatic, Classical, Devotional, Romantic, Yaman Raag..." />
+      </div>
+      <div class="form-row">
+        <label>Instruments Used</label>
+        <input type="text" id="m_instruments" placeholder="e.g. Keyboard, Tabla, Flute, Violin..." />
+      </div>
+      <div class="form-row">
+        <label>Short Description of the Song</label>
+        <textarea id="m_desc" rows="3" placeholder="e.g. An original composition in evening raag Yaman, with a peaceful and meditative mood..."></textarea>
+      </div>
+      <div class="form-row">
+        <label>Script language</label>
+        <select id="m_lang">
+          <option value="Telugu">Telugu</option>
+          <option value="English">English</option>
+          <option value="Mixed Telugu and English">Mixed Telugu + English</option>
+          <option value="Tamil">Tamil</option>
+          <option value="Hindi">Hindi</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <button class="gen-btn" onclick="generateContent()">Generate All YouTube Content</button>
+
+  <div class="loading" id="genLoading" style="margin-top:20px">
+    <div class="spinner"></div>
+    <p>Generating your YouTube content...</p>
+  </div>
+
+  <div class="output-area" id="genOutput" style="margin-top:20px"></div>
+</div>
+
+<script>
+  let currentTopicChannel = 'teaching';
+  let currentGenChannel = 'teaching';
+
+  // API Key
+  function checkPwd() {
+    const pwd = document.getElementById('pwdInput').value;
+    if (pwd === 'Sep@2012') {
+      document.getElementById('passwordOverlay').style.display = 'none';
+      sessionStorage.setItem('yt_auth', '1');
+    } else {
+      document.getElementById('pwdError').style.display = 'block';
+      document.getElementById('pwdInput').value = '';
+    }
+  }
+
+  window.onload = () => {
+    if (sessionStorage.getItem('yt_auth') === '1') {
+      document.getElementById('passwordOverlay').style.display = 'none';
+    }
+    const saved = localStorage.getItem('anthropic_key');
+    if (saved) {
+      document.getElementById('apiKey').value = saved;
+      document.getElementById('apiSaved').style.display = 'inline';
+    } else {
+      const defaultKey = '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';
+      document.getElementById('apiKey').value = defaultKey;
+      localStorage.setItem('anthropic_key', defaultKey);
+      document.getElementById('apiSaved').style.display = 'inline';
+    }
+  };
+
+  function saveKey() {
+    const key = document.getElementById('apiKey').value.trim();
+    if (key) {
+      localStorage.setItem('anthropic_key', key);
+      const s = document.getElementById('apiSaved');
+      s.style.display = 'inline';
+      setTimeout(() => s.style.display = 'none', 2000);
+    }
+  }
+
+  function getKey() {
+    return document.getElementById('apiKey').value.trim() || localStorage.getItem('anthropic_key') || '';
+  }
+
+  // Tabs
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0 && tab === 'topics') || (i === 1 && tab === 'generator'));
+    });
+    document.getElementById('page-topics').classList.toggle('active', tab === 'topics');
+    document.getElementById('page-generator').classList.toggle('active', tab === 'generator');
+  }
+
+  // Channel toggles
+  function setTopicChannel(ch) {
+    currentTopicChannel = ch;
+    document.getElementById('topicCh1').classList.toggle('active', ch === 'teaching');
+    document.getElementById('topicCh2').classList.toggle('active', ch === 'music');
+  }
+
+  function setGenChannel(ch) {
+    currentGenChannel = ch;
+    document.getElementById('genCh1').classList.toggle('active', ch === 'teaching');
+    document.getElementById('genCh2').classList.toggle('active', ch === 'music');
+    document.getElementById('teachingFields').style.display = ch === 'teaching' ? 'block' : 'none';
+    document.getElementById('musicFields').style.display = ch === 'music' ? 'block' : 'none';
+    document.getElementById('genOutput').innerHTML = '';
+    document.getElementById('genOutput').style.display = 'none';
+  }
+
+  // Claude API call
+  async function callClaude(prompt) {
+    const key = getKey();
+    if (!key) throw new Error('Please enter your Anthropic API key first.');
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-6',
+        max_tokens: 4096,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || 'API error');
+    }
+
+    const data = await res.json();
+    return data.content[0].text;
+  }
+
+  // TOPIC GENERATOR
+  async function getTopics() {
+    const key = getKey();
+    if (!key) { showError('topicOutput', 'Please enter your Anthropic API key.'); return; }
+
+    const focus = document.getElementById('topicFocus').value;
+    const lang = document.getElementById('topicLang').value;
+    const ch = currentTopicChannel;
+
+    const isTeluguLang = lang.includes('Telugu');
+
+    const prompt = ch === 'teaching'
+      ? `You are a YouTube content strategist for a Telugu keyboard/piano teaching channel from Andhra Pradesh/Telangana.
+Generate exactly 12 YouTube video topic ideas for a keyboard/piano tutorial channel focused on Indian music.
+${focus ? `The teacher's focus/preference: ${focus}` : ''}
+Language for titles: ${lang}
+${isTeluguLang ? 'IMPORTANT: Write all titles and descriptions in Telugu script (తెలుగు). Use proper Telugu language.' : ''}
+
+Rules:
+- Topics should cover Indian music on keyboard (Carnatic ragas, Telugu film songs, devotional, classical)
+- Include popular Telugu film song lessons, Carnatic music basics, devotional songs
+- Mix beginner, intermediate topics
+- Each topic should be highly searchable on YouTube by Telugu audience
+- Should be practical lessons Telugu music lovers want to learn
+
+Return as JSON array with exactly 12 objects:
+[
+  { "title": "video title", "description": "2 sentence description of what the lesson covers", "level": "Beginner/Intermediate/Advanced", "type": "Raga/Telugu Film Song/Scale/Exercise/Theory/Devotional" },
+  ...
+]
+Return only the JSON array, nothing else.`
+
+      : `You are a YouTube content strategist for a Telugu independent music composer channel from Andhra Pradesh/Telangana.
+Generate exactly 12 YouTube video ideas for a Telugu independent music composer who creates original compositions on keyboard.
+${focus ? `Composer's focus/preference: ${focus}` : ''}
+Language for titles: ${lang}
+${isTeluguLang ? 'IMPORTANT: Write all titles and descriptions in Telugu script (తెలుగు). Use proper Telugu language.' : ''}
+
+Rules:
+- Mix of original compositions, Carnatic ragas, Telugu devotional music, seasonal/festival music
+- Include Telugu folk music fusion, classical ragas on keyboard
+- Should appeal to Telugu classical and semi-classical music lovers
+- Titles should be highly searchable by Telugu audience on YouTube
+- Include festival themes like Ugadi, Sankranti, Diwali compositions
+
+Return as JSON array with exactly 12 objects:
+[
+  { "title": "video title", "description": "2 sentence description of the composition concept", "mood": "peaceful/energetic/devotional/romantic/etc", "genre": "Carnatic/Telugu Folk/Fusion/Devotional/Classical" },
+  ...
+]
+Return only the JSON array, nothing else.`;
+
+    document.getElementById('topicLoading').style.display = 'block';
+    document.getElementById('topicOutput').innerHTML = '';
+
+    try {
+      const text = await callClaude(prompt);
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) throw new Error('Could not parse topics');
+      const topics = JSON.parse(jsonMatch[0]);
+      renderTopics(topics, ch);
+    } catch (e) {
+      showError('topicOutput', e.message);
+    } finally {
+      document.getElementById('topicLoading').style.display = 'none';
+    }
+  }
+
+  function renderTopics(topics, ch) {
+    const container = document.getElementById('topicOutput');
+    const html = `
+      <div style="margin-bottom:12px; color:#888; font-size:0.82rem">${topics.length} topic ideas generated — click "Use This" to auto-fill the Content Generator</div>
+      <div class="topic-cards">
+        ${topics.map((t, i) => `
+          <div class="topic-card">
+            <h4>${t.title}</h4>
+            <p>${t.description}</p>
+            <div style="margin-top:8px; font-size:0.75rem; color:#666">
+              ${ch === 'teaching'
+                ? `<span style="color:#e63946">${t.level}</span> · ${t.type}`
+                : `<span style="color:#e63946">${t.mood}</span> · ${t.genre}`}
+            </div>
+            <button class="use-btn" onclick="useTopicInGenerator(${JSON.stringify(t).replace(/"/g, '&quot;')}, '${ch}')">Use This →</button>
+          </div>
+        `).join('')}
+      </div>`;
+    container.innerHTML = html;
+  }
+
+  function useTopicInGenerator(topic, ch) {
+    switchTab('generator');
+    setGenChannel(ch);
+
+    if (ch === 'teaching') {
+      document.getElementById('t_topic').value = topic.title;
+    } else {
+      document.getElementById('m_title').value = topic.title;
+      document.getElementById('m_genre').value = topic.genre || topic.mood || '';
+      document.getElementById('m_desc').value = topic.description || '';
+    }
+  }
+
+  // CONTENT GENERATOR
+  async function generateContent() {
+    const key = getKey();
+    if (!key) { showGenError('Please enter your Anthropic API key.'); return; }
+
+    const ch = currentGenChannel;
+    let prompt = '';
+
+    if (ch === 'teaching') {
+      const topic = document.getElementById('t_topic').value.trim();
+      if (!topic) { showGenError('Please enter the lesson topic.'); return; }
+      const level = document.getElementById('t_level').value;
+      const style = document.getElementById('t_style').value;
+      const duration = document.getElementById('t_duration').value;
+      const chapters = document.getElementById('t_chapters').value.trim();
+      const lang = document.getElementById('t_lang').value;
+      const isTeluguLang = lang.includes('Telugu');
+
+      prompt = `You are a YouTube content expert for a Telugu keyboard/piano teaching channel from Andhra Pradesh/Telangana, India.
+
+Video details:
+- Lesson Topic: ${topic}
+- Student Level: ${level}
+- Music Style: ${style}
+- Video Duration: ${duration}
+${chapters ? `- Chapters: ${chapters}` : ''}
+- Script Language: ${lang}
+${isTeluguLang ? '- IMPORTANT: Write ALL content in Telugu script (తెలుగు). Script, titles, description, tags, hashtags — everything in Telugu. Use natural spoken Telugu.' : ''}
+
+Generate complete YouTube content in this EXACT format with these EXACT section headers:
+
+## VIDEO SCRIPT
+Write a complete video script for a ${duration} keyboard lesson. Include:
+- Engaging intro in ${lang} (warmly greet Telugu viewers, introduce the topic)
+- Main teaching content (step by step instructions)
+- Practice tips
+- Outro (ask to subscribe, mention next video)
+Make it natural and conversational like a Telugu music teacher speaking to students.
+
+## 5 TITLE OPTIONS
+List 5 compelling YouTube titles (numbered 1-5). Mix formats: how-to, number-based, question-based.
+${isTeluguLang ? 'Write titles in Telugu script.' : ''}
+
+## SEO DESCRIPTION
+Write a full YouTube description (200-300 words) in ${lang} including:
+- Attention-grabbing hook (first 2 lines)
+- What students will learn
+- Who this is for
+- Call to action to subscribe
+- Placeholder links: [Subscribe Link] [Next Video]
+
+## TAGS
+List 35-40 comma-separated YouTube tags. Include Telugu music terms, keyboard terms, Indian music terms.
+
+## HASHTAGS
+List 15-20 hashtags (with # symbol). Include Telugu music hashtags.
+
+## PINNED COMMENT
+Write a pinned comment in ${lang} (practice reminder + question for engagement)
+
+## THUMBNAIL TEXT
+Suggest 3 thumbnail text options (short bold text, ${isTeluguLang ? 'in Telugu script' : 'in ' + lang})`;
+
+    } else {
+      const title = document.getElementById('m_title').value.trim();
+      if (!title) { showGenError('Please enter the song title.'); return; }
+      const genre = document.getElementById('m_genre').value;
+      const instruments = document.getElementById('m_instruments').value;
+      const desc = document.getElementById('m_desc').value;
+      const lang = document.getElementById('m_lang').value;
+      const isTeluguLang = lang.includes('Telugu');
+
+      prompt = `You are a YouTube content expert for a Telugu independent music composer channel from Andhra Pradesh/Telangana, India.
+
+Song/Video details:
+- Song Title: ${title}
+${genre ? `- Genre / Raga / Mood: ${genre}` : ''}
+${instruments ? `- Instruments: ${instruments}` : ''}
+${desc ? `- Song Description: ${desc}` : ''}
+- Script Language: ${lang}
+${isTeluguLang ? '- IMPORTANT: Write ALL content in Telugu script (తెలుగు). Script, titles, description, tags, hashtags — everything in Telugu. Use poetic, natural Telugu.' : ''}
+
+Generate complete YouTube content in this EXACT format with these EXACT section headers:
+
+## VIDEO SCRIPT
+Write a complete video script for introducing this music video. Include:
+- Warm poetic intro in ${lang} (greet Telugu viewers, set the mood)
+- Story behind the composition (what inspired it, what emotion it conveys)
+- Brief description of the musical elements and ragas used
+- Invite listeners to close their eyes and experience the music
+- Outro (ask to subscribe, ask for their thoughts in comments)
+Keep it poetic and atmospheric, fitting for Telugu music lovers.
+
+## 5 TITLE OPTIONS
+List 5 compelling YouTube titles (numbered 1-5). Emotional, descriptive, searchable.
+${isTeluguLang ? 'Write titles in Telugu script.' : ''}
+
+## SEO DESCRIPTION
+Write a full YouTube description (200-300 words) in ${lang} including:
+- Poetic atmospheric hook (first 2 lines)
+- About the composition and its inspiration
+- About the instruments and style
+- Call to subscribe
+- Credits placeholder
+
+## TAGS
+List 35-40 comma-separated YouTube tags. Include Telugu music terms, raga names, composition style.
+
+## HASHTAGS
+List 15-20 hashtags (with # symbol). Include Telugu music, Telugu composer, Indian classical hashtags.
+
+## COMMUNITY POST
+Write a YouTube community post in ${lang} to promote this video (2-3 poetic sentences + engagement question)
+
+## THUMBNAIL TEXT
+Suggest 3 thumbnail text options (short atmospheric text, ${isTeluguLang ? 'in Telugu script' : 'in ' + lang})`;
+    }
+
+    document.getElementById('genLoading').style.display = 'block';
+    document.getElementById('genOutput').style.display = 'none';
+    document.getElementById('genOutput').innerHTML = '';
+
+    try {
+      const text = await callClaude(prompt);
+      renderOutput(text);
+    } catch (e) {
+      showGenError(e.message);
+    } finally {
+      document.getElementById('genLoading').style.display = 'none';
+    }
+  }
+
+  function renderOutput(text) {
+    const sections = [
+      { key: 'VIDEO SCRIPT', label: 'Video Script' },
+      { key: '5 TITLE OPTIONS', label: '5 Title Options' },
+      { key: 'SEO DESCRIPTION', label: 'SEO Description' },
+      { key: 'TAGS', label: 'Tags' },
+      { key: 'HASHTAGS', label: 'Hashtags' },
+      { key: 'PINNED COMMENT', label: 'Pinned Comment' },
+      { key: 'COMMUNITY POST', label: 'Community Post' },
+      { key: 'THUMBNAIL TEXT', label: 'Thumbnail Text' },
+    ];
+
+    let html = '';
+
+    for (let i = 0; i < sections.length; i++) {
+      const s = sections[i];
+      const next = sections[i + 1];
+      const startMarker = `## ${s.key}`;
+      const endMarker = next ? `## ${next.key}` : null;
+
+      const startIdx = text.indexOf(startMarker);
+      if (startIdx === -1) continue;
+
+      const contentStart = startIdx + startMarker.length;
+      const endIdx = endMarker ? text.indexOf(endMarker) : text.length;
+      const content = text.slice(contentStart, endIdx === -1 ? text.length : endIdx).trim();
+
+      const id = `section_${i}`;
+      html += `
+        <div class="output-card">
+          <div class="output-card-header">
+            <h4>${s.label}</h4>
+            <button class="copy-btn" onclick="copySection('${id}', this)">Copy</button>
+          </div>
+          <div class="output-content" id="${id}">${escapeHtml(content)}</div>
+        </div>`;
+    }
+
+    if (!html) {
+      // Fallback: show everything
+      html = `
+        <div class="output-card">
+          <div class="output-card-header">
+            <h4>Generated Content</h4>
+            <button class="copy-btn" onclick="copySection('full_output', this)">Copy All</button>
+          </div>
+          <div class="output-content" id="full_output">${escapeHtml(text)}</div>
+        </div>`;
+    }
+
+    const out = document.getElementById('genOutput');
+    out.innerHTML = html;
+    out.style.display = 'block';
+    out.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function copySection(id, btn) {
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function showError(containerId, msg) {
+    document.getElementById(containerId).innerHTML = `<div class="alert alert-error">${msg}</div>`;
+  }
+
+  function showGenError(msg) {
+    const out = document.getElementById('genOutput');
+    out.innerHTML = `<div class="alert alert-error">${msg}</div>`;
+    out.style.display = 'block';
+  }
+</script>
+</body>
+</html>
