@@ -368,8 +368,22 @@ var firebaseAuth = null;
   // Show gate immediately while checking auth state
   document.getElementById('authGate').style.display = 'flex';
 
+  // ── Allowed users — add subscriber emails here ──────────────
+  var ALLOWED_EMAILS = [
+    'aditya.cn@gmail.com',
+    'chordsmusicstudios@gmail.com'
+  ];
+  // ────────────────────────────────────────────────────────────
+
   firebaseAuth.onAuthStateChanged(function(user) {
     if (user) {
+      if (ALLOWED_EMAILS.indexOf(user.email.toLowerCase()) === -1) {
+        // Not authorised — sign them out and show message
+        firebaseAuth.signOut();
+        document.getElementById('authError').textContent = '⛔ Access not authorised. Contact Chords Music Academy to get access.';
+        document.getElementById('googleSignInBtn').disabled = false;
+        return;
+      }
       currentUser = user;
       document.getElementById('authGate').style.display = 'none';
       updateUserHeader(user);
