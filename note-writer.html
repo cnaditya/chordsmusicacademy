@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SwaraSheet — Chords Music Academy</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html{font-size:18px}
@@ -328,38 +330,80 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 </div>
 
 <!-- Password Gate -->
-<div id="pwGate" style="position:fixed;inset:0;background:#0f0f1a;z-index:9999;display:flex;align-items:center;justify-content:center">
-  <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:16px;padding:40px 36px;max-width:360px;width:90%;text-align:center">
-    <div style="font-size:2rem;margin-bottom:12px">🎹</div>
-    <div style="font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:4px">SwaraSheet</div>
-    <div style="font-size:0.78rem;color:#666;margin-bottom:28px">Chords Music Academy</div>
-    <input id="pwInput" type="password" placeholder="Enter password"
-           onkeydown="if(event.key==='Enter')checkPw()"
-           style="width:100%;background:#0f0f1a;border:1px solid #2a2a4a;color:#fff;border-radius:10px;padding:10px 14px;font-size:1rem;outline:none;margin-bottom:12px;text-align:center">
-    <div id="pwError" style="font-size:0.78rem;color:#e74c3c;margin-bottom:10px;min-height:18px"></div>
-    <button onclick="checkPw()" style="width:100%;background:#e74c3c;color:#fff;border:none;border-radius:10px;padding:11px;font-size:1rem;font-weight:700;cursor:pointer">Enter</button>
+<!-- Auth Gate -->
+<div id="authGate" style="display:none;position:fixed;inset:0;background:#0a0a14;z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:44px 40px;max-width:380px;width:90%;text-align:center;box-shadow:0 8px 48px rgba(0,0,0,0.6)">
+    <div style="font-size:2.4rem;margin-bottom:10px">🎹</div>
+    <div style="font-size:1.5rem;font-weight:900;color:#fff;letter-spacing:0.5px;margin-bottom:4px">SwaraSheet</div>
+    <div style="font-size:0.75rem;color:#555;margin-bottom:8px;letter-spacing:1px">CHORDS MUSIC ACADEMY</div>
+    <div style="font-size:0.78rem;color:#666;margin-bottom:32px;line-height:1.6">Your personal music notation tool.<br>Sign in to access your notes.</div>
+    <button id="googleSignInBtn" onclick="signInWithGoogle()" style="width:100%;background:#fff;color:#1a1a1a;border:none;border-radius:12px;padding:13px 20px;font-size:0.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;transition:.2s;box-shadow:0 2px 12px rgba(0,0,0,0.3)">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.6 0 6.6 5.4 2.8 13.2l7.8 6.1C12.5 13 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.6 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.2-10 7.2-17z"/><path fill="#FBBC05" d="M10.6 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7L2.5 13.2A24 24 0 0 0 0 24c0 3.8.9 7.4 2.5 10.6l8.1-5.9z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.2-8.4 2.2-6.2 0-11.5-4.2-13.4-9.9l-8 6.2C6.4 42.5 14.6 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+    <div id="authError" style="font-size:0.75rem;color:#e74c3c;margin-top:14px;min-height:16px"></div>
   </div>
 </div>
 
 <script>
-(function(){
-  if(sessionStorage.getItem('sw_auth')==='1'){
-    document.getElementById('pwGate').style.display='none';
-  }
+var currentUser = null;
+var firebaseAuth = null;
+
+(function initAuth() {
+  // Skip auth in Electron desktop app
+  if (window.electronApp) return;
+
+  var firebaseConfig = {
+    apiKey: "AIzaSyDvuCr7IHM7oLYY6e675P_KtcTxsNEJr1c",
+    authDomain: "chords-music-academy.firebaseapp.com",
+    projectId: "chords-music-academy",
+    storageBucket: "chords-music-academy.firebasestorage.app",
+    messagingSenderId: "146425788425",
+    appId: "1:146425788425:web:8abbafbc93287a14ab20d8"
+  };
+
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  firebaseAuth = firebase.auth();
+
+  // Show gate immediately while checking auth state
+  document.getElementById('authGate').style.display = 'flex';
+
+  firebaseAuth.onAuthStateChanged(function(user) {
+    if (user) {
+      currentUser = user;
+      document.getElementById('authGate').style.display = 'none';
+      updateUserHeader(user);
+    } else {
+      currentUser = null;
+      document.getElementById('authGate').style.display = 'flex';
+      document.getElementById('userInfo').style.display = 'none';
+    }
+  });
 })();
-async function checkPw(){
-  var v=document.getElementById('pwInput').value;
-  var encoded=new TextEncoder().encode(v);
-  var hashBuffer=await crypto.subtle.digest('SHA-256',encoded);
-  var hashHex=Array.from(new Uint8Array(hashBuffer)).map(function(b){return b.toString(16).padStart(2,'0')}).join('');
-  if(hashHex==='2c3da00c33dfb8d8b8dd48d648eb756313ed5b0b0db19d9b189d4c74cb307c76'){
-    sessionStorage.setItem('sw_auth','1');
-    document.getElementById('pwGate').style.display='none';
-  } else {
-    document.getElementById('pwError').textContent='Incorrect password. Try again.';
-    document.getElementById('pwInput').value='';
-    document.getElementById('pwInput').focus();
-  }
+
+function signInWithGoogle() {
+  var btn = document.getElementById('googleSignInBtn');
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+  var provider = new firebase.auth.GoogleAuthProvider();
+  firebaseAuth.signInWithPopup(provider).catch(function(err) {
+    document.getElementById('authError').textContent = 'Sign-in failed. Please try again.';
+    btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.2 0 24 0 14.6 0 6.6 5.4 2.8 13.2l7.8 6.1C12.5 13 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.6 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.2-10 7.2-17z"/><path fill="#FBBC05" d="M10.6 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7L2.5 13.2A24 24 0 0 0 0 24c0 3.8.9 7.4 2.5 10.6l8.1-5.9z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.2-8.4 2.2-6.2 0-11.5-4.2-13.4-9.9l-8 6.2C6.4 42.5 14.6 48 24 48z"/></svg> Sign in with Google';
+    btn.disabled = false;
+  });
+}
+
+function signOut() {
+  if (firebaseAuth) firebaseAuth.signOut();
+}
+
+function updateUserHeader(user) {
+  var el = document.getElementById('userInfo');
+  var photo = document.getElementById('userPhoto');
+  var name  = document.getElementById('userName');
+  if (user.photoURL) { photo.src = user.photoURL; photo.style.display = 'block'; }
+  name.textContent = user.displayName || user.email;
+  el.style.display = 'flex';
 }
 </script>
 
@@ -375,6 +419,11 @@ async function checkPw(){
     <div class="device-name" id="deviceName" style="display:none"></div>
     <button onclick="openManual()" style="flex:none;padding:6px 14px;font-size:0.75rem;font-weight:700;border-radius:20px;border:1px solid #2a2a4a;background:transparent;color:#888;cursor:pointer">? Help</button>
     <button class="btn btn-connect" id="connectBtn" onclick="connectMIDI()" style="flex:none;padding:6px 18px;font-size:0.75rem;border-radius:20px;white-space:nowrap">🔌 Connect</button>
+    <div id="userInfo" style="display:none;align-items:center;gap:8px;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:4px 12px 4px 4px">
+      <img id="userPhoto" src="" style="display:none;width:26px;height:26px;border-radius:50%;object-fit:cover" referrerpolicy="no-referrer">
+      <span id="userName" style="font-size:0.72rem;color:#aaa;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+      <button onclick="signOut()" style="background:transparent;border:none;color:#555;font-size:0.7rem;cursor:pointer;padding:0;line-height:1" title="Sign out">⏏</button>
+    </div>
   </div>
 </div>
 
@@ -714,7 +763,10 @@ async function checkPw(){
 <!-- Print layout (visible only when printing) -->
 <div class="print-header" style="margin:0 0 14px">
   <div style="border-bottom:2px solid #1a1a2e;padding-bottom:6px;margin-bottom:4px">
-    <div style="font-size:0.72rem;color:#888;letter-spacing:1px">CHORDS MUSIC ACADEMY &nbsp;·&nbsp; chordsmusicacademy.in</div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:0.72rem;color:#888;letter-spacing:1px">CHORDS MUSIC ACADEMY &nbsp;·&nbsp; chordsmusicacademy.in</div>
+      <div id="printUserStamp" style="font-size:0.65rem;color:#aaa;font-style:italic"></div>
+    </div>
   </div>
   <div id="printTitle" style="font-size:1.3rem;font-weight:900;color:#1a1a2e;letter-spacing:0.5px"></div>
   <div id="printMeta" style="display:none;font-size:0.7rem;color:#777;margin-top:4px;letter-spacing:0.5px"></div>
@@ -1880,6 +1932,15 @@ function buildPrintBody(titleOverride, raag, taal, inclChords, inclLabels) {
   document.getElementById('printYear').textContent = new Date().getFullYear();
   var title = titleOverride || (document.getElementById('songTitle').value || '').trim() || 'Note Sheet';
   document.getElementById('printTitle').textContent = title;
+  // Stamp user identity on PDF
+  var stampEl = document.getElementById('printUserStamp');
+  if (stampEl) {
+    if (currentUser) {
+      stampEl.textContent = 'For: ' + (currentUser.displayName || currentUser.email) + ' · Personal use only';
+    } else {
+      stampEl.textContent = '';
+    }
+  }
   // Show raag/taal metadata in print header
   var metaEl = document.getElementById('printMeta');
   if (metaEl) {
