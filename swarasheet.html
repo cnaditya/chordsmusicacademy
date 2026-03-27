@@ -2297,12 +2297,16 @@ document.addEventListener('keydown', function(e) {
   if(swara_keys[e.code] && !e.metaKey && !e.ctrlKey && !e.altKey){
     e.preventDefault();
     var nm = swara_keys[e.code];
-    // In carnatic mode use variant names
+    // Semitone offset from Sa for each swara (using standard R2 G3 M1 D2 N3)
+    var swaraSemi = {'S':0,'R':2,'G':4,'M':5,'P':7,'D':9,'N':11};
+    // MIDI for middle octave: (MIDDLE_OCTAVE+1)*12 + saTonic + semitone
+    var midi = (MIDDLE_OCTAVE + 1) * 12 + saTonic + swaraSemi[nm];
+    // In carnatic/indian mode use variant names
     if(fmt==='carnatic'||fmt==='indian'){
       var cmap={'S':'S','R':carnaticVariants[2]||'R2','G':carnaticVariants[3]||'G2','M':'M1','P':'P','D':carnaticVariants[9]||'D2','N':carnaticVariants[10]||'N2'};
       nm = cmap[nm]||nm;
     }
-    addNote(nm, null);
+    addNote(nm, midi);
     showToast(nm,'ok',400);
     return;
   }
