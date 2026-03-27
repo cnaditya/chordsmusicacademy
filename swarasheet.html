@@ -2834,22 +2834,49 @@ function vrSetSpeed(val){
 
 function vrUploadFile(input){
   var file = input.files[0]; if(!file) return;
-  var url = URL.createObjectURL(file);
-  var audio = document.getElementById('vrAudio');
-  audio.src = url;
-  vrInitAudioEvents();
-  _vrCurrentBlob = file; // allow saving uploaded file too
-  document.getElementById('vrPlayback').style.display = 'block';
-  // prefill name from filename (strip extension)
   var name = file.name.replace(/\.[^.]+$/,'');
-  document.getElementById('vrSaveName').value = name;
-  document.getElementById('vrTimecode').textContent = '0:00 / 0:00';
-  document.getElementById('vrSeekFill').style.width = '0%';
-  document.getElementById('vrSeekThumb').style.left = '0%';
-  document.getElementById('vrPlayBtn').textContent = '▶ Play';
-  document.getElementById('vrTimer').textContent = '📂 ' + file.name;
-  input.value = ''; // reset so same file can be re-selected
-  setTimeout(function(){ document.getElementById('vrPlayback').scrollIntoView({behavior:'smooth',block:'nearest'}); },50);
+
+  // Auto-save to library immediately
+  if(_vrDB){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var blob = new Blob([e.target.result], {type: file.type});
+      var record = {name: name, blob: blob, date: Date.now(), duration: 0, isUpload: true};
+      var tx = _vrDB.transaction('recordings','readwrite');
+      tx.objectStore('recordings').add(record).onsuccess = function(ev){
+        var savedId = ev.target.result;
+        vrRenderLibrary();
+        showToast('Saved to library: ' + name, 'ok', 2000);
+        // Load it into player
+        var url = URL.createObjectURL(blob);
+        var audio = document.getElementById('vrAudio');
+        audio.src = url;
+        vrInitAudioEvents();
+        // update duration once metadata loads
+        audio.onloadedmetadata = function(){
+          var dur = Math.round(audio.duration)||0;
+          var tx2 = _vrDB.transaction('recordings','readwrite');
+          var store = tx2.objectStore('recordings');
+          store.get(savedId).onsuccess = function(e2){
+            var r = e2.target.result; if(!r) return;
+            r.duration = dur; store.put(r);
+            vrRenderLibrary();
+          };
+        };
+        _vrCurrentBlob = blob;
+        document.getElementById('vrPlayback').style.display = 'block';
+        document.getElementById('vrSaveName').value = '';
+        document.getElementById('vrTimecode').textContent = '0:00 / 0:00';
+        document.getElementById('vrSeekFill').style.width = '0%';
+        document.getElementById('vrSeekThumb').style.left = '0%';
+        document.getElementById('vrPlayBtn').textContent = '▶ Play';
+        document.getElementById('vrTimer').textContent = '📂 ' + file.name;
+        setTimeout(function(){ document.getElementById('vrPlayback').scrollIntoView({behavior:'smooth',block:'nearest'}); },50);
+      };
+    };
+    reader.readAsArrayBuffer(file);
+  }
+  input.value = '';
 }
 
 function vrNewRecording(){
@@ -2894,6 +2921,7 @@ function vrRenderLibrary(){
       d.style.cssText = 'background:#0a0a1e;border:1px solid #1e1e3a;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px';
       d.innerHTML =
         '<div style="display:flex;align-items:center;gap:8px">'
+        + (rec.isUpload ? '<span style="font-size:0.6rem;background:#0e1a0e;border:1px solid #2ecc71;color:#2ecc71;border-radius:4px;padding:1px 5px;white-space:nowrap">📂</span>' : '<span style="font-size:0.6rem;background:#1a0e0e;border:1px solid #e74c3c;color:#e74c3c;border-radius:4px;padding:1px 5px;white-space:nowrap">🎙</span>')
         + '<span id="vrn-'+rec.id+'" style="flex:1;font-size:0.82rem;font-weight:700;color:#dde;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+_vrEsc(rec.name)+'</span>'
         + (dur ? '<span style="font-size:0.68rem;color:#555;white-space:nowrap">'+dur+'</span>' : '')
         + '</div>'
