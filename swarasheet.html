@@ -48,7 +48,7 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 /* Note sequence */
 .seq-section{padding:16px 28px 0}
 .seq-label{font-size:0.62rem;color:#444;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-weight:700}
-.seq-box{background:#0a0a1a;border:1px solid #1e1e3a;border-radius:12px;padding:20px;min-height:180px;font-size:1.4rem;font-weight:700;color:#fff;line-height:2.8;letter-spacing:2px;word-break:break-all;position:relative;transition:border-color .2s}
+.seq-box{background:#0a0a1a;border:1px solid #1e1e3a;border-radius:12px;padding:20px;min-height:260px;font-size:1.4rem;font-weight:700;color:#fff;line-height:2.8;letter-spacing:2px;word-break:break-all;position:relative;transition:border-color .2s}
 .seq-box:focus-within{border-color:#e74c3c30}
 .seq-box span.n{color:#7eb3ff}
 .seq-box span.s{color:#f39c12}
@@ -116,8 +116,11 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .cv-btn.on{background:#e67e22;border-color:#e67e22;color:#fff}
 
 /* Action buttons */
-.actions{display:flex;gap:10px;padding:0 28px 16px;flex-wrap:wrap}
-.btn{flex:1;padding:12px 16px;border:none;border-radius:10px;font-size:0.88rem;font-weight:700;cursor:pointer;min-width:90px;transition:.2s;letter-spacing:0.3px}
+.actions{display:flex;flex-direction:column;gap:8px;padding:0;margin-top:14px}
+.actions-row{display:flex;gap:8px;flex-wrap:wrap}
+.actions-divider{height:1px;background:#1a1a30;margin:2px 0}
+.btn{flex:1;padding:11px 14px;border:none;border-radius:10px;font-size:0.85rem;font-weight:700;cursor:pointer;min-width:80px;transition:.2s;letter-spacing:0.3px}
+.light-mode .actions-divider{background:#e0e0f0}
 .btn:active{transform:scale(0.97)}
 .btn-copy{background:#1a3a2a;border:1px solid #2ecc71;color:#2ecc71}
 .btn-copy:hover{background:#2ecc71;color:#fff}
@@ -458,6 +461,12 @@ body.light-mode{background:#f0f0f8!important;color:#1a1a2e!important}
 
 /* cursor hint */
 .light-mode .cursor-hint{color:#2ecc71!important}
+/* Key badge hints below seq box */
+.light-mode [style*="background:#1a1a30"][style*="border:1px solid #2a2a4a"]{background:#eeeeff!important;border-color:#c0c0e0!important;color:#2563eb!important}
+/* Section dividers inside controls card in light mode */
+.light-mode [style*="border-top:1px solid #1a1a30"]{border-top-color:#e0e0f0!important}
+/* metro-row border */
+.light-mode .metro-row{border-top-color:#e0e0f0!important}
 </style>
 </head>
 <body>
@@ -880,7 +889,7 @@ function updateUserHeader(user) {
   </div>
 
   <!-- Transpose row -->
-  <div class="transpose-row" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:14px;border-top:1px solid #1a1a30;margin-top:2px">
+  <div class="transpose-row" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #1a1a30;margin-top:12px">
     <span style="font-size:0.75rem;color:#555;font-weight:700">Transpose:</span>
     <button onclick="transposeNotes(-2)" style="padding:4px 10px;border-radius:8px;border:1px solid #1e1e3a;background:#0a0a1a;color:#7eb3ff;font-size:0.78rem;font-weight:700;cursor:pointer">▼ −2</button>
     <button onclick="transposeNotes(-1)" style="padding:4px 10px;border-radius:8px;border:1px solid #1e1e3a;background:#0a0a1a;color:#7eb3ff;font-size:0.78rem;font-weight:700;cursor:pointer">▼ −1</button>
@@ -890,7 +899,7 @@ function updateUserHeader(user) {
   </div>
 
   <!-- Metronome row -->
-  <div class="metro-row">
+  <div class="metro-row" style="padding-top:12px;border-top:1px solid #1a1a30;margin-top:4px">
     <span style="font-size:0.75rem;color:#555;font-weight:700">Metronome:</span>
     <input id="metroBpmInput" type="number" value="80" min="40" max="200"
       onchange="updateMetroBpm(this.value)"
@@ -928,7 +937,20 @@ function updateUserHeader(user) {
   </div>
   <div class="seq-box" id="seqBox" tabindex="0" style="outline:none"><span class="seq-cursor"></span></div>
   <div class="cursor-hint" id="cursorHint">✏️ Edit mode — new notes insert at cursor · Delete removes selected note · ← → to move · Esc to exit</div>
-  <div style="font-size:0.65rem;color:#333;margin-top:6px;letter-spacing:0.3px">💡 Right-click any note to delete it &nbsp;·&nbsp; ↩ Undo removes last added note</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:7px;flex-wrap:wrap;gap:6px">
+    <div style="font-size:0.65rem;color:#555;letter-spacing:0.3px">💡 Right-click any note to delete &nbsp;·&nbsp; ↩ Undo last note</div>
+    <div style="font-size:0.65rem;color:#555;letter-spacing:0.3px;display:flex;gap:4px;align-items:center">
+      <span style="color:#666">⌨ Quick keys:</span>
+      <span style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:4px;padding:1px 6px;color:#7eb3ff;font-weight:700;font-size:0.62rem">S</span>
+      <span style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:4px;padding:1px 6px;color:#7eb3ff;font-weight:700;font-size:0.62rem">R</span>
+      <span style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:4px;padding:1px 6px;color:#7eb3ff;font-weight:700;font-size:0.62rem">G</span>
+      <span style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:4px;padding:1px 6px;color:#7eb3ff;font-weight:700;font-size:0.62rem">M</span>
+      <span style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:4px;padding:1px 6px;color:#7eb3ff;font-weight:700;font-size:0.62rem">P</span>
+      <span style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:4px;padding:1px 6px;color:#7eb3ff;font-weight:700;font-size:0.62rem">D</span>
+      <span style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:4px;padding:1px 6px;color:#7eb3ff;font-weight:700;font-size:0.62rem">N</span>
+      <span style="color:#555;font-size:0.62rem">= Sa Re Ga Ma Pa Dha Ni</span>
+    </div>
+  </div>
 </div>
 
 <!-- Print layout (visible only when printing) -->
@@ -953,23 +975,30 @@ function updateUserHeader(user) {
 </div>
 
 <!-- Action buttons -->
-<div class="actions" style="margin-top:14px;padding:0;gap:8px">
-  <button class="btn btn-copy" onclick="copyNotes()" style="min-width:0">📋 Copy All</button>
-  <button class="btn btn-space" onclick="addSpace()" style="min-width:0">⎵ Bar</button>
-  <button class="btn" onclick="toggleLabelPanel()" id="labelToggleBtn" style="min-width:0;background:#1a1a0e;border:1px solid #3a2a10;color:#e67e22;font-weight:700">§ Section</button>
-  <button class="btn" id="pasteBtn" onclick="pasteNotes()" style="min-width:0;display:none;background:#0e1a2e;border:1px solid #3a8abf;color:#7eb3ff;font-weight:700">⎘ Paste</button>
-  <button class="btn btn-undo" onclick="undoNote()" style="min-width:0">↩ Undo</button>
-  <button class="btn" onclick="clearNotes()" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700" title="Save current notes to history, then start fresh">+ New Song</button>
-  <button class="btn btn-clear" onclick="clearNotesHard()" style="min-width:0" title="Discard all notes without saving">🗑 Clear</button>
-  <button class="btn" onclick="saveNamedSession()" style="min-width:0;background:#0e1a2e;border:1px solid #1e3a5a;color:#7eb3ff;font-weight:700">💾 Save</button>
-  <button class="btn" onclick="downloadSession()" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700">⬇ Download</button>
-  <label class="btn" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center">
-    ⬆ Import<input type="file" accept=".swarasheet,.json" onchange="importSession(event)" style="display:none">
-  </label>
-  <button class="btn" onclick="togglePiano()" id="pianoToggleBtn" style="min-width:0;background:#1a0e1a;border:1px solid #3a1a3a;color:#c39bd3;font-weight:700">🎹 Keys</button>
-  <button class="btn" id="shareBtn" onclick="copyWhatsApp()" style="min-width:0;background:#1a2e1a;border:1px solid #25d366;color:#25d366;font-weight:700">📱 Share</button>
-  <button class="btn btn-pdf" onclick="exportPDF()" style="flex:2;min-width:0">📄 Export PDF</button>
-  <button class="btn" id="singBtn" onclick="toggleSing()" style="min-width:0;background:#0e1a2e;border:1px solid #e74c3c;color:#e74c3c;font-weight:700">🎤 Sing</button>
+<div class="actions">
+  <!-- Row 1: Write & Edit tools (used while composing) -->
+  <div class="actions-row">
+    <button class="btn btn-copy" onclick="copyNotes()" style="min-width:0">📋 Copy All</button>
+    <button class="btn btn-space" onclick="addSpace()" style="min-width:0">⎵ Bar</button>
+    <button class="btn" onclick="toggleLabelPanel()" id="labelToggleBtn" style="min-width:0;background:#1a1a0e;border:1px solid #3a2a10;color:#e67e22;font-weight:700">§ Section</button>
+    <button class="btn btn-undo" onclick="undoNote()" style="min-width:0">↩ Undo</button>
+    <button class="btn" id="pasteBtn" onclick="pasteNotes()" style="min-width:0;display:none;background:#0e1a2e;border:1px solid #3a8abf;color:#7eb3ff;font-weight:700">⎘ Paste</button>
+    <button class="btn" onclick="clearNotes()" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700" title="Save current notes to history, then start fresh">✦ New Song</button>
+    <button class="btn btn-clear" onclick="clearNotesHard()" style="min-width:0" title="Discard all notes without saving">🗑 Discard</button>
+    <button class="btn" onclick="togglePiano()" id="pianoToggleBtn" style="min-width:0;background:#1a0e1a;border:1px solid #3a1a3a;color:#c39bd3;font-weight:700">🎹 Keys</button>
+    <button class="btn" id="singBtn" onclick="toggleSing()" style="min-width:0;background:#1a0a0a;border:1px solid #e74c3c;color:#e74c3c;font-weight:700">🎤 Sing</button>
+  </div>
+  <div class="actions-divider"></div>
+  <!-- Row 2: Save & Export -->
+  <div class="actions-row">
+    <button class="btn" onclick="saveNamedSession()" style="min-width:0;background:#0e1a2e;border:1px solid #1e3a5a;color:#7eb3ff;font-weight:700">💾 Save</button>
+    <button class="btn" onclick="downloadSession()" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700">⬇ Download</button>
+    <label class="btn" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center">
+      ⬆ Import<input type="file" accept=".swarasheet,.json" onchange="importSession(event)" style="display:none">
+    </label>
+    <button class="btn" id="shareBtn" onclick="copyWhatsApp()" style="min-width:0;background:#1a2e1a;border:1px solid #25d366;color:#25d366;font-weight:700">📱 Share</button>
+    <button class="btn btn-pdf" onclick="exportPDF()" style="flex:2;min-width:0">📄 Export PDF</button>
+  </div>
 </div>
 
 <!-- Sing Panel -->
