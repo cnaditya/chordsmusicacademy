@@ -833,29 +833,29 @@ function updateUserHeader(user) {
 <div id="singPanel" style="display:none;margin-top:14px;background:#0e0e24;border:1px solid #2a1a1a;border-radius:14px;padding:18px 20px">
   <div style="font-size:0.62rem;color:#888;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-weight:700">🎙 Voice → Sargam</div>
   <div style="font-size:0.75rem;color:#666;margin-bottom:14px;line-height:1.6">
-    Press number keys to enter swaras instantly. Works anywhere on the page — no need to click anything first.
+    Press the letter keys S R G M P D N to enter swaras instantly. Works anywhere on the page.
   </div>
   <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:14px">
     <div style="text-align:center;background:#12122a;border:1px solid #2a2a4a;border-radius:8px;padding:8px 4px">
-      <div style="font-size:1rem;font-weight:900;color:#f39c12">S</div><div style="font-size:0.65rem;color:#555;margin-top:2px">key 1</div>
+      <div style="font-size:1rem;font-weight:900;color:#f39c12">S</div><div style="font-size:0.65rem;color:#555;margin-top:2px">Sa</div>
     </div>
     <div style="text-align:center;background:#12122a;border:1px solid #2a2a4a;border-radius:8px;padding:8px 4px">
-      <div style="font-size:1rem;font-weight:900;color:#f39c12">R</div><div style="font-size:0.65rem;color:#555;margin-top:2px">key 2</div>
+      <div style="font-size:1rem;font-weight:900;color:#f39c12">R</div><div style="font-size:0.65rem;color:#555;margin-top:2px">Re</div>
     </div>
     <div style="text-align:center;background:#12122a;border:1px solid #2a2a4a;border-radius:8px;padding:8px 4px">
-      <div style="font-size:1rem;font-weight:900;color:#f39c12">G</div><div style="font-size:0.65rem;color:#555;margin-top:2px">key 3</div>
+      <div style="font-size:1rem;font-weight:900;color:#f39c12">G</div><div style="font-size:0.65rem;color:#555;margin-top:2px">Ga</div>
     </div>
     <div style="text-align:center;background:#12122a;border:1px solid #2a2a4a;border-radius:8px;padding:8px 4px">
-      <div style="font-size:1rem;font-weight:900;color:#f39c12">M</div><div style="font-size:0.65rem;color:#555;margin-top:2px">key 4</div>
+      <div style="font-size:1rem;font-weight:900;color:#f39c12">M</div><div style="font-size:0.65rem;color:#555;margin-top:2px">Ma</div>
     </div>
     <div style="text-align:center;background:#12122a;border:1px solid #2a2a4a;border-radius:8px;padding:8px 4px">
-      <div style="font-size:1rem;font-weight:900;color:#f39c12">P</div><div style="font-size:0.65rem;color:#555;margin-top:2px">key 5</div>
+      <div style="font-size:1rem;font-weight:900;color:#f39c12">P</div><div style="font-size:0.65rem;color:#555;margin-top:2px">Pa</div>
     </div>
     <div style="text-align:center;background:#12122a;border:1px solid #2a2a4a;border-radius:8px;padding:8px 4px">
-      <div style="font-size:1rem;font-weight:900;color:#f39c12">D</div><div style="font-size:0.65rem;color:#555;margin-top:2px">key 6</div>
+      <div style="font-size:1rem;font-weight:900;color:#f39c12">D</div><div style="font-size:0.65rem;color:#555;margin-top:2px">Dha</div>
     </div>
     <div style="text-align:center;background:#12122a;border:1px solid #2a2a4a;border-radius:8px;padding:8px 4px">
-      <div style="font-size:1rem;font-weight:900;color:#f39c12">N</div><div style="font-size:0.65rem;color:#555;margin-top:2px">key 7</div>
+      <div style="font-size:1rem;font-weight:900;color:#f39c12">N</div><div style="font-size:0.65rem;color:#555;margin-top:2px">Ni</div>
     </div>
   </div>
   <div style="font-size:0.7rem;color:#444;line-height:1.8">
@@ -2292,8 +2292,8 @@ function exportWord() {
 document.addEventListener('keydown', function(e) {
   if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'SELECT')) return;
 
-  // ── Number key swara shortcuts (1=S 2=R 3=G 4=M 5=P 6=D 7=N) ──
-  var swara_keys = {'Digit1':'S','Digit2':'R','Digit3':'G','Digit4':'M','Digit5':'P','Digit6':'D','Digit7':'N'};
+  // ── Letter key swara shortcuts (S R G M P D N) ──
+  var swara_keys = {'KeyS':'S','KeyR':'R','KeyG':'G','KeyM':'M','KeyP':'P','KeyD':'D','KeyN':'N'};
   if(swara_keys[e.code] && !e.metaKey && !e.ctrlKey && !e.altKey){
     e.preventDefault();
     var nm = swara_keys[e.code];
