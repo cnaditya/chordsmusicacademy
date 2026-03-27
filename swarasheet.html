@@ -844,16 +844,23 @@ function updateUserHeader(user) {
   <div id="vrPlayback" style="display:none;margin-top:14px;background:#0a0a1e;border:1px solid #1e1e3a;border-radius:10px;padding:14px">
     <audio id="vrAudio" style="display:none"></audio>
 
-    <!-- Speed + Play row -->
+    <!-- Play / Stop buttons row -->
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <button onclick="vrPlay()" id="vrPlayBtn" style="flex:1;background:#0e1a2e;border:1px solid #7eb3ff;border-radius:10px;padding:10px;color:#7eb3ff;font-weight:800;font-size:0.88rem;cursor:pointer">▶ Play</button>
-      <button onclick="vrStop()" style="background:#0e1a2e;border:1px solid #333;border-radius:10px;padding:10px 14px;color:#555;font-weight:700;font-size:0.88rem;cursor:pointer">■</button>
+      <button onclick="vrPlay()" id="vrPlayBtn" style="background:#0e1a2e;border:1px solid #7eb3ff;border-radius:10px;padding:9px 20px;color:#7eb3ff;font-weight:800;font-size:0.88rem;cursor:pointer">▶ Play</button>
+      <button onclick="vrStop()" style="background:#0e1a2e;border:1px solid #333;border-radius:10px;padding:9px 14px;color:#555;font-weight:700;font-size:0.88rem;cursor:pointer">■</button>
+      <span id="vrTimecode" style="font-size:0.75rem;color:#555;margin-left:4px;white-space:nowrap">0:00 / 0:00</span>
     </div>
 
-    <!-- Speed slider -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <!-- Timeline seekbar -->
+    <div style="position:relative;height:6px;background:#1e1e3a;border-radius:3px;cursor:pointer;margin-bottom:12px" id="vrSeekBar" onclick="vrSeek(event)">
+      <div id="vrSeekFill" style="height:100%;width:0%;background:linear-gradient(90deg,#e74c3c,#f39c12);border-radius:3px;pointer-events:none"></div>
+      <div id="vrSeekThumb" style="position:absolute;top:50%;left:0%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:#f39c12;pointer-events:none"></div>
+    </div>
+
+    <!-- Speed row — compact -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
       <span style="font-size:0.72rem;color:#555;white-space:nowrap">Speed</span>
-      <input type="range" id="vrSpeed" min="0.25" max="1" step="0.05" value="1" oninput="vrSetSpeed(this.value)" style="flex:1;accent-color:#e74c3c">
+      <input type="range" id="vrSpeed" min="0.25" max="1" step="0.05" value="1" oninput="vrSetSpeed(this.value)" style="width:120px;accent-color:#e74c3c">
       <span id="vrSpeedLabel" style="font-size:0.78rem;color:#f39c12;font-weight:700;min-width:34px">1×</span>
     </div>
 
@@ -2727,6 +2734,7 @@ function vrStartRecord(){
       var url = URL.createObjectURL(_vrCurrentBlob);
       var audio = document.getElementById('vrAudio');
       audio.src = url;
+      vrInitAudioEvents();
       document.getElementById('vrPlayback').style.display = 'block';
       // auto-fill name with timestamp
       var now = new Date();
@@ -2761,11 +2769,37 @@ function vrStopRecord(){
   document.getElementById('vrRecLabel').textContent = '● Record';
 }
 
+function vrFmtTime(s){
+  if(isNaN(s)||!isFinite(s)) return '0:00';
+  var m=Math.floor(s/60), sec=Math.floor(s%60);
+  return m+':'+(sec<10?'0':'')+sec;
+}
+
+function vrInitAudioEvents(){
+  var audio = document.getElementById('vrAudio');
+  audio.ontimeupdate = function(){
+    var cur=audio.currentTime, dur=audio.duration||0;
+    document.getElementById('vrTimecode').textContent = vrFmtTime(cur)+' / '+vrFmtTime(dur);
+    var pct = dur ? (cur/dur*100) : 0;
+    document.getElementById('vrSeekFill').style.width = pct+'%';
+    document.getElementById('vrSeekThumb').style.left = pct+'%';
+  };
+  audio.onended = function(){
+    document.getElementById('vrPlayBtn').textContent = '▶ Play';
+    document.getElementById('vrSeekFill').style.width = '0%';
+    document.getElementById('vrSeekThumb').style.left = '0%';
+  };
+}
+
 function vrPlay(){
   var audio = document.getElementById('vrAudio');
-  audio.play();
-  document.getElementById('vrPlayBtn').textContent = '⏸ Pause';
-  audio.onended = function(){ document.getElementById('vrPlayBtn').textContent = '▶ Play again'; };
+  if(audio.paused){
+    audio.play();
+    document.getElementById('vrPlayBtn').textContent = '⏸ Pause';
+  } else {
+    audio.pause();
+    document.getElementById('vrPlayBtn').textContent = '▶ Play';
+  }
 }
 
 function vrStop(){
@@ -2773,6 +2807,15 @@ function vrStop(){
   audio.pause();
   audio.currentTime = 0;
   document.getElementById('vrPlayBtn').textContent = '▶ Play';
+}
+
+function vrSeek(e){
+  var audio = document.getElementById('vrAudio');
+  if(!audio.duration) return;
+  var bar = document.getElementById('vrSeekBar');
+  var rect = bar.getBoundingClientRect();
+  var pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  audio.currentTime = pct * audio.duration;
 }
 
 function vrSetSpeed(val){
@@ -2788,6 +2831,9 @@ function vrNewRecording(){
   document.getElementById('vrTimer').textContent = '';
   document.getElementById('vrSpeedLabel').textContent = '1×';
   document.getElementById('vrSpeed').value = 1;
+  document.getElementById('vrTimecode').textContent = '0:00 / 0:00';
+  document.getElementById('vrSeekFill').style.width = '0%';
+  document.getElementById('vrSeekThumb').style.left = '0%';
 }
 
 function vrSave(){
@@ -2840,8 +2886,12 @@ function vrLoadPlay(id){
     var url = URL.createObjectURL(rec.blob);
     var audio = document.getElementById('vrAudio');
     audio.src = url;
+    vrInitAudioEvents();
     document.getElementById('vrPlayback').style.display = 'block';
     document.getElementById('vrSaveName').value = '';
+    document.getElementById('vrTimecode').textContent = '0:00 / 0:00';
+    document.getElementById('vrSeekFill').style.width = '0%';
+    document.getElementById('vrSeekThumb').style.left = '0%';
     document.getElementById('vrPlayBtn').textContent = '▶ Play';
     _vrCurrentBlob = null; // don't allow re-save of loaded recording
     audio.play();
