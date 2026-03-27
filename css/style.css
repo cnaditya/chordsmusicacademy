@@ -2528,6 +2528,8 @@ body {
     cursor: pointer;
     transition: all 0.3s;
     font-weight: 600;
+    display: inline-block;
+    text-decoration: none;
 }
 .trial-btn:hover {
     background: white;
@@ -2880,21 +2882,34 @@ body {
     transform: scale(1.1);
 }
 
-.whatsapp-float img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    animation: whatsappPulse 2s ease-in-out infinite;
+.whatsapp-float::before {
+    content: '🎵 Book a Demo Today!';
+    position: absolute;
+    right: 74px;
+    top: 50%;
+    transform: translateY(-50%) translateX(6px);
+    background: #25d366;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 7px 13px;
+    border-radius: 20px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.2);
 }
 
-@keyframes whatsappPulse {
-    0%, 100% {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-    50% {
-        box-shadow: 0 4px 20px rgba(37,211,102,0.6);
-    }
+.whatsapp-float:hover::before {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+}
+
+.whatsapp-float img {
+    width: 64px;
+    height: 64px;
+    display: block;
 }
 
 /* Responsive */

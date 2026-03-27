@@ -53,6 +53,14 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .seq-box span.n{color:#7eb3ff}
 .seq-box span.s{color:#f39c12}
 .seq-cursor{display:inline-block;width:2px;height:1.2em;background:#e74c3c;vertical-align:middle;animation:blink .8s infinite}
+.insert-cursor{display:inline-block;width:2px;height:1.2em;background:#2ecc71;vertical-align:middle;animation:blink .8s infinite;margin:0 2px}
+.note-selected{background:rgba(46,204,113,0.2);border-radius:4px;outline:2px solid #2ecc71;outline-offset:1px}
+.cursor-hint{font-size:0.65rem;color:#2ecc71;letter-spacing:1px;padding:4px 10px;margin-top:6px;display:none}
+.cursor-hint.show{display:block}
+/* Staff notation */
+#staffCanvas svg{display:block;max-width:100%}
+.staff-rec-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#e74c3c;margin-right:5px;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
 /* Chord input */
@@ -179,9 +187,10 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 /* Print styles */
 @media print {
   @page{margin:16mm 18mm}
+  html,body{height:auto!important;min-height:0!important;overflow:visible!important}
   body{background:#fff;color:#000;font-family:'Segoe UI',Arial,sans-serif;font-size:11pt}
   .hdr,.status-bar,.live-section,.held-row,.fmt-row,.sa-row,.cv-row,.settings,.actions,.history,.no-midi,.ins-bar,.mode-row,
-  .label-panel,.music-bg,.instr-bar,.piano-strip{display:none!important}
+  .label-panel,.music-bg,.instr-bar,.piano-strip,.transpose-row,.metro-row{display:none!important}
   .app-wrap{max-width:100%;padding:0;margin:0}
   .seq-section{display:none}
   .print-header{display:block!important}
@@ -228,13 +237,13 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
   .storage-warn{margin:6px 0}
 }
 
-.print-watermark{display:none;position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden}
+.print-watermark{display:none;position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
 .print-watermark-inner{
   position:absolute;top:50%;left:50%;
   transform:translate(-50%,-50%) rotate(-35deg);
-  font-size:3.2rem;font-weight:900;
+  font-size:2.8rem;font-weight:900;
   color:rgba(26,26,46,0.07);
-  white-space:nowrap;letter-spacing:4px;
+  white-space:nowrap;letter-spacing:2px;
   font-family:'Segoe UI',Arial,sans-serif;
   text-align:center;line-height:1.6;
   user-select:none;
@@ -728,7 +737,7 @@ function updateUserHeader(user) {
   </div>
 
   <!-- Transpose row -->
-  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:14px;border-top:1px solid #1a1a30;margin-top:2px">
+  <div class="transpose-row" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:14px;border-top:1px solid #1a1a30;margin-top:2px">
     <span style="font-size:0.75rem;color:#555;font-weight:700">Transpose:</span>
     <button onclick="transposeNotes(-2)" style="padding:4px 10px;border-radius:8px;border:1px solid #1e1e3a;background:#0a0a1a;color:#7eb3ff;font-size:0.78rem;font-weight:700;cursor:pointer">▼ −2</button>
     <button onclick="transposeNotes(-1)" style="padding:4px 10px;border-radius:8px;border:1px solid #1e1e3a;background:#0a0a1a;color:#7eb3ff;font-size:0.78rem;font-weight:700;cursor:pointer">▼ −1</button>
@@ -756,6 +765,7 @@ function updateUserHeader(user) {
   </div>
 </div><!-- end controls card -->
 
+
 <!-- Sequence box -->
 <div class="seq-section" style="margin-top:14px;padding:0">
   <div style="display:flex;align-items:center;margin-bottom:10px;gap:10px">
@@ -773,7 +783,8 @@ function updateUserHeader(user) {
       <button onclick="changeNoteSize(0.1)" style="background:#0e0e24;border:1px solid #1e1e3a;color:#666;border-radius:6px;padding:3px 9px;font-size:1rem;font-weight:700;cursor:pointer">A+</button>
     </div>
   </div>
-  <div class="seq-box" id="seqBox"><span class="seq-cursor"></span></div>
+  <div class="seq-box" id="seqBox" tabindex="0" style="outline:none"><span class="seq-cursor"></span></div>
+  <div class="cursor-hint" id="cursorHint">✏️ Edit mode — new notes insert at cursor · Delete removes selected note · ← → to move · Esc to exit</div>
   <div style="font-size:0.65rem;color:#333;margin-top:6px;letter-spacing:0.3px">💡 Right-click any note to delete it &nbsp;·&nbsp; ↩ Undo removes last added note</div>
 </div>
 
@@ -815,6 +826,70 @@ function updateUserHeader(user) {
   <button class="btn" onclick="togglePiano()" id="pianoToggleBtn" style="min-width:0;background:#1a0e1a;border:1px solid #3a1a3a;color:#c39bd3;font-weight:700">🎹 Keys</button>
   <button class="btn" id="shareBtn" onclick="copyWhatsApp()" style="min-width:0;background:#1a2e1a;border:1px solid #25d366;color:#25d366;font-weight:700">📱 Share</button>
   <button class="btn btn-pdf" onclick="exportPDF()" style="flex:2;min-width:0">📄 Export PDF</button>
+  <button class="btn" id="singBtn" onclick="toggleSing()" style="min-width:0;background:#0e1a2e;border:1px solid #e74c3c;color:#e74c3c;font-weight:700">🎤 Sing</button>
+</div>
+
+<!-- Sing Panel -->
+<div id="singPanel" style="display:none;margin-top:14px;background:#0e0e24;border:1px solid #2a1a1a;border-radius:14px;padding:18px 20px">
+  <div style="font-size:0.62rem;color:#888;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-weight:700">🎙 Voice → Sargam</div>
+  <div style="font-size:0.75rem;color:#666;margin-bottom:14px;line-height:1.6">
+    Press number keys to enter swaras instantly. Works anywhere on the page — no need to click anything first.
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:14px">
+    <div style="text-align:center;background:#12122a;border:1px solid #2a2a4a;border-radius:8px;padding:8px 4px">
+      <div style="font-size:1rem;font-weight:900;color:#f39c12">S</div><div style="font-size:0.65rem;color:#555;margin-top:2px">key 1</div>
+    </div>
+    <div style="text-align:center;background:#12122a;border:1px solid #2a2a4a;border-radius:8px;padding:8px 4px">
+      <div style="font-size:1rem;font-weight:900;color:#f39c12">R</div><div style="font-size:0.65rem;color:#555;margin-top:2px">key 2</div>
+    </div>
+    <div style="text-align:center;background:#12122a;border:1px solid #2a2a4a;border-radius:8px;padding:8px 4px">
+      <div style="font-size:1rem;font-weight:900;color:#f39c12">G</div><div style="font-size:0.65rem;color:#555;margin-top:2px">key 3</div>
+    </div>
+    <div style="text-align:center;background:#12122a;border:1px solid #2a2a4a;border-radius:8px;padding:8px 4px">
+      <div style="font-size:1rem;font-weight:900;color:#f39c12">M</div><div style="font-size:0.65rem;color:#555;margin-top:2px">key 4</div>
+    </div>
+    <div style="text-align:center;background:#12122a;border:1px solid #2a2a4a;border-radius:8px;padding:8px 4px">
+      <div style="font-size:1rem;font-weight:900;color:#f39c12">P</div><div style="font-size:0.65rem;color:#555;margin-top:2px">key 5</div>
+    </div>
+    <div style="text-align:center;background:#12122a;border:1px solid #2a2a4a;border-radius:8px;padding:8px 4px">
+      <div style="font-size:1rem;font-weight:900;color:#f39c12">D</div><div style="font-size:0.65rem;color:#555;margin-top:2px">key 6</div>
+    </div>
+    <div style="text-align:center;background:#12122a;border:1px solid #2a2a4a;border-radius:8px;padding:8px 4px">
+      <div style="font-size:1rem;font-weight:900;color:#f39c12">N</div><div style="font-size:0.65rem;color:#555;margin-top:2px">key 7</div>
+    </div>
+  </div>
+  <div style="font-size:0.7rem;color:#444;line-height:1.8">
+    <b style="color:#555">Space</b> = bar line &nbsp;·&nbsp; <b style="color:#555">Backspace</b> = undo &nbsp;·&nbsp; <b style="color:#555">Enter</b> = new line
+  </div>
+
+  <button id="singRecBtn" onclick="toggleSpeech()" style="display:flex;align-items:center;gap:10px;background:#1a0e0e;border:2px solid #e74c3c;border-radius:12px;padding:13px 22px;color:#e74c3c;font-weight:800;font-size:0.9rem;cursor:pointer;transition:.2s;width:100%;justify-content:center">
+    <span id="singRecDot" style="width:11px;height:11px;border-radius:50%;background:#e74c3c;display:inline-block;flex-shrink:0"></span>
+    <span id="singRecLabel">Start Listening</span>
+  </button>
+
+  <div id="singRecStatus" style="font-size:0.8rem;color:#888;margin-top:12px;min-height:20px;text-align:center"></div>
+  <div id="singLastHeard" style="font-size:2rem;font-weight:900;color:#f39c12;text-align:center;min-height:48px;margin-top:6px;letter-spacing:3px"></div>
+
+  <div id="singProgressWrap" style="display:none;margin-top:14px">
+    <div style="font-size:0.75rem;color:#888;margin-bottom:6px" id="singProgressLabel">Analysing…</div>
+    <div style="height:8px;background:#1a1a30;border-radius:4px;overflow:hidden">
+      <div id="singProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#e74c3c,#f39c12);border-radius:4px;transition:width .15s"></div>
+    </div>
+  </div>
+
+  <div id="singResultWrap" style="display:none;margin-top:14px">
+    <div style="font-size:0.72rem;color:#2ecc71;font-weight:700;margin-bottom:8px" id="singResultLabel"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="singApplyResult()" style="background:linear-gradient(135deg,#2ecc71,#27ae60);border:none;border-radius:8px;padding:8px 18px;color:#fff;font-weight:700;font-size:0.82rem;cursor:pointer">✅ Add to Sequence</button>
+      <button onclick="singDiscardResult()" style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:8px;padding:8px 14px;color:#666;font-weight:700;font-size:0.82rem;cursor:pointer">✕ Discard</button>
+    </div>
+    <div id="singPreview" style="margin-top:10px;background:#0a0a1a;border-radius:8px;padding:10px 14px;font-size:1rem;font-weight:700;color:#7eb3ff;letter-spacing:2px;line-height:2;word-break:break-all;max-height:120px;overflow-y:auto"></div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:6px;margin-top:12px">
+    <input type="checkbox" id="singAutoBar" checked style="accent-color:#e74c3c">
+    <label for="singAutoBar" style="font-size:0.72rem;color:#555">Auto add bar every 8 notes</label>
+  </div>
 </div>
 
 <!-- Section label picker -->
@@ -857,6 +932,7 @@ function updateUserHeader(user) {
   <div class="history-label" style="color:#555">🗑 Bin <span style="font-size:0.6rem;color:#444;text-transform:none;letter-spacing:0">(recently deleted)</span></div>
   <div id="binList"></div>
 </div>
+
 
 </div><!-- end app-wrap -->
 
@@ -1171,8 +1247,16 @@ function updateHeld() {
 }
 
 function addNote(name, midiNote) {
-  notes.push({name: name, midi: midiNote});
-  undoStack.push({type:'note', note:{name:name, midi:midiNote}});
+  var note = {name: name, midi: midiNote};
+  if (cursorIndex !== null) {
+    var insertAt = cursorIndex + 1;
+    notes.splice(insertAt, 0, note);
+    undoStack.push({type:'insert', index: insertAt, note: note}); // undo = remove at insertAt
+    cursorIndex = insertAt; // advance cursor
+  } else {
+    notes.push(note);
+    undoStack.push({type:'note', note: note});
+  }
   redoStack = [];
   renderSeq();
 }
@@ -1249,11 +1333,17 @@ function renderSeq() {
       var isSharp = n.name.includes('#') || (n.midi !== undefined && [1,3,6,8,10].indexOf(n.midi % 12) >= 0);
       var chord   = n.chord || '';
       var showLbl = chord || currentMode === 'chord';
-      var displayName = n.name.replace(/([¹²³])/g, '<sup>$1</sup>')
-                               .replace(/([SRGMPDNsrgmpdn])([123])/g, '$1<sup style="font-size:0.55em;vertical-align:super">$2</sup>');
+      var _rawName = (fmt === 'indian')
+        ? n.name.replace(/^Sa/,'S').replace(/^Ri/,'R').replace(/^Ga/,'G')
+                .replace(/^Ma/,'M').replace(/^Pa/,'P').replace(/^Da/,'D').replace(/^Ni/,'N')
+        : n.name;
+      var displayName = _rawName.replace(/([¹²³])/g, '<sup>$1</sup>')
+                                .replace(/([SRGMPDNsrgmpdn])([123])/g, '$1<sup style="font-size:0.55em;vertical-align:super">$2</sup>');
       var prime = octPrime(n.midi);
       var isReplacing = (replacingIndex === i);
-      var noteSpan = '<span class="' + (isSharp ? 's' : 'n') + (isReplacing ? ' replacing-note' : '') + '" data-note-index="' + i + '" oncontextmenu="deleteNoteAt(' + i + ',event)" ondblclick="replaceNoteAt(' + i + ')" title="Double-click to replace · Right-click to delete">' + displayName + prime + '</span>';
+      var isCursor  = (cursorIndex === i);
+      var noteSpan = '<span class="' + (isSharp ? 's' : 'n') + (isReplacing ? ' replacing-note' : '') + (isCursor ? ' note-selected' : '') + '" data-note-index="' + i + '" oncontextmenu="deleteNoteAt(' + i + ',event)" ondblclick="replaceNoteAt(' + i + ')" title="Click to set cursor · Double-click to replace · Right-click to delete">' + displayName + prime + '</span>';
+      var cursorBlip = isCursor ? '<span class="insert-cursor" onclick="event.stopPropagation()" style="pointer-events:none"></span>' : '';
       if (showLbl) {
         html += '<span class="note-wrap">'
               + '<span class="note-chord-lbl ' + (chord ? 'has-chord' : 'no-chord') + '" '
@@ -1262,13 +1352,14 @@ function renderSeq() {
               + 'title="' + (chord ? 'Click to edit · Right-click to clear' : 'Click to add chord') + '">'
               + (chord ? chord : '+') + '</span>'
               + noteSpan
-              + '</span>';
+              + '</span>'
+              + cursorBlip;
       } else {
-        html += noteSpan;
+        html += noteSpan + cursorBlip;
       }
       if (i < notes.length - 1 && notes[i+1] && notes[i+1].name !== ' ' && notes[i+1].name !== '\n' && notes[i+1].label === undefined) {
         html += '<span style="color:#333">' + (sep === ' ' ? ' ' : sep) + '</span>';
-        html += '<span class="ins-bar" onclick="insertBarAt(' + (i+1) + ')" title="Insert bar line here">|</span>';
+        html += '<span class="ins-bar" data-ins-after="' + i + '" oncontextmenu="insertBarAt(' + (i+1) + ');event.preventDefault()" title="Click to move cursor here · Right-click to insert bar line">|</span>';
       }
     }
     // Last item — add copy button for final line
@@ -1635,6 +1726,9 @@ function undo() {
   } else if (action.type === 'delete') {
     notes.splice(action.index, 0, action.note);
     renderSeq();
+  } else if (action.type === 'insert') {
+    notes.splice(action.index, 1);
+    renderSeq();
   } else if (action.type === 'replace') {
     notes[action.index] = action.prev;
     renderSeq();
@@ -1657,6 +1751,9 @@ function redo() {
     renderSeq();
   } else if (action.type === 'delete') {
     notes.splice(action.index, 1);
+    renderSeq();
+  } else if (action.type === 'insert') {
+    notes.splice(action.index, 0, action.note);
     renderSeq();
   } else if (action.type === 'replace') {
     notes[action.index] = action.next;
@@ -1979,7 +2076,7 @@ function buildPrintBody(titleOverride, raag, taal, inclChords, inclLabels) {
 
   // Note cell: chord above, note below — same as app but compact
   var noteSize  = Math.round(noteFontSize * 9) + 'pt'; // scale with user's font size
-  var chordSize = Math.round(noteFontSize * 5.5) + 'pt';
+  var chordSize = Math.round(noteFontSize * 7) + 'pt';
   var cellStyle = 'display:inline-block;text-align:center;vertical-align:bottom;margin:0 3px 8px;position:relative';
   var chordRow  = 'display:block;font-size:'+chordSize+';color:#8b0000;font-weight:700;line-height:1.4;min-height:1.4em;white-space:nowrap;overflow:hidden';
   var sepStyle  = 'display:inline-block;vertical-align:bottom;color:#000;font-size:16pt;font-weight:600;margin:0 4px 8px';
@@ -2012,6 +2109,11 @@ function buildPrintBody(titleOverride, raag, taal, inclChords, inclLabels) {
     } else {
       openLine();
       var noteName = n.name.replace(/<[^>]+>/g,'');
+      // Shorten Indian Sargam: Sa→S, Ri→R, Ga→G, Ma→M, Pa→P, Da→D, Ni→N (keeps superscript suffix)
+      if (fmt === 'indian') {
+        noteName = noteName.replace(/^Sa/,'S').replace(/^Ri/,'R').replace(/^Ga/,'G')
+                           .replace(/^Ma/,'M').replace(/^Pa/,'P').replace(/^Da/,'D').replace(/^Ni/,'N');
+      }
       // Prime marks — same as app display
       var prime = '';
       if (n.midi !== undefined && fmt !== 'octave') {
@@ -2188,7 +2290,23 @@ function exportWord() {
 
 // Prevent spacebar from clicking buttons — use it as bar separator instead
 document.addEventListener('keydown', function(e) {
-  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+  if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'SELECT')) return;
+
+  // ── Number key swara shortcuts (1=S 2=R 3=G 4=M 5=P 6=D 7=N) ──
+  var swara_keys = {'Digit1':'S','Digit2':'R','Digit3':'G','Digit4':'M','Digit5':'P','Digit6':'D','Digit7':'N'};
+  if(swara_keys[e.code] && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    var nm = swara_keys[e.code];
+    // In carnatic mode use variant names
+    if(fmt==='carnatic'||fmt==='indian'){
+      var cmap={'S':'S','R':carnaticVariants[2]||'R2','G':carnaticVariants[3]||'G2','M':'M1','P':'P','D':carnaticVariants[9]||'D2','N':carnaticVariants[10]||'N2'};
+      nm = cmap[nm]||nm;
+    }
+    addNote(nm, null);
+    showToast(nm,'ok',400);
+    return;
+  }
+
   if (e.code === 'Space') {
     e.preventDefault();
     addSpace();
@@ -2201,7 +2319,27 @@ document.addEventListener('keydown', function(e) {
   }
   if (e.code === 'Backspace' || e.code === 'Delete') {
     e.preventDefault();
-    undo();
+    if (cursorIndex !== null) {
+      // Delete the note at cursor position
+      var removed = notes.splice(cursorIndex, 1)[0];
+      undoStack.push({type:'delete', index: cursorIndex, note: removed});
+      redoStack = [];
+      // Move cursor back if we deleted the last note, or keep at same pos
+      if (cursorIndex >= notes.length) cursorIndex = notes.length - 1;
+      if (notes.length === 0) cursorIndex = null;
+      renderSeq();
+    } else {
+      undo();
+    }
+  }
+  if (e.code === 'ArrowLeft' && cursorIndex !== null && !e.metaKey && !e.ctrlKey) {
+    e.preventDefault();
+    if (cursorIndex > 0) { cursorIndex--; renderSeq(); }
+  }
+  if (e.code === 'ArrowRight' && cursorIndex !== null && !e.metaKey && !e.ctrlKey) {
+    e.preventDefault();
+    if (cursorIndex < notes.length - 1) { cursorIndex++; renderSeq(); }
+    else if (cursorIndex === notes.length - 1) { clearEditCursor(); }
   }
   if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
     e.preventDefault();
@@ -2222,9 +2360,10 @@ document.addEventListener('keydown', function(e) {
     e.preventDefault();
     if (notes.length > 0) transposeNotes(-1);
   }
-  // Escape cancels replace mode
-  if (e.code === 'Escape' && replacingIndex !== null) {
-    cancelReplace();
+  // Escape cancels replace mode or clears cursor
+  if (e.code === 'Escape') {
+    if (replacingIndex !== null) cancelReplace();
+    else if (cursorIndex !== null) clearEditCursor();
   }
 });
 
@@ -2275,6 +2414,96 @@ function printManual() {
 document.getElementById('manualModal').addEventListener('click', function(e){
   if (e.target === this) closeManual();
 });
+
+// ── CURSOR-BASED EDITING ────────────────────────────────────
+// cursorIndex: null = append mode, number = insert after this index
+var cursorIndex = null;
+
+// Single delegated click handler for cursor positioning
+document.getElementById('seqBox').addEventListener('click', function(e) {
+  // Click on a note span (has data-note-index)
+  var noteEl = e.target.closest('[data-note-index]');
+  if (noteEl) {
+    setCursorAt(parseInt(noteEl.getAttribute('data-note-index'), 10));
+    return;
+  }
+  // Click on ins-bar gap (has data-ins-after)
+  var insEl = e.target.closest('[data-ins-after]');
+  if (insEl) {
+    setCursorAt(parseInt(insEl.getAttribute('data-ins-after'), 10));
+    return;
+  }
+  // Click on blank area of seqBox — exit cursor mode
+  if (cursorIndex !== null) clearEditCursor();
+});
+
+// Dedicated keydown on seqBox — handles cursor keys when seqBox has focus
+document.getElementById('seqBox').addEventListener('keydown', function(e) {
+  if (cursorIndex === null) return;
+  if (e.code === 'ArrowLeft') {
+    e.preventDefault();
+    e.stopPropagation();
+    if (cursorIndex > 0) { cursorIndex--; renderSeq(); document.getElementById('seqBox').focus(); }
+  } else if (e.code === 'ArrowRight') {
+    e.preventDefault();
+    e.stopPropagation();
+    if (cursorIndex < notes.length - 1) { cursorIndex++; renderSeq(); document.getElementById('seqBox').focus(); }
+    else { clearEditCursor(); }
+  } else if (e.code === 'Enter') {
+    e.preventDefault();
+    e.stopPropagation();
+    var lineBreak = {name: '\n'};
+    var insertAt = cursorIndex + 1;
+    notes.splice(insertAt, 0, lineBreak);
+    undoStack.push({type:'insert', index: insertAt, note: lineBreak});
+    redoStack = [];
+    cursorIndex = insertAt;
+    renderSeq();
+    document.getElementById('seqBox').focus();
+  } else if (e.code === 'Backspace' || e.code === 'Delete') {
+    e.preventDefault();
+    e.stopPropagation();
+    var removed = notes.splice(cursorIndex, 1)[0];
+    undoStack.push({type:'delete', index: cursorIndex, note: removed});
+    redoStack = [];
+    if (cursorIndex >= notes.length) cursorIndex = notes.length - 1;
+    if (notes.length === 0) cursorIndex = null;
+    renderSeq();
+    if (cursorIndex !== null) document.getElementById('seqBox').focus();
+  } else if (e.code === 'Space') {
+    e.preventDefault();
+    e.stopPropagation();
+    // Insert bar line at cursor position
+    var barNote = {name: ' '};
+    var insertAt = cursorIndex + 1;
+    notes.splice(insertAt, 0, barNote);
+    undoStack.push({type:'insert', index: insertAt, note: barNote});
+    redoStack = [];
+    cursorIndex = insertAt;
+    renderSeq();
+    document.getElementById('seqBox').focus();
+  } else if (e.code === 'Escape') {
+    e.preventDefault();
+    e.stopPropagation();
+    clearEditCursor();
+  }
+});
+
+function setCursorAt(index) {
+  cursorIndex = index;
+  replacingIndex = null;
+  document.getElementById('replaceHint').classList.remove('show');
+  document.getElementById('cursorHint').classList.add('show');
+  renderSeq();
+  // Focus seqBox so arrow/delete keys reliably reach the keydown handler
+  document.getElementById('seqBox').focus();
+}
+
+function clearEditCursor() {
+  cursorIndex = null;
+  document.getElementById('cursorHint').classList.remove('show');
+  renderSeq();
+}
 
 // ── NOTE REPLACE (double-click) ─────────────────────────────
 var replacingIndex = null;
@@ -2461,6 +2690,284 @@ function transposeNotes(semitones) {
   renderSeq();
   showToast('Transposed ' + (semitones > 0 ? '+' : '') + semitones + ' semitone' + (Math.abs(semitones) > 1 ? 's' : ''), 'ok', 2000);
 }
+
+/* ══════════════════════════════════════
+   🎵 AUDIO → SARGAM  (file upload analysis)
+   ══════════════════════════════════════ */
+var _singDetectedNotes=[];
+var SA_HZ=[261.63,277.18,293.66,311.13,329.63,349.23,369.99,392.00,415.30,440.00,466.16,493.88];
+
+function toggleSing(){
+  var p=document.getElementById('singPanel');
+  var btn=document.getElementById('singBtn');
+  var opening=p.style.display==='none';
+  p.style.display=opening?'block':'none';
+  btn.style.background=opening?'#3a0e0e':'#0e1a2e';
+  if(opening) setTimeout(function(){ p.scrollIntoView({behavior:'smooth',block:'nearest'}); },50);
+}
+
+/* ══════════════════════════════════════
+   🎙 SPEECH RECOGNITION → SARGAM
+   ══════════════════════════════════════ */
+var _speechRec=null, _speechActive=false;
+
+// Swara word → note name mapping
+var SWARA_MAP = {
+  // Sa
+  'sa':'S','saa':'S','sa':'S',
+  // Ri / Re
+  'ri':'R','ree':'R','re':'R','ri1':'R1','ri2':'R2','r1':'R1','r2':'R2',
+  // Ga
+  'ga':'G','gaa':'G','ga1':'G2','ga2':'G3','g2':'G2','g3':'G3',
+  // Ma
+  'ma':'M','maa':'M','ma1':'M1','ma2':'M2','m1':'M1','m2':'M2',
+  // Pa
+  'pa':'P','paa':'P',
+  // Dha / Da
+  'dha':'D','dhaa':'D','da':'D','daa':'D','dha1':'D1','dha2':'D2','d1':'D1','d2':'D2',
+  // Ni / Nee
+  'ni':'N','nee':'N','ne':'N','ni2':'N2','ni3':'N3','n2':'N2','n3':'N3',
+  // Commands
+  'bar':'__BAR__','space':'__BAR__','next':'__BAR__',
+  'undo':'__UNDO__','back':'__UNDO__','delete':'__UNDO__',
+  'stop':'__STOP__','done':'__STOP__'
+};
+
+function toggleSpeech(){
+  _speechActive ? stopSpeech() : startSpeech();
+}
+
+function startSpeech(){
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ alert('Speech recognition not supported. Please use Chrome.'); return; }
+
+  _speechRec = new SR();
+  _speechRec.continuous = true;
+  _speechRec.interimResults = true;
+  _speechRec.lang = 'en-IN';
+  _speechRec.maxAlternatives = 3;
+
+  var lastProcessed = '';
+
+  _speechRec.onresult = function(e){
+    for(var i=e.resultIndex; i<e.results.length; i++){
+      if(!e.results[i].isFinal) continue;
+      var alts = [];
+      for(var j=0;j<e.results[i].length;j++) alts.push(e.results[i][j].transcript.toLowerCase().trim());
+      _processSpeechResult(alts);
+    }
+    // Show interim
+    var interim='';
+    for(var i=e.resultIndex;i<e.results.length;i++){
+      if(!e.results[i].isFinal) interim+=e.results[i][0].transcript;
+    }
+    if(interim) document.getElementById('singRecStatus').textContent='Hearing: "'+interim+'"';
+  };
+
+  _speechRec.onerror = function(e){
+    if(e.error==='no-speech') return;
+    document.getElementById('singRecStatus').textContent='Error: '+e.error+'. Try again.';
+  };
+
+  _speechRec.onend = function(){
+    // Auto-restart if still active
+    if(_speechActive) _speechRec.start();
+  };
+
+  _speechRec.start();
+  _speechActive = true;
+
+  document.getElementById('singRecBtn').style.background='#3a0e0e';
+  document.getElementById('singRecDot').style.animation='pulse 0.8s infinite';
+  document.getElementById('singRecLabel').textContent='Stop Listening';
+  document.getElementById('singRecStatus').textContent='Listening… say Sa Ri Ga Ma Pa Da Ni';
+}
+
+function stopSpeech(){
+  _speechActive = false;
+  if(_speechRec) _speechRec.stop();
+  document.getElementById('singRecBtn').style.background='#1a0e0e';
+  document.getElementById('singRecDot').style.animation='none';
+  document.getElementById('singRecLabel').textContent='Start Listening';
+  document.getElementById('singRecStatus').textContent='Stopped.';
+  document.getElementById('singLastHeard').textContent='';
+}
+
+function _processSpeechResult(alts){
+  // Try each alternative transcript
+  for(var a=0;a<alts.length;a++){
+    var words = alts[a].split(/[\s,]+/);
+    var found = false;
+    for(var w=0;w<words.length;w++){
+      var word = words[w].toLowerCase().replace(/[^a-z0-9]/g,'');
+      if(!word) continue;
+      var mapped = SWARA_MAP[word];
+      if(mapped){
+        found=true;
+        if(mapped==='__UNDO__'){
+          undoNote();
+          document.getElementById('singLastHeard').textContent='↩';
+          showToast('Undo','ok',600);
+        } else if(mapped==='__BAR__'){
+          notes.push({name:' ',chord:''}); renderSeq();
+          document.getElementById('singLastHeard').textContent='|';
+          showToast('Bar added','ok',500);
+        } else if(mapped==='__STOP__'){
+          stopSpeech();
+        } else {
+          // For carnatic/indian mode, use getCarnaticName if mapped is just a letter
+          var noteName = mapped;
+          if((fmt==='carnatic'||fmt==='indian') && mapped.length===1){
+            // Map S→S, R→use variant, G→use variant, etc.
+            var relMap={'S':0,'R':carnaticVariants[2]||'R2','G':carnaticVariants[3]||'G2','M':'M1','P':'P','D':carnaticVariants[9]||'D2','N':carnaticVariants[10]||'N2'};
+            noteName = relMap[mapped] || mapped;
+          }
+          addNote(noteName, null);
+          document.getElementById('singLastHeard').textContent=noteName;
+          showToast('+ '+noteName,'ok',400);
+        }
+      }
+    }
+    if(found) break; // stop trying alternatives if one worked
+  }
+}
+
+function analyseAudioFile(e){
+  var file=e.target.files[0]; if(!file) return;
+  document.getElementById('singProgressWrap').style.display='block';
+  document.getElementById('singResultWrap').style.display='none';
+  document.getElementById('singProgressBar').style.width='5%';
+  document.getElementById('singProgressLabel').textContent='Loading audio…';
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    document.getElementById('singProgressLabel').textContent='Decoding…';
+    document.getElementById('singProgressBar').style.width='20%';
+    ctx.decodeAudioData(ev.target.result,function(audioBuf){
+      document.getElementById('singProgressLabel').textContent='Detecting pitches…';
+      document.getElementById('singProgressBar').style.width='40%';
+      setTimeout(function(){ _processAudioBuffer(audioBuf,ctx.sampleRate); },30);
+    },function(){ alert('Could not decode audio file. Try WAV or MP3.'); });
+  };
+  reader.readAsArrayBuffer(file);
+  // Reset input so same file can be re-uploaded
+  e.target.value='';
+}
+
+function _processAudioBuffer(audioBuf,sampleRate){
+  var ch=audioBuf.getChannelData(0);
+  var windowSize=2048, hopSize=512;
+  var freqs=[];
+  for(var i=0;i+windowSize<ch.length;i+=hopSize){
+    var win=ch.slice(i,i+windowSize);
+    var f=_autocorrPitch(win,sampleRate);
+    freqs.push(f);
+    if(i%10000===0){
+      var pct=40+Math.round((i/ch.length)*40);
+      document.getElementById('singProgressBar').style.width=pct+'%';
+    }
+  }
+
+  // Smooth: median filter over 5 frames
+  var smoothed=[];
+  for(var i=0;i<freqs.length;i++){
+    var w=freqs.slice(Math.max(0,i-2),i+3).filter(function(f){return f>60;});
+    smoothed.push(w.length?w.slice().sort(function(a,b){return a-b;})[Math.floor(w.length/2)]:-1);
+  }
+
+  // Convert to note names + merge consecutive same notes
+  var noteSeq=[];
+  var prev=null;
+  for(var i=0;i<smoothed.length;i++){
+    if(smoothed[i]<60){ prev=null; continue; }
+    var det=_freqToNoteName(smoothed[i]);
+    if(!det) continue;
+    if(det.name!==prev){ noteSeq.push(det.name); prev=det.name; }
+  }
+
+  // Filter out very short blips: remove notes that appear isolated (1 occurrence between different notes)
+  var filtered=[];
+  for(var i=0;i<noteSeq.length;i++){
+    if(i>0&&i<noteSeq.length-1&&noteSeq[i-1]===noteSeq[i+1]&&noteSeq[i]!==noteSeq[i-1]) continue;
+    filtered.push(noteSeq[i]);
+  }
+
+  _singDetectedNotes=filtered;
+  document.getElementById('singProgressBar').style.width='100%';
+  document.getElementById('singProgressLabel').textContent='Done! Found '+filtered.length+' notes.';
+
+  var preview=filtered.slice(0,80).join(' ');
+  document.getElementById('singPreview').textContent=preview+(filtered.length>80?' …':'');
+  document.getElementById('singResultLabel').textContent='✅ Detected '+filtered.length+' notes — preview below:';
+  document.getElementById('singResultWrap').style.display='block';
+}
+
+function singApplyResult(){
+  if(!_singDetectedNotes.length) return;
+  var autoBar=document.getElementById('singAutoBar').checked;
+  _singDetectedNotes.forEach(function(name,i){
+    addNote(name,null);
+    if(autoBar&&(i+1)%8===0) notes.push({name:' ',chord:''});
+  });
+  renderSeq();
+  showToast('Added '+_singDetectedNotes.length+' notes','ok',2000);
+  singDiscardResult();
+}
+
+function singDiscardResult(){
+  _singDetectedNotes=[];
+  document.getElementById('singResultWrap').style.display='none';
+  document.getElementById('singProgressWrap').style.display='none';
+  document.getElementById('singPreview').textContent='';
+}
+
+function _autocorrPitch(buf,sampleRate){
+  var SIZE=buf.length,rms=0;
+  for(var i=0;i<SIZE;i++) rms+=buf[i]*buf[i];
+  rms=Math.sqrt(rms/SIZE);
+  if(rms<0.012) return -1;
+  var r1=0,r2=SIZE-1;
+  for(;r1<SIZE/2&&Math.abs(buf[r1])<0.2;r1++);
+  for(;r2>SIZE/2&&Math.abs(buf[r2])<0.2;r2--);
+  buf=buf.slice(r1,r2+1); SIZE=buf.length;
+  if(SIZE<2) return -1;
+  var c=new Float32Array(SIZE);
+  for(var i=0;i<SIZE;i++) for(var j=0;j<SIZE-i;j++) c[i]+=buf[j]*buf[j+i];
+  var d=0;
+  while(d<SIZE-1&&c[d]>c[d+1]) d++;
+  var maxval=-1,maxpos=-1;
+  for(var i=d;i<SIZE;i++){if(c[i]>maxval){maxval=c[i];maxpos=i;}}
+  if(maxpos<1||maxpos>=SIZE-1) return -1;
+  var x1=c[maxpos-1],x2=c[maxpos],x3=c[maxpos+1];
+  var a=(x1+x3-2*x2)/2,b=(x3-x1)/2;
+  var T0=a?maxpos-b/(2*a):maxpos;
+  return sampleRate/T0;
+}
+
+function _freqToNoteName(freq){
+  if(freq<=0) return null;
+  var saHz=SA_HZ[saTonic]||261.63;
+  var best=null,bestCents=Infinity;
+  for(var oct=-1;oct<=2;oct++){
+    var saF=saHz*Math.pow(2,oct);
+    var semis=Math.round(12*Math.log2(freq/saF));
+    var targetF=saF*Math.pow(2,semis/12);
+    var cents=Math.abs(1200*Math.log2(freq/targetF));
+    if(cents<bestCents){
+      bestCents=cents;
+      var rel=((semis%12)+12)%12;
+      best={rel:rel,oct:Math.floor(semis/12),cents:cents};
+    }
+  }
+  if(!best||best.cents>65) return null;
+  var name;
+  if(fmt==='carnatic'||fmt==='indian') name=getCarnaticName(best.rel);
+  else if(fmt==='octave') name=NOTE_NAMES[(saTonic+best.rel)%12]+(4+best.oct);
+  else name=NOTE_NAMES[(saTonic+best.rel)%12];
+  return {name:name,cents:best.cents};
+}
+
+
 
 </script>
 </body>
