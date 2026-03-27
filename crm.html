@@ -44,6 +44,18 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 
 /* Section title */
 .sec{font-size:0.78rem;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.6px;margin:18px 0 10px}
+/* Growth stats */
+.gstats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:4px}
+.gstat{background:#fff;border-radius:12px;padding:12px 10px;box-shadow:0 1px 6px rgba(0,0,0,0.07);text-align:center}
+.gstat-num{font-size:1.5rem;font-weight:800;line-height:1}
+.gstat-lbl{font-size:0.62rem;color:#888;margin-top:3px;font-weight:600;text-transform:uppercase}
+.gstat-sub{font-size:0.65rem;color:#27ae60;font-weight:700;margin-top:2px}
+/* Bar chart */
+.chart-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.chart-month{font-size:0.68rem;color:#888;font-weight:700;width:32px;flex-shrink:0}
+.chart-bar-wrap{flex:1;background:#f5f5f5;border-radius:6px;height:22px;overflow:hidden}
+.chart-bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#e74c3c,#f39c12);display:flex;align-items:center;padding-left:6px;font-size:0.65rem;color:#fff;font-weight:700;transition:width .4s;min-width:2px}
+.chart-val{font-size:0.7rem;font-weight:800;color:#1a1a2e;width:20px;text-align:right;flex-shrink:0}
 
 /* Search & filter */
 .search-bar{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 14px;font-size:0.88rem;font-family:inherit;outline:none;margin-bottom:10px;transition:.2s}
@@ -179,6 +191,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
       <div class="hdr-title">Chords Music Academy</div>
       <div class="hdr-sub">Academy CRM</div>
     </div>
+    <button class="hdr-btn" onclick="exportVCard()">📲 Save Contacts</button>
     <button class="hdr-btn" onclick="syncData()">↻ Sync</button>
     <button class="hdr-btn" onclick="doLogout()">Exit</button>
   </div>
@@ -186,6 +199,20 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
   <!-- Dashboard -->
   <div class="page on" id="pg-dash">
     <div class="stats" id="statsGrid"></div>
+
+    <!-- Growth Statistics -->
+    <div class="sec">📊 Growth</div>
+    <div style="display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none">
+      <button class="fb on" id="gBtn-week" onclick="setGrowthPeriod('week',this)">This Week</button>
+      <button class="fb" id="gBtn-month" onclick="setGrowthPeriod('month',this)">This Month</button>
+      <button class="fb" id="gBtn-year" onclick="setGrowthPeriod('year',this)">This Year</button>
+      <button class="fb" id="gBtn-all" onclick="setGrowthPeriod('all',this)">All Time</button>
+    </div>
+    <div id="growthStats"></div>
+    <!-- Monthly leads bar chart -->
+    <div class="sec" style="margin-top:14px">📈 Monthly Leads (Last 6 Months)</div>
+    <div id="leadsChart" style="background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 6px rgba(0,0,0,0.07)"></div>
+
     <div class="sec">📅 Today's Classes</div>
     <div id="todayClasses"></div>
     <div class="sec">⚠️ Classes Completing Soon</div>
@@ -407,6 +434,93 @@ window.syncData = async function() {
   alert('Synced! '+allStudents.length+' students, '+allLeads.length+' leads loaded.');
 };
 
+window.exportVCard = function() {
+  function shortYear(dateStr) {
+    var y = dateStr ? new Date(dateStr).getFullYear() : new Date().getFullYear();
+    return isNaN(y) ? String(new Date().getFullYear()).slice(-2) : String(y).slice(-2);
+  }
+  function instCode(instrument) {
+    var i = (instrument||'').toLowerCase();
+    return i.includes('piano')||i.includes('keyboard') ? 'Key'
+         : i.includes('guitar') ? 'Gui'
+         : i.includes('vocal')  ? 'Voc'
+         : i.includes('drum')   ? 'Drum' : 'Mus';
+  }
+  function modeCode(mode) {
+    var m = (mode||'').toLowerCase();
+    return m.includes('online') ? 'On'
+         : m.includes('offline')||m.includes('person') ? 'Off'
+         : m.includes('record') ? 'Rec' : '';
+  }
+
+  var raw = [];
+
+  // Students: Stu_KeyOn_Sriram_26
+  allStudents.forEach(function(s) {
+    if (!s.phone) return;
+    var ph = s.phone.toString().replace(/\D/g,''); if (ph.length===10) ph='91'+ph;
+    var prefix = 'Stu_' + instCode(s.course) + modeCode(s.mode);
+    var yr = shortYear(s.joinDate);
+    raw.push({rawName:s.name||'Student', phone:ph, prefix:prefix, yr:yr, note:'CMA Student · '+(s.course||'')});
+  });
+
+  // Leads: Lead_KeyOn_Priya_26 / Lead_Key_Priya_26 (no mode)
+  allLeads.forEach(function(l) {
+    var ph = (l.phone||l.whatsapp||'').toString().replace(/\D/g,''); if (!ph) return; if (ph.length===10) ph='91'+ph;
+    var mc = modeCode(l.mode||l.class_mode||'');
+    var ic = instCode(l.instrument||'');
+    var prefix = mc ? 'Lead_'+ic+mc : 'Lead_'+ic;
+    var yr = shortYear(l.createdAt);
+    raw.push({rawName:l.full_name||l.name||'Lead', phone:ph, prefix:prefix, yr:yr, note:'CMA Lead · '+(l.instrument||'')});
+  });
+
+  // Count first names to detect duplicates
+  var firstNameCount = {};
+  raw.forEach(function(r) {
+    var first = r.rawName.trim().split(/\s+/)[0];
+    firstNameCount[first] = (firstNameCount[first]||0) + 1;
+  });
+  var firstNameCounter = {};
+
+  var contacts = [];
+  raw.forEach(function(r) {
+    var parts = r.rawName.trim().split(/\s+/);
+    var first = parts[0];
+    var displayName;
+    if (firstNameCount[first] <= 1) {
+      displayName = first;                                          // unique → Sriram
+    } else if (parts.length > 1) {
+      displayName = first + parts[parts.length-1][0].toUpperCase(); // has last name → SriramK
+    } else {
+      firstNameCounter[first] = (firstNameCounter[first]||0) + 1;
+      displayName = first + firstNameCounter[first];                // single dup → Sriram1, Sriram2
+    }
+    // Final: Stu_KeyOn_Sriram_26
+    contacts.push({name: r.prefix+'_'+displayName+'_'+r.yr, phone:r.phone, note:r.note});
+  });
+
+  if (!contacts.length) { alert('No contacts with phone numbers found. Sync first.'); return; }
+
+  var vcf = contacts.map(function(c) {
+    return [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      'FN:' + c.name,
+      'TEL;TYPE=CELL:+' + c.phone,
+      'NOTE:' + c.note,
+      'END:VCARD'
+    ].join('\r\n');
+  }).join('\r\n');
+
+  var blob = new Blob([vcf], {type:'text/vcard'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ChordsAcademy-Contacts.vcf';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  alert('Downloaded ' + contacts.length + ' contacts!\n\nOn iPhone: AirDrop this file → opens in Contacts app → Import All');
+};
+
 // ── Dashboard ──
 function renderDash() {
   var total = allStudents.length;
@@ -420,6 +534,8 @@ function renderDash() {
     stat(active,'🟢','Active','#27ae60') +
     stat(newLeads,'📋','New Leads','#f39c12') +
     stat('₹'+Math.round(revenue/1000)+'K','💰','Revenue','#e74c3c');
+
+  renderGrowthStats();
 
   // Today's classes
   var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -445,6 +561,88 @@ function renderDash() {
   var ab = document.getElementById('alertsBox');
   if(!alerts.length) { ab.innerHTML='<div style="color:#aaa;font-size:0.82rem;padding:10px 0">No alerts</div>'; }
   else { ab.innerHTML = alerts.map(function(s){ var rem=s.totalClasses-(s.classesCompleted||0); return '<div class="alert">⚠️ <strong>'+s.name+'</strong> — '+rem+' class'+(rem===1?'':'es')+' remaining ('+s.package+'-class package)</div>'; }).join(''); }
+}
+
+var growthPeriod = 'week';
+window.setGrowthPeriod = function(p, btn) {
+  growthPeriod = p;
+  document.querySelectorAll('[id^="gBtn-"]').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  renderGrowthStats();
+};
+
+function periodRange(p) {
+  var now = new Date(), start = new Date();
+  if (p==='week')  { start.setDate(now.getDate()-7); }
+  else if (p==='month') { start = new Date(now.getFullYear(), now.getMonth(), 1); }
+  else if (p==='year')  { start = new Date(now.getFullYear(), 0, 1); }
+  else { start = new Date('2020-01-01'); }
+  return start;
+}
+
+function renderGrowthStats() {
+  var start = periodRange(growthPeriod);
+  var prevStart = new Date(start), prevEnd = new Date(start);
+  // Previous period for comparison
+  var diff = new Date() - start;
+  prevStart = new Date(start - diff); prevEnd = new Date(start);
+
+  function inRange(dateStr, s, e) {
+    if (!dateStr) return false;
+    var d = new Date(dateStr);
+    return d >= s && d <= e;
+  }
+
+  var now = new Date();
+  var newLeads     = allLeads.filter(function(l){ return inRange(l.createdAt, start, now); }).length;
+  var converted    = allLeads.filter(function(l){ return l.status==='joined' && inRange(l.updatedAt||l.createdAt, start, now); }).length;
+  var newStudents  = allStudents.filter(function(s){ return inRange(s.joinDate, start, now); }).length;
+
+  var prevLeads    = allLeads.filter(function(l){ return inRange(l.createdAt, prevStart, prevEnd); }).length;
+  var prevStudents = allStudents.filter(function(s){ return inRange(s.joinDate, prevStart, prevEnd); }).length;
+
+  function trend(curr, prev) {
+    if (!prev) return '';
+    var d = curr - prev;
+    return d > 0 ? '<span style="color:#27ae60">▲ '+d+' vs prev</span>'
+         : d < 0 ? '<span style="color:#e74c3c">▼ '+Math.abs(d)+' vs prev</span>'
+         : '<span style="color:#888">= same</span>';
+  }
+
+  var convRate = newLeads ? Math.round(converted/newLeads*100) : 0;
+
+  document.getElementById('growthStats').innerHTML =
+    '<div class="gstats">' +
+      '<div class="gstat"><div class="gstat-num" style="color:#f39c12">'+newLeads+'</div><div class="gstat-lbl">New Leads</div><div class="gstat-sub">'+trend(newLeads,prevLeads)+'</div></div>' +
+      '<div class="gstat"><div class="gstat-num" style="color:#e74c3c">'+newStudents+'</div><div class="gstat-lbl">New Students</div><div class="gstat-sub">'+trend(newStudents,prevStudents)+'</div></div>' +
+      '<div class="gstat"><div class="gstat-num" style="color:#8e44ad">'+convRate+'%</div><div class="gstat-lbl">Conversion</div><div class="gstat-sub" style="color:#888">leads→joined</div></div>' +
+    '</div>';
+
+  // Monthly bar chart — last 6 months
+  var months = [];
+  for (var i = 5; i >= 0; i--) {
+    var d = new Date(); d.setMonth(d.getMonth() - i);
+    months.push({label: d.toLocaleString('default',{month:'short'}), year: d.getFullYear(), month: d.getMonth()});
+  }
+  var maxVal = 0;
+  var bars = months.map(function(m) {
+    var count = allLeads.filter(function(l) {
+      if (!l.createdAt) return false;
+      var d = new Date(l.createdAt);
+      return d.getMonth()===m.month && d.getFullYear()===m.year;
+    }).length;
+    if (count > maxVal) maxVal = count;
+    return {label: m.label, count: count};
+  });
+
+  document.getElementById('leadsChart').innerHTML = bars.map(function(b) {
+    var pct = maxVal ? Math.max(4, Math.round(b.count/maxVal*100)) : 4;
+    return '<div class="chart-bar-row">' +
+      '<div class="chart-month">'+b.label+'</div>' +
+      '<div class="chart-bar-wrap"><div class="chart-bar-fill" style="width:'+pct+'%">'+( b.count>0?b.count:'' )+'</div></div>' +
+      '<div class="chart-val">'+b.count+'</div>' +
+    '</div>';
+  }).join('');
 }
 
 function stat(n,ic,lb,color) {
