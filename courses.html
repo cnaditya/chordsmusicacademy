@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courses & Curriculum — Chords Music Academy Hyderabad</title>
+  <meta name="description" content="Explore our music courses in Piano, Guitar, Carnatic Vocals and Drums at Chords Music Academy, Hyderabad. Structured curriculum for beginners to advanced students.">
+  <meta name="keywords" content="music courses Hyderabad, piano classes, guitar lessons, carnatic vocals, drums classes, music curriculum, Chords Music Academy">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0d0d0d 0%,#1a0d00 50%,#0d0d0d 100%);color:#eee;min-height:100vh}
+
+    /* NAV */
+    nav{background:#2c3e50;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #f39c12}
+    .nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+    .nav-logo img{height:38px}
+    .nav-title{font-size:1rem;font-weight:800;color:#fff;line-height:1.2}
+    .nav-tagline{font-size:0.65rem;color:#f39c12;font-weight:500}
+    .nav-links{display:flex;gap:20px;align-items:center}
+    .nav-links a{color:#ccc;text-decoration:none;font-size:0.8rem;font-weight:600}
+    .nav-links a:hover{color:#f39c12}
+    .nav-links a.active{color:#f39c12}
+
+    /* HERO */
+    .hero{text-align:center;padding:52px 20px 36px}
+    .hero-badge{display:inline-block;background:rgba(243,156,18,0.15);border:1px solid rgba(243,156,18,0.4);color:#f39c12;font-size:0.72rem;font-weight:800;padding:5px 16px;border-radius:20px;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+    .hero h1{font-size:2.2rem;font-weight:900;color:#fff;margin-bottom:10px;line-height:1.2}
+    .hero h1 span{color:#f39c12}
+    .hero p{font-size:0.95rem;color:#aaa;max-width:560px;margin:0 auto 24px;line-height:1.7}
+    .hero-stats{display:flex;justify-content:center;gap:32px;flex-wrap:wrap;margin-top:8px}
+    .stat{text-align:center}
+    .stat-num{font-size:1.6rem;font-weight:900;color:#f39c12}
+    .stat-lbl{font-size:0.68rem;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px}
+
+    /* COURSE TABS */
+    .tab-bar{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:0 20px;margin-bottom:40px}
+    .tab{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:30px;padding:10px 22px;font-size:0.82rem;font-weight:700;color:#888;cursor:pointer;transition:.2s;text-decoration:none;display:inline-block}
+    .tab:hover,.tab.active{background:rgba(243,156,18,0.15);border-color:rgba(243,156,18,0.5);color:#f39c12}
+    .tab .tab-icon{margin-right:6px}
+
+    /* COURSE SECTIONS */
+    .course-section{max-width:1000px;margin:0 auto 60px;padding:0 20px}
+    .course-header{display:flex;align-items:center;gap:18px;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid rgba(243,156,18,0.2)}
+    .course-icon{font-size:3rem;width:70px;height:70px;display:flex;align-items:center;justify-content:center;background:rgba(243,156,18,0.1);border-radius:18px;border:1px solid rgba(243,156,18,0.3);flex-shrink:0}
+    .course-meta h2{font-size:1.6rem;font-weight:900;color:#fff;margin-bottom:4px}
+    .course-meta p{font-size:0.85rem;color:#aaa;line-height:1.6;max-width:560px}
+    .course-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .tag{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:3px 10px;font-size:0.7rem;font-weight:700;color:#999}
+    .tag.green{background:rgba(39,174,96,0.1);border-color:rgba(39,174,96,0.3);color:#27ae60}
+    .tag.orange{background:rgba(243,156,18,0.1);border-color:rgba(243,156,18,0.3);color:#f39c12}
+
+    /* LEVELS */
+    .levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-bottom:28px}
+    .level-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;transition:transform .2s}
+    .level-card:hover{transform:translateY(-3px)}
+    .level-card.beginner{border-top:3px solid #27ae60}
+    .level-card.intermediate{border-top:3px solid #3498db}
+    .level-card.advanced{border-top:3px solid #9b59b6}
+    .level-head{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.06)}
+    .level-badge{display:inline-block;font-size:0.65rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;padding:3px 10px;border-radius:10px;margin-bottom:8px}
+    .beginner .level-badge{background:rgba(39,174,96,0.15);color:#27ae60}
+    .intermediate .level-badge{background:rgba(52,152,219,0.15);color:#3498db}
+    .advanced .level-badge{background:rgba(155,89,182,0.15);color:#9b59b6}
+    .level-title{font-size:1rem;font-weight:800;color:#fff;margin-bottom:3px}
+    .level-duration{font-size:0.72rem;color:#666;font-weight:600}
+    .level-body{padding:18px 20px}
+    .topic-list{list-style:none}
+    .topic-list li{font-size:0.82rem;color:#bbb;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:flex-start;gap:8px;line-height:1.4}
+    .topic-list li:last-child{border-bottom:none}
+    .topic-list li::before{content:'▸';color:#f39c12;font-size:0.7rem;margin-top:2px;flex-shrink:0}
+
+    /* OUTCOME STRIP */
+    .outcome-strip{background:rgba(243,156,18,0.07);border:1px solid rgba(243,156,18,0.2);border-radius:14px;padding:18px 24px;margin-bottom:20px}
+    .outcome-strip h4{font-size:0.78rem;font-weight:800;color:#f39c12;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+    .outcomes{display:flex;flex-wrap:wrap;gap:10px}
+    .outcome{font-size:0.78rem;color:#ccc;background:rgba(255,255,255,0.05);border-radius:8px;padding:6px 12px;display:flex;align-items:center;gap:6px}
+    .outcome::before{content:'✓';color:#27ae60;font-weight:900;font-size:0.75rem}
+
+    /* COURSE CTA */
+    .course-cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:16px 0 0;border-top:1px solid rgba(255,255,255,0.07)}
+    .btn-primary{display:inline-block;background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;font-size:0.85rem;font-weight:800;padding:13px 26px;border-radius:12px;text-decoration:none;transition:.2s}
+    .btn-primary:hover{opacity:0.9}
+    .btn-secondary{display:inline-block;background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.4);color:#f39c12;font-size:0.85rem;font-weight:700;padding:12px 24px;border-radius:12px;text-decoration:none;transition:.2s}
+    .btn-secondary:hover{background:rgba(243,156,18,0.18)}
+    .cta-note{font-size:0.72rem;color:#555;margin-left:4px}
+
+    /* DIVIDER */
+    .section-divider{max-width:1000px;margin:0 auto 60px;padding:0 20px;border-top:1px solid rgba(255,255,255,0.07)}
+
+    /* BENEFITS SECTION */
+    .benefits{max-width:1000px;margin:0 auto 60px;padding:0 20px}
+    .benefits h2{font-size:1.3rem;font-weight:900;color:#fff;text-align:center;margin-bottom:24px}
+    .benefits-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+    .benefit-item{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;text-align:center}
+    .benefit-icon{font-size:2rem;margin-bottom:10px}
+    .benefit-title{font-size:0.9rem;font-weight:800;color:#fff;margin-bottom:6px}
+    .benefit-desc{font-size:0.75rem;color:#777;line-height:1.5}
+
+    /* DEMO BANNER */
+    .demo-banner{max-width:700px;margin:0 auto 50px;padding:0 20px}
+    .demo-card{background:linear-gradient(135deg,rgba(243,156,18,0.15),rgba(230,126,34,0.1));border:1px solid rgba(243,156,18,0.3);border-radius:20px;padding:30px;text-align:center}
+    .demo-card h3{font-size:1.3rem;font-weight:900;color:#fff;margin-bottom:8px}
+    .demo-card p{font-size:0.85rem;color:#aaa;margin-bottom:20px;line-height:1.6}
+    .demo-btn{display:inline-block;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;font-size:0.92rem;font-weight:800;padding:14px 32px;border-radius:12px;text-decoration:none;transition:.2s}
+    .demo-btn:hover{opacity:0.9}
+
+    /* FOOTER */
+    footer{text-align:center;padding:24px;font-size:0.72rem;color:#444;border-top:1px solid rgba(255,255,255,0.06)}
+    footer a{color:#f39c12;text-decoration:none}
+
+    /* WHATSAPP FLOAT */
+    .whatsapp-float{position:fixed;bottom:28px;right:28px;z-index:999;text-decoration:none;transition:transform .2s}
+    .whatsapp-float:hover{transform:scale(1.08)}
+    .whatsapp-float img{width:64px;height:64px;display:block}
+    .whatsapp-float::before{content:'🎵 Book a Demo Today!';position:absolute;right:74px;top:50%;transform:translateY(-50%) translateX(6px);background:#25d366;color:#fff;font-size:0.78rem;font-weight:700;padding:7px 13px;border-radius:20px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease}
+    .whatsapp-float:hover::before{opacity:1;transform:translateY(-50%) translateX(0)}
+
+    @media(max-width:640px){
+      .hero h1{font-size:1.6rem}
+      .course-header{flex-direction:column;align-items:flex-start;gap:14px}
+      .levels{grid-template-columns:1fr}
+      .nav-links{gap:12px}
+      .hero-stats{gap:20px}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <img src="images/chords_PNG.png" alt="Chords Music Academy">
+    <div>
+      <div class="nav-title">Chords Music Academy</div>
+      <div class="nav-tagline">Discover the Music Within You</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="/courses" class="active">Courses</a>
+    <a href="/fees">Fees</a>
+    <a href="/">Home</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">📚 Structured Curriculum</div>
+  <h1>Learn Music the <span>Right Way</span></h1>
+  <p>Beginner to advanced programs in Piano, Guitar, Carnatic Vocals and Drums. Expert instructors, proven curriculum, real results.</p>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">4</div><div class="stat-lbl">Instruments</div></div>
+    <div class="stat"><div class="stat-num">3</div><div class="stat-lbl">Levels Each</div></div>
+    <div class="stat"><div class="stat-num">100+</div><div class="stat-lbl">Students Trained</div></div>
+    <div class="stat"><div class="stat-num">Free</div><div class="stat-lbl">Demo Class</div></div>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <a class="tab active" href="#piano"><span class="tab-icon">🎹</span>Piano & Keyboard</a>
+  <a class="tab" href="#guitar"><span class="tab-icon">🎸</span>Guitar</a>
+  <a class="tab" href="#vocals"><span class="tab-icon">🎤</span>Carnatic Vocals</a>
+  <a class="tab" href="#drums"><span class="tab-icon">🥁</span>Drums</a>
+</div>
+
+<!-- ===== PIANO ===== -->
+<div class="course-section" id="piano">
+  <div class="course-header">
+    <div class="course-icon">🎹</div>
+    <div class="course-meta">
+      <h2>Piano & Keyboard</h2>
+      <p>From your very first note to performing full songs — our piano curriculum blends Western music theory with Indian and Carnatic styles, taught through a structured level system.</p>
+      <div class="course-tags">
+        <span class="tag green">Beginner Friendly</span>
+        <span class="tag orange">Trinity Aligned</span>
+        <span class="tag">Online & Offline</span>
+        <span class="tag">All Ages</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="levels">
+    <div class="level-card beginner">
+      <div class="level-head">
+        <div class="level-badge">Beginner</div>
+        <div class="level-title">Foundation</div>
+        <div class="level-duration">3–6 months · 2 classes/week</div>
+      </div>
+      <div class="level-body">
+        <ul class="topic-list">
+          <li>Hand posture, finger placement & sitting position</li>
+          <li>Notes on keyboard — white & black keys</li>
+          <li>Reading basic staff notation (treble clef)</li>
+          <li>Major scales — C, G, D, F</li>
+          <li>Simple two-hand coordination</li>
+          <li>Basic chords — C, Am, F, G</li>
+          <li>Simple Indian & Western nursery songs</li>
+          <li>Introduction to rhythm & beat counting</li>
+        </ul>
+      </div>
+    </div>
+    <div class="level-card intermediate">
+      <div class="level-head">
+        <div class="level-badge">Intermediate</div>
+        <div class="level-title">Development</div>
+        <div class="level-duration">6–12 months · 2 classes/week</div>
+      </div>
+      <div class="level-body">
+        <ul class="topic-list">
+          <li>Sight reading & bass clef notation</li>
+          <li>All major & minor scales + arpeggios</li>
+          <li>Chord inversions & voicings</li>
+          <li>I–IV–V–vi chord progressions</li>
+          <li>Indian film songs & classical pieces</li>
+          <li>Carnatic swaras on keyboard (Sa Ri Ga Ma Pa)</li>
+          <li>Introduction to left-hand accompaniment patterns</li>
+          <li>Dynamics — forte, piano, crescendo</li>
+        </ul>
+      </div>
+    </div>
+    <div class="level-card advanced">
+      <div class="level-head">
+        <div class="level-badge">Advanced</div>
+        <div class="level-title">Performance</div>
+        <div class="level-duration">12+ months · 2 classes/week</div>
+      </div>
+      <div class="level-body">
+        <ul class="topic-list">
+          <li>Music theory — modes, circle of fifths</li>
+          <li>Jazz & blues chord extensions (7th, 9th)</li>
+          <li>Improvisation & lead piano</li>
+          <li>Solo performance arrangements</li>
+          <li>Film & classical piece transcription</li>
+          <li>Original composition techniques</li>
+          <li>Stage & recording performance skills</li>
+          <li>Trinity Grade exam preparation (Grade 1–5)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="outcome-strip">
+    <h4>What you'll achieve</h4>
+    <div class="outcomes">
+      <div class="outcome">Play full songs independently</div>
+      <div class="outcome">Read sheet music</div>
+      <div class="outcome">Perform on stage</div>
+      <div class="outcome">Play Indian & Western styles</div>
+      <div class="outcome">Understand music theory</div>
+      <div class="outcome">Trinity Grade readiness</div>
+    </div>
+  </div>
+
+  <div class="course-cta">
+    <a class="btn-primary" href="https://wa.me/917981585309?text=Hi%2C%20I%27m%20interested%20in%20Piano%20classes%20at%20Chords%20Music%20Academy.%20Can%20I%20book%20a%20free%20demo%3F" target="_blank">📅 Book Free Demo</a>
+    <a class="btn-secondary" href="/fees">View Fees →</a>
+    <span class="cta-note">No registration fee · First class free</span>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ===== GUITAR ===== -->
+<div class="course-section" id="guitar">
+  <div class="course-header">
+    <div class="course-icon">🎸</div>
+    <div class="course-meta">
+      <h2>Guitar</h2>
+      <p>Acoustic and electric guitar training from chord basics to full lead playing. We teach both Indian film music and Western styles so you can play what you love.</p>
+      <div class="course-tags">
+        <span class="tag green">Acoustic & Electric</span>
+        <span class="tag orange">Indian + Western</span>
+        <span class="tag">Online & Offline</span>
+        <span class="tag">Age 8+</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="levels">
+    <div class="level-card beginner">
+      <div class="level-head">
+        <div class="level-badge">Beginner</div>
+        <div class="level-title">Foundation</div>
+        <div class="level-duration">3–6 months · 2 classes/week</div>
+      </div>
+      <div class="level-body">
+        <ul class="topic-list">
+          <li>Guitar anatomy, tuning & care</li>
+          <li>Proper hand position & finger strength</li>
+          <li>Open chords — Em, Am, G, C, D, E, A</li>
+          <li>Basic strumming patterns (down, down-up)</li>
+          <li>Simple songs — 2 and 3 chord progression</li>
+          <li>Introduction to rhythm & timing</li>
+          <li>Basics of tablature (tabs) reading</li>
+          <li>Chord transitions & smooth changes</li>
+        </ul>
+      </div>
+    </div>
+    <div class="level-card intermediate">
+      <div class="level-head">
+        <div class="level-badge">Intermediate</div>
+        <div class="level-title">Development</div>
+        <div class="level-duration">6–12 months · 2 classes/week</div>
+      </div>
+      <div class="level-body">
+        <ul class="topic-list">
+          <li>Barre chords — F, Bm and movable shapes</li>
+          <li>Fingerpicking patterns & Travis picking</li>
+          <li>Pentatonic scale — lead guitar introduction</li>
+          <li>Indian film song arrangements</li>
+          <li>Capo usage & transposing chords</li>
+          <li>Strumming with muted strings (funk style)</li>
+          <li>Power chords for rock/electric</li>
+          <li>Playing along with rhythm tracks</li>
+        </ul>
+      </div>
+    </div>
+    <div class="level-card advanced">
+      <div class="level-head">
+        <div class="level-badge">Advanced</div>
+        <div class="level-title">Performance</div>
+        <div class="level-duration">12+ months · 2 classes/week</div>
+      </div>
+      <div class="level-body">
+        <ul class="topic-list">
+          <li>Full lead guitar scales — major, minor, modes</li>
+          <li>Soloing techniques — bends, slides, vibrato</li>
+          <li>Genre-specific styles (blues, classical, Bollywood)</li>
+          <li>Fingerstyle arrangements of full songs</li>
+          <li>Music theory for guitar — CAGED system</li>
+          <li>Improvisation & jam session skills</li>
+          <li>Band accompaniment & ensemble playing</li>
+          <li>Recording session readiness</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="outcome-strip">
+    <h4>What you'll achieve</h4>
+    <div class="outcomes">
+      <div class="outcome">Strum & sing along</div>
+      <div class="outcome">Play lead solos</div>
+      <div class="outcome">Fingerstyle arrangements</div>
+      <div class="outcome">Play Indian film songs</div>
+      <div class="outcome">Jam with others</div>
+      <div class="outcome">Perform on stage</div>
+    </div>
+  </div>
+
+  <div class="course-cta">
+    <a class="btn-primary" href="https://wa.me/917981585309?text=Hi%2C%20I%27m%20interested%20in%20Guitar%20classes%20at%20Chords%20Music%20Academy.%20Can%20I%20book%20a%20free%20demo%3F" target="_blank">📅 Book Free Demo</a>
+    <a class="btn-secondary" href="/fees">View Fees →</a>
+    <span class="cta-note">No registration fee · First class free</span>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ===== CARNATIC VOCALS ===== -->
+<div class="course-section" id="vocals">
+  <div class="course-header">
+    <div class="course-icon">🎤</div>
+    <div class="course-meta">
+      <h2>Carnatic Vocals</h2>
+      <p>A traditional and systematic approach to Carnatic music — from basic swaras and varisais to kritis and ragam exploration. Suitable for children and adults with no prior background.</p>
+      <div class="course-tags">
+        <span class="tag green">Traditional Method</span>
+        <span class="tag orange">Ragas & Kritis</span>
+        <span class="tag">Online & Offline</span>
+        <span class="tag">Age 5+</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="levels">
+    <div class="level-card beginner">
+      <div class="level-head">
+        <div class="level-badge">Beginner</div>
+        <div class="level-title">Prathamika (Foundation)</div>
+        <div class="level-duration">3–6 months · 2 classes/week</div>
+      </div>
+      <div class="level-body">
+        <ul class="topic-list">
+          <li>Saptaswaras — Sa Ri Ga Ma Pa Dha Ni</li>
+          <li>Sarali varisai (basic note exercises)</li>
+          <li>Janta varisai (double note exercises)</li>
+          <li>Breathing technique & voice placement</li>
+          <li>Introduction to tala — Adi tala (8 beats)</li>
+          <li>Swarajati — simple songs with swara patterns</li>
+          <li>Shruthi awareness (Sa-Pa relationship)</li>
+          <li>Basic gamakas (ornaments)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="level-card intermediate">
+      <div class="level-head">
+        <div class="level-badge">Intermediate</div>
+        <div class="level-title">Madhyama (Development)</div>
+        <div class="level-duration">6–18 months · 2 classes/week</div>
+      </div>
+      <div class="level-body">
+        <ul class="topic-list">
+          <li>Alankarams — all 35 tala variations</li>
+          <li>Geetams — simple compositions</li>
+          <li>Swarajatis — structured swara-sahitya pieces</li>
+          <li>Varnams — detailed study of a raga</li>
+          <li>Basic kritis — Thyagaraja & Muthuswami Dikshitar</li>
+          <li>Introduction to ragas (Mayamalavagowla, Hamsadhwani)</li>
+          <li>Layam — tala practice & konnakkol basics</li>
+          <li>Neraval & sangati variations</li>
+        </ul>
+      </div>
+    </div>
+    <div class="level-card advanced">
+      <div class="level-head">
+        <div class="level-badge">Advanced</div>
+        <div class="level-title">Uttama (Performance)</div>
+        <div class="level-duration">18+ months · 2 classes/week</div>
+      </div>
+      <div class="level-body">
+        <ul class="topic-list">
+          <li>Multiple kritis across various ragas</li>
+          <li>Raga alapana — elaboration without rhythm</li>
+          <li>Ragam Tanam Pallavi (RTP) — concert form</li>
+          <li>Manodharma sangeetam — improvisation</li>
+          <li>Advanced gamakas & oscillations</li>
+          <li>Concert format & stage presentation</li>
+          <li>Devotional & film song adaptations</li>
+          <li>Exam & competition preparation</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="outcome-strip">
+    <h4>What you'll achieve</h4>
+    <div class="outcomes">
+      <div class="outcome">Sing with correct shruthi</div>
+      <div class="outcome">Perform kritis on stage</div>
+      <div class="outcome">Identify and sing ragas</div>
+      <div class="outcome">Improvise neraval</div>
+      <div class="outcome">Concert readiness</div>
+      <div class="outcome">Cultural connection to music</div>
+    </div>
+  </div>
+
+  <div class="course-cta">
+    <a class="btn-primary" href="https://wa.me/917981585309?text=Hi%2C%20I%27m%20interested%20in%20Carnatic%20Vocal%20classes%20at%20Chords%20Music%20Academy.%20Can%20I%20book%20a%20free%20demo%3F" target="_blank">📅 Book Free Demo</a>
+    <a class="btn-secondary" href="/fees">View Fees →</a>
+    <span class="cta-note">No registration fee · First class free</span>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ===== DRUMS ===== -->
+<div class="course-section" id="drums">
+  <div class="course-header">
+    <div class="course-icon">🥁</div>
+    <div class="course-meta">
+      <h2>Drums</h2>
+      <p>Learn to keep the groove from day one. Our drums curriculum covers rudiments, genre beats, fills and full song playalongs — taught on acoustic and electronic drum kits.</p>
+      <div class="course-tags">
+        <span class="tag green">Acoustic & Electronic</span>
+        <span class="tag orange">Rock · Pop · Bollywood</span>
+        <span class="tag">Offline Classes</span>
+        <span class="tag">Age 7+</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="levels">
+    <div class="level-card beginner">
+      <div class="level-head">
+        <div class="level-badge">Beginner</div>
+        <div class="level-title">Foundation</div>
+        <div class="level-duration">3–6 months · 2 classes/week</div>
+      </div>
+      <div class="level-body">
+        <ul class="topic-list">
+          <li>Drum kit anatomy & stick grip</li>
+          <li>Basic rudiments — single stroke, double stroke</li>
+          <li>Kick-snare-hi-hat basic beat (4/4)</li>
+          <li>Quarter note and eighth note patterns</li>
+          <li>Simple rock & pop beats</li>
+          <li>Introduction to drum notation reading</li>
+          <li>Basic fills between phrases</li>
+          <li>Metronome training & tempo awareness</li>
+        </ul>
+      </div>
+    </div>
+    <div class="level-card intermediate">
+      <div class="level-head">
+        <div class="level-badge">Intermediate</div>
+        <div class="level-title">Development</div>
+        <div class="level-duration">6–12 months · 2 classes/week</div>
+      </div>
+      <div class="level-body">
+        <ul class="topic-list">
+          <li>Paradiddles & advanced rudiments</li>
+          <li>16th note hi-hat patterns & ghost notes</li>
+          <li>Different time signatures — 3/4, 6/8</li>
+          <li>Genre beats — blues, funk, hip-hop</li>
+          <li>Indian film song grooves & Bollywood beats</li>
+          <li>Crash & ride cymbal usage</li>
+          <li>Complex fills — 4-bar & 8-bar phrases</li>
+          <li>Playing along to backing tracks</li>
+        </ul>
+      </div>
+    </div>
+    <div class="level-card advanced">
+      <div class="level-head">
+        <div class="level-badge">Advanced</div>
+        <div class="level-title">Performance</div>
+        <div class="level-duration">12+ months · 2 classes/week</div>
+      </div>
+      <div class="level-body">
+        <ul class="topic-list">
+          <li>Jazz comping & swing patterns</li>
+          <li>Polyrhythm & odd time signatures (5/4, 7/8)</li>
+          <li>Double bass pedal techniques</li>
+          <li>Full song playalongs (studio recordings)</li>
+          <li>Band coordination & live performance</li>
+          <li>Brush technique for jazz/acoustic sets</li>
+          <li>Recording session drumming skills</li>
+          <li>Drum solo composition & performance</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="outcome-strip">
+    <h4>What you'll achieve</h4>
+    <div class="outcomes">
+      <div class="outcome">Play full songs end to end</div>
+      <div class="outcome">Rock & pop grooves</div>
+      <div class="outcome">Bollywood beats</div>
+      <div class="outcome">Perform with a band</div>
+      <div class="outcome">Record in a studio</div>
+      <div class="outcome">Read drum notation</div>
+    </div>
+  </div>
+
+  <div class="course-cta">
+    <a class="btn-primary" href="https://wa.me/917981585309?text=Hi%2C%20I%27m%20interested%20in%20Drums%20classes%20at%20Chords%20Music%20Academy.%20Can%20I%20book%20a%20free%20demo%3F" target="_blank">📅 Book Free Demo</a>
+    <a class="btn-secondary" href="/fees">View Fees →</a>
+    <span class="cta-note">No registration fee · First class free</span>
+  </div>
+</div>
+
+<!-- WHY US -->
+<div class="benefits">
+  <h2>Why Chords Music Academy?</h2>
+  <div class="benefits-grid">
+    <div class="benefit-item">
+      <div class="benefit-icon">🎯</div>
+      <div class="benefit-title">Structured Curriculum</div>
+      <div class="benefit-desc">Clear levels with defined milestones — you always know what you're working towards</div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-icon">👨‍🏫</div>
+      <div class="benefit-title">Expert Instructors</div>
+      <div class="benefit-desc">Founded by CN Aditya, Telugu film industry music director with 10+ years teaching experience</div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-icon">🏠</div>
+      <div class="benefit-title">Online & Offline</div>
+      <div class="benefit-desc">Learn from home via Zoom/Meet or attend in person at our Manikonda academy</div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-icon">🎵</div>
+      <div class="benefit-title">Indian + Western</div>
+      <div class="benefit-desc">We teach Indian film songs, Carnatic styles AND Western music — not just one tradition</div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-icon">👨‍👩‍👧</div>
+      <div class="benefit-title">All Ages Welcome</div>
+      <div class="benefit-desc">Kids from age 5, teens, adults and seniors — we adapt the teaching style for each student</div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-icon">🎁</div>
+      <div class="benefit-title">Free Demo Class</div>
+      <div class="benefit-desc">Try before you commit — book a free demo class with no obligation or registration fee</div>
+    </div>
+  </div>
+</div>
+
+<!-- DEMO BANNER -->
+<div class="demo-banner">
+  <div class="demo-card">
+    <h3>🎵 Ready to Start?</h3>
+    <p>Book a free 40-minute demo class. No fees, no commitment — just music. Our instructor will assess your level and guide you to the right course.</p>
+    <a class="demo-btn" href="https://wa.me/917981585309?text=Hi%2C%20I%27d%20like%20to%20book%20a%20free%20demo%20class%20at%20Chords%20Music%20Academy!" target="_blank">📱 WhatsApp to Book Free Demo</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 Chords Music Academy · Manikonda, Hyderabad · <a href="tel:+917981585309">+91 79815 85309</a> · <a href="/fees">Fees</a> · <a href="/">Home</a></p>
+</footer>
+
+<!-- WhatsApp Float -->
+<a class="whatsapp-float" href="https://wa.me/917981585309?text=Hi%2C%20I%27m%20interested%20in%20music%20classes%20at%20Chords%20Music%20Academy!" target="_blank" aria-label="Chat on WhatsApp">
+  <img src="images/whatsapp.svg" alt="WhatsApp">
+</a>
+
+<script>
+  // Tab smooth scroll
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function(e) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>
