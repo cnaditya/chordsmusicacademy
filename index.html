@@ -9,6 +9,11 @@
       gtag('js', new Date());
       gtag('config', 'AW-801045653');
     </script>
+    <script>
+      function trackWhatsApp() {
+        gtag('event', 'conversion', {'send_to': 'AW-801045653/--rgCI7G-ZAcEJX5-_0C'});
+      }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Chords Music Academy - Professional Music Education | Trinity Certified Courses</title>
@@ -128,7 +133,7 @@
                 </a>
                 <div class="hero-btns">
                     <button class="cta-btn" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">Enroll Now</button>
-                    <a class="trial-btn" href="https://wa.me/917981585309?text=Hi!%20I'd%20like%20to%20book%20a%20free%20trial%20class%20at%20Chords%20Music%20Academy%20%F0%9F%8E%B5" target="_blank">🎵 Book Free Trial Class</a>
+                    <a class="trial-btn" href="https://wa.me/917981585309?text=Hi!%20I'd%20like%20to%20book%20a%20free%20trial%20class%20at%20Chords%20Music%20Academy%20%F0%9F%8E%B5" target="_blank" onclick="trackWhatsApp()">🎵 Book Free Trial Class</a>
                 </div>
             </div>
         </section>
@@ -798,9 +803,10 @@
 
     <script src="config.js"></script>
     <!-- Floating WhatsApp Chat -->
-    <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hello!%20I'm%20super%20excited%20to%20start%20learning%20music.%20Can%20you%20please%20tell%20me%20more%20about%20Chords%20Music%20Academy%20and%20how%20I%20can%20enroll?%20😊" 
-       target="_blank" 
-       class="whatsapp-float">
+    <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hello!%20I'm%20super%20excited%20to%20start%20learning%20music.%20Can%20you%20please%20tell%20me%20more%20about%20Chords%20Music%20Academy%20and%20how%20I%20can%20enroll?%20😊"
+       target="_blank"
+       class="whatsapp-float"
+       onclick="trackWhatsApp()">
       <img src="images/whatsapp.svg"
            alt="Chat on WhatsApp" loading="lazy">
     </a>
