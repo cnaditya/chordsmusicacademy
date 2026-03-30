@@ -3246,7 +3246,7 @@ function cloudSaveTemplate() {
   var titleEl = document.getElementById('sessionTitle');
   var title = (titleEl ? titleEl.value.trim() : '') || 'Untitled';
   var docId = title.replace(/[^a-zA-Z0-9_\-\s]/g,'').trim().replace(/\s+/g,'_') || 'template';
-  var data = { title:title, notes:notes, fmt:fmt, saTonic:saTonic, bpm:bpm, version:2,
+  var data = { title:title, notes:notes, fmt:fmt, saTonic:saTonic, bpm:metroBpm, version:2,
     savedAt: firebase.firestore.FieldValue.serverTimestamp() };
   setCloudStatus('Saving...');
   getCloudRef().doc(docId).set(data).then(function() {
@@ -3265,7 +3265,7 @@ function cloudLoadTemplate(docId) {
     notes = data.notes;
     if (data.fmt) fmt = data.fmt;
     if (data.saTonic !== undefined) saTonic = data.saTonic;
-    if (data.bpm) bpm = data.bpm;
+    if (data.bpm) { metroBpm = data.bpm; document.getElementById('metroBpmInput').value = metroBpm; }
     renderSeq();
     closeCloudModal();
     showToast('Loaded: ' + (data.title || docId), 'ok', 2000);
