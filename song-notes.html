@@ -194,7 +194,7 @@ body{display:flex;flex-direction:column;margin:0 auto}
 <div class="tabs">
   <div class="tab on" onclick="showTab(0)">🎹 Piano<br>Tutorials</div>
   <div class="tab" onclick="showTab(1)">🎵 Song<br>Notes</div>
-  <div class="tab" onclick="showTab(2)">🎼 Top 50<br>Packages</div>
+  <div class="tab" onclick="showTab(2)" style="opacity:0.5;font-size:0.68rem;">🎼 Top 50<br><span style="color:#f39c12;font-size:0.6rem;">Coming Soon</span></div>
 </div>
 
 <!-- Panels -->
@@ -317,6 +317,13 @@ body{display:flex;flex-direction:column;margin:0 auto}
       <div class="col-title-main">Top 50 Song Packs</div>
       <div class="col-title-sub">Curated top 50 packs — notes + tutorial videos delivered on WhatsApp</div>
     </div>
+    <div style="background:#fff;border-radius:16px;padding:28px 20px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,0.09);margin-bottom:12px;">
+      <div style="font-size:2.5rem;margin-bottom:12px;">🚀</div>
+      <div style="font-size:1.1rem;font-weight:800;color:#1a1a2e;margin-bottom:8px;">Coming Soon!</div>
+      <div style="font-size:0.82rem;color:#888;line-height:1.6;margin-bottom:16px;">Top 50 packs by AR Rahman, DSP, Thaman, Ilaiyaraaja & Anirudh are being prepared. Get notified when they launch!</div>
+      <a href="https://wa.me/917981585309?text=Hi%2C%20I%27m%20interested%20in%20Top%2050%20Song%20Packs%20at%20Chords%20Music%20Academy.%20Please%20notify%20me%20when%20they%20launch!" target="_blank" style="display:inline-block;background:#25d366;color:#fff;border-radius:10px;padding:11px 22px;font-size:0.88rem;font-weight:700;text-decoration:none;">💬 Notify Me on WhatsApp</a>
+    </div>
+    <div style="display:none">
 
     <!-- AR Rahman Top 50 -->
     <div class="t50">
@@ -460,7 +467,7 @@ body{display:flex;flex-direction:column;margin:0 auto}
       <button class="t50-req-btn" onclick="requestPack('Top 50 Hindi Popular Songs')">💬 Request This Pack</button>
     </div>
 
-  </div>
+  </div></div>
 </div>
 
 <!-- Hidden Netlify form to capture all orders -->
