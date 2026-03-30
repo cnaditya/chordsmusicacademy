@@ -197,6 +197,8 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
     <input class="search-bar" id="searchInput" placeholder="🔍 Search by name, ID, phone..." oninput="renderStudents()">
     <div class="filter-row">
       <button class="fb on" onclick="setFilter('all',this)">All</button>
+      <button class="fb" onclick="setFilter('online',this)">🌐 Online</button>
+      <button class="fb" onclick="setFilter('offline',this)">🏫 Offline</button>
       <button class="fb" onclick="setFilter('active',this)">🟢 Active</button>
       <button class="fb" onclick="setFilter('completed',this)">✅ Completed</button>
       <button class="fb" onclick="setFilter('Piano',this)">🎹 Piano</button>
@@ -471,6 +473,8 @@ window.renderStudents = function() {
   var list = allStudents.filter(function(s){
     var matchQ = !q || s.name.toLowerCase().includes(q.toLowerCase()) || (s.id||'').toLowerCase().includes(q.toLowerCase()) || (s.phone||'').includes(q);
     var matchF = currentFilter==='all' ? true :
+      currentFilter==='online' ? (s.mode||'').toLowerCase()==='online' :
+      currentFilter==='offline' ? (s.mode||'').toLowerCase()==='offline' :
       currentFilter==='active' ? s.status==='active' && s.classesCompleted<s.totalClasses :
       currentFilter==='completed' ? s.classesCompleted>=s.totalClasses :
       (s.course||'').toLowerCase().includes(currentFilter.toLowerCase());
