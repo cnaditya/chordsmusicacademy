@@ -3243,7 +3243,7 @@ function cloudListFiles() {
 function cloudSaveTemplate() {
   if (!notes || notes.length === 0) { showToast('No notes to save', 'warn'); return; }
   if (!firebaseDb || !currentUser) { showToast('Sign in to save', 'warn'); return; }
-  var titleEl = document.getElementById('sessionTitle');
+  var titleEl = document.getElementById('songTitle');
   var title = (titleEl ? titleEl.value.trim() : '') || 'Untitled';
   var docId = title.replace(/[^a-zA-Z0-9_\-\s]/g,'').trim().replace(/\s+/g,'_') || 'template';
   var data = { title:title, notes:notes, fmt:fmt, saTonic:saTonic, bpm:metroBpm, version:2,
