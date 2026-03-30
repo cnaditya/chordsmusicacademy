@@ -6,6 +6,7 @@
 <title>SwaraSheet — Chords Music Academy</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html{font-size:18px}
@@ -467,6 +468,26 @@ body.light-mode{background:#f0f0f8!important;color:#1a1a2e!important}
 .light-mode [style*="border-top:1px solid #1a1a30"]{border-top-color:#e0e0f0!important}
 /* metro-row border */
 .light-mode .metro-row{border-top-color:#e0e0f0!important}
+/* Cloud Modal */
+#cloudModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:9500;align-items:flex-end;justify-content:center}
+.cloud-sheet{background:#0e0e1e;border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:20px 18px 28px;max-height:78vh;display:flex;flex-direction:column;position:relative}
+.cloud-sheet h3{color:#fff;font-size:0.95rem;font-weight:800;margin-bottom:2px}
+.cloud-tabs{display:flex;gap:8px;margin:10px 0}
+.cloud-tab{flex:1;padding:8px;border-radius:10px;border:1px solid rgba(155,89,182,0.3);background:transparent;color:#888;font-weight:700;font-size:0.8rem;cursor:pointer;font-family:inherit;transition:.2s}
+.cloud-tab.on{background:linear-gradient(135deg,#9b59b6,#6c3483);color:#fff;border-color:transparent}
+.cloud-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:7px;margin-bottom:12px;min-height:60px}
+.cloud-item{display:flex;align-items:center;gap:8px;background:#1a1a2e;border:1px solid rgba(155,89,182,0.2);border-radius:10px;padding:9px 11px}
+.cloud-item-name{flex:1;color:#ddd;font-size:0.82rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cloud-item-btn{padding:4px 11px;border-radius:7px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;border:1px solid}
+.cloud-item-load{background:rgba(52,152,219,0.12);border-color:rgba(52,152,219,0.4);color:#3498db}
+.cloud-item-del{background:rgba(231,76,60,0.08);border-color:rgba(231,76,60,0.3);color:#e74c3c;margin-left:3px}
+.cloud-empty{text-align:center;color:#555;font-size:0.82rem;padding:22px}
+.cloud-save-row{display:flex;gap:8px}
+.cloud-save-btn{flex:1;padding:10px;border-radius:10px;border:none;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit}
+.cloud-save-tmpl{background:linear-gradient(135deg,#9b59b6,#6c3483);color:#fff}
+.cloud-save-rec{background:linear-gradient(135deg,#27ae60,#1e8449);color:#fff}
+.cloud-status{text-align:center;font-size:0.75rem;color:#888;margin-top:7px;min-height:16px}
+.cloud-close-btn{position:absolute;top:14px;right:14px;background:transparent;border:none;color:#666;font-size:1.1rem;cursor:pointer;line-height:1}
 </style>
 </head>
 <body>
@@ -508,14 +529,9 @@ body.light-mode{background:#f0f0f8!important;color:#1a1a2e!important}
 <script>
 var currentUser = null;
 var firebaseAuth = null;
+var firebaseStorage = null;
 
 (function initAuth() {
-  // Skip auth in Electron desktop app — hide gate and go straight in
-  if (window.electronApp) {
-    document.getElementById('authGate').style.display = 'none';
-    return;
-  }
-
   var firebaseConfig = {
     apiKey: "AIzaSyDvuCr7IHM7oLYY6e675P_KtcTxsNEJr1c",
     authDomain: "chords-music-academy.firebaseapp.com",
@@ -524,9 +540,17 @@ var firebaseAuth = null;
     messagingSenderId: "146425788425",
     appId: "1:146425788425:web:8abbafbc93287a14ab20d8"
   };
-
   if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
   firebaseAuth = firebase.auth();
+  firebaseStorage = firebase.storage();
+
+  // Desktop app — skip auth gate, sign in anonymously for Storage access
+  if (window.electronApp) {
+    document.getElementById('authGate').style.display = 'none';
+    firebaseAuth.signInAnonymously().then(function(r){ currentUser = r.user; })
+      .catch(function(e){ console.warn('Anon auth failed:', e); });
+    return;
+  }
 
   // Show gate immediately while checking auth state
   document.getElementById('authGate').style.display = 'flex';
@@ -997,6 +1021,7 @@ function updateUserHeader(user) {
       ⬆ Import<input type="file" accept=".swarasheet,.json" onchange="importSession(event)" style="display:none">
     </label>
     <button class="btn" id="shareBtn" onclick="copyWhatsApp()" style="min-width:0;background:#1a2e1a;border:1px solid #25d366;color:#25d366;font-weight:700">📱 Share</button>
+    <button class="btn" onclick="openCloudModal()" style="min-width:0;background:#1a0e2e;border:1px solid #6c3483;color:#c39bd3;font-weight:700">☁ Cloud</button>
     <button class="btn btn-pdf" onclick="exportPDF()" style="flex:2;min-width:0">📄 Export PDF</button>
   </div>
 </div>
@@ -3172,6 +3197,158 @@ function _vrEsc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(
 
 
 
+/* ══════════════════════════════════════
+   ☁ FIREBASE CLOUD STORAGE
+   ══════════════════════════════════════ */
+var _cloudTab = 'templates';
+
+function openCloudModal() {
+  if (!firebaseStorage) { showToast('Cloud not available', 'warn'); return; }
+  document.getElementById('cloudModal').style.display = 'flex';
+  cloudListFiles('templates');
+  document.querySelector('.cloud-tab').classList.add('on');
+}
+
+function closeCloudModal() {
+  document.getElementById('cloudModal').style.display = 'none';
+  document.getElementById('cloudStatus').textContent = '';
+}
+
+function switchCloudTab(tab, btn) {
+  _cloudTab = tab;
+  document.querySelectorAll('.cloud-tab').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  cloudListFiles(tab);
+}
+
+function getCloudPath() {
+  var uid = currentUser ? currentUser.uid : 'desktop';
+  return 'swarasheet/' + uid + '/';
+}
+
+function cloudListFiles(type) {
+  var list = document.getElementById('cloudList');
+  list.innerHTML = '<div class="cloud-empty">Loading...</div>';
+  if (!firebaseStorage || !currentUser) {
+    list.innerHTML = '<div class="cloud-empty">Sign in to use Cloud</div>';
+    return;
+  }
+  firebaseStorage.ref(getCloudPath() + type).listAll().then(function(res) {
+    if (res.items.length === 0) {
+      list.innerHTML = '<div class="cloud-empty">No ' + type + ' saved yet.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    res.items.forEach(function(item) {
+      var name = item.name;
+      var fp = item.fullPath.replace(/'/g, "\\'");
+      var nm = name.replace(/'/g, "\\'");
+      var div = document.createElement('div');
+      div.className = 'cloud-item';
+      div.innerHTML = '<span class="cloud-item-name">' + (type==='templates'?'📄 ':'🎙 ') + name + '</span>'
+        + '<button class="cloud-item-btn cloud-item-load" onclick="cloudLoadFile(\'' + fp + '\',\'' + type + '\',\'' + nm + '\')">Load</button>'
+        + '<button class="cloud-item-btn cloud-item-del" onclick="cloudDeleteFile(\'' + fp + '\',\'' + type + '\')">✕</button>';
+      list.appendChild(div);
+    });
+  }).catch(function() {
+    list.innerHTML = '<div class="cloud-empty">Error loading files.</div>';
+  });
+}
+
+function cloudSaveTemplate() {
+  if (!notes || notes.length === 0) { showToast('No notes to save', 'warn'); return; }
+  if (!firebaseStorage || !currentUser) { showToast('Sign in to save', 'warn'); return; }
+  var titleEl = document.getElementById('sessionTitle');
+  var title = (titleEl ? titleEl.value.trim() : '') || 'Untitled';
+  var filename = title.replace(/[^a-zA-Z0-9_\-\s]/g,'').trim().replace(/\s+/g,'_') || 'template';
+  filename += '.swarasheet';
+  var data = { title:title, notes:notes, fmt:fmt, saOffset:saOffset, bpm:bpm, version:2, savedAt:new Date().toISOString() };
+  var blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  setCloudStatus('Saving...');
+  firebaseStorage.ref(getCloudPath() + 'templates/' + filename).put(blob).then(function() {
+    setCloudStatus('✅ Saved: ' + filename);
+    showToast('Saved to Cloud ☁', 'ok', 2000);
+    if (_cloudTab === 'templates') cloudListFiles('templates');
+  }).catch(function(e) { setCloudStatus('❌ Save failed'); console.error(e); });
+}
+
+function cloudSaveRecording() {
+  if (!_vrCurrentBlob) { showToast('No recording to save', 'warn'); return; }
+  if (!firebaseStorage || !currentUser) { showToast('Sign in to save', 'warn'); return; }
+  var titleEl = document.getElementById('sessionTitle');
+  var title = (titleEl ? titleEl.value.trim() : '') || 'recording';
+  var filename = title.replace(/[^a-zA-Z0-9_\-\s]/g,'').trim().replace(/\s+/g,'_') || 'recording';
+  filename += '_' + Date.now() + '.webm';
+  setCloudStatus('Uploading...');
+  firebaseStorage.ref(getCloudPath() + 'recordings/' + filename).put(_vrCurrentBlob, {contentType:'audio/webm'}).then(function() {
+    setCloudStatus('✅ Saved: ' + filename);
+    showToast('Recording saved to Cloud ☁', 'ok', 2000);
+    if (_cloudTab === 'recordings') cloudListFiles('recordings');
+  }).catch(function(e) { setCloudStatus('❌ Upload failed'); console.error(e); });
+}
+
+function cloudLoadFile(path, type, name) {
+  setCloudStatus('Loading...');
+  firebaseStorage.ref(path).getDownloadURL().then(function(url) {
+    if (type === 'templates') {
+      fetch(url).then(function(r){ return r.json(); }).then(function(data) {
+        if (!data.notes) { setCloudStatus('❌ Invalid file'); return; }
+        notes = data.notes;
+        if (data.fmt) fmt = data.fmt;
+        if (data.saOffset !== undefined) saOffset = data.saOffset;
+        if (data.bpm) bpm = data.bpm;
+        renderSeq();
+        closeCloudModal();
+        showToast('Loaded: ' + name, 'ok', 2000);
+      }).catch(function(){ setCloudStatus('❌ Load failed'); });
+    } else {
+      var audio = document.getElementById('vrAudio');
+      if (audio) {
+        audio.src = url;
+        document.getElementById('vrPlayback').style.display = 'block';
+        document.getElementById('singPanel').style.display = 'block';
+        closeCloudModal();
+        showToast('Recording loaded: ' + name, 'ok', 2000);
+      }
+    }
+  }).catch(function(){ setCloudStatus('❌ Load failed'); });
+}
+
+function cloudDeleteFile(path, type) {
+  if (!confirm('Delete this file from cloud?')) return;
+  firebaseStorage.ref(path).delete().then(function() {
+    showToast('Deleted from cloud', 'ok', 1500);
+    cloudListFiles(type);
+  }).catch(function(){ setCloudStatus('❌ Delete failed'); });
+}
+
+function setCloudStatus(msg) {
+  var el = document.getElementById('cloudStatus');
+  if (el) el.textContent = msg;
+}
+
 </script>
+
+<!-- Cloud Modal -->
+<div id="cloudModal" onclick="if(event.target===this)closeCloudModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:9500;align-items:flex-end;justify-content:center;">
+  <div class="cloud-sheet">
+    <button class="cloud-close-btn" onclick="closeCloudModal()">✕</button>
+    <div style="font-size:0.6rem;color:#888;letter-spacing:2px;text-transform:uppercase;font-weight:700">☁ Firebase Cloud</div>
+    <h3>My Cloud Files</h3>
+    <div class="cloud-tabs">
+      <button class="cloud-tab on" onclick="switchCloudTab('templates',this)">📄 Templates</button>
+      <button class="cloud-tab" onclick="switchCloudTab('recordings',this)">🎙 Recordings</button>
+    </div>
+    <div class="cloud-list" id="cloudList">
+      <div class="cloud-empty">Loading...</div>
+    </div>
+    <div class="cloud-save-row">
+      <button class="cloud-save-btn cloud-save-tmpl" onclick="cloudSaveTemplate()">💾 Save Template</button>
+      <button class="cloud-save-btn cloud-save-rec" onclick="cloudSaveRecording()">🎙 Save Recording</button>
+    </div>
+    <div class="cloud-status" id="cloudStatus"></div>
+  </div>
+</div>
+
 </body>
 </html>
