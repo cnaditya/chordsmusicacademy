@@ -63,22 +63,27 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .fb{flex:0 0 auto;border:1.5px solid #e0e0e0;background:#fff;border-radius:20px;padding:5px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;color:#666;white-space:nowrap}
 .fb.on{background:#1a1a2e;border-color:#1a1a2e;color:#fff}
 
-/* Table view */
-.stbl{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07)}
-.stbl thead th{background:#1a1a2e;color:#fff;padding:10px 8px;font-size:0.72rem;font-weight:700;text-align:left;text-transform:uppercase;letter-spacing:0.4px}
-.stbl tbody tr{border-bottom:1px solid #f0f2f5;transition:background 0.1s}
-.stbl tbody tr:last-child{border-bottom:none}
-.stbl tbody tr:active{background:#f9f9f9}
-.stbl td{padding:10px 8px;font-size:0.82rem;vertical-align:middle}
-.stbl td.td-name{font-weight:700;color:#1a1a2e}
-.stbl td.td-time{color:#888;font-size:0.72rem}
-.stbl td.td-fee{font-weight:700;color:#1a1a2e;white-space:nowrap}
-.stbl td.td-status{text-align:center}
-.tbl-pay-btn{border:none;border-radius:16px;padding:5px 10px;font-size:0.7rem;font-weight:800;cursor:pointer;white-space:nowrap}
-.tbl-pay-btn.paid{background:#e8f5e9;color:#27ae60}
-.tbl-pay-btn.due{background:#fdecea;color:#e74c3c}
-.tbl-edit-btn{border:none;background:#f0f2f5;color:#555;border-radius:8px;padding:4px 8px;font-size:0.7rem;cursor:pointer;margin-left:4px}
+.scard{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:10px;border-left:4px solid #e74c3c}
+.scard.paid{border-left-color:#27ae60}
+.scard.group{border-left-color:#8e44ad}
+.sc-top{display:flex;gap:10px;align-items:flex-start}
+.sc-av{width:40px;height:40px;border-radius:50%;background:#1a1a2e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0}
+.sc-av.paid{background:#27ae60}
+.sc-av.group{background:#8e44ad}
+.sc-info{flex:1}
+.sc-name{font-size:0.92rem;font-weight:800}
+.sc-meta{font-size:0.7rem;color:#888;margin-top:2px}
+.sc-fee{font-size:0.78rem;font-weight:700;color:#e74c3c;margin-top:3px}
+.sc-fee.paid{color:#27ae60}
+.sc-actions{display:flex;gap:6px;margin-top:10px}
+.sc-btn{flex:1;padding:7px;border:none;border-radius:8px;font-size:0.72rem;font-weight:700;cursor:pointer}
+.sc-btn.pay{background:#e8f5e9;color:#27ae60}
+.sc-btn.unpay{background:#fdecea;color:#e74c3c}
+.sc-btn.edit{background:#f0f2f5;color:#555}
+.sc-btn.del{background:#fdecea;color:#e74c3c}
 .badge{font-size:0.6rem;font-weight:700;padding:2px 7px;border-radius:8px;display:inline-block;margin-left:4px}
+.badge-paid{background:#e8f5e9;color:#27ae60}
+.badge-due{background:#fdecea;color:#e74c3c}
 .badge-group{background:#f3e5f5;color:#8e44ad}
 .badge-15k{background:#fff3e0;color:#e67e22}
 
@@ -437,35 +442,33 @@ function renderStudents(q, filter) {
     return;
   }
 
-  el.innerHTML = `
-    <table class="stbl">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Time</th>
-          <th>Fee</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${list.map((st, i) => {
-          const paid = isPaid(st.id, mk);
-          return `<tr>
-            <td style="color:#aaa;font-size:0.7rem">${i+1}</td>
-            <td class="td-name">${st.name}${st.type==='group'?'<span class="badge badge-group">G</span>':''}${st.pkg==='quarterly'?'<span class="badge badge-15k">Q</span>':''}</td>
-            <td class="td-time">${st.time}</td>
-            <td class="td-fee">₹${(st.fee/1000).toFixed(1)}k</td>
-            <td class="td-status">
-              <button class="tbl-pay-btn ${paid?'paid':'due'}" onclick="togglePayment('${st.id}','${mk}')">
-                ${paid ? '✓ Paid' : 'Due'}
-              </button>
-              <button class="tbl-edit-btn" onclick="openEditModal('${st.id}')">✎</button>
-            </td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table>`;
+  el.innerHTML = list.map(st => {
+    const paid = isPaid(st.id, mk);
+    const avClass = paid ? 'paid' : (st.type === 'group' ? 'group' : '');
+    const cardClass = paid ? 'paid' : (st.type === 'group' ? 'group' : '');
+    return `
+      <div class="scard ${cardClass}">
+        <div class="sc-top">
+          <div class="sc-av ${avClass}">${st.name[0]}</div>
+          <div class="sc-info">
+            <div class="sc-name">${st.name}
+              ${st.type==='group' ? '<span class="badge badge-group">Group</span>' : ''}
+              ${st.pkg==='quarterly' ? '<span class="badge badge-15k">15K Pkg</span>' : ''}
+              ${paid ? '<span class="badge badge-paid">Paid</span>' : '<span class="badge badge-due">Due</span>'}
+            </div>
+            <div class="sc-meta">${st.time}</div>
+            <div class="sc-fee ${paid?'paid':''}">₹${st.fee.toLocaleString('en-IN')} / month</div>
+          </div>
+        </div>
+        <div class="sc-actions">
+          ${paid
+            ? `<button class="sc-btn unpay" onclick="togglePayment('${st.id}','${mk}')">Mark Unpaid</button>`
+            : `<button class="sc-btn pay" onclick="togglePayment('${st.id}','${mk}')">✓ Mark Paid</button>`}
+          <button class="sc-btn edit" onclick="openEditModal('${st.id}')">Edit</button>
+          <button class="sc-btn del" onclick="deleteStudent('${st.id}')">Delete</button>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 // ── Payments page ─────────────────────────────────────────────
