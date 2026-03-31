@@ -1010,6 +1010,7 @@ function updateUserHeader(user) {
     <button class="btn" onclick="clearNotes()" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700" title="Save current notes to history, then start fresh">✦ New Song</button>
     <button class="btn btn-clear" onclick="clearNotesHard()" style="min-width:0" title="Discard all notes without saving">🗑 Discard</button>
     <button class="btn" onclick="togglePiano()" id="pianoToggleBtn" style="min-width:0;background:#1a0e1a;border:1px solid #3a1a3a;color:#c39bd3;font-weight:700">🎹 Keys</button>
+    <button class="btn" onclick="toggleKbPiano()" id="kbPianoBtn" style="min-width:0;background:#1a0e2e;border:1px solid #2a2a4a;color:#888;font-weight:700" title="QWERTY keyboard piano — type notes like a piano keyboard">⌨ KB Piano</button>
     <button class="btn" id="singBtn" onclick="toggleSing()" style="min-width:0;background:#1a0a0a;border:1px solid #e74c3c;color:#e74c3c;font-weight:700">🎤 Sing</button>
   </div>
   <div class="actions-divider"></div>
@@ -1024,6 +1025,17 @@ function updateUserHeader(user) {
     <button class="btn" onclick="openCloudModal()" style="min-width:0;background:#1a0e2e;border:1px solid #6c3483;color:#c39bd3;font-weight:700">☁ Cloud</button>
     <button class="btn btn-pdf" onclick="exportPDF()" style="flex:2;min-width:0">📄 Export PDF</button>
   </div>
+</div>
+
+<!-- Keyboard Piano Octave Bar -->
+<div id="kbOctaveBar" style="display:none;align-items:center;gap:10px;margin-top:10px;padding:8px 14px;background:#0e0a1e;border:1px solid #4a2a7a;border-radius:10px;flex-wrap:wrap">
+  <span style="font-size:0.72rem;font-weight:800;color:#c39bd3;letter-spacing:1px;text-transform:uppercase">⌨ KB Piano Active</span>
+  <span style="font-size:0.72rem;color:#666">Octave:</span>
+  <button onclick="kbOctaveShift(-1)" style="background:#1a0e2e;border:1px solid #4a2a7a;color:#c39bd3;font-weight:900;border-radius:6px;padding:2px 10px;cursor:pointer;font-size:0.9rem">−</button>
+  <span id="kbOctaveNum" style="font-size:1rem;font-weight:900;color:#e8d5f5;min-width:18px;text-align:center">4</span>
+  <button onclick="kbOctaveShift(1)" style="background:#1a0e2e;border:1px solid #4a2a7a;color:#c39bd3;font-weight:900;border-radius:6px;padding:2px 10px;cursor:pointer;font-size:0.9rem">+</button>
+  <span style="font-size:0.65rem;color:#555">— or press <kbd style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:3px;padding:1px 5px;color:#888">−</kbd> / <kbd style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:3px;padding:1px 5px;color:#888">=</kbd></span>
+  <span style="font-size:0.65rem;color:#444;margin-left:4px">QWERTY→white keys &nbsp;·&nbsp; S D G H J / 2 3 5 6 7→sharps</span>
 </div>
 
 <!-- Sing Panel -->
@@ -1271,6 +1283,27 @@ function getCarnaticName(rel) {
 
 var fmt = 'letter';
 var saTonic = 0; // MIDI index of Sa (0=C, 2=D, etc.)
+var kbPianoMode = false;
+var kbOctave = 4; // base octave for keyboard piano (default: 4 = middle C area)
+// QWERTY → piano mapping: semi = semitone within octave, oct = octave offset relative to kbOctave
+var KB_PIANO_MAP = {
+  // Bottom row — white keys of kbOctave-1
+  'KeyZ':{semi:0,oct:-1},'KeyX':{semi:2,oct:-1},'KeyC':{semi:4,oct:-1},
+  'KeyV':{semi:5,oct:-1},'KeyB':{semi:7,oct:-1},'KeyN':{semi:9,oct:-1},'KeyM':{semi:11,oct:-1},
+  // Home row — black keys of kbOctave-1
+  'KeyS':{semi:1,oct:-1},'KeyD':{semi:3,oct:-1},
+  'KeyG':{semi:6,oct:-1},'KeyH':{semi:8,oct:-1},'KeyJ':{semi:10,oct:-1},
+  // Q row — white keys of kbOctave
+  'KeyQ':{semi:0,oct:0},'KeyW':{semi:2,oct:0},'KeyE':{semi:4,oct:0},
+  'KeyR':{semi:5,oct:0},'KeyT':{semi:7,oct:0},'KeyY':{semi:9,oct:0},'KeyU':{semi:11,oct:0},
+  // Extended Q row — white keys of kbOctave+1
+  'KeyI':{semi:0,oct:1},'KeyO':{semi:2,oct:1},'KeyP':{semi:4,oct:1},
+  // Number row — black keys of kbOctave
+  'Digit2':{semi:1,oct:0},'Digit3':{semi:3,oct:0},
+  'Digit5':{semi:6,oct:0},'Digit6':{semi:8,oct:0},'Digit7':{semi:10,oct:0},
+  // Number row — black keys of kbOctave+1
+  'Digit9':{semi:1,oct:1},'Digit0':{semi:3,oct:1}
+};
 var sep = ' ';
 var notes = [];
 var heldKeys = {};
@@ -2498,9 +2531,64 @@ function exportWord() {
   URL.revokeObjectURL(url);
 }
 
+// ── Keyboard Piano Mode ──────────────────────────────────────────────────────
+function toggleKbPiano() {
+  kbPianoMode = !kbPianoMode;
+  var btn = document.getElementById('kbPianoBtn');
+  var bar = document.getElementById('kbOctaveBar');
+  if (kbPianoMode) {
+    btn.style.background = '#2e1a4a';
+    btn.style.borderColor = '#c39bd3';
+    btn.style.color = '#e8d5f5';
+    if (bar) bar.style.display = 'flex';
+    showToast('⌨ KB Piano ON — QWERTY = piano keys', 'ok', 2000);
+  } else {
+    btn.style.background = '#1a0e2e';
+    btn.style.borderColor = '#2a2a4a';
+    btn.style.color = '#888';
+    if (bar) bar.style.display = 'none';
+    showToast('KB Piano OFF', 'ok', 1200);
+  }
+}
+
+function kbOctaveShift(dir) {
+  kbOctave = Math.max(2, Math.min(6, kbOctave + dir));
+  var el = document.getElementById('kbOctaveNum');
+  if (el) el.textContent = kbOctave;
+  showToast('Octave ' + kbOctave, 'ok', 600);
+}
+
+function highlightPianoKey(midiNote) {
+  var key = document.querySelector('.piano-keys [data-midi="' + midiNote + '"]');
+  if (!key) return;
+  var origBg = key.style.background;
+  key.style.background = '#c39bd3';
+  key.style.transition = 'background 0.12s';
+  setTimeout(function() { key.style.background = origBg; key.style.transition = ''; }, 200);
+}
+
 // Prevent spacebar from clicking buttons — use it as bar separator instead
 document.addEventListener('keydown', function(e) {
   if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'SELECT')) return;
+
+  // ── Keyboard Piano Mode (overrides sargam shortcuts) ──
+  if (kbPianoMode) {
+    var kbMap = KB_PIANO_MAP[e.code];
+    if (kbMap && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      var kbMidi = (kbOctave + kbMap.oct + 1) * 12 + kbMap.semi;
+      kbMidi = Math.max(21, Math.min(108, kbMidi));
+      var kbName = getNoteName(kbMidi);
+      playPianoNote(kbMidi);
+      updateLive(kbMidi);
+      highlightPianoKey(kbMidi);
+      addNote(kbName, kbMidi);
+      return;
+    }
+    // Octave shift: - = down, = = up
+    if (e.code === 'Minus' && !e.metaKey && !e.ctrlKey) { e.preventDefault(); kbOctaveShift(-1); return; }
+    if (e.code === 'Equal' && !e.metaKey && !e.ctrlKey) { e.preventDefault(); kbOctaveShift(1); return; }
+  }
 
   // ── Letter key swara shortcuts (S R G M P D N) ──
   var swara_keys = {'KeyS':'S','KeyR':'R','KeyG':'G','KeyM':'M','KeyP':'P','KeyD':'D','KeyN':'N'};
