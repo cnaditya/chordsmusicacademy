@@ -639,25 +639,37 @@ function updateUserHeader(user) {
     <div style="text-align:center;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid #2a2a4a">
       <div style="font-size:2rem;margin-bottom:6px">🎹</div>
       <div style="font-size:1.5rem;font-weight:900;color:#ff6b6b;letter-spacing:1px">SwaraSheet</div>
-      <div style="font-size:0.78rem;color:#666;margin-top:4px">User Manual v2 — Chords Music Academy</div>
+      <div style="font-size:0.78rem;color:#666;margin-top:4px">User Manual v3 — Chords Music Academy</div>
     </div>
 
     <div style="display:grid;gap:22px">
 
     <div>
       <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">1. What is SwaraSheet?</div>
-      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">SwaraSheet captures notes from your MIDI keyboard <b style="color:#dde">or the on-screen piano keyboard</b> and converts them into text notation in real time — Western (C D E F), Indian Sargam (Sa Ri Ga Ma), and Carnatic. Use it to transcribe songs, create note sheets, and export clean PDFs. No internet required once loaded.</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">SwaraSheet is a real-time music notation tool for musicians of all levels. Capture notes from a <b style="color:#dde">MIDI keyboard</b>, the <b style="color:#dde">on-screen piano</b>, or your <b style="color:#dde">computer keyboard</b> — and instantly get notation in Western (C D E F), Indian Sargam (Sa Ri Ga Ma), or Carnatic format. Add chords, section labels, metronome, and export clean PDFs. Available as a <b style="color:#dde">web app</b> and a <b style="color:#dde">desktop app</b> (Mac/Windows).</div>
     </div>
 
     <div>
-      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">2. Connecting Your MIDI Keyboard</div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">2. Three Ways to Input Notes</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
-        <b style="color:#dde">Step 1:</b> Connect keyboard via USB cable to your computer.<br>
-        <b style="color:#dde">Step 2:</b> Click the <b style="color:#e74c3c">🔌 Connect</b> button (top right).<br>
-        <b style="color:#dde">Step 3:</b> Allow MIDI access when browser asks.<br>
-        <b style="color:#dde">Step 4:</b> Status dot turns green — you're ready to play.<br><br>
-        <span style="color:#f39c12">⚠️ MIDI requires Chrome or Edge browser. Firefox and Safari are not supported.</span><br><br>
-        <b style="color:#dde">No MIDI keyboard?</b> Use the built-in <b style="color:#c39bd3">🎹 Keys</b> on-screen piano — click any key to enter a note and hear it play instantly. Shows 3 octaves: C3 (low), C4 (middle), C5 (high). Sound is generated live in the browser — no downloads needed.
+        <b style="color:#c39bd3">A. MIDI Keyboard</b><br>
+        Connect via USB → click <b style="color:#e74c3c">🔌 Connect</b> (top right) → allow MIDI access → status dot turns green.<br>
+        <span style="color:#f39c12;font-size:0.78rem">⚠️ MIDI requires Chrome or Edge. Firefox and Safari are not supported.</span><br><br>
+
+        <b style="color:#c39bd3">B. On-Screen Piano (🎹 Keys)</b><br>
+        Click the <b style="color:#c39bd3">🎹 Keys</b> button to toggle the on-screen piano. Shows 3 octaves (C3–B5). Click any key — the note is added and you hear it play instantly.<br><br>
+
+        <b style="color:#c39bd3">C. Computer Keyboard Piano (⌨ KB Piano) — NEW</b><br>
+        Click <b style="color:#c39bd3">⌨ KB Piano</b> to turn your QWERTY keyboard into a piano. The octave bar appears below the action buttons showing your current octave.
+        <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:0.78rem">
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:5px 8px;color:#dde;font-weight:700;white-space:nowrap">Z X C V B N M</td><td style="padding:5px 8px;color:#888">White keys — C D E F G A B (one octave below base)</td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:5px 8px;color:#dde;font-weight:700">S D &nbsp; G H J</td><td style="padding:5px 8px;color:#888">Black keys — C# D# &nbsp; F# G# A# (one octave below base)</td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:5px 8px;color:#dde;font-weight:700">Q W E R T Y U</td><td style="padding:5px 8px;color:#888">White keys — C D E F G A B (base octave)</td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:5px 8px;color:#dde;font-weight:700">2 3 &nbsp; 5 6 7</td><td style="padding:5px 8px;color:#888">Black keys — C# D# &nbsp; F# G# A# (base octave)</td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:5px 8px;color:#dde;font-weight:700">I O P</td><td style="padding:5px 8px;color:#888">C D E (one octave above base)</td></tr>
+          <tr><td style="padding:5px 8px;color:#dde;font-weight:700">− &nbsp; / &nbsp; =</td><td style="padding:5px 8px;color:#888">Shift base octave down / up (range: 2–6)</td></tr>
+        </table>
+        <br>Sound plays on every keypress. On-screen piano key flashes. Use <b style="color:#dde">−</b> / <b style="color:#dde">=</b> keys or the − + buttons in the octave bar to shift octave.
       </div>
     </div>
 
@@ -671,7 +683,7 @@ function updateUserHeader(user) {
           <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:6px 8px;color:#dde;font-weight:700">Carnatic</td><td style="padding:6px 8px;color:#888">S R1 R2 G1 G2 G3 M1 M2 P D1 D2 N3…</td></tr>
           <tr><td style="padding:6px 8px;color:#dde;font-weight:700">Dash</td><td style="padding:6px 8px;color:#888">C-D-E-F (hyphen separated)</td></tr>
         </table>
-        <br>Switch format any time — notes automatically re-convert.
+        <br>Switch format any time — all notes automatically re-convert.
       </div>
     </div>
 
@@ -680,13 +692,13 @@ function updateUserHeader(user) {
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
         SwaraSheet uses <b style="color:#dde">prime marks</b> — the traditional Indian music notation standard — to show which octave a note belongs to:
         <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:0.82rem">
-          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:8px;color:#dde;font-weight:700;width:40%">Middle octave</td><td style="padding:8px;color:#888">Sa &nbsp; Re &nbsp; Ga &nbsp; (no mark)</td></tr>
-          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:8px;color:#7eb3ff;font-weight:700">High octave (Tara)</td><td style="padding:8px;color:#888">Sa′ &nbsp; Re′ &nbsp; Ga′ &nbsp; <span style="color:#666;font-size:0.75em">(blue ′ above)</span></td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:8px;color:#dde;font-weight:700;width:42%">Middle octave</td><td style="padding:8px;color:#888">Sa &nbsp; Re &nbsp; Ga &nbsp; (no mark)</td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:8px;color:#7eb3ff;font-weight:700">High (Tara)</td><td style="padding:8px;color:#888">Sa′ &nbsp; Re′ &nbsp; Ga′ &nbsp; <span style="color:#666;font-size:0.75em">(blue ′ above)</span></td></tr>
           <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:8px;color:#7eb3ff;font-weight:700">Very high</td><td style="padding:8px;color:#888">Sa′′ &nbsp; Re′′ &nbsp; <span style="color:#666;font-size:0.75em">(double prime)</span></td></tr>
-          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:8px;color:#f39c12;font-weight:700">Low octave (Mandra)</td><td style="padding:8px;color:#888">Sa, &nbsp; Re, &nbsp; Ga, &nbsp; <span style="color:#666;font-size:0.75em">(amber , below)</span></td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:8px;color:#f39c12;font-weight:700">Low (Mandra)</td><td style="padding:8px;color:#888">Sa, &nbsp; Re, &nbsp; Ga, &nbsp; <span style="color:#666;font-size:0.75em">(amber , below)</span></td></tr>
           <tr><td style="padding:8px;color:#f39c12;font-weight:700">Very low</td><td style="padding:8px;color:#888">Sa,, &nbsp; Re,, &nbsp; <span style="color:#666;font-size:0.75em">(double comma)</span></td></tr>
         </table>
-        <br>These marks appear in both the app and the PDF export. They are universally used in Indian classical music textbooks.
+        <br>These marks appear in both the app and PDF export — consistent with Indian classical music textbooks.
       </div>
     </div>
 
@@ -703,22 +715,23 @@ function updateUserHeader(user) {
     <div>
       <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">6. Recording Notes</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
-        Play your MIDI keyboard or click the on-screen piano — notes appear in the sequence box instantly.<br><br>
-        <b style="color:#dde">⏸ Pause / ▶ Resume:</b> Temporarily stop recording so keyboard input is ignored.<br><br>
+        Play your MIDI keyboard, click the on-screen piano, or use KB Piano — notes appear instantly in the sequence box.<br><br>
+        <b style="color:#dde">⏸ Pause / ▶ Resume:</b> Temporarily stop recording so input is ignored.<br><br>
         <b style="color:#dde">Separator:</b> Choose Space, Comma, Dash, or New Line between notes.<br><br>
-        <b style="color:#dde">Double-click any note</b> to replace it — play a new note from MIDI or on-screen piano to substitute it.
+        <b style="color:#dde">Double-click any note</b> to enter edit/replace mode — then play a note from any input method to substitute it.
       </div>
     </div>
 
     <div>
       <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">7. Editing Notes</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
-        <b style="color:#dde">Delete last note:</b> Press <b>Delete</b> / <b>Backspace</b> key, or click <b>↩ Undo</b>.<br>
+        <b style="color:#dde">Delete last note:</b> Press <b>Delete</b> / <b>Backspace</b>, or click <b>↩ Undo</b>.<br>
         <b style="color:#dde">Delete any note:</b> Right-click the note → removed instantly.<br>
+        <b style="color:#dde">Undo:</b> <b>Cmd+Z</b> (Mac) or <b>Ctrl+Z</b> (Windows).<br>
         <b style="color:#dde">Redo:</b> <b>Cmd+Shift+Z</b> (Mac) or <b>Ctrl+Y</b> (Windows).<br>
         <b style="color:#dde">Font size:</b> Use <b>A−</b> / <b>A+</b> or type a number directly.<br>
         <b style="color:#dde">New line:</b> Press <b>Enter</b>.<br>
-        <b style="color:#dde">Bar line ( | ):</b> Press <b>Space</b> or click the <b>Bar</b> button.<br><br>
+        <b style="color:#dde">Bar line ( | ):</b> Press <b>Space</b> or click <b>⎵ Bar</b>.<br><br>
         <b style="color:#dde">Transpose:</b> Use <b>▼−2 ▼−1 ▲+1 ▲+2</b> buttons to shift all notes up or down by semitones. Chords transpose automatically. Shortcut: <b>Cmd+↑/↓</b>.
       </div>
     </div>
@@ -726,7 +739,7 @@ function updateUserHeader(user) {
     <div>
       <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">8. Section Labels</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
-        Click <b style="color:#e67e22">§ Label</b> to open the label panel.<br><br>
+        Click <b style="color:#e67e22">§ Section</b> to open the label panel.<br><br>
         <b style="color:#dde">Indian:</b> Pallavi, Anupallavi, Charanam, Sthayi, Antara, Sanchari<br>
         <b style="color:#dde">Western:</b> Intro, Verse, Chorus, Bridge, Outro<br>
         <b style="color:#dde">Repeat markers:</b> ↺ Repeat, ×2, ×3 — appear inline on the same line as notes<br><br>
@@ -737,7 +750,7 @@ function updateUserHeader(user) {
     <div>
       <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">9. Chords</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
-        Switch to <b style="color:#dde">🎸 Chord mode</b> and hold keys — the detected chord appears in the "Detected" display.<br><br>
+        Switch to <b style="color:#dde">🎸 Chord mode</b> and hold keys on the MIDI keyboard — the detected chord appears in the "Detected" display.<br><br>
         Click <b>↑ Apply</b> to attach it to the last note, or click any note's chord label (orange, above the note) to edit or assign a chord directly.<br><br>
         Right-click a chord label to clear it. Chords appear above notes in the sequence and in the PDF.
       </div>
@@ -746,8 +759,8 @@ function updateUserHeader(user) {
     <div>
       <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">10. Metronome</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
-        Click <b style="color:#dde">🥁 Metro</b> to open the metronome panel.<br><br>
-        Set your <b style="color:#dde">BPM</b> (40–200) and <b style="color:#dde">time signature</b> (2/4, 3/4, 4/4, 6/8). Click <b>▶ Start</b> to begin — the status dot pulses on each beat and accents beat 1. Click <b>⏹ Stop</b> to end.
+        Open the Metronome section in the Controls panel.<br><br>
+        Set <b style="color:#dde">BPM</b> (40–200) and <b style="color:#dde">time signature</b> (2/4, 3/4, 4/4, 5/4, 6/8, 7/8). Click <b>▶ Start</b> — the status dot pulses on each beat and accents beat 1. The BPM is saved with your cloud templates.
       </div>
     </div>
 
@@ -755,19 +768,19 @@ function updateUserHeader(user) {
       <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">11. Copy, Export &amp; Share</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
         <b style="color:#dde">📋 Copy All:</b> Copies all notes as plain text — includes chords, octave marks, section labels, bar lines. Paste into WhatsApp, Word, Notes, etc.<br><br>
-        <b style="color:#dde">📋 per line:</b> Each line has a copy icon at the end — copies just that line.<br><br>
-        <b style="color:#dde">WhatsApp share:</b> Formats notes with bold/italic markdown for clean WhatsApp display.<br><br>
-        <b style="color:#dde">Export PDF:</b> Opens a modal — enter song title, Raag, Taal, choose whether to include chords and section labels, then click Export. Saves as a formatted note sheet with academy header and watermark.
+        <b style="color:#dde">📋 per line:</b> Each line has a copy icon — copies just that line.<br><br>
+        <b style="color:#dde">📱 Share:</b> Formats notes with WhatsApp bold/italic markdown for clean display in chat.<br><br>
+        <b style="color:#dde">📄 Export PDF:</b> Opens a modal — enter song title, Raag, Taal, choose whether to include chords and section labels, then click Export. Generates a formatted note sheet with academy header and watermark. Voice recorder controls are hidden in the PDF output.
       </div>
     </div>
 
     <div>
-      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">12. Saving &amp; Loading Sessions</div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">12. Saving &amp; Loading Sessions (Local)</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
-        <b style="color:#dde">💾 Save:</b> Type a song title then click Save — stores notes, format, Sa, chords in browser storage. Saving with the same title overwrites the existing entry.<br><br>
-        <b style="color:#dde">▶ Load:</b> Loads a saved session. Your edits after loading are safe — the saved copy is untouched unless you save again.<br><br>
-        <b style="color:#dde">+ New Song:</b> Saves current notes to history, then starts a fresh session.<br><br>
-        <b style="color:#dde">🗑 Clear:</b> Discards all current notes (no history save).<br><br>
+        <b style="color:#dde">💾 Save:</b> Type a song title then click Save — stores notes, format, Sa, chords in browser/local storage. Same title overwrites the existing entry.<br><br>
+        <b style="color:#dde">▶ Load:</b> Loads a saved session. Edits after loading don't affect the saved copy unless you save again.<br><br>
+        <b style="color:#dde">✦ New Song:</b> Saves current notes to history, then starts a fresh session.<br><br>
+        <b style="color:#dde">🗑 Discard:</b> Discards all current notes without saving to history.<br><br>
         <b style="color:#dde">⬇ Download:</b> Saves a <code style="color:#7eb3ff">.swarasheet</code> file to your computer — use to back up or share.<br>
         <b style="color:#dde">⬆ Import:</b> Load a <code style="color:#7eb3ff">.swarasheet</code> file back — works on any device.<br><br>
         <b style="color:#dde">Search:</b> Type in the search box to find a saved session by name.<br><br>
@@ -775,8 +788,31 @@ function updateUserHeader(user) {
       </div>
     </div>
 
+    <div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">13. ☁ Cloud Templates — NEW</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
+        Click <b style="color:#c39bd3">☁ Cloud</b> to open the Cloud panel. Sign in with your Google account (web) — the desktop app signs in automatically.<br><br>
+        <b style="color:#dde">Save to Cloud:</b> Type a song title in the title box, then click <b>☁ Cloud → Save</b>. Saves notes, format, Sa, and BPM to the cloud. The title is used as the template ID — saving the same title overwrites.<br><br>
+        <b style="color:#dde">Load from Cloud:</b> Your saved templates appear in the list — click <b>Load</b> to restore a template. Notes, format, Sa, and BPM are all restored.<br><br>
+        <b style="color:#dde">Delete:</b> Click 🗑 next to any template to remove it from the cloud.<br><br>
+        <span style="color:#888;font-size:0.78rem">Cloud uses Firebase Firestore (free tier). Templates are private to your account. Works across web and desktop — save on one, load on the other.</span>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">14. Voice Recorder 🎤</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
+        Click <b style="color:#e74c3c">🎤 Sing</b> to open the voice recorder panel. Record yourself singing or humming a melody and save the audio clip alongside your note sheet.<br><br>
+        <b style="color:#dde">Record / Stop:</b> Click the record button to start and stop recording.<br>
+        <b style="color:#dde">Play:</b> Listen back to your recording.<br>
+        <b style="color:#dde">Save:</b> Give the clip a name and save it — appears in the recordings list below.<br>
+        <b style="color:#dde">Delete:</b> Remove any saved clip.<br><br>
+        <span style="color:#888;font-size:0.78rem">Voice recorder and audio controls are automatically hidden when exporting PDF — they do not appear in printed output.</span>
+      </div>
+    </div>
+
     <div style="background:#0e0e24;border-radius:10px;padding:16px;border:1px solid #2a2a4a">
-      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e67e22;font-weight:800;margin-bottom:8px">Keyboard Shortcuts</div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e67e22;font-weight:800;margin-bottom:12px">Keyboard Shortcuts</div>
       <div style="font-size:0.78rem;color:#aaa;line-height:2;display:grid;grid-template-columns:1fr 1fr;gap:0 24px">
         <div><b style="color:#dde">Space</b> — Bar line ( | )</div>
         <div><b style="color:#dde">Enter</b> — New line</div>
@@ -786,6 +822,11 @@ function updateUserHeader(user) {
         <div><b style="color:#dde">Cmd+↑ / Cmd+↓</b> — Transpose ±1</div>
         <div><b style="color:#dde">Double-click note</b> — Replace note</div>
         <div><b style="color:#dde">Right-click note</b> — Delete note</div>
+        <div><b style="color:#dde">S R G M P D N</b> — Sargam shortcut keys</div>
+        <div><b style="color:#dde">− / =</b> — KB Piano octave down / up</div>
+      </div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid #1a1a3a;font-size:0.75rem;color:#666">
+        Sargam shortcut keys (S R G M P D N) and KB Piano mode are mutually exclusive — KB Piano must be active for the full chromatic keyboard layout to work.
       </div>
     </div>
 
