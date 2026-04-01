@@ -1,17 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-801045653"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-801045653');
+    </script>
+    <script>
+      function trackWhatsApp() {
+        gtag('event', 'conversion', {'send_to': 'AW-801045653/--rgCI7G-ZAcEJX5-_0C'});
+      }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Chords Music Academy - Professional Music Education | Trinity Certified Courses</title>
-    <meta name="description" content="Learn music at Chords Music Academy, Hyderabad. Trinity College London certified courses in Piano, Guitar, Drums, Violin, Flute, and Vocals. Founded by CN Aditya, Telugu film industry music director.">
-    <meta name="keywords" content="music academy, music classes, piano lessons, guitar classes, drums, violin, flute, vocals, Trinity College London, Hyderabad, CN Aditya, music education">
+    <title>Best Music School in Manikonda | Chords Music Academy - Professional Music Education</title>
+    <meta name="description" content="Best music school in Manikonda, Hyderabad. Chords Music Academy offers Trinity College London certified courses in Piano, Guitar, Drums, Violin, Flute, and Vocals. Online & offline classes.">
+    <meta name="keywords" content="best music school manikonda, music academy hyderabad, music classes manikonda, piano lessons hyderabad, guitar classes, drums, violin, flute, vocals, Trinity College London, CN Aditya">
     <meta name="author" content="Chords Music Academy">
     <!-- Open Graph / WhatsApp / Instagram sharing -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://chordsmusicacademy.in/">
-    <meta property="og:title" content="Chords Music Academy - Professional Music Education | Hyderabad">
-    <meta property="og:description" content="Learn Piano, Guitar, Drums, Violin, Flute & Vocals at Chords Music Academy, Manikonda, Hyderabad. Trinity College London certified. Founded by Telugu film industry music director CN Aditya.">
+    <meta property="og:title" content="Best Music School in Manikonda | Chords Music Academy">
+    <meta property="og:description" content="Best music school in Manikonda, Hyderabad. Trinity College London certified courses in Piano, Guitar, Drums, Violin, Flute & Vocals. Online & offline. Enroll today.">
     <meta property="og:image" content="https://chordsmusicacademy.in/images/chords_PNG.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Chords Music Academy - Professional Music Education">
@@ -120,7 +133,7 @@
                 </a>
                 <div class="hero-btns">
                     <button class="cta-btn" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">Enroll Now</button>
-                    <button class="trial-btn" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">🎵 Book Free Trial Class</button>
+                    <a class="trial-btn" href="https://wa.me/917981585309?text=Hi!%20I'd%20like%20to%20book%20a%20free%20trial%20class%20at%20Chords%20Music%20Academy%20%F0%9F%8E%B5" target="_blank" onclick="trackWhatsApp()">🎵 Book Free Trial Class</a>
                 </div>
             </div>
         </section>
@@ -790,13 +803,15 @@
 
     <script src="config.js"></script>
     <!-- Floating WhatsApp Chat -->
-    <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hello!%20I'm%20super%20excited%20to%20start%20learning%20music.%20Can%20you%20please%20tell%20me%20more%20about%20Chords%20Music%20Academy%20and%20how%20I%20can%20enroll?%20😊" 
-       target="_blank" 
-       class="whatsapp-float">
-      <img src="images/whatsapp.png"
+    <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hello!%20I'm%20super%20excited%20to%20start%20learning%20music.%20Can%20you%20please%20tell%20me%20more%20about%20Chords%20Music%20Academy%20and%20how%20I%20can%20enroll?%20😊"
+       target="_blank"
+       class="whatsapp-float"
+       onclick="trackWhatsApp()">
+      <img src="images/whatsapp.svg"
            alt="Chat on WhatsApp" loading="lazy">
     </a>
 
     <script src="js/script.js"></script>
+
 </body>
 </html>

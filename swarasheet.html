@@ -6,6 +6,7 @@
 <title>SwaraSheet — Chords Music Academy</title>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html{font-size:18px}
@@ -48,11 +49,19 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 /* Note sequence */
 .seq-section{padding:16px 28px 0}
 .seq-label{font-size:0.62rem;color:#444;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-weight:700}
-.seq-box{background:#0a0a1a;border:1px solid #1e1e3a;border-radius:12px;padding:20px;min-height:180px;font-size:1.4rem;font-weight:700;color:#fff;line-height:2.8;letter-spacing:2px;word-break:break-all;position:relative;transition:border-color .2s}
+.seq-box{background:#0a0a1a;border:1px solid #1e1e3a;border-radius:12px;padding:20px;min-height:260px;font-size:1.4rem;font-weight:700;color:#fff;line-height:2.8;letter-spacing:2px;word-break:break-all;position:relative;transition:border-color .2s}
 .seq-box:focus-within{border-color:#e74c3c30}
 .seq-box span.n{color:#7eb3ff}
 .seq-box span.s{color:#f39c12}
 .seq-cursor{display:inline-block;width:2px;height:1.2em;background:#e74c3c;vertical-align:middle;animation:blink .8s infinite}
+.insert-cursor{display:inline-block;width:2px;height:1.2em;background:#2ecc71;vertical-align:middle;animation:blink .8s infinite;margin:0 2px}
+.note-selected{background:rgba(46,204,113,0.2);border-radius:4px;outline:2px solid #2ecc71;outline-offset:1px}
+.cursor-hint{font-size:0.65rem;color:#2ecc71;letter-spacing:1px;padding:4px 10px;margin-top:6px;display:none}
+.cursor-hint.show{display:block}
+/* Staff notation */
+#staffCanvas svg{display:block;max-width:100%}
+.staff-rec-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#e74c3c;margin-right:5px;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
 /* Chord input */
@@ -108,8 +117,11 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .cv-btn.on{background:#e67e22;border-color:#e67e22;color:#fff}
 
 /* Action buttons */
-.actions{display:flex;gap:10px;padding:0 28px 16px;flex-wrap:wrap}
-.btn{flex:1;padding:12px 16px;border:none;border-radius:10px;font-size:0.88rem;font-weight:700;cursor:pointer;min-width:90px;transition:.2s;letter-spacing:0.3px}
+.actions{display:flex;flex-direction:column;gap:8px;padding:0;margin-top:14px}
+.actions-row{display:flex;gap:8px;flex-wrap:wrap}
+.actions-divider{height:1px;background:#1a1a30;margin:2px 0}
+.btn{flex:1;padding:11px 14px;border:none;border-radius:10px;font-size:0.85rem;font-weight:700;cursor:pointer;min-width:80px;transition:.2s;letter-spacing:0.3px}
+.light-mode .actions-divider{background:#e0e0f0}
 .btn:active{transform:scale(0.97)}
 .btn-copy{background:#1a3a2a;border:1px solid #2ecc71;color:#2ecc71}
 .btn-copy:hover{background:#2ecc71;color:#fff}
@@ -179,9 +191,10 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 /* Print styles */
 @media print {
   @page{margin:16mm 18mm}
+  html,body{height:auto!important;min-height:0!important;overflow:visible!important}
   body{background:#fff;color:#000;font-family:'Segoe UI',Arial,sans-serif;font-size:11pt}
   .hdr,.status-bar,.live-section,.held-row,.fmt-row,.sa-row,.cv-row,.settings,.actions,.history,.no-midi,.ins-bar,.mode-row,
-  .label-panel,.music-bg,.instr-bar,.piano-strip{display:none!important}
+  .label-panel,.music-bg,.instr-bar,.piano-strip,.transpose-row,.metro-row,#singPanel{display:none!important}
   .app-wrap{max-width:100%;padding:0;margin:0}
   .seq-section{display:none}
   .print-header{display:block!important}
@@ -228,13 +241,13 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
   .storage-warn{margin:6px 0}
 }
 
-.print-watermark{display:none;position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden}
+.print-watermark{display:none;position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
 .print-watermark-inner{
   position:absolute;top:50%;left:50%;
   transform:translate(-50%,-50%) rotate(-35deg);
-  font-size:3.2rem;font-weight:900;
+  font-size:2.8rem;font-weight:900;
   color:rgba(26,26,46,0.07);
-  white-space:nowrap;letter-spacing:4px;
+  white-space:nowrap;letter-spacing:2px;
   font-family:'Segoe UI',Arial,sans-serif;
   text-align:center;line-height:1.6;
   user-select:none;
@@ -307,6 +320,174 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .history-restore{font-size:0.7rem;color:#e74c3c;flex-shrink:0;cursor:pointer}
 .history-delete{font-size:0.7rem;color:#555;cursor:pointer;padding:2px 6px;border:1px solid #2a2a4a;border-radius:4px}
 .history-delete:hover{color:#e74c3c;border-color:#e74c3c}
+
+/* ══════════════════════════════════════
+   ☀ LIGHT MODE
+   ══════════════════════════════════════ */
+body.light-mode{background:#f0f0f8!important;color:#1a1a2e!important}
+.light-mode .hdr{background:linear-gradient(135deg,#1a1a3a 0%,#2a2a50 100%)!important}
+.light-mode .status-bar{background:#e8e8f4!important;border-bottom-color:#c8c8e0!important}
+.light-mode .status-text{color:#666!important}
+.light-mode .device-name{background:#fff!important;border-color:#c8c8e0!important;color:#3a6abf!important}
+.light-mode .live-section{background:#ffffff!important;border-bottom-color:#d0d0e8!important}
+.light-mode .live-label{color:#999!important}
+.light-mode .live-octave{color:#999!important}
+.light-mode .live-divider{background:#d0d0e8!important}
+.light-mode .held-chip{background:#eef!important;border-color:#e74c3c!important}
+.light-mode .app-wrap{background:#f0f0f8}
+.light-mode .card{background:#ffffff!important;border-color:#d0d0e8!important}
+.light-mode .card-label{color:#999!important}
+.light-mode .seq-box{background:#ffffff!important;border-color:#d0d0e8!important;color:#1a1a2e!important}
+.light-mode .seq-box::before{background:repeating-linear-gradient(transparent,transparent 35px,#00000008 35px,#00000008 36px)!important}
+.light-mode .seq-box span.n{color:#2563eb!important}
+.light-mode .seq-box span.s{color:#c27a00!important}
+.light-mode .seq-label{color:#999!important}
+.light-mode .seq-empty-text{color:#aaa!important}
+.light-mode .bar-sep{color:#bbbbd0!important}
+.light-mode .fmt-btn{border-color:#d0d0e8!important;color:#888!important;background:#f8f8ff!important}
+.light-mode .fmt-btn:hover{border-color:#aaa!important;color:#555!important}
+.light-mode .fmt-btn.on{background:#e74c3c!important;border-color:#e74c3c!important;color:#fff!important}
+.light-mode .sa-btn{border-color:#d0d0e8!important;color:#888!important}
+.light-mode .sa-btn.on{background:#9b59b6!important;border-color:#9b59b6!important;color:#fff!important}
+.light-mode .cv-btn{border-color:#d0d0e8!important;color:#888!important}
+.light-mode .cv-btn.on{background:#e67e22!important;border-color:#e67e22!important;color:#fff!important}
+.light-mode .cv-key-lbl{color:#aaa!important}
+.light-mode .label-panel{background:#ffffff!important;border-color:#d0d0e8!important}
+.light-mode .lbl-preset{border-color:#d0d0e8!important;color:#888!important}
+.light-mode .lbl-preset:hover{border-color:#e67e22!important;color:#e67e22!important}
+.light-mode .toggle{background:#f0f0f8!important;border-color:#d0d0e8!important}
+.light-mode .toggle-opt{color:#aaa!important}
+.light-mode .toggle-opt.on{background:#e0e0f0!important;color:#1a1a2e!important}
+.light-mode .setting-label{color:#999!important}
+.light-mode .btn-clear{background:#f0f0f8!important;border-color:#d0d0e8!important;color:#888!important}
+.light-mode .btn-space{background:#eff5ff!important;border-color:#c0d8f8!important;color:#2563eb!important}
+.light-mode .btn-undo{background:#fff8ee!important;border-color:#f0d090!important;color:#b07800!important}
+.light-mode .btn-copy{background:#efffee!important;border-color:#a0e0a0!important;color:#1a8a1a!important}
+.light-mode .chord-inp{background:#ffffff!important;border-color:#d0d0e8!important;color:#1a1a2e!important}
+.light-mode .chord-inp::placeholder{color:#bbb!important}
+.light-mode .chord-label{color:#888!important}
+.light-mode .history-item{background:#f0f0fc!important}
+.light-mode .history-item:hover{background:#e8e8f8!important}
+.light-mode .history-notes{color:#2563eb!important}
+.light-mode .history-time{color:#aaa!important}
+.light-mode .history-delete{border-color:#d0d0e8!important;color:#aaa!important}
+.light-mode .history-label{color:#aaa!important}
+.light-mode .no-midi{background:#fff8f8!important;border-color:#f0c0c0!important}
+.light-mode .storage-warn{background:#fffbee!important;border-color:#f0d080!important;color:#a07000!important}
+.light-mode #singPanel{background:#f8f8ff!important;border-color:#d0d0e8!important}
+.light-mode #vrPlayback{background:#f0f0fc!important;border-color:#d0d0e8!important}
+.light-mode #vrSeekBar{background:#d8d8f0!important}
+.light-mode #vrLibrary .history-label{color:#aaa!important}
+.light-mode [style*="background:#0e0e24"]{background:#ffffff!important}
+.light-mode [style*="background:#0a0a1a"]{background:#f0f0f8!important}
+.light-mode [style*="background:#12122a"]{background:#f8f8ff!important}
+.light-mode [style*="background:#0a0a1e"]{background:#f0f0fc!important}
+.light-mode [style*="background:#1a1a2e"]{background:#f0f0fc!important}
+.light-mode [style*="background:#1a1a30"]{background:#f0f0fc!important}
+.light-mode [style*="background:#0e1a2e"]{background:#eff5ff!important}
+.light-mode [style*="background:#10102a"]{background:#f8f8ff!important}
+.light-mode [style*="background:#0e0e24"]{background:#fff!important}
+.light-mode [style*="color:#888"]{color:#777!important}
+.light-mode [style*="color:#666"]{color:#666!important}
+.light-mode [style*="color:#555"]{color:#777!important}
+.light-mode [style*="color:#444"]{color:#888!important}
+.light-mode [style*="color:#dde"]{color:#1a1a2e!important}
+.light-mode [style*="color:#aaa"]{color:#888!important}
+.light-mode [style*="border-color:#2a2a4a"]{border-color:#d0d0e8!important}
+.light-mode [style*="border:1px solid #2a2a4a"]{border-color:#d0d0e8!important}
+.light-mode [style*="border:1px solid #1e1e3a"]{border-color:#d0d0e8!important}
+.light-mode [style*="border:1px solid #2a1a1a"]{border-color:#d0d0e8!important}
+.light-mode [style*="border:1px solid #1a1a30"]{border-color:#d0d0e8!important}
+.light-mode [style*="background:#1a0a0a"]{background:#fff5f5!important}
+.light-mode [style*="background:#0e1a0e"]{background:#f0fff0!important}
+.light-mode [style*="background:#1a2e1a"]{background:#efffee!important}
+.light-mode [style*="background:#1a1a0e"]{background:#fffbee!important}
+.light-mode #themeToggleBtn{border-color:#c8c8e0!important;color:#666!important}
+
+/* ── Light mode: specific element fixes ── */
+
+/* Keys button — was near-black dark purple */
+.light-mode #pianoToggleBtn{background:#f5eeff!important;border-color:#c39bd3!important;color:#7b3fa8!important}
+
+/* Note Sequence label + hint text */
+.light-mode .seq-label{color:#888!important}
+.light-mode [style*="color:#333"]{color:#888!important}
+
+/* Mode row: Notes/Chord toggle border, inactive chord button */
+.light-mode .mode-row [style*="border:1px solid #1e1e3a"]{border-color:#d0d0e8!important}
+.light-mode #modeChord{color:#666!important;background:#f0f0f8!important}
+.light-mode #modeNotes{background:#e74c3c!important;color:#fff!important}
+.light-mode #modeHint{color:#888!important}
+.light-mode #detectedChord{color:#999!important}
+
+/* Transpose buttons */
+.light-mode .transpose-row button{background:#eff5ff!important;border-color:#c0d8f8!important;color:#2563eb!important}
+.light-mode .transpose-row span{color:#888!important}
+.light-mode [style*="border-top:1px solid #1a1a30"]{border-top-color:#e0e0f0!important}
+
+/* Metronome BPM input + select */
+.light-mode #metroBpmInput{background:#fff!important;border-color:#d0d0e8!important;color:#1a1a2e!important}
+.light-mode #metroTimeSig{background:#fff!important;border-color:#d0d0e8!important;color:#1a1a2e!important}
+.light-mode [style*="color:#444"]{color:#888!important}
+
+/* Song title input + size controls */
+.light-mode #songTitle{background:#fff!important;border-color:#d0d0e8!important;color:#1a1a2e!important}
+.light-mode [style*="background:#0e0e24"][style*="border:1px solid #1e1e3a"]{background:#fff!important;border-color:#d0d0e8!important;color:#888!important}
+
+/* Action buttons with dark green / dark blue inline backgrounds */
+.light-mode [style*="background:#0e1a0e"]{background:#efffee!important}
+.light-mode [style*="background:#1a1a0e"]{background:#fffbee!important}
+.light-mode [style*="background:#0e1a2e"]{background:#eff5ff!important}
+.light-mode [style*="color:#7bff7b"]{color:#1a8a1a!important}
+.light-mode [style*="border-color:#1e5a1e"],
+.light-mode [style*="border:1px solid #1e5a1e"]{border-color:#a0e0a0!important}
+.light-mode [style*="border:1px solid #3a1a3a"]{border-color:#c39bd3!important}
+.light-mode [style*="border:1px solid #3a2a10"]{border-color:#f0c080!important}
+.light-mode [style*="border:1px solid #1e3a5a"],
+.light-mode [style*="border:1px solid #3a8abf"]{border-color:#90c0f0!important}
+.light-mode [style*="border:1px solid #25d366"]{border-color:#25d366!important}
+
+/* Live section inline border */
+.light-mode .live-section{border-color:#d0d0e8!important}
+
+/* Onscreen piano */
+.light-mode .onscreen-piano{background:#fff!important;border-color:#d0d0e8!important}
+.light-mode .piano-row-label{color:#888!important}
+
+/* History / saved sessions */
+.light-mode .history{background:#f8f8ff}
+
+/* Separator active pill in light mode */
+.light-mode .toggle-opt.on{background:#e0e0f0!important;color:#1a1a2e!important}
+
+/* cursor hint */
+.light-mode .cursor-hint{color:#2ecc71!important}
+/* Key badge hints below seq box */
+.light-mode [style*="background:#1a1a30"][style*="border:1px solid #2a2a4a"]{background:#eeeeff!important;border-color:#c0c0e0!important;color:#2563eb!important}
+/* Section dividers inside controls card in light mode */
+.light-mode [style*="border-top:1px solid #1a1a30"]{border-top-color:#e0e0f0!important}
+/* metro-row border */
+.light-mode .metro-row{border-top-color:#e0e0f0!important}
+/* Cloud Modal */
+#cloudModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:9500;align-items:flex-end;justify-content:center}
+.cloud-sheet{background:#0e0e1e;border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:20px 18px 28px;max-height:78vh;display:flex;flex-direction:column;position:relative}
+.cloud-sheet h3{color:#fff;font-size:0.95rem;font-weight:800;margin-bottom:2px}
+.cloud-tabs{display:flex;gap:8px;margin:10px 0}
+.cloud-tab{flex:1;padding:8px;border-radius:10px;border:1px solid rgba(155,89,182,0.3);background:transparent;color:#888;font-weight:700;font-size:0.8rem;cursor:pointer;font-family:inherit;transition:.2s}
+.cloud-tab.on{background:linear-gradient(135deg,#9b59b6,#6c3483);color:#fff;border-color:transparent}
+.cloud-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:7px;margin-bottom:12px;min-height:60px}
+.cloud-item{display:flex;align-items:center;gap:8px;background:#1a1a2e;border:1px solid rgba(155,89,182,0.2);border-radius:10px;padding:9px 11px}
+.cloud-item-name{flex:1;color:#ddd;font-size:0.82rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cloud-item-btn{padding:4px 11px;border-radius:7px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;border:1px solid}
+.cloud-item-load{background:rgba(52,152,219,0.12);border-color:rgba(52,152,219,0.4);color:#3498db}
+.cloud-item-del{background:rgba(231,76,60,0.08);border-color:rgba(231,76,60,0.3);color:#e74c3c;margin-left:3px}
+.cloud-empty{text-align:center;color:#555;font-size:0.82rem;padding:22px}
+.cloud-save-row{display:flex;gap:8px}
+.cloud-save-btn{flex:1;padding:10px;border-radius:10px;border:none;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit}
+.cloud-save-tmpl{background:linear-gradient(135deg,#9b59b6,#6c3483);color:#fff}
+.cloud-save-rec{background:linear-gradient(135deg,#27ae60,#1e8449);color:#fff}
+.cloud-status{text-align:center;font-size:0.75rem;color:#888;margin-top:7px;min-height:16px}
+.cloud-close-btn{position:absolute;top:14px;right:14px;background:transparent;border:none;color:#666;font-size:1.1rem;cursor:pointer;line-height:1}
 </style>
 </head>
 <body>
@@ -348,14 +529,9 @@ body{background:#080814;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 <script>
 var currentUser = null;
 var firebaseAuth = null;
+var firebaseDb = null;
 
 (function initAuth() {
-  // Skip auth in Electron desktop app — hide gate and go straight in
-  if (window.electronApp) {
-    document.getElementById('authGate').style.display = 'none';
-    return;
-  }
-
   var firebaseConfig = {
     apiKey: "AIzaSyDvuCr7IHM7oLYY6e675P_KtcTxsNEJr1c",
     authDomain: "chords-music-academy.firebaseapp.com",
@@ -364,9 +540,17 @@ var firebaseAuth = null;
     messagingSenderId: "146425788425",
     appId: "1:146425788425:web:8abbafbc93287a14ab20d8"
   };
-
   if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
   firebaseAuth = firebase.auth();
+  firebaseDb = firebase.firestore();
+
+  // Desktop app — skip auth gate, sign in anonymously for Firestore access
+  if (window.electronApp) {
+    document.getElementById('authGate').style.display = 'none';
+    firebaseAuth.signInAnonymously().then(function(r){ currentUser = r.user; })
+      .catch(function(e){ console.warn('Anon auth failed:', e); });
+    return;
+  }
 
   // Show gate immediately while checking auth state
   document.getElementById('authGate').style.display = 'flex';
@@ -434,6 +618,7 @@ function updateUserHeader(user) {
   <div class="hdr-right">
     <div class="status-dot waiting" id="statusDot" style="width:10px;height:10px;border-radius:50%;background:#333;flex-shrink:0;transition:.3s"></div>
     <div class="device-name" id="deviceName" style="display:none"></div>
+    <button id="themeToggleBtn" onclick="toggleTheme()" title="Toggle light/dark mode" style="flex:none;padding:6px 12px;font-size:0.85rem;border-radius:20px;border:1px solid #2a2a4a;background:transparent;color:#888;cursor:pointer;transition:.2s">🌙</button>
     <button onclick="openManual()" style="flex:none;padding:6px 14px;font-size:0.75rem;font-weight:700;border-radius:20px;border:1px solid #2a2a4a;background:transparent;color:#888;cursor:pointer">? Help</button>
     <button class="btn btn-connect" id="connectBtn" onclick="connectMIDI()" style="flex:none;padding:6px 18px;font-size:0.75rem;border-radius:20px;white-space:nowrap">🔌 Connect</button>
     <div id="userInfo" style="display:none;align-items:center;gap:8px;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:20px;padding:4px 12px 4px 4px">
@@ -454,25 +639,37 @@ function updateUserHeader(user) {
     <div style="text-align:center;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid #2a2a4a">
       <div style="font-size:2rem;margin-bottom:6px">🎹</div>
       <div style="font-size:1.5rem;font-weight:900;color:#ff6b6b;letter-spacing:1px">SwaraSheet</div>
-      <div style="font-size:0.78rem;color:#666;margin-top:4px">User Manual v2 — Chords Music Academy</div>
+      <div style="font-size:0.78rem;color:#666;margin-top:4px">User Manual v3 — Chords Music Academy</div>
     </div>
 
     <div style="display:grid;gap:22px">
 
     <div>
       <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">1. What is SwaraSheet?</div>
-      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">SwaraSheet captures notes from your MIDI keyboard <b style="color:#dde">or the on-screen piano keyboard</b> and converts them into text notation in real time — Western (C D E F), Indian Sargam (Sa Ri Ga Ma), and Carnatic. Use it to transcribe songs, create note sheets, and export clean PDFs. No internet required once loaded.</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">SwaraSheet is a real-time music notation tool for musicians of all levels. Capture notes from a <b style="color:#dde">MIDI keyboard</b>, the <b style="color:#dde">on-screen piano</b>, or your <b style="color:#dde">computer keyboard</b> — and instantly get notation in Western (C D E F), Indian Sargam (Sa Ri Ga Ma), or Carnatic format. Add chords, section labels, metronome, and export clean PDFs. Available as a <b style="color:#dde">web app</b> and a <b style="color:#dde">desktop app</b> (Mac/Windows).</div>
     </div>
 
     <div>
-      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">2. Connecting Your MIDI Keyboard</div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">2. Three Ways to Input Notes</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
-        <b style="color:#dde">Step 1:</b> Connect keyboard via USB cable to your computer.<br>
-        <b style="color:#dde">Step 2:</b> Click the <b style="color:#e74c3c">🔌 Connect</b> button (top right).<br>
-        <b style="color:#dde">Step 3:</b> Allow MIDI access when browser asks.<br>
-        <b style="color:#dde">Step 4:</b> Status dot turns green — you're ready to play.<br><br>
-        <span style="color:#f39c12">⚠️ MIDI requires Chrome or Edge browser. Firefox and Safari are not supported.</span><br><br>
-        <b style="color:#dde">No MIDI keyboard?</b> Use the built-in <b style="color:#c39bd3">🎹 Keys</b> on-screen piano — click any key to enter a note and hear it play instantly. Shows 3 octaves: C3 (low), C4 (middle), C5 (high). Sound is generated live in the browser — no downloads needed.
+        <b style="color:#c39bd3">A. MIDI Keyboard</b><br>
+        Connect via USB → click <b style="color:#e74c3c">🔌 Connect</b> (top right) → allow MIDI access → status dot turns green.<br>
+        <span style="color:#f39c12;font-size:0.78rem">⚠️ MIDI requires Chrome or Edge. Firefox and Safari are not supported.</span><br><br>
+
+        <b style="color:#c39bd3">B. On-Screen Piano (🎹 Keys)</b><br>
+        Click the <b style="color:#c39bd3">🎹 Keys</b> button to toggle the on-screen piano. Shows 3 octaves (C3–B5). Click any key — the note is added and you hear it play instantly.<br><br>
+
+        <b style="color:#c39bd3">C. Computer Keyboard Piano (⌨ KB Piano) — NEW</b><br>
+        Click <b style="color:#c39bd3">⌨ KB Piano</b> to turn your QWERTY keyboard into a piano. The octave bar appears below the action buttons showing your current octave.
+        <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:0.78rem">
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:5px 8px;color:#dde;font-weight:700;white-space:nowrap">Z X C V B N M</td><td style="padding:5px 8px;color:#888">White keys — C D E F G A B (one octave below base)</td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:5px 8px;color:#dde;font-weight:700">S D &nbsp; G H J</td><td style="padding:5px 8px;color:#888">Black keys — C# D# &nbsp; F# G# A# (one octave below base)</td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:5px 8px;color:#dde;font-weight:700">Q W E R T Y U</td><td style="padding:5px 8px;color:#888">White keys — C D E F G A B (base octave)</td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:5px 8px;color:#dde;font-weight:700">2 3 &nbsp; 5 6 7</td><td style="padding:5px 8px;color:#888">Black keys — C# D# &nbsp; F# G# A# (base octave)</td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:5px 8px;color:#dde;font-weight:700">I O P</td><td style="padding:5px 8px;color:#888">C D E (one octave above base)</td></tr>
+          <tr><td style="padding:5px 8px;color:#dde;font-weight:700">− &nbsp; / &nbsp; =</td><td style="padding:5px 8px;color:#888">Shift base octave down / up (range: 2–6)</td></tr>
+        </table>
+        <br>Sound plays on every keypress. On-screen piano key flashes. Use <b style="color:#dde">−</b> / <b style="color:#dde">=</b> keys or the − + buttons in the octave bar to shift octave.
       </div>
     </div>
 
@@ -486,7 +683,7 @@ function updateUserHeader(user) {
           <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:6px 8px;color:#dde;font-weight:700">Carnatic</td><td style="padding:6px 8px;color:#888">S R1 R2 G1 G2 G3 M1 M2 P D1 D2 N3…</td></tr>
           <tr><td style="padding:6px 8px;color:#dde;font-weight:700">Dash</td><td style="padding:6px 8px;color:#888">C-D-E-F (hyphen separated)</td></tr>
         </table>
-        <br>Switch format any time — notes automatically re-convert.
+        <br>Switch format any time — all notes automatically re-convert.
       </div>
     </div>
 
@@ -495,13 +692,13 @@ function updateUserHeader(user) {
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
         SwaraSheet uses <b style="color:#dde">prime marks</b> — the traditional Indian music notation standard — to show which octave a note belongs to:
         <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:0.82rem">
-          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:8px;color:#dde;font-weight:700;width:40%">Middle octave</td><td style="padding:8px;color:#888">Sa &nbsp; Re &nbsp; Ga &nbsp; (no mark)</td></tr>
-          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:8px;color:#7eb3ff;font-weight:700">High octave (Tara)</td><td style="padding:8px;color:#888">Sa′ &nbsp; Re′ &nbsp; Ga′ &nbsp; <span style="color:#666;font-size:0.75em">(blue ′ above)</span></td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:8px;color:#dde;font-weight:700;width:42%">Middle octave</td><td style="padding:8px;color:#888">Sa &nbsp; Re &nbsp; Ga &nbsp; (no mark)</td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:8px;color:#7eb3ff;font-weight:700">High (Tara)</td><td style="padding:8px;color:#888">Sa′ &nbsp; Re′ &nbsp; Ga′ &nbsp; <span style="color:#666;font-size:0.75em">(blue ′ above)</span></td></tr>
           <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:8px;color:#7eb3ff;font-weight:700">Very high</td><td style="padding:8px;color:#888">Sa′′ &nbsp; Re′′ &nbsp; <span style="color:#666;font-size:0.75em">(double prime)</span></td></tr>
-          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:8px;color:#f39c12;font-weight:700">Low octave (Mandra)</td><td style="padding:8px;color:#888">Sa, &nbsp; Re, &nbsp; Ga, &nbsp; <span style="color:#666;font-size:0.75em">(amber , below)</span></td></tr>
+          <tr style="border-bottom:1px solid #2a2a4a"><td style="padding:8px;color:#f39c12;font-weight:700">Low (Mandra)</td><td style="padding:8px;color:#888">Sa, &nbsp; Re, &nbsp; Ga, &nbsp; <span style="color:#666;font-size:0.75em">(amber , below)</span></td></tr>
           <tr><td style="padding:8px;color:#f39c12;font-weight:700">Very low</td><td style="padding:8px;color:#888">Sa,, &nbsp; Re,, &nbsp; <span style="color:#666;font-size:0.75em">(double comma)</span></td></tr>
         </table>
-        <br>These marks appear in both the app and the PDF export. They are universally used in Indian classical music textbooks.
+        <br>These marks appear in both the app and PDF export — consistent with Indian classical music textbooks.
       </div>
     </div>
 
@@ -518,22 +715,23 @@ function updateUserHeader(user) {
     <div>
       <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">6. Recording Notes</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
-        Play your MIDI keyboard or click the on-screen piano — notes appear in the sequence box instantly.<br><br>
-        <b style="color:#dde">⏸ Pause / ▶ Resume:</b> Temporarily stop recording so keyboard input is ignored.<br><br>
+        Play your MIDI keyboard, click the on-screen piano, or use KB Piano — notes appear instantly in the sequence box.<br><br>
+        <b style="color:#dde">⏸ Pause / ▶ Resume:</b> Temporarily stop recording so input is ignored.<br><br>
         <b style="color:#dde">Separator:</b> Choose Space, Comma, Dash, or New Line between notes.<br><br>
-        <b style="color:#dde">Double-click any note</b> to replace it — play a new note from MIDI or on-screen piano to substitute it.
+        <b style="color:#dde">Double-click any note</b> to enter edit/replace mode — then play a note from any input method to substitute it.
       </div>
     </div>
 
     <div>
       <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">7. Editing Notes</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
-        <b style="color:#dde">Delete last note:</b> Press <b>Delete</b> / <b>Backspace</b> key, or click <b>↩ Undo</b>.<br>
+        <b style="color:#dde">Delete last note:</b> Press <b>Delete</b> / <b>Backspace</b>, or click <b>↩ Undo</b>.<br>
         <b style="color:#dde">Delete any note:</b> Right-click the note → removed instantly.<br>
+        <b style="color:#dde">Undo:</b> <b>Cmd+Z</b> (Mac) or <b>Ctrl+Z</b> (Windows).<br>
         <b style="color:#dde">Redo:</b> <b>Cmd+Shift+Z</b> (Mac) or <b>Ctrl+Y</b> (Windows).<br>
         <b style="color:#dde">Font size:</b> Use <b>A−</b> / <b>A+</b> or type a number directly.<br>
         <b style="color:#dde">New line:</b> Press <b>Enter</b>.<br>
-        <b style="color:#dde">Bar line ( | ):</b> Press <b>Space</b> or click the <b>Bar</b> button.<br><br>
+        <b style="color:#dde">Bar line ( | ):</b> Press <b>Space</b> or click <b>⎵ Bar</b>.<br><br>
         <b style="color:#dde">Transpose:</b> Use <b>▼−2 ▼−1 ▲+1 ▲+2</b> buttons to shift all notes up or down by semitones. Chords transpose automatically. Shortcut: <b>Cmd+↑/↓</b>.
       </div>
     </div>
@@ -541,7 +739,7 @@ function updateUserHeader(user) {
     <div>
       <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">8. Section Labels</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
-        Click <b style="color:#e67e22">§ Label</b> to open the label panel.<br><br>
+        Click <b style="color:#e67e22">§ Section</b> to open the label panel.<br><br>
         <b style="color:#dde">Indian:</b> Pallavi, Anupallavi, Charanam, Sthayi, Antara, Sanchari<br>
         <b style="color:#dde">Western:</b> Intro, Verse, Chorus, Bridge, Outro<br>
         <b style="color:#dde">Repeat markers:</b> ↺ Repeat, ×2, ×3 — appear inline on the same line as notes<br><br>
@@ -552,7 +750,7 @@ function updateUserHeader(user) {
     <div>
       <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">9. Chords</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
-        Switch to <b style="color:#dde">🎸 Chord mode</b> and hold keys — the detected chord appears in the "Detected" display.<br><br>
+        Switch to <b style="color:#dde">🎸 Chord mode</b> and hold keys on the MIDI keyboard — the detected chord appears in the "Detected" display.<br><br>
         Click <b>↑ Apply</b> to attach it to the last note, or click any note's chord label (orange, above the note) to edit or assign a chord directly.<br><br>
         Right-click a chord label to clear it. Chords appear above notes in the sequence and in the PDF.
       </div>
@@ -561,8 +759,8 @@ function updateUserHeader(user) {
     <div>
       <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">10. Metronome</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
-        Click <b style="color:#dde">🥁 Metro</b> to open the metronome panel.<br><br>
-        Set your <b style="color:#dde">BPM</b> (40–200) and <b style="color:#dde">time signature</b> (2/4, 3/4, 4/4, 6/8). Click <b>▶ Start</b> to begin — the status dot pulses on each beat and accents beat 1. Click <b>⏹ Stop</b> to end.
+        Open the Metronome section in the Controls panel.<br><br>
+        Set <b style="color:#dde">BPM</b> (40–200) and <b style="color:#dde">time signature</b> (2/4, 3/4, 4/4, 5/4, 6/8, 7/8). Click <b>▶ Start</b> — the status dot pulses on each beat and accents beat 1. The BPM is saved with your cloud templates.
       </div>
     </div>
 
@@ -570,19 +768,19 @@ function updateUserHeader(user) {
       <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">11. Copy, Export &amp; Share</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
         <b style="color:#dde">📋 Copy All:</b> Copies all notes as plain text — includes chords, octave marks, section labels, bar lines. Paste into WhatsApp, Word, Notes, etc.<br><br>
-        <b style="color:#dde">📋 per line:</b> Each line has a copy icon at the end — copies just that line.<br><br>
-        <b style="color:#dde">WhatsApp share:</b> Formats notes with bold/italic markdown for clean WhatsApp display.<br><br>
-        <b style="color:#dde">Export PDF:</b> Opens a modal — enter song title, Raag, Taal, choose whether to include chords and section labels, then click Export. Saves as a formatted note sheet with academy header and watermark.
+        <b style="color:#dde">📋 per line:</b> Each line has a copy icon — copies just that line.<br><br>
+        <b style="color:#dde">📱 Share:</b> Formats notes with WhatsApp bold/italic markdown for clean display in chat.<br><br>
+        <b style="color:#dde">📄 Export PDF:</b> Opens a modal — enter song title, Raag, Taal, choose whether to include chords and section labels, then click Export. Generates a formatted note sheet with academy header and watermark. Voice recorder controls are hidden in the PDF output.
       </div>
     </div>
 
     <div>
-      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">12. Saving &amp; Loading Sessions</div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">12. Saving &amp; Loading Sessions (Local)</div>
       <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
-        <b style="color:#dde">💾 Save:</b> Type a song title then click Save — stores notes, format, Sa, chords in browser storage. Saving with the same title overwrites the existing entry.<br><br>
-        <b style="color:#dde">▶ Load:</b> Loads a saved session. Your edits after loading are safe — the saved copy is untouched unless you save again.<br><br>
-        <b style="color:#dde">+ New Song:</b> Saves current notes to history, then starts a fresh session.<br><br>
-        <b style="color:#dde">🗑 Clear:</b> Discards all current notes (no history save).<br><br>
+        <b style="color:#dde">💾 Save:</b> Type a song title then click Save — stores notes, format, Sa, chords in browser/local storage. Same title overwrites the existing entry.<br><br>
+        <b style="color:#dde">▶ Load:</b> Loads a saved session. Edits after loading don't affect the saved copy unless you save again.<br><br>
+        <b style="color:#dde">✦ New Song:</b> Saves current notes to history, then starts a fresh session.<br><br>
+        <b style="color:#dde">🗑 Discard:</b> Discards all current notes without saving to history.<br><br>
         <b style="color:#dde">⬇ Download:</b> Saves a <code style="color:#7eb3ff">.swarasheet</code> file to your computer — use to back up or share.<br>
         <b style="color:#dde">⬆ Import:</b> Load a <code style="color:#7eb3ff">.swarasheet</code> file back — works on any device.<br><br>
         <b style="color:#dde">Search:</b> Type in the search box to find a saved session by name.<br><br>
@@ -590,8 +788,31 @@ function updateUserHeader(user) {
       </div>
     </div>
 
+    <div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">13. ☁ Cloud Templates — NEW</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
+        Click <b style="color:#c39bd3">☁ Cloud</b> to open the Cloud panel. Sign in with your Google account (web) — the desktop app signs in automatically.<br><br>
+        <b style="color:#dde">Save to Cloud:</b> Type a song title in the title box, then click <b>☁ Cloud → Save</b>. Saves notes, format, Sa, and BPM to the cloud. The title is used as the template ID — saving the same title overwrites.<br><br>
+        <b style="color:#dde">Load from Cloud:</b> Your saved templates appear in the list — click <b>Load</b> to restore a template. Notes, format, Sa, and BPM are all restored.<br><br>
+        <b style="color:#dde">Delete:</b> Click 🗑 next to any template to remove it from the cloud.<br><br>
+        <span style="color:#888;font-size:0.78rem">Cloud uses Firebase Firestore (free tier). Templates are private to your account. Works across web and desktop — save on one, load on the other.</span>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e74c3c;font-weight:800;margin-bottom:10px">14. Voice Recorder 🎤</div>
+      <div style="font-size:0.82rem;color:#aaa;line-height:1.8">
+        Click <b style="color:#e74c3c">🎤 Sing</b> to open the voice recorder panel. Record yourself singing or humming a melody and save the audio clip alongside your note sheet.<br><br>
+        <b style="color:#dde">Record / Stop:</b> Click the record button to start and stop recording.<br>
+        <b style="color:#dde">Play:</b> Listen back to your recording.<br>
+        <b style="color:#dde">Save:</b> Give the clip a name and save it — appears in the recordings list below.<br>
+        <b style="color:#dde">Delete:</b> Remove any saved clip.<br><br>
+        <span style="color:#888;font-size:0.78rem">Voice recorder and audio controls are automatically hidden when exporting PDF — they do not appear in printed output.</span>
+      </div>
+    </div>
+
     <div style="background:#0e0e24;border-radius:10px;padding:16px;border:1px solid #2a2a4a">
-      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e67e22;font-weight:800;margin-bottom:8px">Keyboard Shortcuts</div>
+      <div style="font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:#e67e22;font-weight:800;margin-bottom:12px">Keyboard Shortcuts</div>
       <div style="font-size:0.78rem;color:#aaa;line-height:2;display:grid;grid-template-columns:1fr 1fr;gap:0 24px">
         <div><b style="color:#dde">Space</b> — Bar line ( | )</div>
         <div><b style="color:#dde">Enter</b> — New line</div>
@@ -601,6 +822,11 @@ function updateUserHeader(user) {
         <div><b style="color:#dde">Cmd+↑ / Cmd+↓</b> — Transpose ±1</div>
         <div><b style="color:#dde">Double-click note</b> — Replace note</div>
         <div><b style="color:#dde">Right-click note</b> — Delete note</div>
+        <div><b style="color:#dde">S R G M P D N</b> — Sargam shortcut keys</div>
+        <div><b style="color:#dde">− / =</b> — KB Piano octave down / up</div>
+      </div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid #1a1a3a;font-size:0.75rem;color:#666">
+        Sargam shortcut keys (S R G M P D N) and KB Piano mode are mutually exclusive — KB Piano must be active for the full chromatic keyboard layout to work.
       </div>
     </div>
 
@@ -728,7 +954,7 @@ function updateUserHeader(user) {
   </div>
 
   <!-- Transpose row -->
-  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:14px;border-top:1px solid #1a1a30;margin-top:2px">
+  <div class="transpose-row" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #1a1a30;margin-top:12px">
     <span style="font-size:0.75rem;color:#555;font-weight:700">Transpose:</span>
     <button onclick="transposeNotes(-2)" style="padding:4px 10px;border-radius:8px;border:1px solid #1e1e3a;background:#0a0a1a;color:#7eb3ff;font-size:0.78rem;font-weight:700;cursor:pointer">▼ −2</button>
     <button onclick="transposeNotes(-1)" style="padding:4px 10px;border-radius:8px;border:1px solid #1e1e3a;background:#0a0a1a;color:#7eb3ff;font-size:0.78rem;font-weight:700;cursor:pointer">▼ −1</button>
@@ -738,7 +964,7 @@ function updateUserHeader(user) {
   </div>
 
   <!-- Metronome row -->
-  <div class="metro-row">
+  <div class="metro-row" style="padding-top:12px;border-top:1px solid #1a1a30;margin-top:4px">
     <span style="font-size:0.75rem;color:#555;font-weight:700">Metronome:</span>
     <input id="metroBpmInput" type="number" value="80" min="40" max="200"
       onchange="updateMetroBpm(this.value)"
@@ -755,6 +981,7 @@ function updateUserHeader(user) {
     <button id="metroStartBtn" onclick="toggleMetronome()" style="padding:4px 14px;border-radius:8px;border:none;background:#e74c3c;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer">▶ Start</button>
   </div>
 </div><!-- end controls card -->
+
 
 <!-- Sequence box -->
 <div class="seq-section" style="margin-top:14px;padding:0">
@@ -773,8 +1000,22 @@ function updateUserHeader(user) {
       <button onclick="changeNoteSize(0.1)" style="background:#0e0e24;border:1px solid #1e1e3a;color:#666;border-radius:6px;padding:3px 9px;font-size:1rem;font-weight:700;cursor:pointer">A+</button>
     </div>
   </div>
-  <div class="seq-box" id="seqBox"><span class="seq-cursor"></span></div>
-  <div style="font-size:0.65rem;color:#333;margin-top:6px;letter-spacing:0.3px">💡 Right-click any note to delete it &nbsp;·&nbsp; ↩ Undo removes last added note</div>
+  <div class="seq-box" id="seqBox" tabindex="0" style="outline:none"><span class="seq-cursor"></span></div>
+  <div class="cursor-hint" id="cursorHint">✏️ Edit mode — new notes insert at cursor · Delete removes selected note · ← → to move · Esc to exit</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:7px;flex-wrap:wrap;gap:6px">
+    <div style="font-size:0.65rem;color:#555;letter-spacing:0.3px">💡 Right-click any note to delete &nbsp;·&nbsp; ↩ Undo last note</div>
+    <div style="font-size:0.65rem;color:#555;letter-spacing:0.3px;display:flex;gap:4px;align-items:center">
+      <span style="color:#666">⌨ Quick keys:</span>
+      <span style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:4px;padding:1px 6px;color:#7eb3ff;font-weight:700;font-size:0.62rem">S</span>
+      <span style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:4px;padding:1px 6px;color:#7eb3ff;font-weight:700;font-size:0.62rem">R</span>
+      <span style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:4px;padding:1px 6px;color:#7eb3ff;font-weight:700;font-size:0.62rem">G</span>
+      <span style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:4px;padding:1px 6px;color:#7eb3ff;font-weight:700;font-size:0.62rem">M</span>
+      <span style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:4px;padding:1px 6px;color:#7eb3ff;font-weight:700;font-size:0.62rem">P</span>
+      <span style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:4px;padding:1px 6px;color:#7eb3ff;font-weight:700;font-size:0.62rem">D</span>
+      <span style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:4px;padding:1px 6px;color:#7eb3ff;font-weight:700;font-size:0.62rem">N</span>
+      <span style="color:#555;font-size:0.62rem">= Sa Re Ga Ma Pa Dha Ni</span>
+    </div>
+  </div>
 </div>
 
 <!-- Print layout (visible only when printing) -->
@@ -799,22 +1040,104 @@ function updateUserHeader(user) {
 </div>
 
 <!-- Action buttons -->
-<div class="actions" style="margin-top:14px;padding:0;gap:8px">
-  <button class="btn btn-copy" onclick="copyNotes()" style="min-width:0">📋 Copy All</button>
-  <button class="btn btn-space" onclick="addSpace()" style="min-width:0">⎵ Bar</button>
-  <button class="btn" onclick="toggleLabelPanel()" id="labelToggleBtn" style="min-width:0;background:#1a1a0e;border:1px solid #3a2a10;color:#e67e22;font-weight:700">§ Section</button>
-  <button class="btn" id="pasteBtn" onclick="pasteNotes()" style="min-width:0;display:none;background:#0e1a2e;border:1px solid #3a8abf;color:#7eb3ff;font-weight:700">⎘ Paste</button>
-  <button class="btn btn-undo" onclick="undoNote()" style="min-width:0">↩ Undo</button>
-  <button class="btn" onclick="clearNotes()" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700" title="Save current notes to history, then start fresh">+ New Song</button>
-  <button class="btn btn-clear" onclick="clearNotesHard()" style="min-width:0" title="Discard all notes without saving">🗑 Clear</button>
-  <button class="btn" onclick="saveNamedSession()" style="min-width:0;background:#0e1a2e;border:1px solid #1e3a5a;color:#7eb3ff;font-weight:700">💾 Save</button>
-  <button class="btn" onclick="downloadSession()" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700">⬇ Download</button>
-  <label class="btn" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center">
-    ⬆ Import<input type="file" accept=".swarasheet,.json" onchange="importSession(event)" style="display:none">
-  </label>
-  <button class="btn" onclick="togglePiano()" id="pianoToggleBtn" style="min-width:0;background:#1a0e1a;border:1px solid #3a1a3a;color:#c39bd3;font-weight:700">🎹 Keys</button>
-  <button class="btn" id="shareBtn" onclick="copyWhatsApp()" style="min-width:0;background:#1a2e1a;border:1px solid #25d366;color:#25d366;font-weight:700">📱 Share</button>
-  <button class="btn btn-pdf" onclick="exportPDF()" style="flex:2;min-width:0">📄 Export PDF</button>
+<div class="actions">
+  <!-- Row 1: Write & Edit tools (used while composing) -->
+  <div class="actions-row">
+    <button class="btn btn-copy" onclick="copyNotes()" style="min-width:0">📋 Copy All</button>
+    <button class="btn btn-space" onclick="addSpace()" style="min-width:0">⎵ Bar</button>
+    <button class="btn" onclick="toggleLabelPanel()" id="labelToggleBtn" style="min-width:0;background:#1a1a0e;border:1px solid #3a2a10;color:#e67e22;font-weight:700">§ Section</button>
+    <button class="btn btn-undo" onclick="undoNote()" style="min-width:0">↩ Undo</button>
+    <button class="btn" id="pasteBtn" onclick="pasteNotes()" style="min-width:0;display:none;background:#0e1a2e;border:1px solid #3a8abf;color:#7eb3ff;font-weight:700">⎘ Paste</button>
+    <button class="btn" onclick="clearNotes()" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700" title="Save current notes to history, then start fresh">✦ New Song</button>
+    <button class="btn btn-clear" onclick="clearNotesHard()" style="min-width:0" title="Discard all notes without saving">🗑 Discard</button>
+    <button class="btn" onclick="togglePiano()" id="pianoToggleBtn" style="min-width:0;background:#1a0e1a;border:1px solid #3a1a3a;color:#c39bd3;font-weight:700">🎹 Keys</button>
+    <button class="btn" onclick="toggleKbPiano()" id="kbPianoBtn" style="min-width:0;background:#1a0e2e;border:1px solid #2a2a4a;color:#888;font-weight:700" title="QWERTY keyboard piano — type notes like a piano keyboard">⌨ KB Piano</button>
+    <button class="btn" id="singBtn" onclick="toggleSing()" style="min-width:0;background:#1a0a0a;border:1px solid #e74c3c;color:#e74c3c;font-weight:700">🎤 Sing</button>
+  </div>
+  <div class="actions-divider"></div>
+  <!-- Row 2: Save & Export -->
+  <div class="actions-row">
+    <button class="btn" onclick="saveNamedSession()" style="min-width:0;background:#0e1a2e;border:1px solid #1e3a5a;color:#7eb3ff;font-weight:700">💾 Save</button>
+    <button class="btn" onclick="downloadSession()" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700">⬇ Download</button>
+    <label class="btn" style="min-width:0;background:#0e1a0e;border:1px solid #1e5a1e;color:#7bff7b;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center">
+      ⬆ Import<input type="file" accept=".swarasheet,.json" onchange="importSession(event)" style="display:none">
+    </label>
+    <button class="btn" id="shareBtn" onclick="copyWhatsApp()" style="min-width:0;background:#1a2e1a;border:1px solid #25d366;color:#25d366;font-weight:700">📱 Share</button>
+    <button class="btn" onclick="openCloudModal()" style="min-width:0;background:#1a0e2e;border:1px solid #6c3483;color:#c39bd3;font-weight:700">☁ Cloud</button>
+    <button class="btn btn-pdf" onclick="exportPDF()" style="flex:2;min-width:0">📄 Export PDF</button>
+  </div>
+</div>
+
+<!-- Keyboard Piano Octave Bar -->
+<div id="kbOctaveBar" style="display:none;align-items:center;gap:10px;margin-top:10px;padding:8px 14px;background:#0e0a1e;border:1px solid #4a2a7a;border-radius:10px;flex-wrap:wrap">
+  <span style="font-size:0.72rem;font-weight:800;color:#c39bd3;letter-spacing:1px;text-transform:uppercase">⌨ KB Piano Active</span>
+  <span style="font-size:0.72rem;color:#666">Octave:</span>
+  <button onclick="kbOctaveShift(-1)" style="background:#1a0e2e;border:1px solid #4a2a7a;color:#c39bd3;font-weight:900;border-radius:6px;padding:2px 10px;cursor:pointer;font-size:0.9rem">−</button>
+  <span id="kbOctaveNum" style="font-size:1rem;font-weight:900;color:#e8d5f5;min-width:18px;text-align:center">4</span>
+  <button onclick="kbOctaveShift(1)" style="background:#1a0e2e;border:1px solid #4a2a7a;color:#c39bd3;font-weight:900;border-radius:6px;padding:2px 10px;cursor:pointer;font-size:0.9rem">+</button>
+  <span style="font-size:0.65rem;color:#555">— or press <kbd style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:3px;padding:1px 5px;color:#888">−</kbd> / <kbd style="background:#1a1a30;border:1px solid #2a2a4a;border-radius:3px;padding:1px 5px;color:#888">=</kbd></span>
+  <span style="font-size:0.65rem;color:#444;margin-left:4px">QWERTY→white keys &nbsp;·&nbsp; S D G H J / 2 3 5 6 7→sharps</span>
+</div>
+
+<!-- Sing Panel -->
+<div id="singPanel" style="display:none;margin-top:14px;background:#0e0e24;border:1px solid #2a1a1a;border-radius:14px;padding:18px 20px">
+  <div style="font-size:0.62rem;color:#888;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;font-weight:700">🎙 Voice Recorder</div>
+
+  <!-- Record + Upload row -->
+  <div style="display:flex;gap:10px;align-items:stretch">
+    <button id="vrRecBtn" onclick="vrToggleRecord()" style="display:flex;align-items:center;justify-content:center;gap:10px;flex:1;background:#1a0a0a;border:2px solid #e74c3c;border-radius:12px;padding:14px 16px;color:#e74c3c;font-weight:800;font-size:0.88rem;cursor:pointer;transition:.2s">
+      <span id="vrDot" style="width:12px;height:12px;border-radius:50%;background:#e74c3c;flex-shrink:0"></span>
+      <span id="vrRecLabel">● Record</span>
+    </button>
+    <label style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0e1a0e;border:2px solid #2ecc71;border-radius:12px;padding:14px 16px;color:#2ecc71;font-weight:800;font-size:0.88rem;cursor:pointer;white-space:nowrap">
+      📂 Upload
+      <input type="file" accept="audio/*" onchange="vrUploadFile(this)" style="display:none">
+    </label>
+  </div>
+  <div id="vrTimer" style="text-align:center;font-size:0.8rem;color:#555;margin-top:8px;min-height:18px"></div>
+
+  <!-- Playback controls — hidden until recording exists -->
+  <div id="vrPlayback" style="display:none;margin-top:14px;background:#0a0a1e;border:1px solid #1e1e3a;border-radius:10px;padding:14px">
+    <audio id="vrAudio" style="display:none"></audio>
+
+    <!-- Play / Stop buttons row -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <button onclick="vrPlay()" id="vrPlayBtn" style="background:#0e1a2e;border:1px solid #7eb3ff;border-radius:10px;padding:9px 20px;color:#7eb3ff;font-weight:800;font-size:0.88rem;cursor:pointer">▶ Play</button>
+      <button onclick="vrStop()" style="background:#0e1a2e;border:1px solid #333;border-radius:10px;padding:9px 14px;color:#555;font-weight:700;font-size:0.88rem;cursor:pointer">■</button>
+      <span id="vrTimecode" style="font-size:0.75rem;color:#555;margin-left:4px;white-space:nowrap">0:00 / 0:00</span>
+    </div>
+
+    <!-- Timeline seekbar -->
+    <div style="position:relative;height:6px;background:#1e1e3a;border-radius:3px;cursor:pointer;margin-bottom:12px" id="vrSeekBar" onclick="vrSeek(event)">
+      <div id="vrSeekFill" style="height:100%;width:0%;background:linear-gradient(90deg,#e74c3c,#f39c12);border-radius:3px;pointer-events:none"></div>
+      <div id="vrSeekThumb" style="position:absolute;top:50%;left:0%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:#f39c12;pointer-events:none"></div>
+    </div>
+
+    <!-- Speed row — compact -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <span style="font-size:0.72rem;color:#555;white-space:nowrap">Speed</span>
+      <input type="range" id="vrSpeed" min="0.25" max="1" step="0.05" value="1" oninput="vrSetSpeed(this.value)" style="width:120px;accent-color:#e74c3c">
+      <span id="vrSpeedLabel" style="font-size:0.78rem;color:#f39c12;font-weight:700;min-width:34px">1×</span>
+    </div>
+
+    <!-- Save row -->
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="vrSaveName" type="text" placeholder="Name this recording…" maxlength="50"
+        style="flex:1;background:#12122a;border:1px solid #2a2a4a;color:#dde;border-radius:8px;padding:8px 10px;font-size:0.8rem;outline:none"
+        onkeydown="if(event.key==='Enter') vrSave()">
+      <button onclick="vrSave()" style="background:#1a2e1a;border:1px solid #2ecc71;border-radius:8px;padding:8px 14px;color:#2ecc71;font-weight:800;font-size:0.82rem;cursor:pointer;white-space:nowrap">💾 Save</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button onclick="vrNewRecording()" style="flex:1;background:transparent;border:1px solid #1e1e3a;border-radius:8px;padding:7px;color:#444;font-size:0.75rem;cursor:pointer">🔄 Record again</button>
+      <button onclick="vrNewRecording()" style="background:#1a0a0a;border:1px solid #e74c3c;border-radius:8px;padding:7px 14px;color:#e74c3c;font-size:0.75rem;font-weight:700;cursor:pointer">🗑 Discard</button>
+    </div>
+  </div>
+
+  <!-- Saved recordings library -->
+  <div id="vrLibrary" style="margin-top:16px;display:none">
+    <div style="font-size:0.6rem;color:#555;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:8px">Saved Recordings</div>
+    <div id="vrList" style="display:flex;flex-direction:column;gap:6px"></div>
+  </div>
 </div>
 
 <!-- Section label picker -->
@@ -857,6 +1180,7 @@ function updateUserHeader(user) {
   <div class="history-label" style="color:#555">🗑 Bin <span style="font-size:0.6rem;color:#444;text-transform:none;letter-spacing:0">(recently deleted)</span></div>
   <div id="binList"></div>
 </div>
+
 
 </div><!-- end app-wrap -->
 
@@ -914,6 +1238,21 @@ function updateUserHeader(user) {
 </div>
 
 <script>
+// ── THEME TOGGLE ────────────────────────────────────────────
+function toggleTheme(){
+  var light = document.body.classList.toggle('light-mode');
+  document.getElementById('themeToggleBtn').textContent = light ? '☀️' : '🌙';
+  localStorage.setItem('swara-theme', light ? 'light' : 'dark');
+}
+// Apply saved theme on load
+if(localStorage.getItem('swara-theme')==='light'){
+  document.body.classList.add('light-mode');
+  document.addEventListener('DOMContentLoaded', function(){
+    var btn = document.getElementById('themeToggleBtn');
+    if(btn) btn.textContent = '☀️';
+  });
+}
+
 // ── TOAST & STORAGE UTILS ──────────────────────────────────
 function showToast(msg, type, duration) {
   var t = document.createElement('div');
@@ -985,6 +1324,27 @@ function getCarnaticName(rel) {
 
 var fmt = 'letter';
 var saTonic = 0; // MIDI index of Sa (0=C, 2=D, etc.)
+var kbPianoMode = false;
+var kbOctave = 4; // base octave for keyboard piano (default: 4 = middle C area)
+// QWERTY → piano mapping: semi = semitone within octave, oct = octave offset relative to kbOctave
+var KB_PIANO_MAP = {
+  // Bottom row — white keys of kbOctave-1
+  'KeyZ':{semi:0,oct:-1},'KeyX':{semi:2,oct:-1},'KeyC':{semi:4,oct:-1},
+  'KeyV':{semi:5,oct:-1},'KeyB':{semi:7,oct:-1},'KeyN':{semi:9,oct:-1},'KeyM':{semi:11,oct:-1},
+  // Home row — black keys of kbOctave-1
+  'KeyS':{semi:1,oct:-1},'KeyD':{semi:3,oct:-1},
+  'KeyG':{semi:6,oct:-1},'KeyH':{semi:8,oct:-1},'KeyJ':{semi:10,oct:-1},
+  // Q row — white keys of kbOctave
+  'KeyQ':{semi:0,oct:0},'KeyW':{semi:2,oct:0},'KeyE':{semi:4,oct:0},
+  'KeyR':{semi:5,oct:0},'KeyT':{semi:7,oct:0},'KeyY':{semi:9,oct:0},'KeyU':{semi:11,oct:0},
+  // Extended Q row — white keys of kbOctave+1
+  'KeyI':{semi:0,oct:1},'KeyO':{semi:2,oct:1},'KeyP':{semi:4,oct:1},
+  // Number row — black keys of kbOctave
+  'Digit2':{semi:1,oct:0},'Digit3':{semi:3,oct:0},
+  'Digit5':{semi:6,oct:0},'Digit6':{semi:8,oct:0},'Digit7':{semi:10,oct:0},
+  // Number row — black keys of kbOctave+1
+  'Digit9':{semi:1,oct:1},'Digit0':{semi:3,oct:1}
+};
 var sep = ' ';
 var notes = [];
 var heldKeys = {};
@@ -1171,8 +1531,16 @@ function updateHeld() {
 }
 
 function addNote(name, midiNote) {
-  notes.push({name: name, midi: midiNote});
-  undoStack.push({type:'note', note:{name:name, midi:midiNote}});
+  var note = {name: name, midi: midiNote};
+  if (cursorIndex !== null) {
+    var insertAt = cursorIndex + 1;
+    notes.splice(insertAt, 0, note);
+    undoStack.push({type:'insert', index: insertAt, note: note}); // undo = remove at insertAt
+    cursorIndex = insertAt; // advance cursor
+  } else {
+    notes.push(note);
+    undoStack.push({type:'note', note: note});
+  }
   redoStack = [];
   renderSeq();
 }
@@ -1249,11 +1617,17 @@ function renderSeq() {
       var isSharp = n.name.includes('#') || (n.midi !== undefined && [1,3,6,8,10].indexOf(n.midi % 12) >= 0);
       var chord   = n.chord || '';
       var showLbl = chord || currentMode === 'chord';
-      var displayName = n.name.replace(/([¹²³])/g, '<sup>$1</sup>')
-                               .replace(/([SRGMPDNsrgmpdn])([123])/g, '$1<sup style="font-size:0.55em;vertical-align:super">$2</sup>');
+      var _rawName = (fmt === 'indian')
+        ? n.name.replace(/^Sa/,'S').replace(/^Ri/,'R').replace(/^Ga/,'G')
+                .replace(/^Ma/,'M').replace(/^Pa/,'P').replace(/^Da/,'D').replace(/^Ni/,'N')
+        : n.name;
+      var displayName = _rawName.replace(/([¹²³])/g, '<sup>$1</sup>')
+                                .replace(/([SRGMPDNsrgmpdn])([123])/g, '$1<sup style="font-size:0.55em;vertical-align:super">$2</sup>');
       var prime = octPrime(n.midi);
       var isReplacing = (replacingIndex === i);
-      var noteSpan = '<span class="' + (isSharp ? 's' : 'n') + (isReplacing ? ' replacing-note' : '') + '" data-note-index="' + i + '" oncontextmenu="deleteNoteAt(' + i + ',event)" ondblclick="replaceNoteAt(' + i + ')" title="Double-click to replace · Right-click to delete">' + displayName + prime + '</span>';
+      var isCursor  = (cursorIndex === i);
+      var noteSpan = '<span class="' + (isSharp ? 's' : 'n') + (isReplacing ? ' replacing-note' : '') + (isCursor ? ' note-selected' : '') + '" data-note-index="' + i + '" oncontextmenu="deleteNoteAt(' + i + ',event)" ondblclick="replaceNoteAt(' + i + ')" title="Click to set cursor · Double-click to replace · Right-click to delete">' + displayName + prime + '</span>';
+      var cursorBlip = isCursor ? '<span class="insert-cursor" onclick="event.stopPropagation()" style="pointer-events:none"></span>' : '';
       if (showLbl) {
         html += '<span class="note-wrap">'
               + '<span class="note-chord-lbl ' + (chord ? 'has-chord' : 'no-chord') + '" '
@@ -1262,13 +1636,14 @@ function renderSeq() {
               + 'title="' + (chord ? 'Click to edit · Right-click to clear' : 'Click to add chord') + '">'
               + (chord ? chord : '+') + '</span>'
               + noteSpan
-              + '</span>';
+              + '</span>'
+              + cursorBlip;
       } else {
-        html += noteSpan;
+        html += noteSpan + cursorBlip;
       }
       if (i < notes.length - 1 && notes[i+1] && notes[i+1].name !== ' ' && notes[i+1].name !== '\n' && notes[i+1].label === undefined) {
         html += '<span style="color:#333">' + (sep === ' ' ? ' ' : sep) + '</span>';
-        html += '<span class="ins-bar" onclick="insertBarAt(' + (i+1) + ')" title="Insert bar line here">|</span>';
+        html += '<span class="ins-bar" data-ins-after="' + i + '" oncontextmenu="insertBarAt(' + (i+1) + ');event.preventDefault()" title="Click to move cursor here · Right-click to insert bar line">|</span>';
       }
     }
     // Last item — add copy button for final line
@@ -1635,6 +2010,9 @@ function undo() {
   } else if (action.type === 'delete') {
     notes.splice(action.index, 0, action.note);
     renderSeq();
+  } else if (action.type === 'insert') {
+    notes.splice(action.index, 1);
+    renderSeq();
   } else if (action.type === 'replace') {
     notes[action.index] = action.prev;
     renderSeq();
@@ -1657,6 +2035,9 @@ function redo() {
     renderSeq();
   } else if (action.type === 'delete') {
     notes.splice(action.index, 1);
+    renderSeq();
+  } else if (action.type === 'insert') {
+    notes.splice(action.index, 0, action.note);
     renderSeq();
   } else if (action.type === 'replace') {
     notes[action.index] = action.next;
@@ -1979,7 +2360,7 @@ function buildPrintBody(titleOverride, raag, taal, inclChords, inclLabels) {
 
   // Note cell: chord above, note below — same as app but compact
   var noteSize  = Math.round(noteFontSize * 9) + 'pt'; // scale with user's font size
-  var chordSize = Math.round(noteFontSize * 5.5) + 'pt';
+  var chordSize = Math.round(noteFontSize * 7) + 'pt';
   var cellStyle = 'display:inline-block;text-align:center;vertical-align:bottom;margin:0 3px 8px;position:relative';
   var chordRow  = 'display:block;font-size:'+chordSize+';color:#8b0000;font-weight:700;line-height:1.4;min-height:1.4em;white-space:nowrap;overflow:hidden';
   var sepStyle  = 'display:inline-block;vertical-align:bottom;color:#000;font-size:16pt;font-weight:600;margin:0 4px 8px';
@@ -2012,6 +2393,11 @@ function buildPrintBody(titleOverride, raag, taal, inclChords, inclLabels) {
     } else {
       openLine();
       var noteName = n.name.replace(/<[^>]+>/g,'');
+      // Shorten Indian Sargam: Sa→S, Ri→R, Ga→G, Ma→M, Pa→P, Da→D, Ni→N (keeps superscript suffix)
+      if (fmt === 'indian') {
+        noteName = noteName.replace(/^Sa/,'S').replace(/^Ri/,'R').replace(/^Ga/,'G')
+                           .replace(/^Ma/,'M').replace(/^Pa/,'P').replace(/^Da/,'D').replace(/^Ni/,'N');
+      }
       // Prime marks — same as app display
       var prime = '';
       if (n.midi !== undefined && fmt !== 'octave') {
@@ -2186,9 +2572,84 @@ function exportWord() {
   URL.revokeObjectURL(url);
 }
 
+// ── Keyboard Piano Mode ──────────────────────────────────────────────────────
+function toggleKbPiano() {
+  kbPianoMode = !kbPianoMode;
+  var btn = document.getElementById('kbPianoBtn');
+  var bar = document.getElementById('kbOctaveBar');
+  if (kbPianoMode) {
+    btn.style.background = '#2e1a4a';
+    btn.style.borderColor = '#c39bd3';
+    btn.style.color = '#e8d5f5';
+    if (bar) bar.style.display = 'flex';
+    showToast('⌨ KB Piano ON — QWERTY = piano keys', 'ok', 2000);
+  } else {
+    btn.style.background = '#1a0e2e';
+    btn.style.borderColor = '#2a2a4a';
+    btn.style.color = '#888';
+    if (bar) bar.style.display = 'none';
+    showToast('KB Piano OFF', 'ok', 1200);
+  }
+}
+
+function kbOctaveShift(dir) {
+  kbOctave = Math.max(2, Math.min(6, kbOctave + dir));
+  var el = document.getElementById('kbOctaveNum');
+  if (el) el.textContent = kbOctave;
+  showToast('Octave ' + kbOctave, 'ok', 600);
+}
+
+function highlightPianoKey(midiNote) {
+  var key = document.querySelector('.piano-keys [data-midi="' + midiNote + '"]');
+  if (!key) return;
+  var origBg = key.style.background;
+  key.style.background = '#c39bd3';
+  key.style.transition = 'background 0.12s';
+  setTimeout(function() { key.style.background = origBg; key.style.transition = ''; }, 200);
+}
+
 // Prevent spacebar from clicking buttons — use it as bar separator instead
 document.addEventListener('keydown', function(e) {
-  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+  if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'SELECT')) return;
+
+  // ── Keyboard Piano Mode (overrides sargam shortcuts) ──
+  if (kbPianoMode) {
+    var kbMap = KB_PIANO_MAP[e.code];
+    if (kbMap && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      var kbMidi = (kbOctave + kbMap.oct + 1) * 12 + kbMap.semi;
+      kbMidi = Math.max(21, Math.min(108, kbMidi));
+      var kbName = getNoteName(kbMidi);
+      playPianoNote(kbMidi);
+      updateLive(kbMidi);
+      highlightPianoKey(kbMidi);
+      addNote(kbName, kbMidi);
+      return;
+    }
+    // Octave shift: - = down, = = up
+    if (e.code === 'Minus' && !e.metaKey && !e.ctrlKey) { e.preventDefault(); kbOctaveShift(-1); return; }
+    if (e.code === 'Equal' && !e.metaKey && !e.ctrlKey) { e.preventDefault(); kbOctaveShift(1); return; }
+  }
+
+  // ── Letter key swara shortcuts (S R G M P D N) ──
+  var swara_keys = {'KeyS':'S','KeyR':'R','KeyG':'G','KeyM':'M','KeyP':'P','KeyD':'D','KeyN':'N'};
+  if(swara_keys[e.code] && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    var nm = swara_keys[e.code];
+    // Semitone offset from Sa for each swara (using standard R2 G3 M1 D2 N3)
+    var swaraSemi = {'S':0,'R':2,'G':4,'M':5,'P':7,'D':9,'N':11};
+    // MIDI for middle octave: (MIDDLE_OCTAVE+1)*12 + saTonic + semitone
+    var midi = (MIDDLE_OCTAVE + 1) * 12 + saTonic + swaraSemi[nm];
+    // In carnatic/indian mode use variant names
+    if(fmt==='carnatic'||fmt==='indian'){
+      var cmap={'S':'S','R':carnaticVariants[2]||'R2','G':carnaticVariants[3]||'G2','M':'M1','P':'P','D':carnaticVariants[9]||'D2','N':carnaticVariants[10]||'N2'};
+      nm = cmap[nm]||nm;
+    }
+    addNote(nm, midi);
+    showToast(nm,'ok',400);
+    return;
+  }
+
   if (e.code === 'Space') {
     e.preventDefault();
     addSpace();
@@ -2201,7 +2662,27 @@ document.addEventListener('keydown', function(e) {
   }
   if (e.code === 'Backspace' || e.code === 'Delete') {
     e.preventDefault();
-    undo();
+    if (cursorIndex !== null) {
+      // Delete the note at cursor position
+      var removed = notes.splice(cursorIndex, 1)[0];
+      undoStack.push({type:'delete', index: cursorIndex, note: removed});
+      redoStack = [];
+      // Move cursor back if we deleted the last note, or keep at same pos
+      if (cursorIndex >= notes.length) cursorIndex = notes.length - 1;
+      if (notes.length === 0) cursorIndex = null;
+      renderSeq();
+    } else {
+      undo();
+    }
+  }
+  if (e.code === 'ArrowLeft' && cursorIndex !== null && !e.metaKey && !e.ctrlKey) {
+    e.preventDefault();
+    if (cursorIndex > 0) { cursorIndex--; renderSeq(); }
+  }
+  if (e.code === 'ArrowRight' && cursorIndex !== null && !e.metaKey && !e.ctrlKey) {
+    e.preventDefault();
+    if (cursorIndex < notes.length - 1) { cursorIndex++; renderSeq(); }
+    else if (cursorIndex === notes.length - 1) { clearEditCursor(); }
   }
   if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
     e.preventDefault();
@@ -2222,9 +2703,10 @@ document.addEventListener('keydown', function(e) {
     e.preventDefault();
     if (notes.length > 0) transposeNotes(-1);
   }
-  // Escape cancels replace mode
-  if (e.code === 'Escape' && replacingIndex !== null) {
-    cancelReplace();
+  // Escape cancels replace mode or clears cursor
+  if (e.code === 'Escape') {
+    if (replacingIndex !== null) cancelReplace();
+    else if (cursorIndex !== null) clearEditCursor();
   }
 });
 
@@ -2275,6 +2757,96 @@ function printManual() {
 document.getElementById('manualModal').addEventListener('click', function(e){
   if (e.target === this) closeManual();
 });
+
+// ── CURSOR-BASED EDITING ────────────────────────────────────
+// cursorIndex: null = append mode, number = insert after this index
+var cursorIndex = null;
+
+// Single delegated click handler for cursor positioning
+document.getElementById('seqBox').addEventListener('click', function(e) {
+  // Click on a note span (has data-note-index)
+  var noteEl = e.target.closest('[data-note-index]');
+  if (noteEl) {
+    setCursorAt(parseInt(noteEl.getAttribute('data-note-index'), 10));
+    return;
+  }
+  // Click on ins-bar gap (has data-ins-after)
+  var insEl = e.target.closest('[data-ins-after]');
+  if (insEl) {
+    setCursorAt(parseInt(insEl.getAttribute('data-ins-after'), 10));
+    return;
+  }
+  // Click on blank area of seqBox — exit cursor mode
+  if (cursorIndex !== null) clearEditCursor();
+});
+
+// Dedicated keydown on seqBox — handles cursor keys when seqBox has focus
+document.getElementById('seqBox').addEventListener('keydown', function(e) {
+  if (cursorIndex === null) return;
+  if (e.code === 'ArrowLeft') {
+    e.preventDefault();
+    e.stopPropagation();
+    if (cursorIndex > 0) { cursorIndex--; renderSeq(); document.getElementById('seqBox').focus(); }
+  } else if (e.code === 'ArrowRight') {
+    e.preventDefault();
+    e.stopPropagation();
+    if (cursorIndex < notes.length - 1) { cursorIndex++; renderSeq(); document.getElementById('seqBox').focus(); }
+    else { clearEditCursor(); }
+  } else if (e.code === 'Enter') {
+    e.preventDefault();
+    e.stopPropagation();
+    var lineBreak = {name: '\n'};
+    var insertAt = cursorIndex + 1;
+    notes.splice(insertAt, 0, lineBreak);
+    undoStack.push({type:'insert', index: insertAt, note: lineBreak});
+    redoStack = [];
+    cursorIndex = insertAt;
+    renderSeq();
+    document.getElementById('seqBox').focus();
+  } else if (e.code === 'Backspace' || e.code === 'Delete') {
+    e.preventDefault();
+    e.stopPropagation();
+    var removed = notes.splice(cursorIndex, 1)[0];
+    undoStack.push({type:'delete', index: cursorIndex, note: removed});
+    redoStack = [];
+    if (cursorIndex >= notes.length) cursorIndex = notes.length - 1;
+    if (notes.length === 0) cursorIndex = null;
+    renderSeq();
+    if (cursorIndex !== null) document.getElementById('seqBox').focus();
+  } else if (e.code === 'Space') {
+    e.preventDefault();
+    e.stopPropagation();
+    // Insert bar line at cursor position
+    var barNote = {name: ' '};
+    var insertAt = cursorIndex + 1;
+    notes.splice(insertAt, 0, barNote);
+    undoStack.push({type:'insert', index: insertAt, note: barNote});
+    redoStack = [];
+    cursorIndex = insertAt;
+    renderSeq();
+    document.getElementById('seqBox').focus();
+  } else if (e.code === 'Escape') {
+    e.preventDefault();
+    e.stopPropagation();
+    clearEditCursor();
+  }
+});
+
+function setCursorAt(index) {
+  cursorIndex = index;
+  replacingIndex = null;
+  document.getElementById('replaceHint').classList.remove('show');
+  document.getElementById('cursorHint').classList.add('show');
+  renderSeq();
+  // Focus seqBox so arrow/delete keys reliably reach the keydown handler
+  document.getElementById('seqBox').focus();
+}
+
+function clearEditCursor() {
+  cursorIndex = null;
+  document.getElementById('cursorHint').classList.remove('show');
+  renderSeq();
+}
 
 // ── NOTE REPLACE (double-click) ─────────────────────────────
 var replacingIndex = null;
@@ -2462,6 +3034,403 @@ function transposeNotes(semitones) {
   showToast('Transposed ' + (semitones > 0 ? '+' : '') + semitones + ' semitone' + (Math.abs(semitones) > 1 ? 's' : ''), 'ok', 2000);
 }
 
+/* ══════════════════════════════════════
+   🎙 VOICE RECORDER
+   ══════════════════════════════════════ */
+/* ── Voice Recorder state ── */
+var _vrMediaRec=null, _vrChunks=[], _vrStream=null, _vrRecording=false, _vrTimerInt=null, _vrSecs=0;
+var _vrCurrentBlob=null;
+
+/* ── IndexedDB setup ── */
+var _vrDB = null;
+(function(){
+  var req = indexedDB.open('SwaraSheetRecordings', 1);
+  req.onupgradeneeded = function(e){
+    var db = e.target.result;
+    if(!db.objectStoreNames.contains('recordings')){
+      var store = db.createObjectStore('recordings', {keyPath:'id', autoIncrement:true});
+      store.createIndex('name','name',{unique:false});
+    }
+  };
+  req.onsuccess = function(e){ _vrDB = e.target.result; vrRenderLibrary(); };
+  req.onerror   = function(){ console.warn('IndexedDB unavailable'); };
+})();
+
+function toggleSing(){
+  var p=document.getElementById('singPanel');
+  var btn=document.getElementById('singBtn');
+  var opening=p.style.display==='none';
+  p.style.display=opening?'block':'none';
+  btn.style.background=opening?'#3a0e0e':'#0e1a2e';
+  if(opening){
+    setTimeout(function(){ p.scrollIntoView({behavior:'smooth',block:'nearest'}); },50);
+    vrRenderLibrary();
+  }
+}
+
+function vrToggleRecord(){
+  _vrRecording ? vrStopRecord() : vrStartRecord();
+}
+
+function vrStartRecord(){
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    _vrStream = stream;
+    _vrChunks = [];
+    _vrCurrentBlob = null;
+    _vrMediaRec = new MediaRecorder(stream);
+    _vrMediaRec.ondataavailable = function(e){ if(e.data.size>0) _vrChunks.push(e.data); };
+    _vrMediaRec.onstop = function(){
+      _vrCurrentBlob = new Blob(_vrChunks, {type:'audio/webm'});
+      var url = URL.createObjectURL(_vrCurrentBlob);
+      var audio = document.getElementById('vrAudio');
+      audio.src = url;
+      vrInitAudioEvents();
+      document.getElementById('vrPlayback').style.display = 'block';
+      // auto-fill name with timestamp
+      var now = new Date();
+      var ts = now.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) + ' ' +
+               now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+      document.getElementById('vrSaveName').value = 'Recording ' + ts;
+      _vrStream.getTracks().forEach(function(t){ t.stop(); });
+    };
+    _vrMediaRec.start();
+    _vrRecording = true;
+    _vrSecs = 0;
+    document.getElementById('vrRecBtn').style.background = '#3a0e0e';
+    document.getElementById('vrRecBtn').style.borderColor = '#ff4444';
+    document.getElementById('vrDot').style.animation = 'pulse 0.7s infinite';
+    document.getElementById('vrRecLabel').textContent = '■ Stop Recording';
+    document.getElementById('vrPlayback').style.display = 'none';
+    _vrTimerInt = setInterval(function(){
+      _vrSecs++;
+      var m=Math.floor(_vrSecs/60), s=('0'+_vrSecs%60).slice(-2);
+      document.getElementById('vrTimer').textContent = m+'m '+s+'s';
+    }, 1000);
+  }).catch(function(){ alert('Microphone access denied. Please allow mic in browser settings.'); });
+}
+
+function vrStopRecord(){
+  _vrRecording = false;
+  clearInterval(_vrTimerInt);
+  if(_vrMediaRec && _vrMediaRec.state !== 'inactive') _vrMediaRec.stop();
+  document.getElementById('vrRecBtn').style.background = '#1a0a0a';
+  document.getElementById('vrRecBtn').style.borderColor = '#e74c3c';
+  document.getElementById('vrDot').style.animation = 'none';
+  document.getElementById('vrRecLabel').textContent = '● Record';
+}
+
+function vrFmtTime(s){
+  if(isNaN(s)||!isFinite(s)) return '0:00';
+  var m=Math.floor(s/60), sec=Math.floor(s%60);
+  return m+':'+(sec<10?'0':'')+sec;
+}
+
+function vrInitAudioEvents(){
+  var audio = document.getElementById('vrAudio');
+  audio.ontimeupdate = function(){
+    var cur=audio.currentTime, dur=audio.duration||0;
+    document.getElementById('vrTimecode').textContent = vrFmtTime(cur)+' / '+vrFmtTime(dur);
+    var pct = dur ? (cur/dur*100) : 0;
+    document.getElementById('vrSeekFill').style.width = pct+'%';
+    document.getElementById('vrSeekThumb').style.left = pct+'%';
+  };
+  audio.onended = function(){
+    document.getElementById('vrPlayBtn').textContent = '▶ Play';
+    document.getElementById('vrSeekFill').style.width = '0%';
+    document.getElementById('vrSeekThumb').style.left = '0%';
+  };
+}
+
+function vrPlay(){
+  var audio = document.getElementById('vrAudio');
+  if(audio.paused){
+    audio.play();
+    document.getElementById('vrPlayBtn').textContent = '⏸ Pause';
+  } else {
+    audio.pause();
+    document.getElementById('vrPlayBtn').textContent = '▶ Play';
+  }
+}
+
+function vrStop(){
+  var audio = document.getElementById('vrAudio');
+  audio.pause();
+  audio.currentTime = 0;
+  document.getElementById('vrPlayBtn').textContent = '▶ Play';
+}
+
+function vrSeek(e){
+  var audio = document.getElementById('vrAudio');
+  if(!audio.duration) return;
+  var bar = document.getElementById('vrSeekBar');
+  var rect = bar.getBoundingClientRect();
+  var pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  audio.currentTime = pct * audio.duration;
+}
+
+function vrSetSpeed(val){
+  document.getElementById('vrAudio').playbackRate = parseFloat(val);
+  document.getElementById('vrSpeedLabel').textContent = parseFloat(val).toFixed(2).replace(/\.?0+$/,'') + '×';
+}
+
+function vrUploadFile(input){
+  var file = input.files[0]; if(!file) return;
+  var name = file.name.replace(/\.[^.]+$/,'');
+
+  // Auto-save to library immediately
+  if(_vrDB){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var blob = new Blob([e.target.result], {type: file.type});
+      var record = {name: name, blob: blob, date: Date.now(), duration: 0, isUpload: true};
+      var tx = _vrDB.transaction('recordings','readwrite');
+      tx.objectStore('recordings').add(record).onsuccess = function(ev){
+        var savedId = ev.target.result;
+        vrRenderLibrary();
+        showToast('Saved to library: ' + name, 'ok', 2000);
+        // Load it into player
+        var url = URL.createObjectURL(blob);
+        var audio = document.getElementById('vrAudio');
+        audio.src = url;
+        vrInitAudioEvents();
+        // update duration once metadata loads
+        audio.onloadedmetadata = function(){
+          var dur = Math.round(audio.duration)||0;
+          var tx2 = _vrDB.transaction('recordings','readwrite');
+          var store = tx2.objectStore('recordings');
+          store.get(savedId).onsuccess = function(e2){
+            var r = e2.target.result; if(!r) return;
+            r.duration = dur; store.put(r);
+            vrRenderLibrary();
+          };
+        };
+        _vrCurrentBlob = blob;
+        document.getElementById('vrPlayback').style.display = 'block';
+        document.getElementById('vrSaveName').value = '';
+        document.getElementById('vrTimecode').textContent = '0:00 / 0:00';
+        document.getElementById('vrSeekFill').style.width = '0%';
+        document.getElementById('vrSeekThumb').style.left = '0%';
+        document.getElementById('vrPlayBtn').textContent = '▶ Play';
+        document.getElementById('vrTimer').textContent = '📂 ' + file.name;
+        setTimeout(function(){ document.getElementById('vrPlayback').scrollIntoView({behavior:'smooth',block:'nearest'}); },50);
+      };
+    };
+    reader.readAsArrayBuffer(file);
+  }
+  input.value = '';
+}
+
+function vrNewRecording(){
+  vrStop();
+  _vrCurrentBlob = null;
+  document.getElementById('vrAudio').src = '';
+  document.getElementById('vrPlayback').style.display = 'none';
+  document.getElementById('vrTimer').textContent = '';
+  document.getElementById('vrSpeedLabel').textContent = '1×';
+  document.getElementById('vrSpeed').value = 1;
+  document.getElementById('vrTimecode').textContent = '0:00 / 0:00';
+  document.getElementById('vrSeekFill').style.width = '0%';
+  document.getElementById('vrSeekThumb').style.left = '0%';
+}
+
+function vrSave(){
+  if(!_vrDB){ alert('Storage not available.'); return; }
+  if(!_vrCurrentBlob){ alert('Nothing recorded yet.'); return; }
+  var name = document.getElementById('vrSaveName').value.trim() || ('Recording ' + new Date().toLocaleString());
+  var record = { name: name, blob: _vrCurrentBlob, date: Date.now(), duration: _vrSecs };
+  var tx = _vrDB.transaction('recordings','readwrite');
+  tx.objectStore('recordings').add(record).onsuccess = function(){
+    showToast('Saved: ' + name, 'ok', 2000);
+    vrRenderLibrary();
+  };
+}
+
+function vrRenderLibrary(){
+  if(!_vrDB) return;
+  var tx = _vrDB.transaction('recordings','readonly');
+  var req = tx.objectStore('recordings').getAll();
+  req.onsuccess = function(e){
+    var recs = e.target.result;
+    var lib = document.getElementById('vrLibrary');
+    var list = document.getElementById('vrList');
+    if(!recs.length){ lib.style.display='none'; return; }
+    lib.style.display = 'block';
+    list.innerHTML = '';
+    recs.slice().reverse().forEach(function(rec){
+      var dur = rec.duration ? (Math.floor(rec.duration/60)+'m '+('0'+rec.duration%60).slice(-2)+'s') : '';
+      var d = document.createElement('div');
+      d.style.cssText = 'background:#0a0a1e;border:1px solid #1e1e3a;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px';
+      d.innerHTML =
+        '<div style="display:flex;align-items:center;gap:8px">'
+        + (rec.isUpload ? '<span style="font-size:0.6rem;background:#0e1a0e;border:1px solid #2ecc71;color:#2ecc71;border-radius:4px;padding:1px 5px;white-space:nowrap">📂</span>' : '<span style="font-size:0.6rem;background:#1a0e0e;border:1px solid #e74c3c;color:#e74c3c;border-radius:4px;padding:1px 5px;white-space:nowrap">🎙</span>')
+        + '<span id="vrn-'+rec.id+'" style="flex:1;font-size:0.82rem;font-weight:700;color:#dde;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+_vrEsc(rec.name)+'</span>'
+        + (dur ? '<span style="font-size:0.68rem;color:#555;white-space:nowrap">'+dur+'</span>' : '')
+        + '</div>'
+        + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
+        + '<button onclick="vrLoadPlay('+rec.id+')" style="flex:1;background:#0e1a2e;border:1px solid #7eb3ff;border-radius:8px;padding:7px;color:#7eb3ff;font-weight:700;font-size:0.78rem;cursor:pointer">▶ Play</button>'
+        + '<button onclick="vrRename('+rec.id+')" style="background:#1a1a0e;border:1px solid #f39c12;border-radius:8px;padding:7px 10px;color:#f39c12;font-weight:700;font-size:0.78rem;cursor:pointer">✏ Rename</button>'
+        + '<button onclick="vrDelete('+rec.id+')" style="background:#1a0a0a;border:1px solid #e74c3c;border-radius:8px;padding:7px 10px;color:#e74c3c;font-weight:700;font-size:0.78rem;cursor:pointer">🗑</button>'
+        + '</div>';
+      list.appendChild(d);
+    });
+  };
+}
+
+function vrLoadPlay(id){
+  if(!_vrDB) return;
+  var tx = _vrDB.transaction('recordings','readonly');
+  tx.objectStore('recordings').get(id).onsuccess = function(e){
+    var rec = e.target.result; if(!rec) return;
+    var url = URL.createObjectURL(rec.blob);
+    var audio = document.getElementById('vrAudio');
+    audio.src = url;
+    vrInitAudioEvents();
+    document.getElementById('vrPlayback').style.display = 'block';
+    document.getElementById('vrSaveName').value = '';
+    document.getElementById('vrTimecode').textContent = '0:00 / 0:00';
+    document.getElementById('vrSeekFill').style.width = '0%';
+    document.getElementById('vrSeekThumb').style.left = '0%';
+    document.getElementById('vrPlayBtn').textContent = '▶ Play';
+    _vrCurrentBlob = null; // don't allow re-save of loaded recording
+    audio.play();
+    document.getElementById('vrPlayBtn').textContent = '⏸ Pause';
+    audio.onended = function(){ document.getElementById('vrPlayBtn').textContent = '▶ Play again'; };
+    setTimeout(function(){ document.getElementById('vrPlayback').scrollIntoView({behavior:'smooth',block:'nearest'}); },50);
+  };
+}
+
+function vrRename(id){
+  var span = document.getElementById('vrn-'+id);
+  var oldName = span ? span.textContent : '';
+  var newName = prompt('Rename recording:', oldName);
+  if(!newName || !newName.trim() || newName.trim()===oldName) return;
+  var tx = _vrDB.transaction('recordings','readwrite');
+  var store = tx.objectStore('recordings');
+  store.get(id).onsuccess = function(e){
+    var rec = e.target.result; if(!rec) return;
+    rec.name = newName.trim();
+    store.put(rec).onsuccess = function(){ vrRenderLibrary(); showToast('Renamed','ok',1500); };
+  };
+}
+
+function vrDelete(id){
+  if(!confirm('Delete this recording?')) return;
+  var tx = _vrDB.transaction('recordings','readwrite');
+  tx.objectStore('recordings').delete(id).onsuccess = function(){
+    vrRenderLibrary();
+    showToast('Deleted','ok',1500);
+  };
+}
+
+function _vrEsc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+
+
+/* ══════════════════════════════════════
+   ☁ FIRESTORE CLOUD TEMPLATES
+   ══════════════════════════════════════ */
+
+function openCloudModal() {
+  if (!firebaseDb) { showToast('Cloud not available', 'warn'); return; }
+  document.getElementById('cloudModal').style.display = 'flex';
+  cloudListFiles();
+}
+
+function closeCloudModal() {
+  document.getElementById('cloudModal').style.display = 'none';
+  document.getElementById('cloudStatus').textContent = '';
+}
+
+function getCloudRef() {
+  var uid = currentUser ? currentUser.uid : 'desktop';
+  return firebaseDb.collection('swarasheet').doc(uid).collection('templates');
+}
+
+function cloudListFiles() {
+  var list = document.getElementById('cloudList');
+  list.innerHTML = '<div class="cloud-empty">Loading...</div>';
+  if (!firebaseDb || !currentUser) {
+    list.innerHTML = '<div class="cloud-empty">Sign in to use Cloud</div>';
+    return;
+  }
+  getCloudRef().orderBy('savedAt','desc').get().then(function(snap) {
+    if (snap.empty) { list.innerHTML = '<div class="cloud-empty">No templates saved yet.</div>'; return; }
+    list.innerHTML = '';
+    snap.forEach(function(doc) {
+      var name = doc.data().title || doc.id;
+      var id = doc.id.replace(/'/g,"\\'");
+      var div = document.createElement('div');
+      div.className = 'cloud-item';
+      div.innerHTML = '<span class="cloud-item-name">📄 ' + name + '</span>'
+        + '<button class="cloud-item-btn cloud-item-load" onclick="cloudLoadTemplate(\'' + id + '\')">Load</button>'
+        + '<button class="cloud-item-btn cloud-item-del" onclick="cloudDeleteTemplate(\'' + id + '\')">✕</button>';
+      list.appendChild(div);
+    });
+  }).catch(function(){ list.innerHTML = '<div class="cloud-empty">Error loading files.</div>'; });
+}
+
+function cloudSaveTemplate() {
+  if (!notes || notes.length === 0) { showToast('No notes to save', 'warn'); return; }
+  if (!firebaseDb || !currentUser) { showToast('Sign in to save', 'warn'); return; }
+  var titleEl = document.getElementById('songTitle');
+  var title = (titleEl ? titleEl.value.trim() : '') || 'Untitled';
+  var docId = title.replace(/[^a-zA-Z0-9_\-\s]/g,'').trim().replace(/\s+/g,'_') || 'template';
+  var data = { title:title, notes:notes, fmt:fmt, saTonic:saTonic, bpm:metroBpm, version:2,
+    savedAt: firebase.firestore.FieldValue.serverTimestamp() };
+  setCloudStatus('Saving...');
+  getCloudRef().doc(docId).set(data).then(function() {
+    setCloudStatus('✅ Saved: ' + title);
+    showToast('Saved to Cloud ☁', 'ok', 2000);
+    cloudListFiles();
+  }).catch(function(e){ setCloudStatus('❌ Save failed'); console.error(e); });
+}
+
+function cloudLoadTemplate(docId) {
+  setCloudStatus('Loading...');
+  getCloudRef().doc(docId).get().then(function(doc) {
+    if (!doc.exists) { setCloudStatus('❌ Not found'); return; }
+    var data = doc.data();
+    if (!data.notes) { setCloudStatus('❌ Invalid template'); return; }
+    notes = data.notes;
+    if (data.fmt) fmt = data.fmt;
+    if (data.saTonic !== undefined) saTonic = data.saTonic;
+    if (data.bpm) { metroBpm = data.bpm; document.getElementById('metroBpmInput').value = metroBpm; }
+    renderSeq();
+    closeCloudModal();
+    showToast('Loaded: ' + (data.title || docId), 'ok', 2000);
+  }).catch(function(){ setCloudStatus('❌ Load failed'); });
+}
+
+function cloudDeleteTemplate(docId) {
+  if (!confirm('Delete this template from cloud?')) return;
+  getCloudRef().doc(docId).delete().then(function() {
+    showToast('Deleted from cloud', 'ok', 1500);
+    cloudListFiles();
+  }).catch(function(){ setCloudStatus('❌ Delete failed'); });
+}
+
+function setCloudStatus(msg) {
+  var el = document.getElementById('cloudStatus');
+  if (el) el.textContent = msg;
+}
+
 </script>
+
+<!-- Cloud Modal -->
+<div id="cloudModal" onclick="if(event.target===this)closeCloudModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:9500;align-items:flex-end;justify-content:center;">
+  <div class="cloud-sheet">
+    <button class="cloud-close-btn" onclick="closeCloudModal()">✕</button>
+    <div style="font-size:0.6rem;color:#888;letter-spacing:2px;text-transform:uppercase;font-weight:700">☁ Cloud Templates</div>
+    <h3>My Saved Templates</h3>
+    <div class="cloud-list" id="cloudList" style="margin-top:12px">
+      <div class="cloud-empty">Loading...</div>
+    </div>
+    <div class="cloud-save-row">
+      <button class="cloud-save-btn cloud-save-tmpl" onclick="cloudSaveTemplate()">💾 Save Current Template</button>
+    </div>
+    <div class="cloud-status" id="cloudStatus"></div>
+  </div>
+</div>
+
 </body>
 </html>

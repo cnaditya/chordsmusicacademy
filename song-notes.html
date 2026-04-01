@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-801045653"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-801045653');
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Chords Music Academy — Piano Notes & Tutorials</title>
@@ -186,7 +194,7 @@ body{display:flex;flex-direction:column;margin:0 auto}
 <div class="tabs">
   <div class="tab on" onclick="showTab(0)">🎹 Piano<br>Tutorials</div>
   <div class="tab" onclick="showTab(1)">🎵 Song<br>Notes</div>
-  <div class="tab" onclick="showTab(2)">🎼 Top 50<br>Packages</div>
+  <div class="tab" onclick="showTab(2)" style="opacity:0.5;font-size:0.68rem;">🎼 Top 50<br><span style="color:#f39c12;font-size:0.6rem;">Coming Soon</span></div>
 </div>
 
 <!-- Panels -->
@@ -236,13 +244,13 @@ body{display:flex;flex-direction:column;margin:0 auto}
       <button class="btn-order" onclick="openOrder('Intermediate Piano Package','4999','CMA-Piano-Inter')">🛒 Order Now</button>
     </div>
     <div class="pkg">
-      <div class="pkg-discount-badge">56% OFF</div>
+      <div class="pkg-discount-badge">44% OFF</div>
       <span class="pkg-tag" style="background:#fce4ec;color:#c62828">Mastery</span>
       <div class="pkg-name">Advanced Package</div>
       <div class="pkg-price-row">
         <span class="pkg-mrp">₹17,999</span>
-        <span class="pkg-price">₹7,999</span>
-        <span class="pkg-save">Save ₹10,000</span>
+        <span class="pkg-price">₹9,999</span>
+        <span class="pkg-save">Save ₹8,000</span>
       </div>
       <div class="pkg-feat">
         🎹 Full keyboard — all keys, all scales, all songs<br>
@@ -251,7 +259,7 @@ body{display:flex;flex-direction:column;margin:0 auto}
         📄 Notes PDF + video for every song<br>
         💬 3 months WhatsApp support + doubt clearing
       </div>
-      <button class="btn-order" onclick="openOrder('Advanced Piano Package','7999','CMA-Piano-Advanced')">🛒 Order Now</button>
+      <button class="btn-order" onclick="openOrder('Advanced Piano Package','9999','CMA-Piano-Advanced')">🛒 Order Now</button>
     </div>
   </div>
 
@@ -309,6 +317,13 @@ body{display:flex;flex-direction:column;margin:0 auto}
       <div class="col-title-main">Top 50 Song Packs</div>
       <div class="col-title-sub">Curated top 50 packs — notes + tutorial videos delivered on WhatsApp</div>
     </div>
+    <div style="background:#fff;border-radius:16px;padding:28px 20px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,0.09);margin-bottom:12px;">
+      <div style="font-size:2.5rem;margin-bottom:12px;">🚀</div>
+      <div style="font-size:1.1rem;font-weight:800;color:#1a1a2e;margin-bottom:8px;">Coming Soon!</div>
+      <div style="font-size:0.82rem;color:#888;line-height:1.6;margin-bottom:16px;">Top 50 packs by AR Rahman, DSP, Thaman, Ilaiyaraaja & Anirudh are being prepared. Get notified when they launch!</div>
+      <a href="https://wa.me/917981585309?text=Hi%2C%20I%27m%20interested%20in%20Top%2050%20Song%20Packs%20at%20Chords%20Music%20Academy.%20Please%20notify%20me%20when%20they%20launch!" target="_blank" style="display:inline-block;background:#25d366;color:#fff;border-radius:10px;padding:11px 22px;font-size:0.88rem;font-weight:700;text-decoration:none;">💬 Notify Me on WhatsApp</a>
+    </div>
+    <div style="display:none">
 
     <!-- AR Rahman Top 50 -->
     <div class="t50">
@@ -452,7 +467,7 @@ body{display:flex;flex-direction:column;margin:0 auto}
       <button class="t50-req-btn" onclick="requestPack('Top 50 Hindi Popular Songs')">💬 Request This Pack</button>
     </div>
 
-  </div>
+  </div></div>
 </div>
 
 <!-- Hidden Netlify form to capture all orders -->

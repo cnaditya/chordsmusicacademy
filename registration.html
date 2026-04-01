@@ -1,6 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-801045653"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-801045653');
+</script>
+<!-- Event snippet for Music Conversion -->
+<script>
+function gtag_report_conversion(url) {
+  var callback = function () {
+    if (typeof(url) != 'undefined') {
+      window.location = url;
+    }
+  };
+  gtag('event', 'conversion', {
+      'send_to': 'AW-801045653/S-GWCNz44aoBEJX5-_0C',
+      'event_callback': callback
+  });
+  return false;
+}
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Student Registration — Chords Music Academy</title>
@@ -418,6 +441,7 @@ function submitReg() {
 }
 
 function showSuccess(regId, name, dob, address, phone, email, guardian, inst, level, mode, notes) {
+  gtag_report_conversion();
   // Hide all steps
   for (var i = 1; i <= 4; i++) {
     var el = document.getElementById('step' + i);

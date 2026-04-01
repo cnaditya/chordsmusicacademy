@@ -5,7 +5,8 @@
 /shop              /shop.html              200
 /studio            /studio.html            200
 /pay               /pay.html               200
-/live-classes      /live-classes.html         200
+/pricing           /pricing.html              200
+/live-classes      /pricing.html              200
 /live-classes-global /live-classes-global.html 200
 /register            /registration.html          200
 /admin               /admin.html                 200

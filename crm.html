@@ -3,725 +3,579 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Academy CRM — Chords Music Academy</title>
+<title>CRM — Chords Music Academy</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a2e;min-height:100vh}
 
 /* Login */
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#1a1a2e,#2c3e6b)}
-.login-box{background:#fff;border-radius:18px;padding:32px 24px;width:100%;max-width:360px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.3)}
+.login-box{background:#fff;border-radius:18px;padding:32px 24px;width:100%;max-width:340px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.3)}
 .login-icon{font-size:2.5rem;margin-bottom:10px}
 .login-title{font-size:1.2rem;font-weight:800;margin-bottom:4px}
 .login-sub{font-size:0.78rem;color:#888;margin-bottom:24px}
-.login-box input{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:12px 14px;font-size:0.9rem;font-family:inherit;outline:none;margin-bottom:12px;transition:.2s}
+.login-box input{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:12px 14px;font-size:0.9rem;outline:none;margin-bottom:12px}
 .login-box input:focus{border-color:#e74c3c}
 .login-box button{width:100%;background:#e74c3c;color:#fff;border:none;border-radius:10px;padding:13px;font-size:0.92rem;font-weight:800;cursor:pointer}
 .login-err{font-size:0.75rem;color:#e74c3c;margin-top:8px;display:none}
 
-/* Header */
-.hdr{background:#1a1a2e;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
-.hdr-logo{font-size:1.2rem}
-.hdr-title{font-size:0.95rem;font-weight:800;flex:1}
-.hdr-sub{font-size:0.62rem;opacity:0.6}
-.hdr-btn{background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:16px;padding:5px 11px;font-size:0.72rem;font-weight:700;cursor:pointer;margin-left:4px}
+/* App */
+#app{display:none}
+.hdr{background:#1a1a2e;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+.hdr-title{font-size:1rem;font-weight:800;flex:1}
+.hdr-month{font-size:0.75rem;background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:12px}
 
 /* Bottom nav */
 .bnav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;display:flex;z-index:100;box-shadow:0 -2px 10px rgba(0,0,0,0.08)}
-.bnav-btn{flex:1;padding:10px 4px 8px;text-align:center;border:none;background:none;cursor:pointer;font-size:0.6rem;font-weight:700;color:#aaa;transition:.2s}
-.bnav-btn .bi{font-size:1.3rem;display:block;margin-bottom:2px}
+.bnav-btn{flex:1;padding:10px 4px 8px;text-align:center;border:none;background:none;cursor:pointer;font-size:0.58rem;font-weight:700;color:#aaa}
+.bnav-btn .ni{font-size:1.3rem;display:block;margin-bottom:2px}
 .bnav-btn.on{color:#e74c3c}
 
 /* Pages */
-.page{display:none;padding:16px 16px 80px}
+.page{display:none;padding:16px 16px 90px}
 .page.on{display:block}
 
-/* Stats grid */
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
-.stat{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07)}
-.stat-num{font-size:1.8rem;font-weight:800;line-height:1}
-.stat-label{font-size:0.68rem;color:#888;margin-top:3px;font-weight:600}
+/* Dashboard */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat-card{background:#fff;border-radius:14px;padding:16px 14px;box-shadow:0 1px 6px rgba(0,0,0,0.07)}
+.stat-card.full{grid-column:1/-1}
+.stat-num{font-size:1.9rem;font-weight:800;line-height:1}
+.stat-label{font-size:0.68rem;color:#888;margin-top:3px;font-weight:600;text-transform:uppercase}
+.stat-num.green{color:#27ae60}
+.stat-num.red{color:#e74c3c}
+.stat-num.blue{color:#2980b9}
+.stat-num.orange{color:#e67e22}
 
-/* Section title */
-.sec{font-size:0.78rem;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.6px;margin:18px 0 10px}
+.sec-title{font-size:0.78rem;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.5px;margin:18px 0 10px}
 
-/* Search & filter */
-.search-bar{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 14px;font-size:0.88rem;font-family:inherit;outline:none;margin-bottom:10px;transition:.2s}
+/* Due list */
+.due-card{background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.06);border-left:4px solid #e74c3c}
+.due-av{width:36px;height:36px;border-radius:50%;background:#e74c3c;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:800;flex-shrink:0}
+.due-name{font-size:0.88rem;font-weight:700}
+.due-fee{font-size:0.75rem;color:#e74c3c;font-weight:700}
+.due-time{font-size:0.68rem;color:#aaa}
+.due-pay-btn{margin-left:auto;background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;flex-shrink:0}
+
+/* Students page */
+.search-bar{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 14px;font-size:0.88rem;outline:none;margin-bottom:10px}
 .search-bar:focus{border-color:#e74c3c}
 .filter-row{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .fb{flex:0 0 auto;border:1.5px solid #e0e0e0;background:#fff;border-radius:20px;padding:5px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;color:#666;white-space:nowrap}
 .fb.on{background:#1a1a2e;border-color:#1a1a2e;color:#fff}
 
-/* Student cards */
-.scard{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:10px;border-left:4px solid #e74c3c}
-.scard.completed{border-left-color:#27ae60}
-.scard.inactive{border-left-color:#95a5a6;opacity:0.7}
-.sc-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
-.sc-av{width:38px;height:38px;border-radius:50%;background:#1a1a2e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:800;flex-shrink:0}
-.sc-av.completed{background:#27ae60}
-.sc-info{flex:1}
-.sc-name{font-size:0.9rem;font-weight:800;color:#1a1a2e}
-.sc-meta{font-size:0.7rem;color:#888;margin-top:2px}
-.sc-id{font-size:0.62rem;color:#bbb;font-family:monospace}
-.sc-badge{font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;margin-top:3px}
-.badge-active{background:#e8f5e9;color:#2e7d32}
-.badge-completed{background:#e3f2fd;color:#1565c0}
-.badge-inactive{background:#f5f5f5;color:#888}
+/* Table view */
+.stbl{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07)}
+.stbl thead th{background:#1a1a2e;color:#fff;padding:10px 8px;font-size:0.72rem;font-weight:700;text-align:left;text-transform:uppercase;letter-spacing:0.4px}
+.stbl tbody tr{border-bottom:1px solid #f0f2f5;transition:background 0.1s}
+.stbl tbody tr:last-child{border-bottom:none}
+.stbl tbody tr:active{background:#f9f9f9}
+.stbl td{padding:10px 8px;font-size:0.82rem;vertical-align:middle}
+.stbl td.td-name{font-weight:700;color:#1a1a2e}
+.stbl td.td-time{color:#888;font-size:0.72rem}
+.stbl td.td-fee{font-weight:700;color:#1a1a2e;white-space:nowrap}
+.stbl td.td-status{text-align:center}
+.tbl-pay-btn{border:none;border-radius:16px;padding:5px 10px;font-size:0.7rem;font-weight:800;cursor:pointer;white-space:nowrap}
+.tbl-pay-btn.paid{background:#e8f5e9;color:#27ae60}
+.tbl-pay-btn.due{background:#fdecea;color:#e74c3c}
+.tbl-edit-btn{border:none;background:#f0f2f5;color:#555;border-radius:8px;padding:4px 8px;font-size:0.7rem;cursor:pointer;margin-left:4px}
+.badge{font-size:0.6rem;font-weight:700;padding:2px 7px;border-radius:8px;display:inline-block;margin-left:4px}
+.badge-group{background:#f3e5f5;color:#8e44ad}
+.badge-15k{background:#fff3e0;color:#e67e22}
 
-/* Progress bar */
-.prog-wrap{margin-bottom:8px}
-.prog-label{display:flex;justify-content:space-between;font-size:0.68rem;color:#888;margin-bottom:3px}
-.prog-bar{height:6px;background:#f0f2f5;border-radius:10px;overflow:hidden}
-.prog-fill{height:100%;background:#e74c3c;border-radius:10px;transition:.3s}
-.prog-fill.done{background:#27ae60}
-
-/* Schedule tag */
-.sched{font-size:0.68rem;color:#3498db;background:#e8f4fd;padding:3px 8px;border-radius:8px;display:inline-block;margin-bottom:8px}
-
-/* Action row */
-.sc-actions{display:flex;gap:6px}
-.sc-btn{flex:1;border:none;border-radius:8px;padding:8px 6px;font-size:0.72rem;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:3px}
-.btn-attend{background:#e74c3c;color:#fff}
-.btn-attend.done-today{background:#e8f5e9;color:#2e7d32}
-.btn-wa{background:#25d366;color:#fff;text-decoration:none}
-.btn-detail{background:#f0f2f5;color:#555}
-.btn-edit{background:#fff3e0;color:#e65100}
-
-/* Today's schedule */
-.today-card{background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-.tc-time{font-size:0.78rem;font-weight:800;color:#e74c3c;width:70px;flex-shrink:0}
-.tc-name{font-size:0.85rem;font-weight:700}
-.tc-sub{font-size:0.68rem;color:#888}
-.tc-att{margin-left:auto;background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:0.7rem;font-weight:700;cursor:pointer;flex-shrink:0}
-.tc-att.done{background:#27ae60}
-
-/* Add student form */
-.form-card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:16px}
-.form-card h3{font-size:0.82rem;font-weight:800;margin-bottom:14px;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.5px}
-.field{margin-bottom:12px}
-.field label{display:block;font-size:0.72rem;font-weight:700;color:#555;margin-bottom:4px}
-.field input,.field select{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 12px;font-size:0.85rem;font-family:inherit;outline:none;transition:.2s;-webkit-appearance:none}
-.field input:focus,.field select:focus{border-color:#e74c3c}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.btn-submit{width:100%;background:#e74c3c;color:#fff;border:none;border-radius:12px;padding:13px;font-size:0.9rem;font-weight:800;cursor:pointer;margin-top:4px}
-
-/* Modal */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+/* Add student */
+.add-btn{width:100%;padding:13px;background:#e74c3c;color:#fff;border:none;border-radius:12px;font-size:0.95rem;font-weight:800;cursor:pointer;margin-bottom:16px}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center}
 .modal-bg.show{display:flex}
-.modal{background:#fff;border-radius:20px 20px 0 0;padding:22px 18px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto}
-.modal-title{font-size:1rem;font-weight:800;margin-bottom:14px;display:flex;justify-content:space-between}
-.modal-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:#888}
-.dr{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:0.82rem}
-.dr:last-child{border-bottom:none}
-.dl{font-weight:700;color:#888;flex:0 0 110px;font-size:0.75rem}
-.dv{color:#1a1a2e;flex:1}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:500px}
+.modal h3{font-size:1rem;font-weight:800;margin-bottom:16px}
+.modal input,.modal select{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:11px 14px;font-size:0.88rem;outline:none;margin-bottom:10px;font-family:inherit}
+.modal input:focus,.modal select:focus{border-color:#e74c3c}
+.modal-btns{display:flex;gap:10px;margin-top:6px}
+.modal-btns button{flex:1;padding:12px;border:none;border-radius:10px;font-size:0.9rem;font-weight:800;cursor:pointer}
+.btn-save{background:#e74c3c;color:#fff}
+.btn-cancel{background:#f0f2f5;color:#555}
 
-/* Attendance history */
-.att-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:0.78rem}
-.att-item:last-child{border-bottom:none}
+/* Payments history */
+.month-selector{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.month-selector span{flex:1;text-align:center;font-weight:700;font-size:0.9rem}
+.month-selector button{background:#f0f2f5;border:none;border-radius:8px;width:32px;height:32px;font-size:1rem;cursor:pointer;font-weight:700}
+.pay-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.pay-stat{background:#fff;border-radius:12px;padding:12px 10px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.pay-stat-num{font-size:1.3rem;font-weight:800}
+.pay-stat-label{font-size:0.62rem;color:#888;text-transform:uppercase;font-weight:700}
+.prow{background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.prow-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:800;color:#fff;flex-shrink:0}
+.prow-name{font-size:0.85rem;font-weight:700;flex:1}
+.prow-fee{font-size:0.75rem;color:#888}
+.prow-status{margin-left:auto}
+.toggle-btn{border:none;border-radius:20px;padding:5px 12px;font-size:0.72rem;font-weight:700;cursor:pointer}
+.toggle-paid{background:#e8f5e9;color:#27ae60}
+.toggle-due{background:#fdecea;color:#e74c3c}
 
-/* Alert */
-.alert{background:#fff3cd;border:1.5px solid #ffc107;border-radius:10px;padding:10px 14px;font-size:0.78rem;color:#856404;margin-bottom:10px}
-
-/* Lead cards */
-.lcard{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:10px;border-left:4px solid #f39c12}
-.lcard.contacted{border-left-color:#3498db}
-.lcard.demo{border-left-color:#9b59b6}
-.lcard.joined{border-left-color:#27ae60}
-.lcard.not_interested{border-left-color:#95a5a6;opacity:0.6}
-.lc-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
-.lc-av{width:36px;height:36px;border-radius:50%;background:#f39c12;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:800;flex-shrink:0}
-.lc-name{font-size:0.9rem;font-weight:800;color:#1a1a2e}
-.lc-meta{font-size:0.7rem;color:#888;margin-top:2px}
-.lc-regid{font-size:0.6rem;color:#bbb;font-family:monospace}
-.lc-status{display:inline-block;font-size:0.62rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:3px}
-.ls-new{background:#fff8e1;color:#f57f17}
-.ls-contacted{background:#e3f2fd;color:#1565c0}
-.ls-demo{background:#f3e5f5;color:#6a1b9a}
-.ls-joined{background:#e8f5e9;color:#2e7d32}
-.ls-not_interested{background:#f5f5f5;color:#888}
-.lc-pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
-.lc-pill{font-size:0.68rem;background:#f0f2f5;color:#555;padding:3px 8px;border-radius:8px}
-.lc-actions{display:flex;gap:6px}
-.btn-convert{background:#1a1a2e;color:#fff;flex:2}
-.lc-status-btns{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
-.lsb{border:1.5px solid #e0e0e0;background:#fff;border-radius:8px;padding:4px 8px;font-size:0.65rem;font-weight:700;cursor:pointer;color:#666}
-.lsb.on{background:#1a1a2e;border-color:#1a1a2e;color:#fff}
-.leads-filter{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
-
-@media(min-width:768px){
-  .page{max-width:780px;margin:0 auto;padding:20px 24px 80px}
-  .stats{grid-template-columns:repeat(4,1fr)}
-}
+/* Empty state */
+.empty{text-align:center;padding:40px 20px;color:#bbb}
+.empty-icon{font-size:3rem;margin-bottom:10px}
 </style>
 </head>
 <body>
 
 <!-- Login -->
-<div class="login-wrap" id="loginScreen">
+<div class="login-wrap" id="loginWrap">
   <div class="login-box">
-    <div class="login-icon">🎵</div>
-    <div class="login-title">Academy CRM</div>
-    <div class="login-sub">Chords Music Academy</div>
-    <input type="text" id="lu" placeholder="Username">
-    <input type="password" id="lp" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
-    <button onclick="doLogin()">Login →</button>
-    <div class="login-err" id="lerr">Incorrect credentials</div>
+    <div class="login-icon">🎹</div>
+    <div class="login-title">Chords Music Academy</div>
+    <div class="login-sub">CRM — Student Management</div>
+    <input type="password" id="pwd" placeholder="Enter password" onkeydown="if(event.key==='Enter')login()">
+    <button onclick="login()">Login</button>
+    <div class="login-err" id="loginErr">Incorrect password</div>
   </div>
 </div>
 
 <!-- App -->
-<div id="crmApp" style="display:none">
-
+<div id="app">
   <div class="hdr">
-    <div class="hdr-logo">🎵</div>
-    <div>
-      <div class="hdr-title">Chords Music Academy</div>
-      <div class="hdr-sub">Academy CRM</div>
-    </div>
-    <button class="hdr-btn" onclick="syncData()">↻ Sync</button>
-    <button class="hdr-btn" onclick="doLogout()">Exit</button>
+    <span class="hdr-title">🎵 Chords CRM</span>
+    <span class="hdr-month" id="hdrMonth"></span>
   </div>
 
   <!-- Dashboard -->
-  <div class="page on" id="pg-dash">
-    <div class="stats" id="statsGrid"></div>
-    <div class="sec">📅 Today's Classes</div>
-    <div id="todayClasses"></div>
-    <div class="sec">⚠️ Classes Completing Soon</div>
-    <div id="alertsBox"></div>
+  <div class="page on" id="pgDash">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num blue" id="dTotalStudents">0</div>
+        <div class="stat-label">Total Students</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num green" id="dMonthlyIncome">₹0</div>
+        <div class="stat-label">Monthly Income</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num green" id="dCollected">₹0</div>
+        <div class="stat-label">Collected This Month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num red" id="dPending">₹0</div>
+        <div class="stat-label">Pending This Month</div>
+      </div>
+      <div class="stat-card full">
+        <div class="stat-num orange" id="dPaidCount">0 / 0</div>
+        <div class="stat-label">Students Paid This Month</div>
+      </div>
+    </div>
+
+    <div class="sec-title">⚠️ Fee Due This Month</div>
+    <div id="dueList"></div>
   </div>
 
   <!-- Students -->
-  <div class="page" id="pg-students">
-    <input class="search-bar" id="searchInput" placeholder="🔍 Search by name, ID, phone..." oninput="renderStudents()">
+  <div class="page" id="pgStudents">
+    <button class="add-btn" onclick="openAddModal()">+ Add New Student</button>
+    <input class="search-bar" type="text" placeholder="🔍 Search student..." oninput="renderStudents(this.value, activeFilter)">
     <div class="filter-row">
       <button class="fb on" onclick="setFilter('all',this)">All</button>
-      <button class="fb" onclick="setFilter('online',this)">🌐 Online</button>
-      <button class="fb" onclick="setFilter('offline',this)">🏫 Offline</button>
-      <button class="fb" onclick="setFilter('active',this)">🟢 Active</button>
-      <button class="fb" onclick="setFilter('completed',this)">✅ Completed</button>
-      <button class="fb" onclick="setFilter('Piano',this)">🎹 Piano</button>
-      <button class="fb" onclick="setFilter('Vocals',this)">🎤 Vocals</button>
-      <button class="fb" onclick="setFilter('Guitar',this)">🎸 Guitar</button>
-      <button class="fb" onclick="setFilter('Drums',this)">🥁 Drums</button>
+      <button class="fb" onclick="setFilter('individual',this)">Individual</button>
+      <button class="fb" onclick="setFilter('group',this)">Group</button>
+      <button class="fb" onclick="setFilter('due',this)">Fee Due</button>
+      <button class="fb" onclick="setFilter('paid',this)">Paid</button>
     </div>
-    <div id="studentsList"></div>
+    <div id="studentList"></div>
   </div>
 
-  <!-- Add Student -->
-  <div class="page" id="pg-add">
-    <div class="form-card">
-      <h3>➕ Add New Student</h3>
-      <div class="row2">
-        <div class="field"><label>First Name *</label><input id="af-fname" placeholder="First name"></div>
-        <div class="field"><label>Last Name</label><input id="af-lname" placeholder="Last name"></div>
-      </div>
-      <div class="field"><label>Phone / WhatsApp *</label><input id="af-phone" type="tel" placeholder="+91 9876543210"></div>
-      <div class="field"><label>Email</label><input id="af-email" type="email" placeholder="student@email.com"></div>
-      <div class="field"><label>Instrument *</label>
-        <select id="af-course">
-          <option value="Piano">🎹 Piano & Keyboard</option>
-          <option value="Vocals">🎤 Carnatic Vocals</option>
-          <option value="Guitar">🎸 Guitar</option>
-          <option value="Drums">🥁 Drums</option>
-        </select>
-      </div>
-      <div class="row2">
-        <div class="field"><label>Package (Classes) *</label>
-          <select id="af-package">
-            <option value="8">8 Classes (Monthly)</option>
-            <option value="24">24 Classes (3 Months)</option>
-            <option value="48">48 Classes (6 Months)</option>
-            <option value="96">96 Classes (1 Year)</option>
-          </select>
-        </div>
-        <div class="field"><label>Amount Paid (₹)</label><input id="af-amount" type="number" placeholder="5000"></div>
-      </div>
-      <div class="field"><label>Class Schedule</label><input id="af-schedule" placeholder="e.g. Mon 6:00pm, Thu 6:00pm"></div>
-      <div class="field"><label>Join Date</label><input id="af-joindate" type="date"></div>
-      <div class="field"><label>Mode</label>
-        <select id="af-mode">
-          <option value="Online">Online (Google Meet)</option>
-          <option value="Offline">Offline (In-person)</option>
-        </select>
-      </div>
-      <div class="field"><label>Notes</label><input id="af-notes" placeholder="Any notes..."></div>
-      <button class="btn-submit" onclick="addStudent()">✅ Add Student</button>
+  <!-- Payments -->
+  <div class="page" id="pgPayments">
+    <div class="month-selector">
+      <button onclick="changePayMonth(-1)">‹</button>
+      <span id="payMonthLabel"></span>
+      <button onclick="changePayMonth(1)">›</button>
     </div>
-  </div>
-
-  <!-- Attendance -->
-  <div class="page" id="pg-attend">
-    <div class="sec">Quick Attendance — Today</div>
-    <div id="attendList"></div>
-  </div>
-
-  <!-- Leads (Registrations) -->
-  <div class="page" id="pg-leads">
-    <input class="search-bar" id="leadSearch" placeholder="🔍 Search by name, phone, email..." oninput="renderLeads()">
-    <div class="leads-filter">
-      <button class="fb on" onclick="setLeadFilter('all',this)">All</button>
-      <button class="fb" onclick="setLeadFilter('new',this)">🟡 New</button>
-      <button class="fb" onclick="setLeadFilter('contacted',this)">🔵 Contacted</button>
-      <button class="fb" onclick="setLeadFilter('demo',this)">🟣 Demo</button>
-      <button class="fb" onclick="setLeadFilter('joined',this)">🟢 Joined</button>
+    <div class="pay-summary">
+      <div class="pay-stat">
+        <div class="pay-stat-num green" id="pPaid">0</div>
+        <div class="pay-stat-label">Paid</div>
+      </div>
+      <div class="pay-stat">
+        <div class="pay-stat-num red" id="pDue">0</div>
+        <div class="pay-stat-label">Due</div>
+      </div>
+      <div class="pay-stat">
+        <div class="pay-stat-num blue" id="pTotal">₹0</div>
+        <div class="pay-stat-label">Collected</div>
+      </div>
     </div>
-    <div id="leadsList"></div>
+    <div id="payList"></div>
   </div>
 
-  <!-- Bottom nav -->
   <div class="bnav">
-    <button class="bnav-btn on" onclick="showPage('dash',this)"><span class="bi">🏠</span>Dashboard</button>
-    <button class="bnav-btn" onclick="showPage('students',this)"><span class="bi">👥</span>Students</button>
-    <button class="bnav-btn" onclick="showPage('leads',this)"><span class="bi">📋</span>Leads</button>
-    <button class="bnav-btn" onclick="showPage('attend',this)"><span class="bi">✅</span>Attend</button>
-    <button class="bnav-btn" onclick="showPage('add',this)"><span class="bi">➕</span>Add</button>
+    <button class="bnav-btn on" onclick="showPage('pgDash',this)"><span class="ni">🏠</span>Dashboard</button>
+    <button class="bnav-btn" onclick="showPage('pgStudents',this)"><span class="ni">👥</span>Students</button>
+    <button class="bnav-btn" onclick="showPage('pgPayments',this)"><span class="ni">💰</span>Payments</button>
   </div>
-
 </div>
 
-<!-- Detail Modal -->
-<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+<!-- Add/Edit Modal -->
+<div class="modal-bg" id="modal">
   <div class="modal">
-    <div class="modal-title">Student Details <button class="modal-close" onclick="closeModal()">✕</button></div>
-    <div id="modalContent"></div>
+    <h3 id="modalTitle">Add New Student</h3>
+    <input type="hidden" id="editId">
+    <input type="text" id="sName" placeholder="Student Name *">
+    <input type="text" id="sTime" placeholder="Class Time (e.g. 7:10am)">
+    <select id="sType">
+      <option value="individual">Individual</option>
+      <option value="group">Group</option>
+    </select>
+    <select id="sFee">
+      <option value="5000">₹5,000 / month</option>
+      <option value="6000">₹6,000 / month</option>
+      <option value="2400">₹2,400 / month (Group)</option>
+      <option value="custom">Custom fee...</option>
+    </select>
+    <input type="number" id="sCustomFee" placeholder="Enter custom fee" style="display:none">
+    <select id="sPkg">
+      <option value="monthly">Monthly</option>
+      <option value="quarterly">Quarterly (15K / 3 months)</option>
+    </select>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveStudent()">Save</button>
+    </div>
   </div>
 </div>
 
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-const fb = initializeApp({
-  apiKey:"AIzaSyDvuCr7IHM7oLYY6e675P_KtcTxsNEJr1c",
-  authDomain:"chords-music-academy.firebaseapp.com",
-  projectId:"chords-music-academy",
-  storageBucket:"chords-music-academy.firebasestorage.app",
-  messagingSenderId:"146425788425",
-  appId:"1:146425788425:web:8abbafbc93287a14ab20d8"
-});
-const db = getFirestore(fb);
-
-// ── Online students (37 total) ──
-const SEED = [
-  {id:"OPA001",name:"Sriram",    email:"",phone:"",course:"Piano",package:"24",packageAmount:15000,classesCompleted:0,totalClasses:24,status:"active",joinDate:"2025-01-01",schedule:"5:50am",mode:"Online",notes:"Quarterly ₹15k",classes:[]},
-  {id:"OPA002",name:"Adyya Sri", email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"5:50am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA003",name:"Harshith",  email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"5:50am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA004",name:"Sanvi",     email:"",phone:"",course:"Piano",package:"24",packageAmount:15000,classesCompleted:0,totalClasses:24,status:"active",joinDate:"2025-01-01",schedule:"5:50am",mode:"Online",notes:"Quarterly ₹15k",classes:[]},
-  {id:"OPA005",name:"Krithik",   email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"5:50am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA006",name:"Gayatri",   email:"",phone:"",course:"Piano",package:"8", packageAmount:6000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"6:30am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA007",name:"Mayukha",   email:"",phone:"",course:"Piano",package:"8", packageAmount:6000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"6:30am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA008",name:"Aashi",     email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"6:30am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA009",name:"Hanvitha",  email:"",phone:"",course:"Piano",package:"24",packageAmount:15000,classesCompleted:0,totalClasses:24,status:"active",joinDate:"2025-01-01",schedule:"6:30am",mode:"Online",notes:"Quarterly ₹15k",classes:[]},
-  {id:"OPA010",name:"Jaasrita",  email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"6:30am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA011",name:"Sarayu",    email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"7:10am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA012",name:"Siri",      email:"",phone:"",course:"Piano",package:"8", packageAmount:6000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"7:10am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA013",name:"Pavan",     email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"7:10am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA014",name:"Sharvin",   email:"",phone:"",course:"Piano",package:"24",packageAmount:15000,classesCompleted:0,totalClasses:24,status:"active",joinDate:"2025-01-01",schedule:"7:50am",mode:"Online",notes:"Quarterly ₹15k",classes:[]},
-  {id:"OPA015",name:"Nitya",     email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"7:50am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA016",name:"Darshil",   email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"7:50am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA017",name:"Srinika",   email:"",phone:"",course:"Piano",package:"24",packageAmount:15000,classesCompleted:0,totalClasses:24,status:"active",joinDate:"2025-01-01",schedule:"7:50am",mode:"Online",notes:"Quarterly ₹15k",classes:[]},
-  {id:"OPA018",name:"Anshi",     email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"8:30am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA019",name:"Ryan",      email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"8:30am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA020",name:"Pratham",   email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"9:10am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA021",name:"Nainika",   email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"9:10am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA022",name:"Kanvas",    email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"9:40am",mode:"Online",notes:"",classes:[]},
-  {id:"OPA023",name:"Mihira",    email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"3:00pm",mode:"Online",notes:"",classes:[]},
-  {id:"OPA024",name:"Hanish",    email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"4:10pm",mode:"Online",notes:"",classes:[]},
-  {id:"OPA025",name:"Krishika",  email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"6:20pm",mode:"Online",notes:"",classes:[]},
-  {id:"OPA026",name:"Ishita",    email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"6:20pm",mode:"Online",notes:"",classes:[]},
-  {id:"OPA027",name:"Amukta",    email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"7:00pm",mode:"Online",notes:"",classes:[]},
-  {id:"OPA028",name:"Padmavati", email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"7:00pm",mode:"Online",notes:"",classes:[]},
-  {id:"OPA029",name:"Revanth",   email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"7:40pm",mode:"Online",notes:"",classes:[]},
-  {id:"OPA030",name:"Chaitanya", email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"8:20pm",mode:"Online",notes:"",classes:[]},
-  {id:"OPA031",name:"Kanisha",   email:"",phone:"",course:"Piano",package:"8", packageAmount:5000, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"9:00pm",mode:"Online",notes:"",classes:[]},
-  {id:"OPA032",name:"Ujjwal",    email:"",phone:"",course:"Piano",package:"8", packageAmount:2400, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"5:40pm Tue/Fri",mode:"Online",notes:"Group",classes:[]},
-  {id:"OPA033",name:"Cherika",   email:"",phone:"",course:"Piano",package:"8", packageAmount:2400, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"5:40pm Tue/Fri",mode:"Online",notes:"Group",classes:[]},
-  {id:"OPA034",name:"Sumanth",   email:"",phone:"",course:"Piano",package:"8", packageAmount:2400, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"5:40pm Tue/Fri",mode:"Online",notes:"Group",classes:[]},
-  {id:"OPA035",name:"Vidhatri",  email:"",phone:"",course:"Piano",package:"8", packageAmount:2400, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"5:40pm Tue/Fri",mode:"Online",notes:"Group",classes:[]},
-  {id:"OPA036",name:"Srinidhi",  email:"",phone:"",course:"Piano",package:"8", packageAmount:2400, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"5:40pm Tue/Fri",mode:"Online",notes:"Group",classes:[]},
-  {id:"OPA037",name:"Kaveesh",   email:"",phone:"",course:"Piano",package:"8", packageAmount:2400, classesCompleted:0,totalClasses:8, status:"active",joinDate:"2025-01-01",schedule:"5:40pm Tue/Fri",mode:"Online",notes:"Group",classes:[]}
+<script>
+// ── Default students ──────────────────────────────────────────
+const DEFAULT_STUDENTS = [
+  {id:'s1', name:'Sriram',     time:'5:50am',  type:'individual', fee:5000, pkg:'quarterly'},
+  {id:'s2', name:'Adyya Sri',  time:'5:50am',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s3', name:'Harshith',   time:'5:50am',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s4', name:'Sanvi',      time:'5:50am',  type:'individual', fee:5000, pkg:'quarterly'},
+  {id:'s5', name:'Krithik',    time:'5:50am',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s6', name:'Gayatri',    time:'6:30am',  type:'individual', fee:6000, pkg:'monthly'},
+  {id:'s7', name:'Mayukha',    time:'6:30am',  type:'individual', fee:6000, pkg:'monthly'},
+  {id:'s8', name:'Aashi',      time:'6:30am',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s9', name:'Hanvitha',   time:'6:30am',  type:'individual', fee:5000, pkg:'quarterly'},
+  {id:'s10',name:'Jaasrita',   time:'6:30am',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s11',name:'Sarayu',     time:'7:10am',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s12',name:'Siri',       time:'7:10am',  type:'individual', fee:6000, pkg:'monthly'},
+  {id:'s13',name:'Pavan',      time:'7:10am',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s14',name:'Sharvin',    time:'7:50am',  type:'individual', fee:5000, pkg:'quarterly'},
+  {id:'s15',name:'Nitya',      time:'7:50am',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s16',name:'Darshil',    time:'7:50am',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s17',name:'Srinika',    time:'7:50am',  type:'individual', fee:5000, pkg:'quarterly'},
+  {id:'s18',name:'Anshi',      time:'8:30am',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s19',name:'Ryan',       time:'8:30am',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s20',name:'Pratham',    time:'9:10am',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s21',name:'Nainika',    time:'9:10am',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s22',name:'Kanvas',     time:'9:40am',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s23',name:'Mihira',     time:'3:00pm',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s24',name:'Hanish',     time:'4:10pm',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s25',name:'Krishika',   time:'6:20pm',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s26',name:'Ishita',     time:'6:20pm',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s27',name:'Amukta',     time:'7:00pm',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s28',name:'Padmavati',  time:'7:00pm',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s29',name:'Revanth',    time:'7:40pm',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s30',name:'Chaitanya',  time:'8:20pm',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s31',name:'Kanisha',    time:'9:00pm',  type:'individual', fee:5000, pkg:'monthly'},
+  {id:'s32',name:'Ujjwal',     time:'5:40pm (Tue/Fri)', type:'group', fee:2400, pkg:'monthly'},
+  {id:'s33',name:'Cherika',    time:'5:40pm (Tue/Fri)', type:'group', fee:2400, pkg:'monthly'},
+  {id:'s34',name:'Sumanth',    time:'5:40pm (Tue/Fri)', type:'group', fee:2400, pkg:'monthly'},
+  {id:'s35',name:'Vidhatri',   time:'5:40pm (Tue/Fri)', type:'group', fee:2400, pkg:'monthly'},
+  {id:'s36',name:'Srinidhi',   time:'5:40pm (Tue/Fri)', type:'group', fee:2400, pkg:'monthly'},
+  {id:'s37',name:'Kaveesh',    time:'5:40pm (Tue/Fri)', type:'group', fee:2400, pkg:'monthly'},
 ];
 
-var allStudents = [];
-var allLeads = [];
-var currentFilter = 'all';
-var currentLeadFilter = 'all';
-var ADMIN_PASS = 'Sep@2012';
+// ── State ─────────────────────────────────────────────────────
+let students = [];
+let payments = {}; // { "YYYY-MM": { studentId: true/false } }
+let payViewMonth = '';
+let activeFilter = 'all';
 
-// Load password
-async function loadPass() {
-  try {
-    var s = await getDoc(doc(db,'settings','admin'));
-    if(s.exists() && s.data().password) ADMIN_PASS = s.data().password;
-  } catch(e){}
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function currentMonthKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
 }
-loadPass();
+function monthLabel(key) {
+  const [y,m] = key.split('-');
+  return `${MONTHS[+m-1]} ${y}`;
+}
 
-window.doLogin = async function() {
-  var u = document.getElementById('lu').value.trim();
-  var p = document.getElementById('lp').value;
-  if((u==='admin'||u==='Admin') && p===ADMIN_PASS) {
-    document.getElementById('loginScreen').style.display='none';
-    document.getElementById('crmApp').style.display='block';
-    await loadStudents();
+// ── Storage ───────────────────────────────────────────────────
+function save() {
+  localStorage.setItem('crm_students', JSON.stringify(students));
+  localStorage.setItem('crm_payments', JSON.stringify(payments));
+}
+function load() {
+  const s = localStorage.getItem('crm_students');
+  const p = localStorage.getItem('crm_payments');
+  students = s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+  payments = p ? JSON.parse(p) : {};
+  if (!s) save(); // first time — save defaults
+}
+
+// ── Auth ──────────────────────────────────────────────────────
+function login() {
+  if (document.getElementById('pwd').value === 'Sep@2012') {
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    sessionStorage.setItem('crm_auth','1');
+    init();
   } else {
-    document.getElementById('lerr').style.display='block';
+    document.getElementById('loginErr').style.display = 'block';
+    document.getElementById('pwd').value = '';
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────
+function init() {
+  load();
+  payViewMonth = currentMonthKey();
+  document.getElementById('hdrMonth').textContent = monthLabel(currentMonthKey());
+  renderDash();
+  renderStudents('', 'all');
+  renderPayments();
+}
+
+window.onload = () => {
+  if (sessionStorage.getItem('crm_auth') === '1') {
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    init();
   }
 };
 
-window.doLogout = function() {
-  document.getElementById('crmApp').style.display='none';
-  document.getElementById('loginScreen').style.display='flex';
-};
-
-async function loadStudents() {
-  try {
-    var snap = await getDocs(collection(db,'students'));
-    allStudents = [];
-    snap.forEach(function(d){ allStudents.push({_id:d.id,...d.data()}); });
-    if(allStudents.length === 0) {
-      // First time — seed from old data
-      for(var s of SEED) {
-        var ref = await addDoc(collection(db,'students'), s);
-        allStudents.push({_id:ref.id,...s});
-      }
-    }
-    // Load registrations (leads)
-    var lsnap = await getDocs(collection(db,'registrations'));
-    allLeads = [];
-    lsnap.forEach(function(d){ allLeads.push({_id:d.id,...d.data()}); });
-    // Sort newest first
-    allLeads.sort(function(a,b){ return (b.createdAt||'') > (a.createdAt||'') ? 1 : -1; });
-
-    renderDash();
-    renderStudents();
-    renderAttendance();
-    renderLeads();
-  } catch(e) { alert('Error loading: '+e.message); }
-}
-
-window.syncData = async function() {
-  await loadStudents();
-  alert('Synced! '+allStudents.length+' students, '+allLeads.length+' leads loaded.');
-};
-
-// ── Dashboard ──
-function renderDash() {
-  var total = allStudents.length;
-  var active = allStudents.filter(function(s){ return s.status==='active'; }).length;
-  var completed = allStudents.filter(function(s){ return s.classesCompleted>=s.totalClasses; }).length;
-  var revenue = allStudents.reduce(function(a,s){ return a+(s.packageAmount||0); },0);
-  var newLeads = allLeads.filter(function(l){ return l.status==='new'; }).length;
-
-  document.getElementById('statsGrid').innerHTML =
-    stat(total,'👥','Total Students','#1a1a2e') +
-    stat(active,'🟢','Active','#27ae60') +
-    stat(newLeads,'📋','New Leads','#f39c12') +
-    stat('₹'+Math.round(revenue/1000)+'K','💰','Revenue','#e74c3c');
-
-  // Today's classes
-  var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  var today = days[new Date().getDay()];
-  var todayStudents = allStudents.filter(function(s){ return s.schedule && s.schedule.includes(today); });
-  var box = document.getElementById('todayClasses');
-  if(!todayStudents.length) { box.innerHTML='<div style="color:#aaa;font-size:0.82rem;padding:10px 0">No classes scheduled today</div>'; }
-  else {
-    box.innerHTML = todayStudents.map(function(s){
-      var todayStr = new Date().toLocaleDateString('en-IN');
-      var marked = s.classes && s.classes.includes(todayStr);
-      var phone = (s.phone||'').replace(/\D/g,'');
-      return '<div class="today-card">' +
-        '<div class="tc-time">'+extractTime(s.schedule,today)+'</div>' +
-        '<div><div class="tc-name">'+s.name+'</div><div class="tc-sub">'+s.course+' · '+(s.classesCompleted||0)+'/'+s.totalClasses+' done</div></div>' +
-        '<button class="tc-att'+(marked?' done':'')+ '" onclick="markAttendance(\''+s._id+'\')">'+(marked?'✅':'Mark')+'</button>' +
-      '</div>';
-    }).join('');
-  }
-
-  // Alerts — 2 or fewer classes remaining
-  var alerts = allStudents.filter(function(s){ return s.status==='active' && (s.totalClasses - (s.classesCompleted||0)) <= 2; });
-  var ab = document.getElementById('alertsBox');
-  if(!alerts.length) { ab.innerHTML='<div style="color:#aaa;font-size:0.82rem;padding:10px 0">No alerts</div>'; }
-  else { ab.innerHTML = alerts.map(function(s){ var rem=s.totalClasses-(s.classesCompleted||0); return '<div class="alert">⚠️ <strong>'+s.name+'</strong> — '+rem+' class'+(rem===1?'':'es')+' remaining ('+s.package+'-class package)</div>'; }).join(''); }
-}
-
-function stat(n,ic,lb,color) {
-  return '<div class="stat"><div class="stat-num" style="color:'+color+'">'+ic+' '+n+'</div><div class="stat-label">'+lb+'</div></div>';
-}
-
-function extractTime(schedule, day) {
-  if(!schedule) return '';
-  var parts = schedule.split(',');
-  for(var p of parts){ if(p.trim().startsWith(day)) return p.trim().replace(day,'').trim(); }
-  return '';
-}
-
-// ── Students ──
-window.setFilter = function(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.fb').forEach(function(b){ b.classList.remove('on'); });
+// ── Pages ─────────────────────────────────────────────────────
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
   btn.classList.add('on');
-  renderStudents();
-};
+  if (id === 'pgDash') renderDash();
+  if (id === 'pgStudents') renderStudents('', activeFilter);
+  if (id === 'pgPayments') renderPayments();
+}
 
-window.renderStudents = function() {
-  var q = (document.getElementById('searchInput')||{}).value||'';
-  var list = allStudents.filter(function(s){
-    var matchQ = !q || s.name.toLowerCase().includes(q.toLowerCase()) || (s.id||'').toLowerCase().includes(q.toLowerCase()) || (s.phone||'').includes(q);
-    var matchF = currentFilter==='all' ? true :
-      currentFilter==='online' ? (s.mode||'').toLowerCase()==='online' :
-      currentFilter==='offline' ? (s.mode||'').toLowerCase()==='offline' :
-      currentFilter==='active' ? s.status==='active' && s.classesCompleted<s.totalClasses :
-      currentFilter==='completed' ? s.classesCompleted>=s.totalClasses :
-      (s.course||'').toLowerCase().includes(currentFilter.toLowerCase());
-    return matchQ && matchF;
+// ── Payment helpers ───────────────────────────────────────────
+function isPaid(studentId, monthKey) {
+  return payments[monthKey] && payments[monthKey][studentId] === true;
+}
+function togglePayment(studentId, monthKey) {
+  if (!payments[monthKey]) payments[monthKey] = {};
+  payments[monthKey][studentId] = !isPaid(studentId, monthKey);
+  save();
+  renderDash();
+  renderStudents(document.querySelector('.search-bar')?.value || '', activeFilter);
+  renderPayments();
+}
+function markPaid(studentId) {
+  const mk = currentMonthKey();
+  if (!payments[mk]) payments[mk] = {};
+  payments[mk][studentId] = true;
+  save();
+  renderDash();
+  renderStudents(document.querySelector('.search-bar')?.value || '', activeFilter);
+  renderPayments();
+}
+
+// ── Dashboard ─────────────────────────────────────────────────
+function renderDash() {
+  const mk = currentMonthKey();
+  const total = students.reduce((s,st) => s + st.fee, 0);
+  let collected = 0, paidCount = 0;
+  students.forEach(st => {
+    if (isPaid(st.id, mk)) { collected += st.fee; paidCount++; }
+  });
+  const pending = total - collected;
+
+  document.getElementById('dTotalStudents').textContent = students.length;
+  document.getElementById('dMonthlyIncome').textContent = '₹' + total.toLocaleString('en-IN');
+  document.getElementById('dCollected').textContent = '₹' + collected.toLocaleString('en-IN');
+  document.getElementById('dPending').textContent = '₹' + pending.toLocaleString('en-IN');
+  document.getElementById('dPaidCount').textContent = `${paidCount} / ${students.length}`;
+
+  const due = students.filter(st => !isPaid(st.id, mk));
+  const dl = document.getElementById('dueList');
+  if (!due.length) {
+    dl.innerHTML = '<div class="empty"><div class="empty-icon">🎉</div><div>All students paid!</div></div>';
+    return;
+  }
+  dl.innerHTML = due.map(st => `
+    <div class="due-card">
+      <div class="due-av">${st.name[0]}</div>
+      <div>
+        <div class="due-name">${st.name}</div>
+        <div class="due-time">${st.time}</div>
+        <div class="due-fee">₹${st.fee.toLocaleString('en-IN')}</div>
+      </div>
+      <button class="due-pay-btn" onclick="markPaid('${st.id}')">Mark Paid</button>
+    </div>`).join('');
+}
+
+// ── Students ──────────────────────────────────────────────────
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.fb').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderStudents(document.querySelector('.search-bar')?.value || '', f);
+}
+
+function renderStudents(q, filter) {
+  const mk = currentMonthKey();
+  let list = students.filter(st => {
+    const matchQ = !q || st.name.toLowerCase().includes(q.toLowerCase());
+    const paid = isPaid(st.id, mk);
+    if (filter === 'individual') return matchQ && st.type === 'individual';
+    if (filter === 'group') return matchQ && st.type === 'group';
+    if (filter === 'due') return matchQ && !paid;
+    if (filter === 'paid') return matchQ && paid;
+    return matchQ;
   });
 
-  var container = document.getElementById('studentsList');
-  if(!list.length){ container.innerHTML='<div style="color:#aaa;text-align:center;padding:40px 0">No students found</div>'; return; }
-  container.innerHTML = list.map(function(s){ return buildCard(s); }).join('');
-};
+  const el = document.getElementById('studentList');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><div>No students found</div></div>';
+    return;
+  }
 
-function buildCard(s) {
-  var prog = Math.min(100, Math.round(((s.classesCompleted||0)/s.totalClasses)*100));
-  var done = prog>=100;
-  var initials = s.name.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
-  var phone = (s.phone||'').replace(/\D/g,'');
-  var waMsg = encodeURIComponent('Hi '+s.name.split(' ')[0]+'! This is Chords Music Academy. How are your classes going? 🎵');
-  var todayStr = new Date().toLocaleDateString('en-IN');
-  var markedToday = s.classes && s.classes.includes(todayStr);
-
-  return '<div class="scard'+(done?' completed':'')+'">'+
-    '<div class="sc-top">'+
-      '<div class="sc-av'+(done?' completed':'')+'">'+initials+'</div>'+
-      '<div class="sc-info">'+
-        '<div class="sc-name">'+s.name+'</div>'+
-        '<div class="sc-meta">'+(s.phone||'—')+' · '+(s.course||'')+'</div>'+
-        '<div class="sc-id">'+(s.id||s._id)+'</div>'+
-        '<span class="sc-badge '+(done?'badge-completed':s.status==='inactive'?'badge-inactive':'badge-active')+'">'+(done?'✅ Completed':s.status==='inactive'?'Inactive':'🟢 Active')+'</span>'+
-      '</div>'+
-    '</div>'+
-    (s.schedule?'<div class="sched">📅 '+s.schedule+'</div>':'')+
-    '<div class="prog-wrap">'+
-      '<div class="prog-label"><span>'+(s.classesCompleted||0)+'/'+s.totalClasses+' classes</span><span>'+prog+'%</span></div>'+
-      '<div class="prog-bar"><div class="prog-fill'+(done?' done':'')+'" style="width:'+prog+'%"></div></div>'+
-    '</div>'+
-    '<div class="sc-actions">'+
-      '<button class="sc-btn btn-attend'+(markedToday?' done-today':'')+'" onclick="markAttendance(\''+s._id+'\')">'+(markedToday?'✅ Today':'+ Attend')+'</button>'+
-      '<a href="https://api.whatsapp.com/send?phone='+phone+'&text='+waMsg+'" class="sc-btn btn-wa" target="_blank">💬</a>'+
-      '<button class="sc-btn btn-detail" onclick="showDetail(\''+s._id+'\')">Details</button>'+
-    '</div>'+
-  '</div>';
+  el.innerHTML = `
+    <table class="stbl">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Time</th>
+          <th>Fee</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map((st, i) => {
+          const paid = isPaid(st.id, mk);
+          return `<tr>
+            <td style="color:#aaa;font-size:0.7rem">${i+1}</td>
+            <td class="td-name">${st.name}${st.type==='group'?'<span class="badge badge-group">G</span>':''}${st.pkg==='quarterly'?'<span class="badge badge-15k">Q</span>':''}</td>
+            <td class="td-time">${st.time}</td>
+            <td class="td-fee">₹${(st.fee/1000).toFixed(1)}k</td>
+            <td class="td-status">
+              <button class="tbl-pay-btn ${paid?'paid':'due'}" onclick="togglePayment('${st.id}','${mk}')">
+                ${paid ? '✓ Paid' : 'Due'}
+              </button>
+              <button class="tbl-edit-btn" onclick="openEditModal('${st.id}')">✎</button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
 }
 
-// ── Attendance ──
-window.markAttendance = async function(id) {
-  var s = allStudents.find(function(x){ return x._id===id; });
-  if(!s) return;
-  var todayStr = new Date().toLocaleDateString('en-IN');
-  var classes = s.classes || [];
-  if(classes.includes(todayStr)) { alert('Attendance already marked for today!'); return; }
-  classes.push(todayStr);
-  var newCount = (s.classesCompleted||0) + 1;
-  try {
-    await updateDoc(doc(db,'students',id),{ classes:classes, classesCompleted:newCount });
-    s.classes = classes;
-    s.classesCompleted = newCount;
-    renderDash();
-    renderStudents();
-    renderAttendance();
-  } catch(e){ alert('Error: '+e.message); }
-};
+// ── Payments page ─────────────────────────────────────────────
+function changePayMonth(dir) {
+  const [y,m] = payViewMonth.split('-').map(Number);
+  const d = new Date(y, m-1+dir, 1);
+  payViewMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  renderPayments();
+}
 
-function renderAttendance() {
-  var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  var today = days[new Date().getDay()];
-  var todayStr = new Date().toLocaleDateString('en-IN');
-  var list = allStudents.filter(function(s){ return s.schedule && s.schedule.includes(today); });
-  var box = document.getElementById('attendList');
-  if(!list.length){ box.innerHTML='<div style="color:#aaa;text-align:center;padding:40px 0">No classes today</div>'; return; }
-  box.innerHTML = list.map(function(s){
-    var marked = s.classes && s.classes.includes(todayStr);
-    return '<div class="today-card">'+
-      '<div><div class="tc-name">'+s.name+'</div><div class="tc-sub">'+extractTime(s.schedule,today)+' · '+(s.classesCompleted||0)+'/'+s.totalClasses+'</div></div>'+
-      '<button class="tc-att'+(marked?' done':'')+'" onclick="markAttendance(\''+s._id+'\')">'+(marked?'✅ Done':'Mark')+'</button>'+
-    '</div>';
+function renderPayments() {
+  document.getElementById('payMonthLabel').textContent = monthLabel(payViewMonth);
+  let paidCount=0, dueCount=0, collected=0;
+  students.forEach(st => {
+    if (isPaid(st.id, payViewMonth)) { paidCount++; collected+=st.fee; }
+    else dueCount++;
+  });
+  document.getElementById('pPaid').textContent = paidCount;
+  document.getElementById('pDue').textContent = dueCount;
+  document.getElementById('pTotal').textContent = '₹'+collected.toLocaleString('en-IN');
+
+  document.getElementById('payList').innerHTML = students.map(st => {
+    const paid = isPaid(st.id, payViewMonth);
+    return `
+      <div class="prow">
+        <div class="prow-av" style="background:${paid?'#27ae60':st.type==='group'?'#8e44ad':'#e74c3c'}">${st.name[0]}</div>
+        <div>
+          <div class="prow-name">${st.name}</div>
+          <div class="prow-fee">₹${st.fee.toLocaleString('en-IN')} · ${st.time}</div>
+        </div>
+        <div class="prow-status">
+          <button class="toggle-btn ${paid?'toggle-paid':'toggle-due'}" onclick="togglePayment('${st.id}','${payViewMonth}')">
+            ${paid ? '✓ Paid' : 'Due'}
+          </button>
+        </div>
+      </div>`;
   }).join('');
 }
 
-// ── Add Student ──
-window.addStudent = async function() {
-  var fname = document.getElementById('af-fname').value.trim();
-  var lname = document.getElementById('af-lname').value.trim();
-  var phone = document.getElementById('af-phone').value.trim();
-  if(!fname || !phone){ alert('Name and phone are required'); return; }
+// ── Add/Edit Modal ────────────────────────────────────────────
+function openAddModal() {
+  document.getElementById('modalTitle').textContent = 'Add New Student';
+  document.getElementById('editId').value = '';
+  document.getElementById('sName').value = '';
+  document.getElementById('sTime').value = '';
+  document.getElementById('sType').value = 'individual';
+  document.getElementById('sFee').value = '5000';
+  document.getElementById('sPkg').value = 'monthly';
+  document.getElementById('sCustomFee').style.display = 'none';
+  document.getElementById('modal').classList.add('show');
+}
+function openEditModal(id) {
+  const st = students.find(s=>s.id===id);
+  if (!st) return;
+  document.getElementById('modalTitle').textContent = 'Edit Student';
+  document.getElementById('editId').value = id;
+  document.getElementById('sName').value = st.name;
+  document.getElementById('sTime').value = st.time;
+  document.getElementById('sType').value = st.type;
+  document.getElementById('sPkg').value = st.pkg;
+  const feeOpts = ['5000','6000','2400'];
+  if (feeOpts.includes(String(st.fee))) {
+    document.getElementById('sFee').value = String(st.fee);
+    document.getElementById('sCustomFee').style.display = 'none';
+  } else {
+    document.getElementById('sFee').value = 'custom';
+    document.getElementById('sCustomFee').style.display = 'block';
+    document.getElementById('sCustomFee').value = st.fee;
+  }
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
 
-  var pkg = document.getElementById('af-package').value;
-  var data = {
-    id: 'OPA'+String(allStudents.length+1).padStart(3,'0'),
-    name: fname+(lname?' '+lname:''),
-    email: document.getElementById('af-email').value.trim(),
-    phone: phone,
-    course: document.getElementById('af-course').value,
-    package: pkg,
-    packageAmount: parseInt(document.getElementById('af-amount').value)||0,
-    classesCompleted: 0,
-    totalClasses: parseInt(pkg),
-    status: 'active',
-    joinDate: document.getElementById('af-joindate').value || new Date().toISOString().split('T')[0],
-    schedule: document.getElementById('af-schedule').value.trim(),
-    mode: document.getElementById('af-mode').value,
-    notes: document.getElementById('af-notes').value.trim(),
-    classes: [],
-    createdAt: new Date().toISOString()
+document.getElementById('sFee').onchange = function() {
+  document.getElementById('sCustomFee').style.display = this.value === 'custom' ? 'block' : 'none';
+};
+
+function saveStudent() {
+  const name = document.getElementById('sName').value.trim();
+  if (!name) { alert('Please enter student name'); return; }
+  const feeVal = document.getElementById('sFee').value;
+  const fee = feeVal === 'custom' ? parseInt(document.getElementById('sCustomFee').value) : parseInt(feeVal);
+  const data = {
+    name,
+    time: document.getElementById('sTime').value.trim(),
+    type: document.getElementById('sType').value,
+    fee,
+    pkg: document.getElementById('sPkg').value,
   };
-
-  try {
-    var ref = await addDoc(collection(db,'students'), data);
-    allStudents.push({_id:ref.id,...data});
-    renderDash(); renderStudents(); renderAttendance();
-    showPage('students', document.querySelectorAll('.bnav-btn')[1]);
-    alert('✅ '+data.name+' added successfully!');
-    // Clear form
-    ['af-fname','af-lname','af-phone','af-email','af-amount','af-schedule','af-notes'].forEach(function(id){ document.getElementById(id).value=''; });
-  } catch(e){ alert('Error: '+e.message); }
-};
-
-// ── Detail Modal ──
-window.showDetail = function(id) {
-  var s = allStudents.find(function(x){ return x._id===id; });
-  if(!s) return;
-  var prog = Math.min(100,Math.round(((s.classesCompleted||0)/s.totalClasses)*100));
-  var history = (s.classes||[]).slice().reverse().slice(0,10).map(function(d){
-    return '<div class="att-item"><span>'+d+'</span><span style="color:#27ae60">✅ Present</span></div>';
-  }).join('') || '<div style="color:#aaa;font-size:0.78rem">No attendance recorded yet</div>';
-
-  document.getElementById('modalContent').innerHTML =
-    '<div class="dr"><div class="dl">ID</div><div class="dv">'+(s.id||s._id)+'</div></div>'+
-    '<div class="dr"><div class="dl">Name</div><div class="dv">'+s.name+'</div></div>'+
-    '<div class="dr"><div class="dl">Phone</div><div class="dv">'+s.phone+'</div></div>'+
-    '<div class="dr"><div class="dl">Email</div><div class="dv">'+(s.email||'—')+'</div></div>'+
-    '<div class="dr"><div class="dl">Instrument</div><div class="dv">'+s.course+'</div></div>'+
-    '<div class="dr"><div class="dl">Package</div><div class="dv">'+s.package+' classes · ₹'+(s.packageAmount||0).toLocaleString()+'</div></div>'+
-    '<div class="dr"><div class="dl">Progress</div><div class="dv">'+(s.classesCompleted||0)+'/'+s.totalClasses+' ('+prog+'%)</div></div>'+
-    '<div class="dr"><div class="dl">Schedule</div><div class="dv">'+(s.schedule||'—')+'</div></div>'+
-    '<div class="dr"><div class="dl">Mode</div><div class="dv">'+(s.mode||'Online')+'</div></div>'+
-    '<div class="dr"><div class="dl">Joined</div><div class="dv">'+s.joinDate+'</div></div>'+
-    '<div class="dr"><div class="dl">Notes</div><div class="dv">'+(s.notes||'—')+'</div></div>'+
-    '<div style="margin-top:14px"><div style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Recent Attendance</div>'+history+'</div>';
-
-  document.getElementById('modalBg').classList.add('show');
-};
-
-window.closeModal = function() { document.getElementById('modalBg').classList.remove('show'); };
-
-// ── Leads (Registrations) ──
-window.setLeadFilter = function(f, btn) {
-  currentLeadFilter = f;
-  document.querySelectorAll('.leads-filter .fb').forEach(function(b){ b.classList.remove('on'); });
-  btn.classList.add('on');
-  renderLeads();
-};
-
-function renderLeads() {
-  var q = ((document.getElementById('leadSearch')||{}).value||'').toLowerCase();
-  var list = allLeads.filter(function(l){
-    var matchF = currentLeadFilter==='all' || l.status===currentLeadFilter;
-    var name = (l.full_name||l.name||'').toLowerCase();
-    var matchQ = !q || name.includes(q) || (l.phone||'').includes(q) || (l.email||'').toLowerCase().includes(q) || (l.instrument||'').toLowerCase().includes(q);
-    return matchF && matchQ;
-  });
-  var box = document.getElementById('leadsList');
-  if(!list.length){ box.innerHTML='<div style="color:#aaa;text-align:center;padding:40px 0">No leads found</div>'; return; }
-  box.innerHTML = list.map(function(l){ return buildLeadCard(l); }).join('');
+  const editId = document.getElementById('editId').value;
+  if (editId) {
+    const idx = students.findIndex(s=>s.id===editId);
+    if (idx > -1) students[idx] = {...students[idx], ...data};
+  } else {
+    data.id = 's' + Date.now();
+    students.push(data);
+  }
+  save();
+  closeModal();
+  renderDash();
+  renderStudents('', activeFilter);
 }
 
-function buildLeadCard(l) {
-  var name = l.full_name || l.name || 'Unknown';
-  var initials = name.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
-  var phone = (l.phone||'').replace(/\D/g,'');
-  var status = l.status || 'new';
-  var statusLabels = {new:'🟡 New',contacted:'🔵 Contacted',demo:'🟣 Demo Booked',joined:'🟢 Joined',not_interested:'⚫ Not Interested'};
-  var statusClass = {new:'ls-new',contacted:'ls-contacted',demo:'ls-demo',joined:'ls-joined',not_interested:'ls-not_interested'};
-  var waMsg = encodeURIComponent('Hi '+name.split(' ')[0]+'! I am Aditya from Chords Music Academy. Thank you for your interest in '+( l.instrument||'music')+' classes 🎵 When would you like to schedule a free demo?');
-  var dateStr = l.createdAt ? new Date(l.createdAt).toLocaleDateString('en-IN') : '—';
-
-  return '<div class="lcard '+status+'" id="lcard-'+l._id+'">'+
-    '<div class="lc-top">'+
-      '<div class="lc-av">'+initials+'</div>'+
-      '<div style="flex:1">'+
-        '<div class="lc-name">'+name+'</div>'+
-        '<div class="lc-meta">'+(l.phone||'—')+' · '+(l.email||'—')+'</div>'+
-        '<div class="lc-regid">'+(l.reg_id||l._id)+'</div>'+
-        '<span class="lc-status '+(statusClass[status]||'ls-new')+'">'+(statusLabels[status]||status)+'</span>'+
-      '</div>'+
-    '</div>'+
-    '<div class="lc-pills">'+
-      (l.instrument?'<span class="lc-pill">🎵 '+l.instrument+'</span>':'')+
-      (l.level?'<span class="lc-pill">📊 '+l.level+'</span>':'')+
-      (l.mode?'<span class="lc-pill">📍 '+l.mode+'</span>':'')+
-      (dateStr!=='—'?'<span class="lc-pill">📅 '+dateStr+'</span>':'')+
-    '</div>'+
-    '<div class="lc-status-btns">'+
-      '<button class="lsb'+(status==='new'?' on':'')+'" onclick="updateLeadStatus(\''+l._id+'\',\'new\')">🟡 New</button>'+
-      '<button class="lsb'+(status==='contacted'?' on':'')+'" onclick="updateLeadStatus(\''+l._id+'\',\'contacted\')">🔵 Contacted</button>'+
-      '<button class="lsb'+(status==='demo'?' on':'')+'" onclick="updateLeadStatus(\''+l._id+'\',\'demo\')">🟣 Demo</button>'+
-      '<button class="lsb'+(status==='joined'?' on':'')+'" onclick="updateLeadStatus(\''+l._id+'\',\'joined\')">🟢 Joined</button>'+
-      '<button class="lsb'+(status==='not_interested'?' on':'')+'" onclick="updateLeadStatus(\''+l._id+'\',\'not_interested\')">⚫ Not Int.</button>'+
-    '</div>'+
-    '<div class="lc-actions">'+
-      '<button class="sc-btn btn-convert" onclick="convertToStudent(\''+l._id+'\')">➕ Convert to Student</button>'+
-      '<a href="https://api.whatsapp.com/send?phone='+phone+'&text='+waMsg+'" class="sc-btn btn-wa" target="_blank">💬</a>'+
-    '</div>'+
-    (l.notes && l.notes!=='—'?'<div style="font-size:0.7rem;color:#888;margin-top:8px;padding-top:8px;border-top:1px solid #f5f5f5">📝 '+l.notes+'</div>':'')+
-  '</div>';
+function deleteStudent(id) {
+  if (!confirm('Delete this student?')) return;
+  students = students.filter(s=>s.id!==id);
+  save();
+  renderDash();
+  renderStudents('', activeFilter);
 }
-
-window.updateLeadStatus = async function(id, status) {
-  try {
-    await updateDoc(doc(db,'registrations',id), { status: status, updatedAt: new Date().toISOString() });
-    var l = allLeads.find(function(x){ return x._id===id; });
-    if(l) { l.status = status; }
-    renderDash();
-    renderLeads();
-  } catch(e){ alert('Error: '+e.message); }
-};
-
-window.convertToStudent = function(id) {
-  var l = allLeads.find(function(x){ return x._id===id; });
-  if(!l) return;
-  var name = l.full_name || l.name || '';
-  var parts = name.trim().split(' ');
-  var fname = parts[0] || '';
-  var lname = parts.slice(1).join(' ') || '';
-  // Map instrument label to CRM course key
-  var instMap = {'Piano & Keyboard':'Piano','Carnatic Vocals':'Vocals','Guitar':'Guitar','Drums':'Drums'};
-  var course = instMap[l.instrument] || 'Piano';
-  // Pre-fill add form
-  document.getElementById('af-fname').value = fname;
-  document.getElementById('af-lname').value = lname;
-  document.getElementById('af-phone').value = l.phone || '';
-  document.getElementById('af-email').value = l.email || '';
-  document.getElementById('af-course').value = course;
-  document.getElementById('af-notes').value = (l.level?'Level: '+l.level+'. ':'')+( l.notes && l.notes!=='—'?l.notes:'');
-  // Navigate to Add tab
-  var addBtn = document.querySelectorAll('.bnav-btn')[4];
-  showPage('add', addBtn);
-  window.scrollTo(0,0);
-};
-
-// ── Navigation ──
-window.showPage = function(name, btn) {
-  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('on'); });
-  document.querySelectorAll('.bnav-btn').forEach(function(b){ b.classList.remove('on'); });
-  document.getElementById('pg-'+name).classList.add('on');
-  btn.classList.add('on');
-};
-
-// Set default join date
-document.getElementById('af-joindate').value = new Date().toISOString().split('T')[0];
 </script>
 </body>
 </html>
