@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Trinity Exam Portal – Chords Music Academy</title>
+    <link rel="icon" type="image/png" href="../images/chords_PNG.png">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-bottom: 2px solid #c9a227;
+            padding: 1.25rem 2rem;
+            text-align: center;
+        }
+        header img { height: 48px; margin-bottom: 0.5rem; display: block; margin-left: auto; margin-right: auto; }
+        header h1 { font-size: 1.3rem; color: #c9a227; font-weight: 700; letter-spacing: 1px; }
+        header p { font-size: 0.82rem; color: #888; margin-top: 0.25rem; }
+
+        .container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+        .card {
+            background: #13131f;
+            border: 1px solid #2a2a40;
+            border-radius: 16px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        .card h2 { color: #c9a227; font-size: 1.2rem; margin-bottom: 0.4rem; text-align: center; }
+        .card .subtitle { color: #777; font-size: 0.82rem; text-align: center; margin-bottom: 2rem; }
+
+        label { display: block; font-size: 0.82rem; color: #aaa; margin-bottom: 0.35rem; font-weight: 500; }
+        input, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: #1c1c2e;
+            border: 1px solid #33334d;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+            margin-bottom: 1.2rem;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus { outline: none; border-color: #c9a227; }
+        select option { background: #1c1c2e; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+        .btn {
+            width: 100%;
+            padding: 0.85rem;
+            background: linear-gradient(135deg, #c9a227, #e8c547);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-danger {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            color: #fff;
+            margin-top: 0.75rem;
+        }
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #33334d;
+            color: #888;
+            margin-top: 0.5rem;
+        }
+        .btn-secondary:hover { border-color: #555; color: #ccc; background: transparent; }
+
+        .msg-error {
+            color: #e74c3c; font-size: 0.83rem;
+            padding: 0.75rem 1rem;
+            background: rgba(231,76,60,0.1);
+            border-radius: 6px;
+            border-left: 3px solid #e74c3c;
+            margin-bottom: 1rem;
+        }
+        .msg-success {
+            color: #27ae60; font-size: 0.83rem;
+            padding: 0.75rem 1rem;
+            background: rgba(39,174,96,0.1);
+            border-radius: 6px;
+            border-left: 3px solid #27ae60;
+            margin-bottom: 1rem;
+        }
+
+        .submitted-badge {
+            display: inline-block;
+            padding: 0.3rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: rgba(39,174,96,0.15);
+            color: #27ae60;
+            border: 1px solid rgba(39,174,96,0.3);
+            margin-bottom: 1.5rem;
+        }
+        .sub-field {
+            background: #1c1c2e;
+            border: 1px solid #2a2a40;
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.7rem;
+        }
+        .sub-field .lbl { font-size: 0.72rem; color: #666; margin-bottom: 0.2rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .sub-field .val { color: #e0e0e0; font-size: 0.92rem; font-weight: 500; }
+
+        .gdrive-hint {
+            background: rgba(201,162,39,0.08);
+            border: 1px solid rgba(201,162,39,0.25);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.2rem;
+            font-size: 0.79rem;
+            color: #c9a227;
+            line-height: 1.7;
+        }
+        .gdrive-hint strong { display: block; margin-bottom: 0.35rem; font-size: 0.82rem; }
+
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        footer {
+            text-align: center;
+            padding: 1.25rem;
+            color: #444;
+            font-size: 0.76rem;
+            border-top: 1px solid #1c1c2e;
+        }
+        footer a { color: #c9a227; text-decoration: none; }
+
+        @media (max-width: 480px) {
+            .card { padding: 1.5rem 1.25rem; }
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="../images/chords_PNG.png" alt="Chords Music Academy" onerror="this.style.display='none'">
+    <h1>Digital Trinity Exam Portal</h1>
+    <p>Chords Music Academy &nbsp;|&nbsp; Exam Video Submission</p>
+</header>
+
+<div class="container">
+    <div class="card">
+
+        <!-- Screen 1: Enter Access Code -->
+        <div id="screen-code" class="screen active">
+            <h2>Enter Your Access Code</h2>
+            <p class="subtitle">Your teacher will share your unique access code with you</p>
+            <div id="code-error" class="msg-error" style="display:none"></div>
+            <label for="access-code">Access Code</label>
+            <input type="text" id="access-code" placeholder="e.g. TRN-AB2345"
+                maxlength="10" autocomplete="off"
+                style="text-transform:uppercase;letter-spacing:3px;font-size:1.2rem;text-align:center;font-weight:600;">
+            <button class="btn" id="code-btn" onclick="checkCode()">Continue</button>
+        </div>
+
+        <!-- Screen 2: Submit Video Form -->
+        <div id="screen-form" class="screen">
+            <h2>Submit Your Exam Video</h2>
+            <p class="subtitle">Fill in all details and paste your Google Drive video link</p>
+            <div id="form-error" class="msg-error" style="display:none"></div>
+
+            <label for="full-name">Full Name *</label>
+            <input type="text" id="full-name" placeholder="Enter your full name as per certificate">
+
+            <label for="dob">Date of Birth *</label>
+            <input type="text" id="dob" placeholder="DD/MM/YYYY" maxlength="10">
+
+            <div class="form-row">
+                <div>
+                    <label for="grade">Grade *</label>
+                    <select id="grade">
+                        <option value="">Select Grade</option>
+                        <option value="Initial">Initial</option>
+                        <option value="Grade 1">Grade 1</option>
+                        <option value="Grade 2">Grade 2</option>
+                        <option value="Grade 3">Grade 3</option>
+                        <option value="Grade 4">Grade 4</option>
+                        <option value="Grade 5">Grade 5</option>
+                        <option value="Grade 6">Grade 6</option>
+                        <option value="Grade 7">Grade 7</option>
+                        <option value="Grade 8">Grade 8</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="instrument">Instrument *</label>
+                    <select id="instrument">
+                        <option value="">Select Instrument</option>
+                        <option value="Piano">Piano</option>
+                        <option value="Electronic Keyboard">Electronic Keyboard</option>
+                        <option value="Guitar">Guitar</option>
+                        <option value="Drums">Drums</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="gdrive-hint">
+                <strong>How to share your Google Drive video link:</strong>
+                1. Upload your video to Google Drive<br>
+                2. Right-click the file &rarr; click <b>Share</b><br>
+                3. Set access to <b>"Anyone with the link"</b><br>
+                4. Click <b>Copy link</b> and paste below
+            </div>
+
+            <label for="video-link">Google Drive Video Link *</label>
+            <input type="url" id="video-link" placeholder="https://drive.google.com/file/d/...">
+
+            <button class="btn" id="submit-btn" onclick="submitForm()">Submit Video</button>
+            <button class="btn btn-secondary" onclick="goBack()">Back</button>
+        </div>
+
+        <!-- Screen 3: View Submission -->
+        <div id="screen-view" class="screen">
+            <h2>Your Submission</h2>
+            <div class="submitted-badge">&#10003; Submitted</div>
+            <div id="view-fields"></div>
+            <a id="watch-btn" href="#" target="_blank" rel="noopener"
+               class="btn" style="display:block;text-align:center;text-decoration:none;margin-top:1rem;">
+                Watch My Video
+            </a>
+            <button class="btn btn-danger" onclick="confirmDelete()">Delete &amp; Re-submit</button>
+            <p style="font-size:0.76rem;color:#555;text-align:center;margin-top:0.85rem;">
+                Deleting clears your submission. You can re-submit using the same access code.
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    <a href="https://chordsmusicacademy.in">Chords Music Academy</a> &nbsp;&mdash;&nbsp; Digital Trinity Exam Portal
+</footer>
+
+<script>
+    let currentCode = '';
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function showErr(id, msg) {
+        const el = document.getElementById(id);
+        el.textContent = msg;
+        el.style.display = 'block';
+    }
+
+    function hideErr(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    function goBack() {
+        document.getElementById('full-name').value = '';
+        document.getElementById('dob').value = '';
+        document.getElementById('grade').value = '';
+        document.getElementById('instrument').value = '';
+        document.getElementById('video-link').value = '';
+        hideErr('form-error');
+        showScreen('screen-code');
+    }
+
+    async function checkCode() {
+        const code = document.getElementById('access-code').value.trim().toUpperCase();
+        if (!code) { showErr('code-error', 'Please enter your access code.'); return; }
+        hideErr('code-error');
+
+        const btn = document.getElementById('code-btn');
+        btn.textContent = 'Checking...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/.netlify/functions/exam-get', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                showErr('code-error', data.error || 'Invalid access code. Please check with your teacher.');
+                return;
+            }
+
+            currentCode = code;
+            if (data.submission.full_name) {
+                renderSubmission(data.submission);
+                showScreen('screen-view');
+            } else {
+                showScreen('screen-form');
+            }
+        } catch (e) {
+            showErr('code-error', 'Network error. Please check your connection and try again.');
+        } finally {
+            btn.textContent = 'Continue';
+            btn.disabled = false;
+        }
+    }
+
+    function renderSubmission(sub) {
+        const fmt = sub.submitted_at
+            ? new Date(sub.submitted_at).toLocaleString('en-IN', {
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+              })
+            : '—';
+
+        document.getElementById('view-fields').innerHTML = [
+            { label: 'Full Name',    value: sub.full_name },
+            { label: 'Date of Birth', value: sub.dob },
+            { label: 'Grade',        value: sub.grade },
+            { label: 'Instrument',   value: sub.instrument },
+            { label: 'Submitted On', value: fmt }
+        ].map(f => `
+            <div class="sub-field">
+                <div class="lbl">${f.label}</div>
+                <div class="val">${f.value || '—'}</div>
+            </div>
+        `).join('');
+
+        document.getElementById('watch-btn').href = sub.video_link || '#';
+    }
+
+    function validateDOB(dob) {
+        const m = dob.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (!m) return false;
+        const [, dd, mm, yyyy] = m;
+        if (parseInt(mm) < 1 || parseInt(mm) > 12) return false;
+        if (parseInt(dd) < 1 || parseInt(dd) > 31) return false;
+        return true;
+    }
+
+    async function submitForm() {
+        hideErr('form-error');
+
+        const full_name   = document.getElementById('full-name').value.trim();
+        const dob         = document.getElementById('dob').value.trim();
+        const grade       = document.getElementById('grade').value;
+        const instrument  = document.getElementById('instrument').value;
+        const video_link  = document.getElementById('video-link').value.trim();
+
+        if (!full_name)   { showErr('form-error', 'Please enter your full name.'); return; }
+        if (!dob)         { showErr('form-error', 'Please enter your date of birth.'); return; }
+        if (!validateDOB(dob)) { showErr('form-error', 'Date of birth must be DD/MM/YYYY — e.g. 15/08/2012'); return; }
+        if (!grade)       { showErr('form-error', 'Please select your grade.'); return; }
+        if (!instrument)  { showErr('form-error', 'Please select your instrument.'); return; }
+        if (!video_link)  { showErr('form-error', 'Please paste your Google Drive video link.'); return; }
+        if (!video_link.includes('drive.google.com') && !video_link.includes('docs.google.com')) {
+            showErr('form-error', 'Please paste a valid Google Drive link (should contain drive.google.com).');
+            return;
+        }
+
+        const btn = document.getElementById('submit-btn');
+        btn.textContent = 'Submitting...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/.netlify/functions/exam-save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: currentCode, full_name, dob, grade, instrument, video_link })
+            });
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                showErr('form-error', data.error || 'Failed to submit. Please try again.');
+                return;
+            }
+
+            renderSubmission(data.submission);
+            showScreen('screen-view');
+        } catch (e) {
+            showErr('form-error', 'Network error. Please try again.');
+        } finally {
+            btn.textContent = 'Submit Video';
+            btn.disabled = false;
+        }
+    }
+
+    async function confirmDelete() {
+        if (!confirm('Are you sure you want to delete your submission?\n\nYou can re-submit using the same access code.')) return;
+
+        try {
+            const res = await fetch('/.netlify/functions/exam-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: currentCode })
+            });
+            const data = await res.json();
+            if (data.success) {
+                goBack();
+                showScreen('screen-form');
+            } else {
+                alert('Error deleting. Please try again.');
+            }
+        } catch (e) {
+            alert('Network error. Please try again.');
+        }
+    }
+
+    // Auto-format DOB as user types: 15/08/2012
+    document.getElementById('dob').addEventListener('input', function () {
+        let v = this.value.replace(/\D/g, '');
+        if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
+        if (v.length > 5) v = v.slice(0, 5) + '/' + v.slice(5, 9);
+        this.value = v;
+    });
+
+    document.getElementById('access-code').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') checkCode();
+    });
+</script>
+
+</body>
+</html>

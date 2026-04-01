@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Admin – Chords Music Academy</title>
+    <link rel="icon" type="image/png" href="../images/chords_PNG.png">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
+
+        header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-bottom: 2px solid #c9a227;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        header .title { color: #c9a227; font-size: 1.1rem; font-weight: 700; }
+        header .hdr-right { display: flex; align-items: center; gap: 1rem; }
+        header .hdr-right span { color: #666; font-size: 0.8rem; }
+        .logout-btn {
+            background: transparent; border: 1px solid #333; color: #888;
+            padding: 0.35rem 0.85rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer;
+        }
+        .logout-btn:hover { border-color: #666; color: #ccc; }
+
+        /* Login */
+        .login-wrap {
+            display: flex; align-items: center; justify-content: center;
+            min-height: calc(100vh - 62px); padding: 2rem;
+        }
+        .login-card {
+            background: #13131f; border: 1px solid #2a2a40;
+            border-radius: 16px; padding: 2.5rem;
+            width: 100%; max-width: 360px;
+        }
+        .login-card h2 { color: #c9a227; margin-bottom: 0.4rem; text-align: center; }
+        .login-card p { color: #777; font-size: 0.82rem; margin-bottom: 2rem; text-align: center; }
+
+        label { display: block; font-size: 0.82rem; color: #aaa; margin-bottom: 0.35rem; }
+        input, select {
+            width: 100%; padding: 0.72rem 1rem;
+            background: #1c1c2e; border: 1px solid #33334d;
+            border-radius: 8px; color: #e0e0e0; font-size: 0.92rem;
+            margin-bottom: 1.2rem;
+        }
+        input:focus, select:focus { outline: none; border-color: #c9a227; }
+
+        .btn {
+            padding: 0.72rem 1.4rem;
+            background: linear-gradient(135deg, #c9a227, #e8c547);
+            color: #000; border: none; border-radius: 8px;
+            font-size: 0.88rem; font-weight: 700; cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-full { width: 100%; }
+        .btn-sm { padding: 0.5rem 1rem; font-size: 0.82rem; }
+        .btn-outline {
+            background: transparent; border: 1px solid #33334d;
+            color: #888;
+        }
+        .btn-outline:hover { border-color: #c9a227; color: #c9a227; background: transparent; }
+
+        .msg-error { color: #e74c3c; font-size: 0.83rem; padding: 0.75rem; background: rgba(231,76,60,0.1); border-radius: 6px; border-left: 3px solid #e74c3c; margin-bottom: 1rem; }
+
+        /* Dashboard */
+        .dashboard { padding: 1.75rem 2rem; display: none; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem; margin-bottom: 1.75rem;
+        }
+        .stat-card {
+            background: #13131f; border: 1px solid #2a2a40;
+            border-radius: 12px; padding: 1.25rem; text-align: center;
+        }
+        .stat-card .num { font-size: 2rem; font-weight: 700; color: #c9a227; }
+        .stat-card .lbl { font-size: 0.76rem; color: #777; margin-top: 0.2rem; }
+
+        .section {
+            background: #13131f; border: 1px solid #2a2a40;
+            border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .section h3 { color: #c9a227; margin-bottom: 1.25rem; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .gen-row { display: flex; gap: 1rem; align-items: flex-end; }
+        .gen-row > div { flex: 1; }
+        .gen-row > div input { margin-bottom: 0; }
+        .gen-row .btn { margin-bottom: 0; white-space: nowrap; flex-shrink: 0; }
+
+        #codes-output { margin-top: 1rem; }
+        .codes-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+            gap: 0.5rem; margin-top: 0.75rem;
+        }
+        .code-pill {
+            background: #1c1c2e; border: 1px solid #33334d;
+            border-radius: 6px; padding: 0.5rem 0.6rem;
+            font-family: monospace; font-size: 0.88rem;
+            color: #c9a227; letter-spacing: 1px; text-align: center;
+        }
+
+        .toolbar { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
+        .toolbar input { flex: 1; min-width: 200px; margin-bottom: 0; padding: 0.6rem 0.9rem; font-size: 0.85rem; }
+        .toolbar .btn { flex-shrink: 0; }
+
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 720px; }
+        th {
+            padding: 0.7rem 1rem; font-size: 0.74rem; color: #666;
+            font-weight: 600; text-align: left;
+            border-bottom: 1px solid #2a2a40;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        td { padding: 0.72rem 1rem; font-size: 0.86rem; border-bottom: 1px solid #181828; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #181828; }
+        .code-cell { font-family: monospace; color: #c9a227; font-size: 0.82rem; letter-spacing: 1px; }
+        .badge-submitted { color: #27ae60; font-size: 0.78rem; font-weight: 700; }
+        .badge-pending { color: #555; font-size: 0.78rem; }
+        .video-link { color: #5dade2; text-decoration: none; font-size: 0.82rem; }
+        .video-link:hover { text-decoration: underline; }
+        .empty-cell { text-align: center; color: #444; padding: 3rem !important; }
+
+        @media (max-width: 600px) {
+            .dashboard { padding: 1rem; }
+            .gen-row { flex-direction: column; }
+            header .title { font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="title">Exam Admin Dashboard</div>
+    <div class="hdr-right">
+        <span id="hdr-info" style="display:none"></span>
+        <button class="logout-btn" id="logout-btn" onclick="logout()" style="display:none">Logout</button>
+    </div>
+</header>
+
+<!-- Login Screen -->
+<div class="login-wrap" id="login-screen">
+    <div class="login-card">
+        <h2>Admin Login</h2>
+        <p>Chords Music Academy &mdash; Exam Portal</p>
+        <div id="login-error" class="msg-error" style="display:none"></div>
+        <label for="admin-pass">Admin Password</label>
+        <input type="password" id="admin-pass" placeholder="Enter admin password">
+        <button class="btn btn-full" onclick="adminLogin()">Login</button>
+    </div>
+</div>
+
+<!-- Dashboard -->
+<div class="dashboard" id="dashboard">
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="num" id="stat-total">0</div>
+            <div class="lbl">Total Codes</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" id="stat-submitted">0</div>
+            <div class="lbl">Submitted</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" id="stat-pending">0</div>
+            <div class="lbl">Pending</div>
+        </div>
+    </div>
+
+    <!-- Generate Codes -->
+    <div class="section">
+        <h3>Generate Student Access Codes</h3>
+        <div class="gen-row">
+            <div>
+                <label for="code-count">How many codes to generate?</label>
+                <input type="number" id="code-count" value="10" min="1" max="100">
+            </div>
+            <button class="btn" onclick="generateCodes()">Generate</button>
+        </div>
+        <div id="codes-output"></div>
+    </div>
+
+    <!-- Submissions Table -->
+    <div class="section">
+        <h3>All Student Submissions</h3>
+        <div class="toolbar">
+            <input type="text" id="search-input" placeholder="Search by name, grade, instrument, code..." oninput="filterTable()">
+            <button class="btn btn-sm btn-outline" onclick="downloadCSV()">Download CSV</button>
+            <button class="btn btn-sm btn-outline" onclick="loadDashboard()">Refresh</button>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Access Code</th>
+                        <th>Full Name</th>
+                        <th>DOB</th>
+                        <th>Grade</th>
+                        <th>Instrument</th>
+                        <th>Video</th>
+                        <th>Status</th>
+                        <th>Submitted On</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <tr><td class="empty-cell" colspan="9">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let adminPassword = '';
+    let allSubmissions = [];
+
+    function adminLogin() {
+        const pass = document.getElementById('admin-pass').value;
+        if (!pass) return;
+        adminPassword = pass;
+        loadDashboard();
+    }
+
+    document.getElementById('admin-pass').addEventListener('keypress', e => {
+        if (e.key === 'Enter') adminLogin();
+    });
+
+    async function loadDashboard() {
+        try {
+            const res = await fetch('/.netlify/functions/exam-admin-get', {
+                headers: { 'x-admin-token': adminPassword }
+            });
+            const data = await res.json();
+
+            if (res.status === 401) {
+                const err = document.getElementById('login-error');
+                err.textContent = 'Wrong password. Please try again.';
+                err.style.display = 'block';
+                adminPassword = '';
+                return;
+            }
+
+            if (data.success) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('logout-btn').style.display = 'block';
+                document.getElementById('hdr-info').style.display = 'block';
+                allSubmissions = data.submissions;
+                renderTable(allSubmissions);
+                updateStats(allSubmissions);
+            }
+        } catch (e) {
+            const err = document.getElementById('login-error');
+            err.textContent = 'Connection error. Please try again.';
+            err.style.display = 'block';
+        }
+    }
+
+    function updateStats(submissions) {
+        const submitted = submissions.filter(s => s.full_name);
+        document.getElementById('stat-total').textContent = submissions.length;
+        document.getElementById('stat-submitted').textContent = submitted.length;
+        document.getElementById('stat-pending').textContent = submissions.length - submitted.length;
+        document.getElementById('hdr-info').textContent = submitted.length + ' / ' + submissions.length + ' submitted';
+    }
+
+    function renderTable(submissions) {
+        const tbody = document.getElementById('table-body');
+        if (!submissions.length) {
+            tbody.innerHTML = '<tr><td class="empty-cell" colspan="9">No data yet. Generate codes to get started.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = submissions.map((s, i) => `
+            <tr>
+                <td style="color:#444">${i + 1}</td>
+                <td class="code-cell">${s.access_code}</td>
+                <td>${s.full_name || '<span style="color:#444">—</span>'}</td>
+                <td>${s.dob || '<span style="color:#444">—</span>'}</td>
+                <td>${s.grade || '<span style="color:#444">—</span>'}</td>
+                <td>${s.instrument || '<span style="color:#444">—</span>'}</td>
+                <td>${s.video_link
+                    ? `<a href="${escHtml(s.video_link)}" target="_blank" rel="noopener" class="video-link">Watch</a>`
+                    : '<span style="color:#444">—</span>'}</td>
+                <td>${s.full_name
+                    ? '<span class="badge-submitted">&#10003; Submitted</span>'
+                    : '<span class="badge-pending">Pending</span>'}</td>
+                <td style="color:#555">${s.submitted_at
+                    ? new Date(s.submitted_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                    : '—'}</td>
+            </tr>
+        `).join('');
+    }
+
+    function escHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function filterTable() {
+        const q = document.getElementById('search-input').value.toLowerCase();
+        const filtered = allSubmissions.filter(s =>
+            (s.full_name || '').toLowerCase().includes(q) ||
+            (s.grade || '').toLowerCase().includes(q) ||
+            (s.instrument || '').toLowerCase().includes(q) ||
+            (s.access_code || '').toLowerCase().includes(q)
+        );
+        renderTable(filtered);
+    }
+
+    async function generateCodes() {
+        const count = parseInt(document.getElementById('code-count').value) || 10;
+        const out = document.getElementById('codes-output');
+        out.innerHTML = '<p style="color:#888;font-size:0.82rem;margin-top:0.75rem">Generating codes...</p>';
+
+        try {
+            const res = await fetch('/.netlify/functions/exam-admin-codes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-admin-token': adminPassword
+                },
+                body: JSON.stringify({ count })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                out.innerHTML = `
+                    <p style="color:#27ae60;font-size:0.82rem;margin-top:0.75rem;margin-bottom:0.5rem">
+                        ${data.codes.length} codes generated. Share these with your students:
+                    </p>
+                    <div class="codes-grid">${data.codes.map(c => `<div class="code-pill">${c}</div>`).join('')}</div>
+                    <button class="btn btn-sm btn-outline" onclick='copyCodes(${JSON.stringify(data.codes)})' style="margin-top:1rem">
+                        Copy All Codes
+                    </button>
+                `;
+                loadDashboard();
+            } else {
+                out.innerHTML = `<p style="color:#e74c3c;font-size:0.82rem;margin-top:0.75rem">${data.error || 'Failed to generate codes.'}</p>`;
+            }
+        } catch (e) {
+            out.innerHTML = '<p style="color:#e74c3c;font-size:0.82rem;margin-top:0.75rem">Error. Please try again.</p>';
+        }
+    }
+
+    function copyCodes(codes) {
+        navigator.clipboard.writeText(codes.join('\n')).then(() => {
+            alert('All codes copied to clipboard!');
+        }).catch(() => {
+            prompt('Copy these codes:', codes.join('\n'));
+        });
+    }
+
+    function downloadCSV() {
+        const submitted = allSubmissions.filter(s => s.full_name);
+        if (!submitted.length) { alert('No submissions to download yet.'); return; }
+
+        const headers = ['Code', 'Full Name', 'DOB', 'Grade', 'Instrument', 'Video Link', 'Submitted On'];
+        const rows = submitted.map(s => [
+            s.access_code,
+            s.full_name,
+            s.dob,
+            s.grade,
+            s.instrument,
+            s.video_link,
+            s.submitted_at ? new Date(s.submitted_at).toLocaleDateString('en-IN') : ''
+        ]);
+
+        const csv = [headers, ...rows]
+            .map(r => r.map(v => `"${(v || '').replace(/"/g, '""')}"`).join(','))
+            .join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `trinity-exam-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+    }
+
+    function logout() {
+        adminPassword = '';
+        allSubmissions = [];
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'none';
+        document.getElementById('hdr-info').style.display = 'none';
+        document.getElementById('admin-pass').value = '';
+        document.getElementById('login-error').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
