@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Fee Payment — Chords Music Academy</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f6fa;color:#1a1a2e;min-height:100vh}
+
+/* Header */
+.app-hdr{background:#1a1a2e;color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.app-hdr-left .app-title{font-size:1rem;font-weight:800}
+.app-hdr-left .app-month{font-size:0.72rem;color:#f39c12;font-weight:600;margin-top:2px}
+.admin-btn{background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:0.75rem;font-weight:700;cursor:pointer}
+
+/* Student step 1 */
+.section-pad{padding:16px}
+.step-title{font-size:1.1rem;font-weight:800;color:#1a1a2e;margin-bottom:4px}
+.step-sub{font-size:0.78rem;color:#888;margin-bottom:16px}
+.search-box{width:100%;border:1.5px solid #e0e0e0;border-radius:12px;padding:11px 14px;font-size:0.9rem;font-family:inherit;outline:none;background:#fff;margin-bottom:16px}
+.search-box:focus{border-color:#1a1a2e}
+
+.slot-group{margin-bottom:10px}
+.slot-label{font-size:0.68rem;font-weight:800;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;padding:0 4px}
+.student-btn{width:100%;background:#fff;border:1.5px solid #e8e8e8;border-radius:12px;padding:13px 16px;font-size:0.9rem;font-weight:700;color:#1a1a2e;cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;transition:.15s}
+.student-btn:hover{border-color:#1a1a2e;background:#f8f9ff}
+.student-btn .s-fee{font-size:0.72rem;color:#888;font-weight:600}
+.student-btn .s-pkg{font-size:0.62rem;background:#fff3cd;color:#856404;border-radius:6px;padding:2px 7px;font-weight:700}
+.student-btn .s-grp{font-size:0.62rem;background:#d1ecf1;color:#0c5460;border-radius:6px;padding:2px 7px;font-weight:700}
+
+/* Student step 2 */
+.back-btn{background:none;border:none;color:#1a1a2e;font-size:0.85rem;font-weight:700;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:4px;margin-bottom:16px}
+
+.student-card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.07);margin-bottom:16px}
+.sc-name{font-size:1.3rem;font-weight:900;color:#1a1a2e;margin-bottom:4px}
+.sc-meta{font-size:0.78rem;color:#888;display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.sc-meta span{display:flex;align-items:center;gap:4px}
+.sc-fee-label{font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.sc-fee-amount{font-size:2rem;font-weight:900;color:#1a1a2e}
+.sc-fee-note{font-size:0.72rem;color:#888;margin-top:2px}
+
+/* Payment status */
+.paid-card{background:#d4edda;border:1.5px solid #c3e6cb;border-radius:16px;padding:20px;text-align:center;margin-bottom:16px}
+.paid-icon{font-size:2.5rem;margin-bottom:8px}
+.paid-title{font-size:1.1rem;font-weight:800;color:#155724;margin-bottom:4px}
+.paid-amount{font-size:1.5rem;font-weight:900;color:#155724;margin-bottom:4px}
+.paid-date{font-size:0.78rem;color:#52875f}
+.paid-change{background:none;border:1px solid #6c9b7a;color:#155724;border-radius:8px;padding:8px 16px;font-size:0.78rem;font-weight:700;cursor:pointer;margin-top:12px}
+
+.unpaid-card{background:#fff3cd;border:1.5px solid #ffeeba;border-radius:16px;padding:20px;margin-bottom:16px}
+.unpaid-title{font-size:0.85rem;font-weight:800;color:#856404;margin-bottom:12px}
+.amount-label{font-size:0.75rem;font-weight:700;color:#555;margin-bottom:6px}
+.amount-input{width:100%;border:1.5px solid #e0e0e0;border-radius:12px;padding:13px 16px;font-size:1.1rem;font-weight:800;font-family:inherit;outline:none;background:#fff;margin-bottom:14px}
+.amount-input:focus{border-color:#1a1a2e}
+.pay-btn{width:100%;background:#27ae60;color:#fff;border:none;border-radius:12px;padding:15px;font-size:1rem;font-weight:800;cursor:pointer;transition:.15s}
+.pay-btn:hover{background:#229954}
+.pay-btn:disabled{background:#aaa;cursor:not-allowed}
+
+/* Admin modal overlay */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal-box{background:#fff;border-radius:20px;padding:24px 20px;width:100%;max-width:380px}
+.modal-title{font-size:1rem;font-weight:800;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:#888}
+.modal-box input{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:12px 14px;font-size:0.9rem;font-family:inherit;outline:none;margin-bottom:12px}
+.modal-box input:focus{border-color:#1a1a2e}
+.modal-submit{width:100%;background:#1a1a2e;color:#fff;border:none;border-radius:10px;padding:13px;font-size:0.92rem;font-weight:800;cursor:pointer}
+.modal-err{font-size:0.75rem;color:#e74c3c;margin-top:8px;text-align:center;display:none}
+
+/* Admin dashboard */
+.admin-wrap{padding:16px;max-width:700px;margin:0 auto}
+.admin-month-nav{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:14px;padding:12px 16px;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:14px}
+.month-nav-btn{background:#f0f2f5;border:none;border-radius:8px;padding:8px 14px;font-size:0.85rem;font-weight:700;cursor:pointer;color:#1a1a2e}
+.month-nav-btn:hover{background:#e0e2e8}
+.admin-month-label{font-size:1rem;font-weight:800;color:#1a1a2e}
+
+.admin-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.astat{background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);text-align:center}
+.astat-num{font-size:1.4rem;font-weight:900;line-height:1}
+.astat-label{font-size:0.65rem;color:#888;margin-top:3px;font-weight:600;text-transform:uppercase}
+
+.admin-logout-row{display:flex;justify-content:flex-end;margin-bottom:12px}
+.admin-logout-btn{background:#fff0f0;color:#e74c3c;border:1px solid #fdd;border-radius:8px;padding:7px 14px;font-size:0.75rem;font-weight:700;cursor:pointer}
+
+.payment-table{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07)}
+.pt-header{display:grid;grid-template-columns:1fr 80px 80px 60px;gap:8px;padding:10px 14px;background:#f8f9fb;border-bottom:1px solid #f0f0f0;font-size:0.65rem;font-weight:800;color:#888;text-transform:uppercase}
+.pt-row{display:grid;grid-template-columns:1fr 80px 80px 60px;gap:8px;padding:12px 14px;border-bottom:1px solid #f8f8f8;align-items:center}
+.pt-row:last-child{border-bottom:none}
+.pt-row.paid-row{background:#f8fff9}
+.pt-row.unpaid-row{background:#fffdf5}
+.pt-name{font-size:0.82rem;font-weight:700;color:#1a1a2e}
+.pt-slot{font-size:0.68rem;color:#aaa}
+.pt-fee{font-size:0.8rem;color:#555;font-weight:600}
+.pt-paid-amt{font-size:0.85rem;font-weight:800;color:#27ae60}
+.pt-unpaid{font-size:0.72rem;color:#e67e22;font-weight:700}
+.pt-status-paid{background:#d4edda;color:#155724;border-radius:6px;padding:3px 8px;font-size:0.65rem;font-weight:800;text-align:center}
+.pt-status-unpaid{background:#fff3cd;color:#856404;border-radius:6px;padding:3px 8px;font-size:0.65rem;font-weight:800;text-align:center;cursor:pointer}
+.pt-status-unpaid:hover{background:#ffe69c}
+
+.empty-state{text-align:center;padding:40px 20px;color:#bbb;font-size:0.85rem}
+.loading-state{text-align:center;padding:40px 20px;color:#888;font-size:0.85rem}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="app-hdr">
+  <div class="app-hdr-left">
+    <div class="app-title">🎵 CMA Fee Payment</div>
+    <div class="app-month" id="headerMonth"></div>
+  </div>
+  <button class="admin-btn" onclick="openAdminModal()">Admin</button>
+</div>
+
+<!-- STUDENT VIEW -->
+<div id="studentView">
+
+  <!-- Step 1: Pick name -->
+  <div id="step1" class="section-pad">
+    <div class="step-title">Select your name</div>
+    <div class="step-sub">Find your name below to mark your fee payment</div>
+    <input class="search-box" type="search" placeholder="Search name…" id="searchInput" oninput="filterStudents(this.value)">
+    <div id="studentList"></div>
+  </div>
+
+  <!-- Step 2: Payment -->
+  <div id="step2" class="section-pad" style="display:none">
+    <button class="back-btn" onclick="goBack()">← Back to list</button>
+    <div id="studentCard"></div>
+    <div id="paymentArea"></div>
+  </div>
+
+</div>
+
+<!-- ADMIN VIEW -->
+<div id="adminView" style="display:none">
+  <div class="admin-wrap">
+    <div class="admin-logout-row">
+      <button class="admin-logout-btn" onclick="adminLogout()">← Back / Logout</button>
+    </div>
+    <div class="admin-month-nav">
+      <button class="month-nav-btn" onclick="adminChangeMonth(-1)">‹ Prev</button>
+      <div class="admin-month-label" id="adminMonthLabel"></div>
+      <button class="month-nav-btn" onclick="adminChangeMonth(1)">Next ›</button>
+    </div>
+    <div class="admin-stats" id="adminStats"></div>
+    <div class="payment-table" id="adminTable"></div>
+  </div>
+</div>
+
+<!-- Admin Login Modal -->
+<div class="modal-bg" id="adminModal">
+  <div class="modal-box">
+    <div class="modal-title">
+      Admin Login
+      <button class="modal-close" onclick="closeAdminModal()">✕</button>
+    </div>
+    <input type="password" id="adminPwdInput" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')submitAdminLogin()">
+    <button class="modal-submit" onclick="submitAdminLogin()">Login →</button>
+    <div class="modal-err" id="adminErr">Incorrect password</div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDvuCr7IHM7oLYY6e675P_KtcTxsNEJr1c",
+  authDomain: "chords-music-academy.firebaseapp.com",
+  projectId: "chords-music-academy",
+  storageBucket: "chords-music-academy.firebasestorage.app",
+  messagingSenderId: "146425788425",
+  appId: "1:146425788425:web:8abbafbc93287a14ab20d8"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ── Student list ─────────────────────────────────────────────────────────────
+const STUDENTS = [
+  {id:1,  name:'Sriram',     slot:'5:50am',         fee:5000, type:'individual', pkg:'quarterly'},
+  {id:2,  name:'Adyya Sri',  slot:'5:50am',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:3,  name:'Harshith',   slot:'5:50am',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:4,  name:'Sanvi',      slot:'5:50am',         fee:5000, type:'individual', pkg:'quarterly'},
+  {id:5,  name:'Krithik',    slot:'5:50am',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:6,  name:'Gayatri',    slot:'6:30am',         fee:6000, type:'individual', pkg:'monthly'},
+  {id:7,  name:'Mayukha',    slot:'6:30am',         fee:6000, type:'individual', pkg:'monthly'},
+  {id:8,  name:'Aashi',      slot:'6:30am',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:9,  name:'Hanvitha',   slot:'6:30am',         fee:5000, type:'individual', pkg:'quarterly'},
+  {id:10, name:'Jaasrita',   slot:'6:30am',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:11, name:'Sarayu',     slot:'7:10am',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:12, name:'Siri',       slot:'7:10am',         fee:6000, type:'individual', pkg:'monthly'},
+  {id:13, name:'Pavan',      slot:'7:10am',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:14, name:'Sharvin',    slot:'7:50am',         fee:5000, type:'individual', pkg:'quarterly'},
+  {id:15, name:'Nitya',      slot:'7:50am',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:16, name:'Darshil',    slot:'7:50am',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:17, name:'Srinika',    slot:'7:50am',         fee:5000, type:'individual', pkg:'quarterly'},
+  {id:18, name:'Anshi',      slot:'8:30am',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:19, name:'Ryan',       slot:'8:30am',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:20, name:'Pratham',    slot:'9:10am',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:21, name:'Nainika',    slot:'9:10am',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:22, name:'Kanvas',     slot:'9:40am',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:23, name:'Mihira',     slot:'3:00pm',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:24, name:'Hanish',     slot:'4:10pm',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:25, name:'Krishika',   slot:'6:20pm',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:26, name:'Ishita',     slot:'6:20pm',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:27, name:'Amukta',     slot:'7:00pm',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:28, name:'Padmavati',  slot:'7:00pm',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:29, name:'Revanth',    slot:'7:40pm',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:30, name:'Chaitanya',  slot:'8:20pm',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:31, name:'Kanisha',    slot:'9:00pm',         fee:5000, type:'individual', pkg:'monthly'},
+  {id:32, name:'Ujjwal',     slot:'5:40pm Tue/Fri', fee:2400, type:'group',      pkg:'monthly'},
+  {id:33, name:'Cherika',    slot:'5:40pm Tue/Fri', fee:2400, type:'group',      pkg:'monthly'},
+  {id:34, name:'Sumanth',    slot:'5:40pm Tue/Fri', fee:2400, type:'group',      pkg:'monthly'},
+  {id:35, name:'Vidhatri',   slot:'5:40pm Tue/Fri', fee:2400, type:'group',      pkg:'monthly'},
+  {id:36, name:'Srinidhi',   slot:'5:40pm Tue/Fri', fee:2400, type:'group',      pkg:'monthly'},
+  {id:37, name:'Kaveesh',    slot:'5:40pm Tue/Fri', fee:2400, type:'group',      pkg:'monthly'},
+];
+
+const MONTHLY_TOTAL = STUDENTS.reduce(function(s,x){ return s + x.fee; }, 0); // 172400
+
+// ── State ─────────────────────────────────────────────────────────────────────
+var currentMonthObj = new Date();
+var adminMonthObj    = new Date();
+var selectedStudent  = null;
+var ADMIN_PASS       = 'CMA@admin2025';
+var adminLoggedIn    = false;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function monthKey(d) {
+  return d.getFullYear() + '_' + String(d.getMonth()+1).padStart(2,'0');
+}
+function monthLabel(d) {
+  return d.toLocaleString('en-IN', {month:'long', year:'numeric'});
+}
+function fmtAmount(n) {
+  return '₹' + n.toLocaleString('en-IN');
+}
+function payDocId(studentId, d) {
+  return 'fp_' + studentId + '_' + monthKey(d);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.getElementById('headerMonth').textContent = monthLabel(currentMonthObj);
+loadPassword();
+renderStudentList('');
+
+async function loadPassword() {
+  try {
+    var snap = await getDoc(doc(db, 'settings', 'admin'));
+    if (snap.exists() && snap.data().password) ADMIN_PASS = snap.data().password;
+  } catch(e) {}
+}
+
+// ── Student list ──────────────────────────────────────────────────────────────
+window.filterStudents = function(q) {
+  renderStudentList(q.trim().toLowerCase());
+};
+
+function renderStudentList(q) {
+  var filtered = q
+    ? STUDENTS.filter(function(s){ return s.name.toLowerCase().includes(q); })
+    : STUDENTS;
+
+  if (!filtered.length) {
+    document.getElementById('studentList').innerHTML = '<div class="empty-state">No student found</div>';
+    return;
+  }
+
+  // Group by slot
+  var groups = {};
+  filtered.forEach(function(s) {
+    if (!groups[s.slot]) groups[s.slot] = [];
+    groups[s.slot].push(s);
+  });
+
+  var html = '';
+  Object.keys(groups).forEach(function(slot) {
+    html += '<div class="slot-group">';
+    html += '<div class="slot-label">🕐 ' + slot + '</div>';
+    groups[slot].forEach(function(s) {
+      var pkgBadge = s.pkg === 'quarterly'
+        ? '<span class="s-pkg">Quarterly ₹15K</span>'
+        : '';
+      var grpBadge = s.type === 'group'
+        ? '<span class="s-grp">Group</span>'
+        : '';
+      html += '<button class="student-btn" onclick="selectStudent(' + s.id + ')">' +
+        '<span>' + s.name + ' ' + pkgBadge + grpBadge + '</span>' +
+        '<span class="s-fee">' + fmtAmount(s.fee) + '/mo</span>' +
+      '</button>';
+    });
+    html += '</div>';
+  });
+  document.getElementById('studentList').innerHTML = html;
+}
+
+// ── Select student ────────────────────────────────────────────────────────────
+window.selectStudent = async function(id) {
+  selectedStudent = STUDENTS.find(function(s){ return s.id === id; });
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('step2').style.display = 'block';
+
+  // Render info card
+  var s = selectedStudent;
+  var pkgText = s.pkg === 'quarterly'
+    ? '<span style="background:#fff3cd;color:#856404;border-radius:6px;padding:2px 8px;font-size:0.7rem;font-weight:700">Quarterly ₹15,000/3 months</span>'
+    : '<span style="background:#d1ecf1;color:#0c5460;border-radius:6px;padding:2px 8px;font-size:0.7rem;font-weight:700">Monthly</span>';
+  var typeText = s.type === 'group'
+    ? '<span style="background:#e2d9f3;color:#4a1a8c;border-radius:6px;padding:2px 8px;font-size:0.7rem;font-weight:700">Group</span>'
+    : '<span style="background:#e8f4fd;color:#1a6fa0;border-radius:6px;padding:2px 8px;font-size:0.7rem;font-weight:700">Individual</span>';
+
+  document.getElementById('studentCard').innerHTML =
+    '<div class="student-card">' +
+      '<div class="sc-name">' + s.name + '</div>' +
+      '<div class="sc-meta">' +
+        '<span>🕐 ' + s.slot + '</span>' +
+        '<span>' + typeText + '</span>' +
+        '<span>' + pkgText + '</span>' +
+      '</div>' +
+      '<div class="sc-fee-label">Monthly Fee</div>' +
+      '<div class="sc-fee-amount">' + fmtAmount(s.fee) + '</div>' +
+      (s.pkg === 'quarterly' ? '<div class="sc-fee-note">Quarterly plan: pay ₹15,000 once every 3 months</div>' : '') +
+    '</div>';
+
+  document.getElementById('paymentArea').innerHTML = '<div class="loading-state">Checking payment status…</div>';
+  await loadPaymentStatus(s);
+};
+
+window.goBack = function() {
+  selectedStudent = null;
+  document.getElementById('step2').style.display = 'none';
+  document.getElementById('step1').style.display = 'block';
+  document.getElementById('searchInput').value = '';
+  renderStudentList('');
+};
+
+async function loadPaymentStatus(s) {
+  try {
+    var docRef = doc(db, 'fee_payments', payDocId(s.id, currentMonthObj));
+    var snap   = await getDoc(docRef);
+    renderPaymentStatus(s, snap.exists() ? snap.data() : null);
+  } catch(e) {
+    document.getElementById('paymentArea').innerHTML = '<div class="empty-state">Error loading. Please retry.</div>';
+  }
+}
+
+function renderPaymentStatus(s, data) {
+  if (data) {
+    var paidDate = new Date(data.paid_at).toLocaleDateString('en-IN', {day:'numeric',month:'long',year:'numeric'});
+    document.getElementById('paymentArea').innerHTML =
+      '<div class="paid-card">' +
+        '<div class="paid-icon">✅</div>' +
+        '<div class="paid-title">Payment Recorded!</div>' +
+        '<div class="paid-amount">' + fmtAmount(data.amount_paid) + '</div>' +
+        '<div class="paid-date">Paid on ' + paidDate + ' · ' + monthLabel(currentMonthObj) + '</div>' +
+        '<button class="paid-change" onclick="clearPayment(' + s.id + ')">Clear / Re-enter</button>' +
+      '</div>';
+  } else {
+    var defaultAmt = s.pkg === 'quarterly' ? 15000 : s.fee;
+    document.getElementById('paymentArea').innerHTML =
+      '<div class="unpaid-card">' +
+        '<div class="unpaid-title">⚠️ No payment recorded for ' + monthLabel(currentMonthObj) + '</div>' +
+        '<div class="amount-label">Amount Paid (₹)</div>' +
+        '<input class="amount-input" type="number" id="amtInput" value="' + defaultAmt + '" min="0" placeholder="Enter amount">' +
+        '<button class="pay-btn" onclick="markPaid(' + s.id + ')">✅ Mark as Paid</button>' +
+      '</div>';
+  }
+}
+
+window.markPaid = async function(id) {
+  var s = STUDENTS.find(function(x){ return x.id === id; });
+  var amtVal = parseInt(document.getElementById('amtInput').value, 10);
+  if (!amtVal || amtVal <= 0) { alert('Please enter a valid amount'); return; }
+
+  var btn = document.querySelector('.pay-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    await setDoc(doc(db, 'fee_payments', payDocId(id, currentMonthObj)), {
+      student_id:   id,
+      student_name: s.name,
+      slot:         s.slot,
+      type:         s.type,
+      pkg:          s.pkg,
+      fee_expected: s.fee,
+      amount_paid:  amtVal,
+      month:        monthKey(currentMonthObj),
+      paid_at:      new Date().toISOString()
+    });
+    renderPaymentStatus(s, { amount_paid: amtVal, paid_at: new Date().toISOString() });
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '✅ Mark as Paid';
+    alert('Error saving. Please try again.');
+  }
+};
+
+window.clearPayment = async function(id) {
+  if (!confirm('Remove payment record for this month?')) return;
+  var s = STUDENTS.find(function(x){ return x.id === id; });
+  try {
+    await deleteDoc(doc(db, 'fee_payments', payDocId(id, currentMonthObj)));
+    renderPaymentStatus(s, null);
+  } catch(e) { alert('Error. Please try again.'); }
+};
+
+// ── Admin ─────────────────────────────────────────────────────────────────────
+window.openAdminModal = function() {
+  document.getElementById('adminPwdInput').value = '';
+  document.getElementById('adminErr').style.display = 'none';
+  document.getElementById('adminModal').classList.add('show');
+};
+window.closeAdminModal = function() {
+  document.getElementById('adminModal').classList.remove('show');
+};
+
+window.submitAdminLogin = async function() {
+  var pwd = document.getElementById('adminPwdInput').value;
+  if (pwd === ADMIN_PASS) {
+    closeAdminModal();
+    adminLoggedIn = true;
+    adminMonthObj = new Date(currentMonthObj);
+    document.getElementById('studentView').style.display = 'none';
+    document.getElementById('adminView').style.display   = 'block';
+    renderAdminMonth();
+  } else {
+    document.getElementById('adminErr').style.display = 'block';
+  }
+};
+
+window.adminLogout = function() {
+  adminLoggedIn = false;
+  document.getElementById('adminView').style.display   = 'none';
+  document.getElementById('studentView').style.display = 'block';
+};
+
+window.adminChangeMonth = function(delta) {
+  adminMonthObj = new Date(adminMonthObj.getFullYear(), adminMonthObj.getMonth() + delta, 1);
+  renderAdminMonth();
+};
+
+async function renderAdminMonth() {
+  document.getElementById('adminMonthLabel').textContent = monthLabel(adminMonthObj);
+  document.getElementById('adminStats').innerHTML = '<div class="loading-state" style="padding:20px 0">Loading…</div>';
+  document.getElementById('adminTable').innerHTML = '';
+
+  // Fetch all payments for this month
+  var payments = {};
+  try {
+    STUDENTS.forEach(function(s) {
+      var id = payDocId(s.id, adminMonthObj);
+      payments[s.id] = null; // default unpaid
+    });
+    var snaps = await Promise.all(
+      STUDENTS.map(function(s){ return getDoc(doc(db, 'fee_payments', payDocId(s.id, adminMonthObj))); })
+    );
+    snaps.forEach(function(snap, i) {
+      if (snap.exists()) payments[STUDENTS[i].id] = snap.data();
+    });
+  } catch(e) {
+    document.getElementById('adminStats').innerHTML = '<div class="empty-state">Error loading data.</div>';
+    return;
+  }
+
+  // Stats
+  var totalExpected  = MONTHLY_TOTAL;
+  var totalCollected = 0;
+  var paidCount      = 0;
+  STUDENTS.forEach(function(s) {
+    if (payments[s.id]) { totalCollected += payments[s.id].amount_paid; paidCount++; }
+  });
+  var pct = Math.round(totalCollected / totalExpected * 100);
+
+  document.getElementById('adminStats').innerHTML =
+    '<div class="astat"><div class="astat-num" style="color:#1a1a2e">' + fmtAmount(totalExpected) + '</div><div class="astat-label">Expected</div></div>' +
+    '<div class="astat"><div class="astat-num" style="color:#27ae60">' + fmtAmount(totalCollected) + '</div><div class="astat-label">Collected</div></div>' +
+    '<div class="astat"><div class="astat-num" style="color:#e74c3c">' + fmtAmount(totalExpected - totalCollected) + '</div><div class="astat-label">Pending</div></div>' +
+    '<div class="astat"><div class="astat-num" style="color:#3498db">' + pct + '%</div><div class="astat-label">Collected ' + paidCount + '/' + STUDENTS.length + '</div></div>';
+
+  // Table
+  var rows = '<div class="pt-header"><div>Student</div><div>Expected</div><div>Paid</div><div>Status</div></div>';
+  STUDENTS.forEach(function(s) {
+    var p   = payments[s.id];
+    var row = p
+      ? '<div class="pt-row paid-row">' +
+          '<div><div class="pt-name">' + s.name + '</div><div class="pt-slot">' + s.slot + '</div></div>' +
+          '<div class="pt-fee">' + fmtAmount(s.fee) + '</div>' +
+          '<div class="pt-paid-amt">' + fmtAmount(p.amount_paid) + '</div>' +
+          '<div><span class="pt-status-paid" onclick="adminClearPayment(' + s.id + ')">✅ Paid</span></div>' +
+        '</div>'
+      : '<div class="pt-row unpaid-row">' +
+          '<div><div class="pt-name">' + s.name + '</div><div class="pt-slot">' + s.slot + '</div></div>' +
+          '<div class="pt-fee">' + fmtAmount(s.fee) + '</div>' +
+          '<div class="pt-unpaid">—</div>' +
+          '<div><span class="pt-status-unpaid" onclick="adminMarkPaid(' + s.id + ')">⚠️ Unpaid</span></div>' +
+        '</div>';
+    rows += row;
+  });
+  document.getElementById('adminTable').innerHTML = rows;
+}
+
+window.adminMarkPaid = async function(id) {
+  var s = STUDENTS.find(function(x){ return x.id === id; });
+  var input = prompt('Enter amount paid by ' + s.name + ':', s.pkg === 'quarterly' ? '15000' : String(s.fee));
+  if (input === null) return;
+  var amt = parseInt(input, 10);
+  if (!amt || amt <= 0) { alert('Invalid amount'); return; }
+  try {
+    await setDoc(doc(db, 'fee_payments', payDocId(id, adminMonthObj)), {
+      student_id: id, student_name: s.name, slot: s.slot, type: s.type, pkg: s.pkg,
+      fee_expected: s.fee, amount_paid: amt, month: monthKey(adminMonthObj),
+      paid_at: new Date().toISOString(), marked_by_admin: true
+    });
+    renderAdminMonth();
+  } catch(e) { alert('Error saving.'); }
+};
+
+window.adminClearPayment = async function(id) {
+  var s = STUDENTS.find(function(x){ return x.id === id; });
+  if (!confirm('Clear payment for ' + s.name + ' for ' + monthLabel(adminMonthObj) + '?')) return;
+  try {
+    await deleteDoc(doc(db, 'fee_payments', payDocId(id, adminMonthObj)));
+    renderAdminMonth();
+  } catch(e) { alert('Error clearing.'); }
+};
+</script>
+</body>
+</html>
