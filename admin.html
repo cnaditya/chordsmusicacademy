@@ -82,6 +82,11 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .act-wa{flex:1;background:#25d366;color:#fff;border:none;border-radius:10px;padding:9px;font-size:0.78rem;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:4px}
 .act-detail{flex:0 0 auto;background:#f0f2f5;color:#555;border:none;border-radius:10px;padding:9px 12px;font-size:0.78rem;font-weight:700;cursor:pointer}
 .act-del{flex:0 0 auto;background:#fff0f0;color:#e74c3c;border:1.5px solid #fdd;border-radius:10px;padding:9px 12px;font-size:0.78rem;font-weight:700;cursor:pointer}
+.act-loginid{flex:0 0 auto;background:#7c3aed;color:#fff;border:none;border-radius:10px;padding:9px 12px;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.act-loginid:hover{background:#6d28d9}
+.card-loginid{font-size:0.65rem;color:#7c3aed;font-weight:700;letter-spacing:1px;margin-top:3px;font-family:monospace}
+.bulk-loginid-btn{flex:0 0 auto;border:2px solid #7c3aed;background:#7c3aed;color:#fff;border-radius:20px;padding:6px 14px;font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.bulk-loginid-btn:hover{background:#6d28d9;border-color:#6d28d9}
 
 /* Detail modal */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
@@ -149,6 +154,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
     <button class="filter-btn" onclick="setFilter('demo',this)">🟣 Demo Booked</button>
     <button class="filter-btn" onclick="setFilter('joined',this)">🟢 Joined</button>
     <button class="filter-btn" onclick="setFilter('lost',this)">⚫ Not Interested</button>
+    <button class="bulk-loginid-btn" onclick="generateAllLoginIds()">🔑 Generate All Login IDs</button>
   </div>
 
   <!-- Cards -->
@@ -216,6 +222,46 @@ async function loadPassword() {
   } catch(e) {}
 }
 loadPassword();
+
+function generateLoginId() {
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var suffix = '';
+  for (var i = 0; i < 6; i++) {
+    suffix += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return 'CMA-' + suffix;
+}
+
+window.sendLoginId = async function(id) {
+  var s = allStudents.find(function(x){ return x.id === id; });
+  if (!s) return;
+  var loginId = s.login_id;
+  if (!loginId) {
+    loginId = generateLoginId();
+    await updateDoc(doc(db, 'registrations', id), { login_id: loginId });
+    s.login_id = loginId;
+    var cardEl = document.getElementById('card-' + id);
+    if (cardEl) cardEl.outerHTML = buildCard(s);
+  }
+  var phone = (s.phone || '').replace(/\D/g, '');
+  if (!phone) { alert('No phone number for ' + (s.full_name || 'this student')); return; }
+  var examUrl = window.location.origin + '/exam-portal/';
+  var msg = 'Hi ' + (s.full_name || '').split(' ')[0] + '! 🎵\n\nYour Chords Music Academy Exam Portal Login ID is:\n\n*' + loginId + '*\n\nAccess your exam here: ' + examUrl + '\n\nEnter your Login ID to submit your exam video. Best of luck! 🎶';
+  window.open('https://api.whatsapp.com/send?phone=' + phone + '&text=' + encodeURIComponent(msg), '_blank');
+};
+
+window.generateAllLoginIds = async function() {
+  var missing = allStudents.filter(function(s){ return !s.login_id; });
+  if (!missing.length) { alert('All students already have Login IDs!'); return; }
+  if (!confirm('Generate Login IDs for ' + missing.length + ' student(s) without one?')) return;
+  for (var i = 0; i < missing.length; i++) {
+    var loginId = generateLoginId();
+    await updateDoc(doc(db, 'registrations', missing[i].id), { login_id: loginId });
+    missing[i].login_id = loginId;
+  }
+  renderCards();
+  alert('Done! Login IDs generated for ' + missing.length + ' student(s).');
+};
 
 window.doLogin = function() {
   var pwd = document.getElementById('pwdInput').value;
@@ -336,6 +382,7 @@ function buildCard(s) {
         '<div class="card-name">'+(s.full_name||'Unknown')+'</div>' +
         '<div class="card-meta">'+(s.phone||'—')+' · '+date+'</div>' +
         '<div class="card-regid">'+(s.reg_id||'')+'</div>' +
+        (s.login_id ? '<div class="card-loginid">🔑 '+s.login_id+'</div>' : '') +
       '</div>' +
     '</div>' +
     '<div class="card-tags">' +
@@ -346,6 +393,7 @@ function buildCard(s) {
     '<div class="card-status">'+stBtns+'</div>' +
     '<div class="card-actions">' +
       '<a href="https://api.whatsapp.com/send?phone='+phone+'&text='+waMsg+'" class="act-wa" target="_blank">💬 WhatsApp</a>' +
+      '<button class="act-loginid" onclick="sendLoginId(\''+s.id+'\')">' + (s.login_id ? '🔑 Send Login ID' : '🔑 Generate & Send') + '</button>' +
       '<button class="act-detail" onclick="showDetail(\''+s.id+'\')">Details</button>' +
       '<button class="act-del" onclick="deleteStudent(\''+s.id+'\',\''+s.full_name+'\')">🗑</button>' +
     '</div>' +
@@ -387,6 +435,7 @@ window.showDetail = function(id) {
   if (!s) return;
   var rows = [
     ['Reg ID', s.reg_id],
+    ['Login ID', s.login_id],
     ['Name', s.full_name],
     ['DOB', s.dob],
     ['Phone', s.phone],
