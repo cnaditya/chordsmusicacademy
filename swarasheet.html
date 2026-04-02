@@ -3375,7 +3375,14 @@ function cloudSaveTemplate() {
   var titleEl = document.getElementById('songTitle');
   var title = (titleEl ? titleEl.value.trim() : '') || 'Untitled';
   var docId = title.replace(/[^a-zA-Z0-9_\-\s]/g,'').trim().replace(/\s+/g,'_') || 'template';
-  var data = { title:title, notes:notes, fmt:fmt, saTonic:saTonic, bpm:metroBpm, version:2,
+  // Sanitize notes — Firestore rejects undefined values
+  var cleanNotes = notes.map(function(n) {
+    var cn = { name: n.name || '' };
+    if (n.midi !== undefined && n.midi !== null) cn.midi = n.midi;
+    if (n.chord !== undefined && n.chord !== null && n.chord !== '') cn.chord = n.chord;
+    return cn;
+  });
+  var data = { title:title, notes:cleanNotes, fmt:fmt, saTonic:saTonic, bpm:metroBpm, version:2,
     savedAt: firebase.firestore.FieldValue.serverTimestamp() };
   setCloudStatus('Saving...');
   getCloudRef().doc(docId).set(data).then(function() {
