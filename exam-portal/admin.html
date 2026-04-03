@@ -229,6 +229,58 @@
         </div>
     </div>
 
+    <!-- Manual Entry -->
+    <div class="section">
+        <h3>Add Submission Manually</h3>
+        <div id="manual-msg" style="display:none;margin-bottom:1rem;padding:0.75rem 1rem;border-radius:8px;font-size:0.84rem"></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1rem">
+            <div>
+                <label>Access Code *</label>
+                <input type="text" id="m-code" placeholder="TRN-XXXXXX" style="text-transform:uppercase">
+            </div>
+            <div>
+                <label>Full Name *</label>
+                <input type="text" id="m-name" placeholder="Student full name">
+            </div>
+            <div>
+                <label>Date of Birth *</label>
+                <input type="text" id="m-dob" placeholder="DD/MM/YYYY">
+            </div>
+            <div>
+                <label>Grade *</label>
+                <select id="m-grade">
+                    <option value="">Select grade</option>
+                    <option>Initial Grade</option>
+                    <option>Grade 1</option>
+                    <option>Grade 2</option>
+                    <option>Grade 3</option>
+                    <option>Grade 4</option>
+                    <option>Grade 5</option>
+                    <option>Grade 6</option>
+                    <option>Grade 7</option>
+                    <option>Grade 8</option>
+                </select>
+            </div>
+            <div>
+                <label>Instrument *</label>
+                <select id="m-instrument">
+                    <option value="">Select instrument</option>
+                    <option>Piano</option>
+                    <option>Guitar</option>
+                    <option>Drums</option>
+                    <option>Vocals</option>
+                    <option>Violin</option>
+                    <option>Flute</option>
+                </select>
+            </div>
+            <div>
+                <label>Google Drive Video Link *</label>
+                <input type="text" id="m-video" placeholder="https://drive.google.com/...">
+            </div>
+        </div>
+        <button class="btn" onclick="manualSubmit()">✅ Save Submission</button>
+    </div>
+
     <!-- Submissions Table -->
     <div class="section">
         <h3>All Student Submissions</h3>
@@ -561,6 +613,56 @@
         a.href = URL.createObjectURL(blob);
         a.download = `trinity-exam-${new Date().toISOString().slice(0, 10)}.csv`;
         a.click();
+    }
+
+    async function manualSubmit() {
+        const code = (document.getElementById('m-code').value || '').trim().toUpperCase();
+        const full_name = (document.getElementById('m-name').value || '').trim();
+        const dob = (document.getElementById('m-dob').value || '').trim();
+        const grade = document.getElementById('m-grade').value;
+        const instrument = document.getElementById('m-instrument').value;
+        const video_link = (document.getElementById('m-video').value || '').trim();
+        const msg = document.getElementById('manual-msg');
+
+        if (!code || !full_name || !dob || !grade || !instrument || !video_link) {
+            msg.style.display = 'block';
+            msg.style.background = 'rgba(231,76,60,0.15)';
+            msg.style.color = '#e74c3c';
+            msg.textContent = '⚠️ All fields are required.';
+            return;
+        }
+
+        msg.style.display = 'block';
+        msg.style.background = 'rgba(200,162,39,0.1)';
+        msg.style.color = '#c9a227';
+        msg.textContent = 'Saving...';
+
+        try {
+            const res = await fetch('/.netlify/functions/exam-save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code, full_name, dob, grade, instrument, video_link })
+            });
+            const data = await res.json();
+            if (data.success) {
+                msg.style.background = 'rgba(39,174,96,0.15)';
+                msg.style.color = '#27ae60';
+                msg.textContent = '✅ Submission saved for ' + full_name + ' (' + code + ')';
+                // Clear fields
+                ['m-code','m-name','m-dob','m-video'].forEach(id => document.getElementById(id).value = '');
+                document.getElementById('m-grade').value = '';
+                document.getElementById('m-instrument').value = '';
+                loadDashboard();
+            } else {
+                msg.style.background = 'rgba(231,76,60,0.15)';
+                msg.style.color = '#e74c3c';
+                msg.textContent = '❌ ' + (data.error || 'Failed to save');
+            }
+        } catch(e) {
+            msg.style.background = 'rgba(231,76,60,0.15)';
+            msg.style.color = '#e74c3c';
+            msg.textContent = '❌ Connection error. Please try again.';
+        }
     }
 
     async function deleteAllUnused() {
