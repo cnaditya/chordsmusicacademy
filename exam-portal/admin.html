@@ -376,6 +376,13 @@
         document.getElementById('assign-status').textContent = '✅ ' + unassigned.length + ' students assigned';
     }
 
+    function unassignCode(key) {
+        delete assignments[key];
+        delete sentStatus[key];
+        saveAssignments();
+        renderRoster();
+    }
+
     function assignCode(key, code) {
         assignments[key] = code;
         saveAssignments();
@@ -413,9 +420,10 @@
             if (code) {
                 codeCell = '<span class="code-assigned">' + code + '</span>';
                 const waUrl = waMessage(s, code);
-                actionCell = sent
+                actionCell = (sent
                     ? '<span class="sent-badge">✓ Sent</span> <a href="' + waUrl + '" target="_blank" onclick="markSent(\'' + key + '\')" class="btn-wa" style="opacity:0.6;font-size:0.72rem">Resend</a>'
-                    : '<a href="' + waUrl + '" target="_blank" onclick="markSent(\'' + key + '\')" class="btn-wa">📲 Send on WhatsApp</a>';
+                    : '<a href="' + waUrl + '" target="_blank" onclick="markSent(\'' + key + '\')" class="btn-wa">📲 Send on WhatsApp</a>')
+                    + ' <button onclick="unassignCode(\'' + key + '\')" style="background:transparent;border:1px solid #555;color:#888;border-radius:6px;padding:0.35rem 0.6rem;font-size:0.72rem;cursor:pointer;margin-left:4px" title="Remove assignment">✕</button>';
             } else {
                 codeCell = '<span class="code-unassigned">Not assigned</span>';
                 if (freeCodes.length > 0) {
