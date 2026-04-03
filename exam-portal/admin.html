@@ -364,7 +364,8 @@
     }
 
     function autoAssignAll() {
-        const unassigned = STUDENTS.filter(s => !assignments[studentKey(s)]);
+        const unassigned = STUDENTS.filter(s => !assignments[studentKey(s)] &&
+            !allSubmissions.find(sub => sub.full_name && sub.full_name.toLowerCase().includes(s.name.toLowerCase())));
         const freeCodes = availableCodes.filter(c => !Object.values(assignments).includes(c));
         if (freeCodes.length < unassigned.length) {
             alert('Not enough free codes! Need ' + unassigned.length + ', have ' + freeCodes.length + '. Generate more codes first.');
@@ -416,8 +417,15 @@
             const sent = sentStatus[key];
             const tClass = s.teacher === 'Aditya' ? 'teacher-aditya' : 'teacher-brahmani';
 
+            // Check if this student already has a submission in Supabase (by name match)
+            const submitted = allSubmissions.find(sub => sub.full_name &&
+                sub.full_name.toLowerCase().includes(s.name.toLowerCase()));
+
             let codeCell, actionCell;
-            if (code) {
+            if (submitted) {
+                codeCell = '<span class="code-assigned">' + submitted.access_code + '</span>';
+                actionCell = '<span class="sent-badge">✅ Already Submitted</span>';
+            } else if (code) {
                 codeCell = '<span class="code-assigned">' + code + '</span>';
                 const waUrl = waMessage(s, code);
                 actionCell = (sent
@@ -428,7 +436,6 @@
                 codeCell = '<span class="code-unassigned">Not assigned</span>';
                 if (freeCodes.length > 0) {
                     actionCell = '<button class="btn-assign" onclick="assignCode(\'' + key + '\',\'' + freeCodes[0] + '\')">Assign Code</button>';
-                    // Remove from freeCodes display for next iteration (virtual)
                 } else {
                     actionCell = '<span style="color:#555;font-size:0.78rem">No free codes</span>';
                 }
