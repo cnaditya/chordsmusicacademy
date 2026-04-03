@@ -236,6 +236,7 @@
             <input type="text" id="search-input" placeholder="Search by name, grade, instrument, code..." oninput="filterTable()">
             <button class="btn btn-sm btn-outline" onclick="downloadCSV()">Download CSV</button>
             <button class="btn btn-sm btn-outline" onclick="loadDashboard()">Refresh</button>
+            <button class="btn btn-sm" onclick="deleteAllUnused()" style="background:#e74c3c;color:#fff;border:none">🗑 Delete All Unused Codes</button>
         </div>
         <div class="table-wrap">
             <table>
@@ -560,6 +561,28 @@
         a.href = URL.createObjectURL(blob);
         a.download = `trinity-exam-${new Date().toISOString().slice(0, 10)}.csv`;
         a.click();
+    }
+
+    async function deleteAllUnused() {
+        const unused = allSubmissions.filter(s => !s.full_name).map(s => s.access_code);
+        if (!unused.length) { alert('No unused codes to delete.'); return; }
+        if (!confirm('Delete ' + unused.length + ' unused/pending codes? This cannot be undone.\n\nSubmitted codes (like Siri\'s) will NOT be deleted.')) return;
+        try {
+            const res = await fetch('/.netlify/functions/exam-admin-bulk-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-admin-token': adminPassword },
+                body: JSON.stringify({ codes: unused })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('✅ Deleted ' + unused.length + ' unused codes.');
+                loadDashboard();
+            } else {
+                alert('Error: ' + (data.error || 'Failed'));
+            }
+        } catch(e) {
+            alert('Connection error. Please try again.');
+        }
     }
 
     function logout() {
