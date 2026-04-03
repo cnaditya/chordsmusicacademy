@@ -126,6 +126,23 @@
         .video-link:hover { text-decoration: underline; }
         .empty-cell { text-align: center; color: #444; padding: 3rem !important; }
 
+        /* Roster section */
+        .roster-toolbar { display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; margin-bottom:1rem; }
+        .roster-table { width:100%; border-collapse:collapse; font-size:0.84rem; min-width:680px; }
+        .roster-table th { padding:0.6rem 0.75rem; font-size:0.72rem; color:#666; font-weight:600; text-align:left; border-bottom:1px solid #2a2a40; text-transform:uppercase; letter-spacing:0.5px; }
+        .roster-table td { padding:0.65rem 0.75rem; border-bottom:1px solid #181828; vertical-align:middle; }
+        .roster-table tr:hover td { background:#181828; }
+        .teacher-aditya { color:#c9a227; font-weight:700; font-size:0.78rem; }
+        .teacher-brahmani { color:#5dade2; font-weight:700; font-size:0.78rem; }
+        .code-assigned { font-family:monospace; color:#c9a227; font-size:0.82rem; letter-spacing:1px; background:#1c1c2e; border:1px solid #33334d; border-radius:4px; padding:3px 8px; }
+        .code-unassigned { color:#444; font-size:0.82rem; font-style:italic; }
+        .btn-wa { background:#25d366; color:#fff; border:none; border-radius:6px; padding:0.4rem 0.75rem; font-size:0.78rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+        .btn-wa:hover { background:#1db954; }
+        .btn-wa:disabled { background:#333; color:#666; cursor:default; }
+        .btn-assign { background:transparent; border:1px solid #33334d; color:#888; border-radius:6px; padding:0.38rem 0.7rem; font-size:0.75rem; cursor:pointer; }
+        .btn-assign:hover { border-color:#c9a227; color:#c9a227; }
+        .sent-badge { color:#27ae60; font-size:0.75rem; font-weight:700; }
+
         @media (max-width: 600px) {
             .dashboard { padding: 1rem; }
             .gen-row { flex-direction: column; }
@@ -186,6 +203,32 @@
         <div id="codes-output"></div>
     </div>
 
+    <!-- Assign & Send Codes -->
+    <div class="section">
+        <h3>Assign &amp; Send Codes to Students</h3>
+        <div class="roster-toolbar">
+            <button class="btn btn-sm" onclick="autoAssignAll()">⚡ Auto-Assign All</button>
+            <button class="btn btn-sm btn-outline" onclick="clearAllAssignments()">Clear Assignments</button>
+            <span id="assign-status" style="font-size:0.8rem;color:#888"></span>
+        </div>
+        <div class="table-wrap">
+            <table class="roster-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Teacher</th>
+                        <th>Student</th>
+                        <th>Grade</th>
+                        <th>Phone</th>
+                        <th>Assigned Code</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="roster-body"></tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- Submissions Table -->
     <div class="section">
         <h3>All Student Submissions</h3>
@@ -219,6 +262,136 @@
 </div>
 
 <script>
+    // ── Student Roster ───────────────────────────────────────────────────────
+    const STUDENTS = [
+        { teacher:'Aditya',   name:'Gayatri',    grade:'Grade 2',        phone:'19178619761' },
+        { teacher:'Aditya',   name:'Pratham',    grade:'Initial Grade',  phone:'64224626803' },
+        { teacher:'Aditya',   name:'Kanvas',     grade:'Grade 2',        phone:'919848161839' },
+        { teacher:'Aditya',   name:'Adhyasri',   grade:'Grade 1',        phone:'919948144200' },
+        { teacher:'Aditya',   name:'Harshith',   grade:'Grade 2',        phone:'13172204227' },
+        { teacher:'Aditya',   name:'Siri',       grade:'Grade 3',        phone:'14694716690' },
+        { teacher:'Aditya',   name:'Nainika',    grade:'Grade 1',        phone:'19257918375' },
+        { teacher:'Aditya',   name:'Pavan',      grade:'Initial Grade',  phone:'971557246627' },
+        { teacher:'Aditya',   name:'Pranathi',   grade:'Grade 4',        phone:'17329257487' },
+        { teacher:'Aditya',   name:'Parinita',   grade:'Grade 2',        phone:'919739054346' },
+        { teacher:'Aditya',   name:'Ujjwal',     grade:'Grade 3',        phone:'919848822650' },
+        { teacher:'Aditya',   name:'Cherika',    grade:'Grade 3',        phone:'919030941993' },
+        { teacher:'Aditya',   name:'Revanth',    grade:'Grade 2',        phone:'919618971986' },
+        { teacher:'Brahmani', name:'Devisri',    grade:'Grade 1',        phone:'917986755373' },
+        { teacher:'Brahmani', name:'Meghana',    grade:'Grade 1',        phone:'919490461651' },
+        { teacher:'Brahmani', name:'Karthikeya', grade:'Initial Grade',  phone:'14699967116' },
+        { teacher:'Brahmani', name:'Vedanth',    grade:'Initial Grade',  phone:'919618971986' },
+        { teacher:'Brahmani', name:'Kavin',      grade:'Grade 1',        phone:'919348883284' },
+        { teacher:'Brahmani', name:'Aanya',      grade:'Grade 2',        phone:'17029576123' },
+        { teacher:'Brahmani', name:'Surya',      grade:'Grade 1',        phone:'18162868085' },
+        { teacher:'Brahmani', name:'Eeshwar',    grade:'Grade 1',        phone:'15107096563' },
+    ];
+
+    let availableCodes = [];  // unassigned codes from Supabase
+    let assignments = {};     // { studentKey: code }
+    let sentStatus = {};      // { studentKey: true }
+
+    function studentKey(s) { return s.name.toLowerCase() + '_' + s.teacher.toLowerCase(); }
+
+    function loadAssignments() {
+        try { assignments = JSON.parse(localStorage.getItem('trinity_assignments') || '{}'); } catch(e) { assignments = {}; }
+        try { sentStatus = JSON.parse(localStorage.getItem('trinity_sent') || '{}'); } catch(e) { sentStatus = {}; }
+    }
+
+    function saveAssignments() {
+        localStorage.setItem('trinity_assignments', JSON.stringify(assignments));
+        localStorage.setItem('trinity_sent', JSON.stringify(sentStatus));
+    }
+
+    function clearAllAssignments() {
+        if (!confirm('Clear all code assignments? This does NOT remove codes from Supabase.')) return;
+        assignments = {}; sentStatus = {};
+        saveAssignments();
+        renderRoster();
+    }
+
+    function autoAssignAll() {
+        const unassigned = STUDENTS.filter(s => !assignments[studentKey(s)]);
+        const freeCodes = availableCodes.filter(c => !Object.values(assignments).includes(c));
+        if (freeCodes.length < unassigned.length) {
+            alert('Not enough free codes! Need ' + unassigned.length + ', have ' + freeCodes.length + '. Generate more codes first.');
+            return;
+        }
+        unassigned.forEach((s, i) => { assignments[studentKey(s)] = freeCodes[i]; });
+        saveAssignments();
+        renderRoster();
+        document.getElementById('assign-status').textContent = '✅ ' + unassigned.length + ' students assigned';
+    }
+
+    function assignCode(key, code) {
+        assignments[key] = code;
+        saveAssignments();
+        renderRoster();
+    }
+
+    function markSent(key) {
+        sentStatus[key] = true;
+        saveAssignments();
+        renderRoster();
+    }
+
+    function waMessage(student, code) {
+        const msg = 'Hi ' + student.name + '! 🎵\n'
+            + 'Your Trinity ' + student.grade + ' Exam access code is: *' + code + '*\n'
+            + 'Please login here to submit your performance video 👇\n'
+            + 'https://chordsmusicacademy.in/exam-portal\n'
+            + '- Chords Music Academy 🎹';
+        return 'https://api.whatsapp.com/send?phone=' + student.phone + '&text=' + encodeURIComponent(msg);
+    }
+
+    function renderRoster() {
+        const usedCodes = new Set(Object.values(assignments));
+        const freeCodes = availableCodes.filter(c => !usedCodes.has(c));
+        const tbody = document.getElementById('roster-body');
+        if (!tbody) return;
+
+        tbody.innerHTML = STUDENTS.map((s, i) => {
+            const key = studentKey(s);
+            const code = assignments[key];
+            const sent = sentStatus[key];
+            const tClass = s.teacher === 'Aditya' ? 'teacher-aditya' : 'teacher-brahmani';
+
+            let codeCell, actionCell;
+            if (code) {
+                codeCell = '<span class="code-assigned">' + code + '</span>';
+                const waUrl = waMessage(s, code);
+                actionCell = sent
+                    ? '<span class="sent-badge">✓ Sent</span> <a href="' + waUrl + '" target="_blank" onclick="markSent(\'' + key + '\')" class="btn-wa" style="opacity:0.6;font-size:0.72rem">Resend</a>'
+                    : '<a href="' + waUrl + '" target="_blank" onclick="markSent(\'' + key + '\')" class="btn-wa">📲 Send on WhatsApp</a>';
+            } else {
+                codeCell = '<span class="code-unassigned">Not assigned</span>';
+                if (freeCodes.length > 0) {
+                    actionCell = '<button class="btn-assign" onclick="assignCode(\'' + key + '\',\'' + freeCodes[0] + '\')">Assign Code</button>';
+                    // Remove from freeCodes display for next iteration (virtual)
+                } else {
+                    actionCell = '<span style="color:#555;font-size:0.78rem">No free codes</span>';
+                }
+            }
+
+            return '<tr>'
+                + '<td style="color:#444">' + (i+1) + '</td>'
+                + '<td><span class="' + tClass + '">' + s.teacher + '</span></td>'
+                + '<td style="font-weight:600">' + s.name + '</td>'
+                + '<td style="color:#aaa">' + s.grade + '</td>'
+                + '<td style="color:#555;font-family:monospace;font-size:0.8rem">+' + s.phone + '</td>'
+                + '<td>' + codeCell + '</td>'
+                + '<td>' + actionCell + '</td>'
+                + '</tr>';
+        }).join('');
+
+        // Update assign status
+        const totalAssigned = STUDENTS.filter(s => assignments[studentKey(s)]).length;
+        const totalSent = STUDENTS.filter(s => sentStatus[studentKey(s)]).length;
+        document.getElementById('assign-status').textContent =
+            totalAssigned + '/' + STUDENTS.length + ' assigned · ' + totalSent + ' sent';
+    }
+
+    // ── Admin Auth / Dashboard ───────────────────────────────────────────────
     let adminPassword = '';
     let allSubmissions = [];
 
@@ -256,6 +429,12 @@
                 allSubmissions = data.submissions;
                 renderTable(allSubmissions);
                 updateStats(allSubmissions);
+                // Load available (unassigned) codes for roster
+                availableCodes = allSubmissions
+                    .filter(s => !s.full_name)
+                    .map(s => s.access_code);
+                loadAssignments();
+                renderRoster();
             }
         } catch (e) {
             const err = document.getElementById('login-error');
