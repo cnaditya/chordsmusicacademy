@@ -543,9 +543,12 @@
                 <td style="color:#555">${s.submitted_at
                     ? new Date(s.submitted_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
                     : '—'}</td>
-                <td>${s.full_name
-                    ? `<button onclick="clearSubmission('${escHtml(s.access_code)}')" style="background:transparent;border:1px solid #555;color:#e74c3c;border-radius:6px;padding:0.3rem 0.6rem;font-size:0.72rem;cursor:pointer" title="Clear submission data">🗑</button>`
-                    : ''}</td>
+                <td style="white-space:nowrap">
+                    ${s.full_name
+                        ? `<button onclick="clearSubmission('${escHtml(s.access_code)}')" style="background:transparent;border:1px solid #555;color:#e67e22;border-radius:6px;padding:0.3rem 0.6rem;font-size:0.72rem;cursor:pointer;margin-right:4px" title="Clear submission data only">🗑 Clear</button>`
+                        : ''}
+                    <button onclick="deleteCode('${escHtml(s.access_code)}')" style="background:transparent;border:1px solid #e74c3c;color:#e74c3c;border-radius:6px;padding:0.3rem 0.6rem;font-size:0.72rem;cursor:pointer" title="Delete access code entirely">✕ Delete Code</button>
+                </td>
             </tr>
         `).join('');
     }
@@ -632,6 +635,25 @@
         a.href = URL.createObjectURL(blob);
         a.download = `trinity-exam-${new Date().toISOString().slice(0, 10)}.csv`;
         a.click();
+    }
+
+    async function deleteCode(code) {
+        if (!confirm('Permanently delete access code ' + code + '?\nThis removes the code entirely from the system.')) return;
+        try {
+            const res = await fetch('/.netlify/functions/exam-admin-bulk-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-admin-token': adminPassword },
+                body: JSON.stringify({ codes: [code], force: true })
+            });
+            const data = await res.json();
+            if (data.success) {
+                loadDashboard();
+            } else {
+                alert('Error: ' + (data.error || 'Failed to delete'));
+            }
+        } catch(e) {
+            alert('Connection error. Please try again.');
+        }
     }
 
     async function clearSubmission(code) {

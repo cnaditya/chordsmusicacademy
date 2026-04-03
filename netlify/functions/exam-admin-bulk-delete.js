@@ -13,7 +13,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { codes } = JSON.parse(event.body || "{}");
+    const { codes, force } = JSON.parse(event.body || "{}");
     if (!Array.isArray(codes) || codes.length === 0) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: "codes array required" }) };
     }
@@ -21,10 +21,13 @@ exports.handler = async (event) => {
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
 
-    // Delete rows where access_code is in the list and full_name is null (unsubmitted only)
+    // If force=true, delete regardless of submission status; otherwise only unsubmitted
     const inList = codes.map(c => '"' + c.toUpperCase().trim() + '"').join(',');
+    const filter = force
+      ? `access_code=in.(${inList})`
+      : `access_code=in.(${inList})&full_name=is.null`;
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/exam_submissions?access_code=in.(${inList})&full_name=is.null`,
+      `${SUPABASE_URL}/rest/v1/exam_submissions?${filter}`,
       {
         method: "DELETE",
         headers: {
