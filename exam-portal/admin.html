@@ -303,6 +303,7 @@
                         <th>Video</th>
                         <th>Status</th>
                         <th>Submitted On</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
@@ -542,6 +543,9 @@
                 <td style="color:#555">${s.submitted_at
                     ? new Date(s.submitted_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
                     : '—'}</td>
+                <td>${s.full_name
+                    ? `<button onclick="clearSubmission('${escHtml(s.access_code)}')" style="background:transparent;border:1px solid #555;color:#e74c3c;border-radius:6px;padding:0.3rem 0.6rem;font-size:0.72rem;cursor:pointer" title="Clear submission data">🗑</button>`
+                    : ''}</td>
             </tr>
         `).join('');
     }
@@ -628,6 +632,25 @@
         a.href = URL.createObjectURL(blob);
         a.download = `trinity-exam-${new Date().toISOString().slice(0, 10)}.csv`;
         a.click();
+    }
+
+    async function clearSubmission(code) {
+        if (!confirm('Clear all submission data for ' + code + '?\nThe access code will remain but name, DOB, grade, video will be deleted.')) return;
+        try {
+            const res = await fetch('/.netlify/functions/exam-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+            const data = await res.json();
+            if (data.success) {
+                loadDashboard();
+            } else {
+                alert('Error: ' + (data.error || 'Failed'));
+            }
+        } catch(e) {
+            alert('Connection error. Please try again.');
+        }
     }
 
     async function manualSubmit() {
