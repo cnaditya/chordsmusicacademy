@@ -292,6 +292,12 @@
             <button class="tab-btn" data-filter="overdue" onclick="setFilter('overdue',this)">Overdue</button>
             <button class="tab-btn" data-filter="quarterly_due" onclick="setFilter('quarterly_due',this)">Quarterly Due</button>
         </div>
+        <div class="filter-tabs" style="margin-top:-0.5rem">
+            <span style="color:#555;font-size:0.78rem;align-self:center;margin-right:0.25rem">Teacher:</span>
+            <button class="tab-btn active" data-teacher="all" onclick="setTeacher('all',this)" style="background:#c9a227;color:#000;border-color:#c9a227">All</button>
+            <button class="tab-btn" data-teacher="Aditya" onclick="setTeacher('Aditya',this)" style="color:#c9a227;border-color:#c9a227">Aditya</button>
+            <button class="tab-btn" data-teacher="Brahmani" onclick="setTeacher('Brahmani',this)" style="color:#5dade2;border-color:#5dade2">Brahmani</button>
+        </div>
 
         <div class="table-wrap">
             <table id="main-table">
@@ -444,6 +450,7 @@ let allRecords = [];
 let allPeriods = [];
 let currentPeriod = '';
 let currentFilter = 'all';
+let currentTeacher = 'all';
 
 const PLAN_AMOUNTS = {
     monthly_4500: { amount: 4500, type: 'monthly' },
@@ -608,7 +615,12 @@ function renderTable() {
     const tbody = document.getElementById('main-tbody');
     let students = [...allStudents];
 
-    // Apply filter
+    // Apply teacher filter
+    if (currentTeacher !== 'all') {
+        students = students.filter(s => s.teacher === currentTeacher);
+    }
+
+    // Apply status filter
     if (currentFilter !== 'all') {
         students = students.filter(s => {
             const rec = getRecordForStudent(s.id);
@@ -730,7 +742,14 @@ function formatPlan(plan, type, amount) {
 
 function setFilter(filter, btn) {
     currentFilter = filter;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTable();
+}
+
+function setTeacher(teacher, btn) {
+    currentTeacher = teacher;
+    document.querySelectorAll('[data-teacher]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     renderTable();
 }
