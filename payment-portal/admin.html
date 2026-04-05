@@ -356,13 +356,18 @@
                 </select>
             </div>
             <div>
-                <label>Plan *</label>
-                <select id="es-plan">
+                <label>Plan</label>
+                <select id="es-plan" onchange="onEditPlanChange()">
                     <option value="monthly_4500">Monthly ₹4,500</option>
                     <option value="monthly_5000">Monthly ₹5,000</option>
                     <option value="monthly_6000">Monthly ₹6,000</option>
                     <option value="quarterly_15000">Quarterly ₹15,000</option>
+                    <option value="custom">Custom amount</option>
                 </select>
+            </div>
+            <div>
+                <label>Amount Due (₹)</label>
+                <input type="number" id="es-amount" placeholder="e.g. 4000" min="0">
             </div>
             <div>
                 <label>Billing Day</label>
@@ -764,6 +769,19 @@ function setTeacher(teacher, btn) {
     renderTable();
 }
 
+function onEditPlanChange() {
+    const plan = document.getElementById('es-plan').value;
+    const amtMap = { monthly_4500:4500, monthly_5000:5000, monthly_6000:6000, quarterly_15000:15000 };
+    const amtField = document.getElementById('es-amount');
+    if (plan === 'custom') {
+        amtField.disabled = false;
+        amtField.focus();
+    } else {
+        amtField.value = amtMap[plan] || '';
+        amtField.disabled = false;
+    }
+}
+
 function toggleToday(btn) {
     todayOnly = !todayOnly;
     btn.style.background = todayOnly ? '#2ecc71' : 'transparent';
@@ -987,7 +1005,12 @@ function openEditStudent(studentId) {
     document.getElementById('es-name').value = s.name;
     document.getElementById('es-phone').value = s.phone || '';
     document.getElementById('es-teacher').value = s.teacher || 'Aditya';
-    document.getElementById('es-plan').value = s.plan || 'monthly_5000';
+    const planAmounts = { monthly_4500:4500, monthly_5000:5000, monthly_6000:6000, quarterly_15000:15000 };
+    const stdAmount = planAmounts[s.plan];
+    const isCustom = s.amount_due && s.amount_due !== stdAmount;
+    document.getElementById('es-plan').value = isCustom ? 'custom' : (s.plan || 'monthly_5000');
+    document.getElementById('es-amount').value = s.amount_due || stdAmount || '';
+    document.getElementById('es-amount').disabled = !isCustom;
     document.getElementById('es-billing-day').value = s.billing_day || 1;
     document.getElementById('es-class-days').value = s.class_days || '';
     document.getElementById('es-class-time').value = s.class_time || '';
@@ -1009,7 +1032,7 @@ async function saveEditStudent() {
         class_time: document.getElementById('es-class-time').value.trim(),
         instrument: document.getElementById('es-instrument').value.trim() || 'Piano',
         notes: document.getElementById('es-notes').value.trim(),
-        amount_due: { monthly_4500:4500, monthly_5000:5000, monthly_6000:6000, quarterly_15000:15000 }[document.getElementById('es-plan').value] || 5000,
+        amount_due: parseInt(document.getElementById('es-amount').value) || ({ monthly_4500:4500, monthly_5000:5000, monthly_6000:6000, quarterly_15000:15000 }[document.getElementById('es-plan').value] || 5000),
     };
     if (!student.name) { showModalMsg('edit-student-msg', 'Name is required', 'error'); return; }
     try {
