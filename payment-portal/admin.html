@@ -405,13 +405,22 @@ async function adminLogin() {
     document.getElementById('login-error').style.display = 'none';
 
     adminToken = pass;
-    const ok = await loadData();
-    if (!ok) {
+    const result = await loadData();
+    if (result === 'unauthorized') {
         adminToken = '';
         document.getElementById('login-error').textContent = 'Invalid password.';
         document.getElementById('login-error').style.display = 'block';
         btn.disabled = false;
         btn.textContent = 'Login';
+        return;
+    }
+    if (result === 'error') {
+        // Password accepted but DB not set up yet — proceed to dashboard, show setup prompt
+        sessionStorage.setItem('pay_admin_token', pass);
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        document.getElementById('logout-btn').style.display = 'inline-block';
+        alert('Password correct! Database not set up yet. Click ⚙️ Setup Database in the top bar to create tables, then seed students.');
         return;
     }
     sessionStorage.setItem('pay_admin_token', pass);
@@ -435,6 +444,7 @@ document.getElementById('admin-pass').addEventListener('keydown', (e) => {
 });
 
 // ----- Data -----
+// Returns: true (success), 'unauthorized' (wrong password), 'error' (db/server error)
 async function loadData(period) {
     const url = period
         ? `/.netlify/functions/pay-admin-get?period=${encodeURIComponent(period)}`
@@ -443,22 +453,23 @@ async function loadData(period) {
         const res = await fetch(url, {
             headers: { 'x-admin-token': adminToken },
         });
-        if (res.status === 401) return false;
+        if (res.status === 401) return 'unauthorized';
+        if (!res.ok) return 'error';
         const data = await res.json();
-        if (!data.success) return false;
+        if (!data.success) return 'error';
 
         allStudents = data.students || [];
         allRecords = data.records || [];
         allPeriods = data.periods || [];
         return true;
     } catch (e) {
-        return false;
+        return 'error';
     }
 }
 
 async function refreshData() {
-    const ok = await loadData(currentPeriod);
-    if (ok) renderAll();
+    const result = await loadData(currentPeriod);
+    if (result === true) renderAll();
 }
 
 // ----- Render -----
@@ -978,12 +989,13 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
     const saved = sessionStorage.getItem('pay_admin_token');
     if (saved) {
         adminToken = saved;
-        const ok = await loadData();
-        if (ok) {
+        const result = await loadData();
+        if (result === true || result === 'error') {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('logout-btn').style.display = 'inline-block';
-            renderAll();
+            if (result === true) renderAll();
+            else alert('Password correct! Database not set up yet. Click ⚙️ Setup Database in the top bar to create tables, then seed students.');
         } else {
             adminToken = '';
             sessionStorage.removeItem('pay_admin_token');
