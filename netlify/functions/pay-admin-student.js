@@ -213,13 +213,14 @@ exports.handler = async (event) => {
       if (!id || !student) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: "id and student required" }) };
       }
-      const planAmounts = { monthly_4500:4500, monthly_5000:5000, monthly_6000:6000, quarterly_15000:15000 };
       const payload = {};
       if (student.name) payload.name = student.name.trim();
       if (student.phone !== undefined) payload.phone = student.phone || null;
       if (student.teacher) payload.teacher = student.teacher;
-      if (student.plan) { payload.plan = student.plan; payload.amount_due = planAmounts[student.plan] || student.amount_due; }
-      if (student.billing_day) payload.billing_day = parseInt(student.billing_day);
+      if (student.payment_type) payload.payment_type = student.payment_type;
+      if (student.amount_due) payload.amount_due = parseInt(student.amount_due);
+      if (student.billing_day !== undefined) payload.billing_day = parseInt(student.billing_day) || 1;
+      if (student.total_classes_per_cycle) payload.total_classes_per_cycle = parseInt(student.total_classes_per_cycle);
       if (student.class_days !== undefined) payload.class_days = student.class_days;
       if (student.class_time !== undefined) payload.class_time = student.class_time;
       if (student.instrument) payload.instrument = student.instrument;

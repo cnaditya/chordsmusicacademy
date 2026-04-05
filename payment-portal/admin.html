@@ -356,22 +356,24 @@
                 </select>
             </div>
             <div>
-                <label>Plan</label>
-                <select id="es-plan" onchange="onEditPlanChange()">
-                    <option value="monthly_4500">Monthly ₹4,500</option>
-                    <option value="monthly_5000">Monthly ₹5,000</option>
-                    <option value="monthly_6000">Monthly ₹6,000</option>
-                    <option value="quarterly_15000">Quarterly ₹15,000</option>
-                    <option value="custom">Custom amount</option>
+                <label>Payment Type</label>
+                <select id="es-payment-type" onchange="onEditPaymentTypeChange()">
+                    <option value="monthly">Monthly (fixed date)</option>
+                    <option value="per_classes">Per Classes (pay after N classes)</option>
+                    <option value="quarterly">Quarterly (24 classes)</option>
                 </select>
             </div>
             <div>
                 <label>Amount Due (₹)</label>
-                <input type="number" id="es-amount" placeholder="e.g. 4000" min="0">
+                <input type="number" id="es-amount" placeholder="e.g. 5000" min="0">
             </div>
-            <div>
+            <div id="es-billing-day-wrap">
                 <label>Billing Day</label>
                 <input type="number" id="es-billing-day" value="1" min="1" max="31">
+            </div>
+            <div id="es-classes-cycle-wrap" style="display:none">
+                <label>Classes per cycle</label>
+                <input type="number" id="es-classes-cycle" value="8" min="1" max="50" placeholder="e.g. 8">
             </div>
             <div>
                 <label>Class Days</label>
@@ -580,10 +582,14 @@ function getRecordForStudent(studentId) {
     return recs.length > 0 ? recs[0] : null;
 }
 
+function isClassBased(student) {
+    return student.payment_type === 'quarterly' || student.payment_type === 'per_classes';
+}
+
 function getStudentStatus(student, record) {
-    if (student.payment_type === 'quarterly') {
+    if (isClassBased(student)) {
         const attended = student.classes_attended || 0;
-        const total = student.total_classes_per_cycle || 24;
+        const total = student.total_classes_per_cycle || (student.payment_type === 'quarterly' ? 24 : 8);
         if (attended >= total) {
             if (record) return record.status;
             return 'quarterly_due';
@@ -653,15 +659,15 @@ function renderTable() {
         const rec = getRecordForStudent(s.id);
         const status = getStudentStatus(s, rec);
         const isKanisha = s.name.toLowerCase() === 'kanisha';
-        const isQuarterly = s.payment_type === 'quarterly';
+        const classBased = isClassBased(s);
         const attended = s.classes_attended || 0;
-        const total = s.total_classes_per_cycle || 24;
+        const total = s.total_classes_per_cycle || (s.payment_type === 'quarterly' ? 24 : 8);
         const isDue = attended >= total;
 
         const teacherClass = s.teacher === 'Brahmani' ? 'teacher-brahmani' : 'teacher-aditya';
         const planLabel = formatPlan(s.plan, s.payment_type, s.amount_due);
         const statusBadge = buildStatusBadge(status);
-        const classesCell = isQuarterly
+        const classesCell = classBased
             ? `<span class="classes-cell ${isDue ? 'done' : ''}">${attended}/${total}</span>`
             : `<span class="classes-cell" style="color:#555">—</span>`;
 
@@ -701,9 +707,8 @@ function buildStatusBadge(status) {
 
 function buildActions(s, rec, status, isKanisha) {
     let btns = '';
-    const isQuarterly = s.payment_type === 'quarterly';
     const attended = s.classes_attended || 0;
-    const total = s.total_classes_per_cycle || 24;
+    const total = s.total_classes_per_cycle || (s.payment_type === 'quarterly' ? 24 : 8);
     const isDue = attended >= total;
 
     // Verify / Overdue (only when there's an active record and status allows)
@@ -735,8 +740,8 @@ function buildActions(s, rec, status, isKanisha) {
         btns += `<button class="act-btn act-btn-details" onclick="showDetails('${s.id}','${rec.id}')">👁 Details</button>`;
     }
 
-    // Quarterly controls
-    if (isQuarterly) {
+    // Class-based controls (quarterly or per_classes)
+    if (isClassBased(s)) {
         btns += `<button class="act-btn act-btn-class" onclick="incrementClass('${s.id}')">+1 Class</button>`;
         if (isDue && rec && rec.status === 'verified') {
             btns += `<button class="act-btn act-btn-reset" onclick="resetClasses('${s.id}')">↺ Reset</button>`;
@@ -752,6 +757,7 @@ function buildActions(s, rec, status, isKanisha) {
 
 function formatPlan(plan, type, amount) {
     if (type === 'quarterly') return 'Quarterly';
+    if (type === 'per_classes') return 'Per Classes';
     return 'Monthly';
 }
 
@@ -769,16 +775,13 @@ function setTeacher(teacher, btn) {
     renderTable();
 }
 
-function onEditPlanChange() {
-    const plan = document.getElementById('es-plan').value;
-    const amtMap = { monthly_4500:4500, monthly_5000:5000, monthly_6000:6000, quarterly_15000:15000 };
-    const amtField = document.getElementById('es-amount');
-    if (plan === 'custom') {
-        amtField.disabled = false;
-        amtField.focus();
-    } else {
-        amtField.value = amtMap[plan] || '';
-        amtField.disabled = false;
+function onEditPaymentTypeChange() {
+    const type = document.getElementById('es-payment-type').value;
+    const isMonthly = type === 'monthly';
+    document.getElementById('es-billing-day-wrap').style.display = isMonthly ? '' : 'none';
+    document.getElementById('es-classes-cycle-wrap').style.display = isMonthly ? 'none' : '';
+    if (type === 'quarterly') {
+        document.getElementById('es-classes-cycle').value = 24;
     }
 }
 
@@ -1005,34 +1008,34 @@ function openEditStudent(studentId) {
     document.getElementById('es-name').value = s.name;
     document.getElementById('es-phone').value = s.phone || '';
     document.getElementById('es-teacher').value = s.teacher || 'Aditya';
-    const planAmounts = { monthly_4500:4500, monthly_5000:5000, monthly_6000:6000, quarterly_15000:15000 };
-    const stdAmount = planAmounts[s.plan];
-    const isCustom = s.amount_due && s.amount_due !== stdAmount;
-    document.getElementById('es-plan').value = isCustom ? 'custom' : (s.plan || 'monthly_5000');
-    document.getElementById('es-amount').value = s.amount_due || stdAmount || '';
-    document.getElementById('es-amount').disabled = !isCustom;
+    document.getElementById('es-payment-type').value = s.payment_type || 'monthly';
+    document.getElementById('es-amount').value = s.amount_due || '';
     document.getElementById('es-billing-day').value = s.billing_day || 1;
+    document.getElementById('es-classes-cycle').value = s.total_classes_per_cycle || 8;
     document.getElementById('es-class-days').value = s.class_days || '';
     document.getElementById('es-class-time').value = s.class_time || '';
     document.getElementById('es-instrument').value = s.instrument || 'Piano';
     document.getElementById('es-notes').value = s.notes || '';
+    onEditPaymentTypeChange();
     document.getElementById('edit-student-msg').style.display = 'none';
     openModal('edit-student-modal');
 }
 
 async function saveEditStudent() {
     const id = document.getElementById('es-id').value;
+    const paymentType = document.getElementById('es-payment-type').value;
     const student = {
         name: document.getElementById('es-name').value.trim(),
         phone: document.getElementById('es-phone').value.trim(),
         teacher: document.getElementById('es-teacher').value,
-        plan: document.getElementById('es-plan').value,
-        billing_day: parseInt(document.getElementById('es-billing-day').value) || 1,
+        payment_type: paymentType,
+        billing_day: paymentType === 'monthly' ? (parseInt(document.getElementById('es-billing-day').value) || 1) : 1,
+        total_classes_per_cycle: paymentType !== 'monthly' ? (parseInt(document.getElementById('es-classes-cycle').value) || 8) : (paymentType === 'quarterly' ? 24 : 8),
         class_days: document.getElementById('es-class-days').value.trim(),
         class_time: document.getElementById('es-class-time').value.trim(),
         instrument: document.getElementById('es-instrument').value.trim() || 'Piano',
         notes: document.getElementById('es-notes').value.trim(),
-        amount_due: parseInt(document.getElementById('es-amount').value) || ({ monthly_4500:4500, monthly_5000:5000, monthly_6000:6000, quarterly_15000:15000 }[document.getElementById('es-plan').value] || 5000),
+        amount_due: parseInt(document.getElementById('es-amount').value) || 5000,
     };
     if (!student.name) { showModalMsg('edit-student-msg', 'Name is required', 'error'); return; }
     try {
