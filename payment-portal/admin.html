@@ -716,8 +716,9 @@ function buildActions(s, rec, status, isKanisha) {
         }
     }
 
-    // Edit student
+    // Edit / Delete student
     btns += `<button class="act-btn act-btn-details" onclick="openEditStudent('${s.id}')">✏️ Edit</button>`;
+    btns += `<button class="act-btn act-btn-overdue" onclick="deleteStudent('${s.id}','${escHtml(s.name)}')">🗑 Delete</button>`;
 
     return btns || '<span style="color:#555;font-size:0.76rem">—</span>';
 }
@@ -991,6 +992,26 @@ async function saveEditStudent() {
         }
     } catch (e) {
         showModalMsg('edit-student-msg', 'Network error', 'error');
+    }
+}
+
+async function deleteStudent(studentId, name) {
+    if (!confirm(`Delete ${name} and all their payment records? This cannot be undone.`)) return;
+    try {
+        const res = await fetch('/.netlify/functions/pay-admin-student', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+            body: JSON.stringify({ action: 'delete', id: studentId }),
+        });
+        const data = await res.json();
+        if (data.success) {
+            showTopMsg(`Deleted ${name}.`, 'success');
+            await refreshData();
+        } else {
+            showTopMsg(data.error || 'Delete failed', 'error');
+        }
+    } catch (e) {
+        showTopMsg('Network error', 'error');
     }
 }
 

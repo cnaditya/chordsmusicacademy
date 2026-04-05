@@ -32,7 +32,6 @@ const STUDENTS = [
   { name:'Amukta',     phone:'919000000008',  plan:'monthly_5000', payment_type:'monthly', amount:5000, billing_day:1,  class_days:'Tue',      class_time:'7:40pm',  teacher:'Brahmani' },
   { name:'Ishita',     phone:'919000000009',  plan:'monthly_5000', payment_type:'monthly', amount:5000, billing_day:1,  class_days:'Sat, Sun', class_time:'5:40pm',  teacher:'Brahmani' },
   { name:'Krishika',   phone:'919000000010',  plan:'monthly_5000', payment_type:'monthly', amount:5000, billing_day:1,  class_days:'Wed, Sun', class_time:'7:40pm',  teacher:'Brahmani' },
-  { name:'Adhya Sri',  phone:'919000000011',  plan:'monthly_5000', payment_type:'monthly', amount:5000, billing_day:1,  class_days:'Sun',      class_time:'8:20pm',  teacher:'Brahmani' },
   { name:'Hanvitha',   phone:'919000000012',  plan:'monthly_5000', payment_type:'monthly', amount:5000, billing_day:1,  class_days:'Thu',      class_time:'3pm',     teacher:'Brahmani' },
   { name:'Mihira',     phone:'919000000013',  plan:'monthly_5000', payment_type:'monthly', amount:5000, billing_day:1,  class_days:'Mon, Thu', class_time:'3pm',     teacher:'Brahmani' },
   { name:'Chaitanya',  phone:'919000000014',  plan:'monthly_5000', payment_type:'monthly', amount:5000, billing_day:1,  class_days:'Sun',      class_time:'8:20pm',  teacher:'Brahmani' },
@@ -191,6 +190,24 @@ exports.handler = async (event) => {
     }
 
     // --- Update existing student ---
+    // --- Delete a student ---
+    if (action === "delete") {
+      const { id } = JSON.parse(event.body || "{}");
+      if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: "id required" }) };
+      const delRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/payment_students?id=eq.${encodeURIComponent(id)}`,
+        {
+          method: "DELETE",
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Prefer: "return=minimal" },
+        }
+      );
+      if (!delRes.ok) {
+        const err = await delRes.text();
+        return { statusCode: 500, headers, body: JSON.stringify({ error: "Delete failed: " + err }) };
+      }
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    }
+
     if (action === "update") {
       const { id, student } = JSON.parse(event.body || "{}"); // re-parse to get id field
       if (!id || !student) {
