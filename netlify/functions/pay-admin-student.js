@@ -190,6 +190,45 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: inserted[0] }) };
     }
 
+    // --- Update existing student ---
+    if (action === "update") {
+      const { id, student } = JSON.parse(event.body || "{}"); // re-parse to get id field
+      if (!id || !student) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: "id and student required" }) };
+      }
+      const planAmounts = { monthly_4500:4500, monthly_5000:5000, monthly_6000:6000, quarterly_15000:15000 };
+      const payload = {};
+      if (student.name) payload.name = student.name.trim();
+      if (student.phone !== undefined) payload.phone = student.phone || null;
+      if (student.teacher) payload.teacher = student.teacher;
+      if (student.plan) { payload.plan = student.plan; payload.amount_due = planAmounts[student.plan] || student.amount_due; }
+      if (student.billing_day) payload.billing_day = parseInt(student.billing_day);
+      if (student.class_days !== undefined) payload.class_days = student.class_days;
+      if (student.class_time !== undefined) payload.class_time = student.class_time;
+      if (student.instrument) payload.instrument = student.instrument;
+      if (student.notes !== undefined) payload.notes = student.notes || null;
+
+      const updRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/payment_students?id=eq.${encodeURIComponent(id)}`,
+        {
+          method: "PATCH",
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": "application/json",
+            Prefer: "return=representation",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+      if (!updRes.ok) {
+        const err = await updRes.text();
+        return { statusCode: 500, headers, body: JSON.stringify({ error: "Update failed: " + err }) };
+      }
+      const updated = await updRes.json();
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: Array.isArray(updated) ? updated[0] : updated }) };
+    }
+
     return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid action" }) };
   } catch (err) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error" }) };

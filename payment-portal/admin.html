@@ -324,6 +324,63 @@
     </div>
 </div>
 
+<!-- Edit Student Modal -->
+<div class="modal-overlay" id="edit-student-modal">
+    <div class="modal" style="max-width:520px">
+        <button class="modal-close" onclick="closeModal('edit-student-modal')">&#10005;</button>
+        <h3>Edit Student</h3>
+        <div id="edit-student-msg" style="display:none;margin-bottom:1rem"></div>
+        <input type="hidden" id="es-id">
+        <div class="form-grid">
+            <div>
+                <label>Name *</label>
+                <input type="text" id="es-name" placeholder="Student name">
+            </div>
+            <div>
+                <label>Phone (with country code)</label>
+                <input type="text" id="es-phone" placeholder="e.g. 919XXXXXXXXX">
+            </div>
+            <div>
+                <label>Teacher *</label>
+                <select id="es-teacher">
+                    <option value="Aditya">Aditya</option>
+                    <option value="Brahmani">Brahmani</option>
+                </select>
+            </div>
+            <div>
+                <label>Plan *</label>
+                <select id="es-plan">
+                    <option value="monthly_4500">Monthly ₹4,500</option>
+                    <option value="monthly_5000">Monthly ₹5,000</option>
+                    <option value="monthly_6000">Monthly ₹6,000</option>
+                    <option value="quarterly_15000">Quarterly ₹15,000</option>
+                </select>
+            </div>
+            <div>
+                <label>Billing Day</label>
+                <input type="number" id="es-billing-day" value="1" min="1" max="31">
+            </div>
+            <div>
+                <label>Class Days</label>
+                <input type="text" id="es-class-days" placeholder="e.g. Mon, Thu">
+            </div>
+            <div>
+                <label>Class Time</label>
+                <input type="text" id="es-class-time" placeholder="e.g. 7:10am">
+            </div>
+            <div>
+                <label>Instrument</label>
+                <input type="text" id="es-instrument" value="Piano">
+            </div>
+            <div class="full-col">
+                <label>Notes</label>
+                <input type="text" id="es-notes" placeholder="Optional notes">
+            </div>
+        </div>
+        <button class="btn" onclick="saveEditStudent()">Save Changes</button>
+    </div>
+</div>
+
 <!-- Add Student Modal -->
 <div class="modal-overlay" id="add-student-modal">
     <div class="modal" style="max-width:520px">
@@ -659,6 +716,9 @@ function buildActions(s, rec, status, isKanisha) {
         }
     }
 
+    // Edit student
+    btns += `<button class="act-btn act-btn-details" onclick="openEditStudent('${s.id}')">✏️ Edit</button>`;
+
     return btns || '<span style="color:#555;font-size:0.76rem">—</span>';
 }
 
@@ -880,6 +940,57 @@ async function saveNewStudent() {
         }
     } catch (e) {
         showModalMsg('add-student-msg', 'Network error', 'error');
+    }
+}
+
+function openEditStudent(studentId) {
+    const s = allStudents.find(x => x.id === studentId);
+    if (!s) return;
+    document.getElementById('es-id').value = s.id;
+    document.getElementById('es-name').value = s.name;
+    document.getElementById('es-phone').value = s.phone || '';
+    document.getElementById('es-teacher').value = s.teacher || 'Aditya';
+    document.getElementById('es-plan').value = s.plan || 'monthly_5000';
+    document.getElementById('es-billing-day').value = s.billing_day || 1;
+    document.getElementById('es-class-days').value = s.class_days || '';
+    document.getElementById('es-class-time').value = s.class_time || '';
+    document.getElementById('es-instrument').value = s.instrument || 'Piano';
+    document.getElementById('es-notes').value = s.notes || '';
+    document.getElementById('edit-student-msg').style.display = 'none';
+    openModal('edit-student-modal');
+}
+
+async function saveEditStudent() {
+    const id = document.getElementById('es-id').value;
+    const student = {
+        name: document.getElementById('es-name').value.trim(),
+        phone: document.getElementById('es-phone').value.trim(),
+        teacher: document.getElementById('es-teacher').value,
+        plan: document.getElementById('es-plan').value,
+        billing_day: parseInt(document.getElementById('es-billing-day').value) || 1,
+        class_days: document.getElementById('es-class-days').value.trim(),
+        class_time: document.getElementById('es-class-time').value.trim(),
+        instrument: document.getElementById('es-instrument').value.trim() || 'Piano',
+        notes: document.getElementById('es-notes').value.trim(),
+        amount_due: { monthly_4500:4500, monthly_5000:5000, monthly_6000:6000, quarterly_15000:15000 }[document.getElementById('es-plan').value] || 5000,
+    };
+    if (!student.name) { showModalMsg('edit-student-msg', 'Name is required', 'error'); return; }
+    try {
+        const res = await fetch('/.netlify/functions/pay-admin-student', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+            body: JSON.stringify({ action: 'update', id, student }),
+        });
+        const data = await res.json();
+        if (data.success) {
+            closeModal('edit-student-modal');
+            showTopMsg(`Updated ${student.name} successfully.`, 'success');
+            await refreshData();
+        } else {
+            showModalMsg('edit-student-msg', data.error || 'Failed to update', 'error');
+        }
+    } catch (e) {
+        showModalMsg('edit-student-msg', 'Network error', 'error');
     }
 }
 
