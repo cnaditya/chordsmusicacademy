@@ -297,7 +297,7 @@
             <button class="tab-btn active" data-teacher="all" onclick="setTeacher('all',this)" style="background:#c9a227;color:#000;border-color:#c9a227">All</button>
             <button class="tab-btn" data-teacher="Aditya" onclick="setTeacher('Aditya',this)" style="color:#c9a227;border-color:#c9a227">Aditya</button>
             <button class="tab-btn" data-teacher="Brahmani" onclick="setTeacher('Brahmani',this)" style="color:#5dade2;border-color:#5dade2">Brahmani</button>
-            <button class="tab-btn" data-teacher="today" onclick="setTeacher('today',this)" style="color:#2ecc71;border-color:#2ecc71;margin-left:0.75rem">📅 Today</button>
+            <button id="today-toggle" onclick="toggleToday(this)" style="margin-left:0.75rem;padding:0.35rem 0.85rem;background:transparent;border:1px solid #2ecc71;color:#2ecc71;border-radius:6px;font-size:0.82rem;cursor:pointer">📅 Today</button>
         </div>
 
         <div class="table-wrap">
@@ -453,6 +453,7 @@ let allPeriods = [];
 let currentPeriod = '';
 let currentFilter = 'all';
 let currentTeacher = 'all';
+let todayOnly = false;
 
 const PLAN_AMOUNTS = {
     monthly_4500: { amount: 4500, type: 'monthly' },
@@ -617,13 +618,15 @@ function renderTable() {
     const tbody = document.getElementById('main-tbody');
     let students = [...allStudents];
 
-    // Apply teacher / today filter
-    if (currentTeacher === 'today') {
+    // Apply teacher filter
+    if (currentTeacher !== 'all') {
+        students = students.filter(s => s.teacher === currentTeacher);
+    }
+    // Apply today filter
+    if (todayOnly) {
         const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
         const today = days[new Date().getDay()];
         students = students.filter(s => (s.class_days || '').includes(today));
-    } else if (currentTeacher !== 'all') {
-        students = students.filter(s => s.teacher === currentTeacher);
     }
 
     // Apply status filter
@@ -758,6 +761,13 @@ function setTeacher(teacher, btn) {
     currentTeacher = teacher;
     document.querySelectorAll('[data-teacher]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    renderTable();
+}
+
+function toggleToday(btn) {
+    todayOnly = !todayOnly;
+    btn.style.background = todayOnly ? '#2ecc71' : 'transparent';
+    btn.style.color = todayOnly ? '#000' : '#2ecc71';
     renderTable();
 }
 
