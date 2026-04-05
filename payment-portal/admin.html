@@ -272,6 +272,7 @@
             </select>
         </div>
         <button class="btn btn-sm" onclick="createBillingPeriod()" id="create-period-btn">Create Billing Period</button>
+        <button class="btn btn-sm" onclick="setupDatabase()" id="setup-btn" style="background:#2980b9;color:#fff;border:none">⚙️ Setup Database</button>
         <button class="btn btn-sm btn-outline" onclick="seedStudents()" id="seed-btn">Seed Students</button>
         <button class="btn btn-sm btn-outline" onclick="openAddStudent()">Add Student</button>
         <button class="btn btn-sm btn-outline" onclick="downloadCSV()">Download CSV</button>
@@ -768,6 +769,29 @@ async function createBillingPeriod() {
     }
 }
 
+async function setupDatabase() {
+    showTopMsg('Checking database setup...', 'info');
+    try {
+        const res = await fetch('/.netlify/functions/pay-setup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+        });
+        const data = await res.json();
+        if (data.success) {
+            showTopMsg('✅ ' + data.message + ' You can now click Seed Students.', 'success');
+        } else if (data.needs_manual) {
+            // Show SQL in a modal for copy-paste
+            const modal = document.getElementById('sql-modal');
+            document.getElementById('sql-output').value = data.sql;
+            modal.style.display = 'flex';
+        } else {
+            showTopMsg(data.message || 'Setup failed', 'error');
+        }
+    } catch (e) {
+        showTopMsg('Network error during setup', 'error');
+    }
+}
+
 async function seedStudents() {
     if (!confirm('Seed all pre-loaded students into Supabase? This will skip duplicates.')) return;
     showTopMsg('Seeding students...', 'info');
@@ -967,6 +991,20 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
     }
 })();
 </script>
+
+<!-- SQL Setup Modal -->
+<div id="sql-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:#13131f;border:1px solid #c9a227;border-radius:16px;padding:2rem;max-width:640px;width:100%;position:relative">
+    <button onclick="document.getElementById('sql-modal').style.display='none'" style="position:absolute;top:12px;right:16px;background:transparent;border:none;color:#666;font-size:1.4rem;cursor:pointer">✕</button>
+    <div style="color:#c9a227;font-weight:700;font-size:1rem;margin-bottom:0.5rem">⚙️ One-Time Database Setup Required</div>
+    <p style="color:#888;font-size:0.82rem;margin-bottom:1rem;line-height:1.6">Tables need to be created in Supabase. Copy the SQL below, go to <b style="color:#dde">supabase.com → SQL Editor → New Query</b>, paste and click Run. Then come back and click <b style="color:#c9a227">Seed Students</b>.</p>
+    <textarea id="sql-output" readonly style="width:100%;height:220px;font-family:monospace;font-size:0.75rem;background:#0a0a0f;border:1px solid #333;color:#7eb3ff;border-radius:8px;padding:0.75rem;resize:none;margin-bottom:1rem"></textarea>
+    <div style="display:flex;gap:0.75rem">
+      <button onclick="navigator.clipboard.writeText(document.getElementById('sql-output').value).then(()=>alert('SQL copied!'))" style="background:linear-gradient(135deg,#c9a227,#e8c547);color:#000;border:none;border-radius:8px;padding:0.6rem 1.2rem;font-weight:700;cursor:pointer">📋 Copy SQL</button>
+      <a href="https://supabase.com/dashboard" target="_blank" style="background:transparent;border:1px solid #3ecf8e;color:#3ecf8e;border-radius:8px;padding:0.6rem 1.2rem;font-weight:700;text-decoration:none;font-size:0.88rem;display:flex;align-items:center">Open Supabase →</a>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
