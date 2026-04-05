@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Admin – Chords Music Academy</title>
+    <link rel="icon" type="image/png" href="../images/chords_PNG.png">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
+
+        header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-bottom: 2px solid #c9a227;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        header .title { color: #c9a227; font-size: 1.1rem; font-weight: 700; }
+        header .hdr-right { display: flex; align-items: center; gap: 1rem; }
+        header .hdr-right span { color: #666; font-size: 0.8rem; }
+        .logout-btn {
+            background: transparent; border: 1px solid #333; color: #888;
+            padding: 0.35rem 0.85rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer;
+        }
+        .logout-btn:hover { border-color: #666; color: #ccc; }
+
+        /* Login */
+        .login-wrap {
+            display: flex; align-items: center; justify-content: center;
+            min-height: calc(100vh - 62px); padding: 2rem;
+        }
+        .login-card {
+            background: #13131f; border: 1px solid #2a2a40;
+            border-radius: 16px; padding: 2.5rem;
+            width: 100%; max-width: 360px;
+        }
+        .login-card h2 { color: #c9a227; margin-bottom: 0.4rem; text-align: center; }
+        .login-card p { color: #777; font-size: 0.82rem; margin-bottom: 2rem; text-align: center; }
+
+        label { display: block; font-size: 0.82rem; color: #aaa; margin-bottom: 0.35rem; }
+        input, select, textarea {
+            width: 100%; padding: 0.72rem 1rem;
+            background: #1c1c2e; border: 1px solid #33334d;
+            border-radius: 8px; color: #e0e0e0; font-size: 0.92rem;
+            margin-bottom: 1.2rem; font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #c9a227; }
+
+        .btn {
+            padding: 0.72rem 1.4rem;
+            background: linear-gradient(135deg, #c9a227, #e8c547);
+            color: #000; border: none; border-radius: 8px;
+            font-size: 0.88rem; font-weight: 700; cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-full { width: 100%; }
+        .btn-sm { padding: 0.5rem 1rem; font-size: 0.82rem; }
+        .btn-outline {
+            background: transparent; border: 1px solid #33334d;
+            color: #888;
+        }
+        .btn-outline:hover { border-color: #c9a227; color: #c9a227; background: transparent; }
+        .btn-green { background: linear-gradient(135deg, #27ae60, #2ecc71); color: #fff; }
+        .btn-red { background: linear-gradient(135deg, #c0392b, #e74c3c); color: #fff; }
+        .btn-blue { background: linear-gradient(135deg, #2980b9, #3498db); color: #fff; }
+
+        .msg-error { color: #e74c3c; font-size: 0.83rem; padding: 0.75rem; background: rgba(231,76,60,0.1); border-radius: 6px; border-left: 3px solid #e74c3c; margin-bottom: 1rem; }
+        .msg-success { color: #27ae60; font-size: 0.83rem; padding: 0.75rem; background: rgba(39,174,96,0.1); border-radius: 6px; border-left: 3px solid #27ae60; margin-bottom: 1rem; }
+        .msg-info { color: #5dade2; font-size: 0.83rem; padding: 0.75rem; background: rgba(52,152,219,0.1); border-radius: 6px; border-left: 3px solid #3498db; margin-bottom: 1rem; }
+
+        /* Dashboard */
+        .dashboard { padding: 1.75rem 2rem; display: none; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 1rem; margin-bottom: 1.75rem;
+        }
+        .stat-card {
+            background: #13131f; border: 1px solid #2a2a40;
+            border-radius: 12px; padding: 1.25rem; text-align: center;
+        }
+        .stat-card .num { font-size: 2rem; font-weight: 700; color: #c9a227; }
+        .stat-card .lbl { font-size: 0.76rem; color: #777; margin-top: 0.2rem; }
+
+        .section {
+            background: #13131f; border: 1px solid #2a2a40;
+            border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .section h3 { color: #c9a227; margin-bottom: 1.25rem; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Top actions bar */
+        .top-actions {
+            display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.5rem;
+        }
+        .period-select-wrap { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .period-select-wrap label { margin: 0; white-space: nowrap; font-size: 0.8rem; }
+        .period-select-wrap select { margin: 0; padding: 0.5rem 0.75rem; font-size: 0.84rem; width: auto; }
+
+        /* Filter tabs */
+        .filter-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+        .tab-btn {
+            padding: 0.45rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+            border: 1px solid #2a2a40; background: transparent; color: #888; cursor: pointer;
+            transition: all 0.15s;
+        }
+        .tab-btn:hover { border-color: #c9a227; color: #c9a227; }
+        .tab-btn.active { background: #c9a227; color: #000; border-color: #c9a227; }
+
+        /* Table */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 860px; }
+        th {
+            padding: 0.7rem 1rem; font-size: 0.74rem; color: #666;
+            font-weight: 600; text-align: left;
+            border-bottom: 1px solid #2a2a40;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        td { padding: 0.72rem 1rem; font-size: 0.86rem; border-bottom: 1px solid #181828; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #181828; }
+        .code-cell { font-family: monospace; color: #c9a227; font-size: 0.8rem; letter-spacing: 1px; }
+        .empty-cell { text-align: center; color: #444; padding: 3rem !important; }
+
+        /* Badges */
+        .badge {
+            display: inline-block; padding: 0.28rem 0.65rem;
+            border-radius: 20px; font-size: 0.74rem; font-weight: 700;
+        }
+        .badge-pending { background: rgba(100,100,100,0.15); color: #888; border: 1px solid #444; }
+        .badge-submitted { background: rgba(52,152,219,0.15); color: #5dade2; border: 1px solid #2980b9; }
+        .badge-verified { background: rgba(39,174,96,0.15); color: #2ecc71; border: 1px solid #27ae60; }
+        .badge-overdue { background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid #c0392b; }
+        .badge-quarterly-due { background: rgba(230,126,34,0.15); color: #e67e22; border: 1px solid #d35400; }
+        .badge-no-record { background: rgba(60,60,60,0.2); color: #555; border: 1px solid #333; }
+
+        .teacher-aditya { color: #c9a227; font-weight: 700; font-size: 0.78rem; }
+        .teacher-brahmani { color: #5dade2; font-weight: 700; font-size: 0.78rem; }
+
+        .kanisha-badge {
+            display: inline-block; background: rgba(201,162,39,0.15);
+            color: #c9a227; border: 1px solid #c9a227;
+            border-radius: 20px; font-size: 0.7rem; font-weight: 700;
+            padding: 0.15rem 0.5rem; margin-left: 0.4rem; vertical-align: middle;
+        }
+
+        /* Action buttons in table */
+        .action-btns { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .act-btn {
+            padding: 0.32rem 0.65rem; border-radius: 6px; font-size: 0.76rem; font-weight: 600;
+            border: 1px solid; cursor: pointer; background: transparent; white-space: nowrap;
+        }
+        .act-btn-verify { color: #2ecc71; border-color: #27ae60; }
+        .act-btn-verify:hover { background: rgba(39,174,96,0.15); }
+        .act-btn-overdue { color: #e74c3c; border-color: #c0392b; }
+        .act-btn-overdue:hover { background: rgba(231,76,60,0.15); }
+        .act-btn-remind { color: #25d366; border-color: #1da851; }
+        .act-btn-remind:hover { background: rgba(37,211,102,0.15); }
+        .act-btn-details { color: #5dade2; border-color: #2980b9; }
+        .act-btn-details:hover { background: rgba(52,152,219,0.15); }
+        .act-btn-class { color: #c9a227; border-color: #b8860b; }
+        .act-btn-class:hover { background: rgba(201,162,39,0.15); }
+        .act-btn-reset { color: #e67e22; border-color: #d35400; }
+        .act-btn-reset:hover { background: rgba(230,126,34,0.15); }
+
+        .classes-cell { font-size: 0.82rem; color: #bbb; }
+        .classes-cell .done { color: #e67e22; font-weight: 700; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+            display: none; align-items: center; justify-content: center;
+            z-index: 1000; padding: 1rem;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: #13131f; border: 1px solid #2a2a40;
+            border-radius: 16px; padding: 2rem;
+            width: 100%; max-width: 480px; position: relative;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal h3 { color: #c9a227; margin-bottom: 1.25rem; font-size: 1rem; }
+        .modal-close {
+            position: absolute; top: 1rem; right: 1rem;
+            background: transparent; border: none; color: #666;
+            font-size: 1.3rem; cursor: pointer; line-height: 1;
+        }
+        .modal-close:hover { color: #ccc; }
+
+        .detail-row { display: flex; justify-content: space-between; padding: 0.65rem 0; border-bottom: 1px solid #1e1e30; font-size: 0.86rem; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-row .dk { color: #666; }
+        .detail-row .dv { color: #e0e0e0; text-align: right; max-width: 65%; word-break: break-all; }
+        .detail-row a { color: #5dade2; text-decoration: none; }
+        .detail-row a:hover { text-decoration: underline; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+        .form-grid .full-col { grid-column: 1/-1; }
+
+        @media (max-width: 600px) {
+            .dashboard { padding: 1rem; }
+            header { padding: 1rem; }
+            header .title { font-size: 0.95rem; }
+            .top-actions { flex-direction: column; align-items: flex-start; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="title">Payment Admin Dashboard</div>
+    <div class="hdr-right">
+        <span id="hdr-period" style="display:none"></span>
+        <button class="logout-btn" id="logout-btn" onclick="logout()" style="display:none">Logout</button>
+    </div>
+</header>
+
+<!-- Login Screen -->
+<div class="login-wrap" id="login-screen">
+    <div class="login-card">
+        <h2>Admin Login</h2>
+        <p>Chords Music Academy &mdash; Payment Portal</p>
+        <div id="login-error" class="msg-error" style="display:none"></div>
+        <label for="admin-pass">Admin Password</label>
+        <input type="password" id="admin-pass" placeholder="Enter admin password">
+        <button class="btn btn-full" onclick="adminLogin()" id="login-btn">Login</button>
+    </div>
+</div>
+
+<!-- Dashboard -->
+<div class="dashboard" id="dashboard">
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="num" id="stat-total">0</div>
+            <div class="lbl">Total Students</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" id="stat-verified" style="color:#2ecc71">0</div>
+            <div class="lbl">Verified</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" id="stat-submitted" style="color:#5dade2">0</div>
+            <div class="lbl">Submitted</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" id="stat-pending" style="color:#888">0</div>
+            <div class="lbl">Pending</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" id="stat-overdue" style="color:#e74c3c">0</div>
+            <div class="lbl">Overdue</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" id="stat-qdue" style="color:#e67e22">0</div>
+            <div class="lbl">Quarterly Due</div>
+        </div>
+    </div>
+
+    <!-- Top Actions -->
+    <div class="top-actions">
+        <div class="period-select-wrap">
+            <label>Period:</label>
+            <select id="period-select" onchange="onPeriodChange()">
+                <option value="">All Periods</option>
+            </select>
+        </div>
+        <button class="btn btn-sm" onclick="createBillingPeriod()" id="create-period-btn">Create Billing Period</button>
+        <button class="btn btn-sm btn-outline" onclick="seedStudents()" id="seed-btn">Seed Students</button>
+        <button class="btn btn-sm btn-outline" onclick="openAddStudent()">Add Student</button>
+        <button class="btn btn-sm btn-outline" onclick="downloadCSV()">Download CSV</button>
+    </div>
+    <div id="top-msg" style="display:none"></div>
+
+    <!-- Main Table Section -->
+    <div class="section">
+        <h3 id="table-heading">All Students</h3>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <button class="tab-btn active" data-filter="all" onclick="setFilter('all',this)">All</button>
+            <button class="tab-btn" data-filter="pending" onclick="setFilter('pending',this)">Pending</button>
+            <button class="tab-btn" data-filter="submitted" onclick="setFilter('submitted',this)">Submitted</button>
+            <button class="tab-btn" data-filter="verified" onclick="setFilter('verified',this)">Verified</button>
+            <button class="tab-btn" data-filter="overdue" onclick="setFilter('overdue',this)">Overdue</button>
+            <button class="tab-btn" data-filter="quarterly_due" onclick="setFilter('quarterly_due',this)">Quarterly Due</button>
+        </div>
+
+        <div class="table-wrap">
+            <table id="main-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Teacher</th>
+                        <th>Plan</th>
+                        <th>Amount</th>
+                        <th>Billing Day</th>
+                        <th>Status</th>
+                        <th>Classes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="main-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay" id="details-modal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('details-modal')">&#10005;</button>
+        <h3 id="details-modal-title">Payment Details</h3>
+        <div id="details-modal-body"></div>
+    </div>
+</div>
+
+<!-- Add Student Modal -->
+<div class="modal-overlay" id="add-student-modal">
+    <div class="modal" style="max-width:520px">
+        <button class="modal-close" onclick="closeModal('add-student-modal')">&#10005;</button>
+        <h3>Add New Student</h3>
+        <div id="add-student-msg" style="display:none;margin-bottom:1rem"></div>
+        <div class="form-grid">
+            <div>
+                <label>Name *</label>
+                <input type="text" id="ns-name" placeholder="Student name">
+            </div>
+            <div>
+                <label>Phone</label>
+                <input type="text" id="ns-phone" placeholder="With country code">
+            </div>
+            <div>
+                <label>Teacher *</label>
+                <select id="ns-teacher">
+                    <option value="Aditya">Aditya</option>
+                    <option value="Brahmani">Brahmani</option>
+                </select>
+            </div>
+            <div>
+                <label>Plan *</label>
+                <select id="ns-plan" onchange="onPlanChange()">
+                    <option value="monthly_4500">Monthly ₹4,500</option>
+                    <option value="monthly_5000" selected>Monthly ₹5,000</option>
+                    <option value="monthly_6000">Monthly ₹6,000</option>
+                    <option value="quarterly_15000">Quarterly ₹15,000</option>
+                </select>
+            </div>
+            <div>
+                <label>Billing Day</label>
+                <input type="number" id="ns-billing-day" value="1" min="1" max="31">
+            </div>
+            <div>
+                <label>Class Days</label>
+                <input type="text" id="ns-class-days" placeholder="e.g. Mon, Thu">
+            </div>
+            <div>
+                <label>Class Time</label>
+                <input type="text" id="ns-class-time" placeholder="e.g. 7:10am">
+            </div>
+            <div>
+                <label>Instrument</label>
+                <input type="text" id="ns-instrument" value="Piano">
+            </div>
+            <div class="full-col">
+                <label>Notes</label>
+                <input type="text" id="ns-notes" placeholder="Optional notes">
+            </div>
+        </div>
+        <button class="btn" onclick="saveNewStudent()">Save Student</button>
+    </div>
+</div>
+
+<script>
+let adminToken = '';
+let allStudents = [];
+let allRecords = [];
+let allPeriods = [];
+let currentPeriod = '';
+let currentFilter = 'all';
+
+const PLAN_AMOUNTS = {
+    monthly_4500: { amount: 4500, type: 'monthly' },
+    monthly_5000: { amount: 5000, type: 'monthly' },
+    monthly_6000: { amount: 6000, type: 'monthly' },
+    quarterly_15000: { amount: 15000, type: 'quarterly' },
+};
+
+// ----- Auth -----
+async function adminLogin() {
+    const pass = document.getElementById('admin-pass').value.trim();
+    if (!pass) return;
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true;
+    btn.textContent = 'Logging in...';
+    document.getElementById('login-error').style.display = 'none';
+
+    adminToken = pass;
+    const ok = await loadData();
+    if (!ok) {
+        adminToken = '';
+        document.getElementById('login-error').textContent = 'Invalid password.';
+        document.getElementById('login-error').style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Login';
+        return;
+    }
+    sessionStorage.setItem('pay_admin_token', pass);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('logout-btn').style.display = 'inline-block';
+}
+
+function logout() {
+    adminToken = '';
+    sessionStorage.removeItem('pay_admin_token');
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('logout-btn').style.display = 'none';
+    document.getElementById('admin-pass').value = '';
+    document.getElementById('login-error').style.display = 'none';
+}
+
+document.getElementById('admin-pass').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') adminLogin();
+});
+
+// ----- Data -----
+async function loadData(period) {
+    const url = period
+        ? `/.netlify/functions/pay-admin-get?period=${encodeURIComponent(period)}`
+        : '/.netlify/functions/pay-admin-get';
+    try {
+        const res = await fetch(url, {
+            headers: { 'x-admin-token': adminToken },
+        });
+        if (res.status === 401) return false;
+        const data = await res.json();
+        if (!data.success) return false;
+
+        allStudents = data.students || [];
+        allRecords = data.records || [];
+        allPeriods = data.periods || [];
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+async function refreshData() {
+    const ok = await loadData(currentPeriod);
+    if (ok) renderAll();
+}
+
+// ----- Render -----
+function renderAll() {
+    renderPeriodSelect();
+    updateStats();
+    renderTable();
+}
+
+function renderPeriodSelect() {
+    const sel = document.getElementById('period-select');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">All Periods</option>';
+    allPeriods.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.textContent = p;
+        if (p === current || p === currentPeriod) opt.selected = true;
+        sel.appendChild(opt);
+    });
+    if (currentPeriod) sel.value = currentPeriod;
+    // Update create button label
+    const now = new Date();
+    const monthName = now.toLocaleString('default', { month: 'long' });
+    const year = now.getFullYear();
+    document.getElementById('create-period-btn').textContent = `Create ${monthName} ${year} Billing`;
+}
+
+function getRecordForStudent(studentId) {
+    // Get the most recent record for this student (within current period filter or overall)
+    const recs = allRecords.filter(r => r.student_id === studentId);
+    if (currentPeriod) {
+        const periodRec = recs.find(r => r.billing_period === currentPeriod);
+        if (periodRec) return periodRec;
+    }
+    return recs.length > 0 ? recs[0] : null;
+}
+
+function getStudentStatus(student, record) {
+    if (student.payment_type === 'quarterly') {
+        const attended = student.classes_attended || 0;
+        const total = student.total_classes_per_cycle || 24;
+        if (attended >= total) {
+            if (record) return record.status;
+            return 'quarterly_due';
+        }
+        return 'in_progress';
+    }
+    if (!record) return 'no_record';
+    return record.status;
+}
+
+function updateStats() {
+    let verified = 0, submitted = 0, pending = 0, overdue = 0, qdue = 0;
+    allStudents.forEach(s => {
+        const rec = getRecordForStudent(s.id);
+        const status = getStudentStatus(s, rec);
+        if (status === 'verified') verified++;
+        else if (status === 'submitted') submitted++;
+        else if (status === 'pending' || status === 'no_record') pending++;
+        else if (status === 'overdue') overdue++;
+        else if (status === 'quarterly_due') qdue++;
+    });
+    document.getElementById('stat-total').textContent = allStudents.length;
+    document.getElementById('stat-verified').textContent = verified;
+    document.getElementById('stat-submitted').textContent = submitted;
+    document.getElementById('stat-pending').textContent = pending;
+    document.getElementById('stat-overdue').textContent = overdue;
+    document.getElementById('stat-qdue').textContent = qdue;
+
+    const periodLabel = currentPeriod || 'All Periods';
+    document.getElementById('table-heading').textContent = 'Students — ' + periodLabel;
+    const hdrPeriod = document.getElementById('hdr-period');
+    hdrPeriod.textContent = currentPeriod || '';
+    hdrPeriod.style.display = currentPeriod ? 'inline' : 'none';
+}
+
+function renderTable() {
+    const tbody = document.getElementById('main-tbody');
+    let students = [...allStudents];
+
+    // Apply filter
+    if (currentFilter !== 'all') {
+        students = students.filter(s => {
+            const rec = getRecordForStudent(s.id);
+            const status = getStudentStatus(s, rec);
+            if (currentFilter === 'quarterly_due') return status === 'quarterly_due';
+            return status === currentFilter;
+        });
+    }
+
+    if (students.length === 0) {
+        tbody.innerHTML = `<tr><td class="empty-cell" colspan="9">No students match this filter.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = students.map((s, idx) => {
+        const rec = getRecordForStudent(s.id);
+        const status = getStudentStatus(s, rec);
+        const isKanisha = s.name.toLowerCase() === 'kanisha';
+        const isQuarterly = s.payment_type === 'quarterly';
+        const attended = s.classes_attended || 0;
+        const total = s.total_classes_per_cycle || 24;
+        const isDue = attended >= total;
+
+        const teacherClass = s.teacher === 'Brahmani' ? 'teacher-brahmani' : 'teacher-aditya';
+        const planLabel = formatPlan(s.plan, s.payment_type, s.amount_due);
+        const statusBadge = buildStatusBadge(status);
+        const classesCell = isQuarterly
+            ? `<span class="classes-cell ${isDue ? 'done' : ''}">${attended}/${total}</span>`
+            : `<span class="classes-cell" style="color:#555">—</span>`;
+
+        const actions = buildActions(s, rec, status, isKanisha);
+
+        return `<tr data-id="${s.id}">
+            <td style="color:#555">${idx + 1}</td>
+            <td>
+                <div style="font-weight:600;font-size:0.88rem">${escHtml(s.name)}${isKanisha ? '<span class="kanisha-badge">📅 15th</span>' : ''}</div>
+                <div class="code-cell" style="font-size:0.76rem;margin-top:0.2rem">${s.access_code}</div>
+            </td>
+            <td><span class="${teacherClass}">${escHtml(s.teacher)}</span></td>
+            <td style="font-size:0.82rem;color:#aaa">${planLabel}</td>
+            <td style="color:#c9a227;font-weight:700">₹${(rec ? rec.amount_due : s.amount_due).toLocaleString('en-IN')}</td>
+            <td style="color:#777;font-size:0.82rem">${isKanisha ? '15th' : (s.billing_day === 1 ? '1st' : s.billing_day + ordinal(s.billing_day))}</td>
+            <td>${statusBadge}</td>
+            <td>${classesCell}</td>
+            <td><div class="action-btns">${actions}</div></td>
+        </tr>`;
+    }).join('');
+}
+
+function buildStatusBadge(status) {
+    const map = {
+        pending: ['badge-pending', 'Pending'],
+        submitted: ['badge-submitted', 'Submitted'],
+        verified: ['badge-verified', 'Verified'],
+        overdue: ['badge-overdue', 'Overdue'],
+        quarterly_due: ['badge-quarterly-due', 'Payment Due'],
+        in_progress: ['badge-verified', 'In Progress'],
+        no_record: ['badge-no-record', 'No Record'],
+    };
+    const [cls, label] = map[status] || ['badge-pending', status];
+    return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function buildActions(s, rec, status, isKanisha) {
+    let btns = '';
+    const isQuarterly = s.payment_type === 'quarterly';
+    const attended = s.classes_attended || 0;
+    const total = s.total_classes_per_cycle || 24;
+    const isDue = attended >= total;
+
+    // Verify / Overdue (only when there's an active record and status allows)
+    if (rec && (status === 'submitted' || status === 'pending' || status === 'overdue')) {
+        if (status !== 'verified') {
+            btns += `<button class="act-btn act-btn-verify" onclick="updateStatus('${rec.id}','verified')">✅ Verify</button>`;
+        }
+        if (status !== 'overdue') {
+            btns += `<button class="act-btn act-btn-overdue" onclick="updateStatus('${rec.id}','overdue')">⚠️ Overdue</button>`;
+        }
+    }
+    if (rec && status === 'verified') {
+        btns += `<button class="act-btn act-btn-verify" style="opacity:0.4;cursor:default">✅ Verified</button>`;
+    }
+
+    // WhatsApp Remind
+    const period = rec ? rec.billing_period : (currentPeriod || 'this period');
+    const amount = rec ? rec.amount_due : s.amount_due;
+    const waMsg = encodeURIComponent(
+        `Hi ${s.name}! Your piano class fee of ₹${amount} for ${period} is due. Please pay and update: https://chordsmusicacademy.in/payment-portal (Code: ${s.access_code}) - Chords Music Academy`
+    );
+    const waPhone = (s.phone || '').replace(/\D/g, '');
+    if (waPhone) {
+        btns += `<button class="act-btn act-btn-remind" onclick="window.open('https://wa.me/${waPhone}?text=${waMsg}','_blank')">📲 Remind</button>`;
+    }
+
+    // Details
+    if (rec) {
+        btns += `<button class="act-btn act-btn-details" onclick="showDetails('${s.id}','${rec.id}')">👁 Details</button>`;
+    }
+
+    // Quarterly controls
+    if (isQuarterly) {
+        btns += `<button class="act-btn act-btn-class" onclick="incrementClass('${s.id}')">+1 Class</button>`;
+        if (isDue && rec && rec.status === 'verified') {
+            btns += `<button class="act-btn act-btn-reset" onclick="resetClasses('${s.id}')">↺ Reset</button>`;
+        }
+    }
+
+    return btns || '<span style="color:#555;font-size:0.76rem">—</span>';
+}
+
+function formatPlan(plan, type, amount) {
+    if (type === 'quarterly') return 'Quarterly';
+    return 'Monthly';
+}
+
+function setFilter(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTable();
+}
+
+async function onPeriodChange() {
+    currentPeriod = document.getElementById('period-select').value;
+    const ok = await loadData(currentPeriod);
+    if (ok) renderAll();
+}
+
+// ----- Actions -----
+async function updateStatus(recordId, status) {
+    try {
+        const res = await fetch('/.netlify/functions/pay-admin-update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+            body: JSON.stringify({ record_id: recordId, status }),
+        });
+        const data = await res.json();
+        if (data.success) {
+            showTopMsg('Status updated to ' + status, 'success');
+            await refreshData();
+        } else {
+            showTopMsg(data.error || 'Update failed', 'error');
+        }
+    } catch (e) {
+        showTopMsg('Network error', 'error');
+    }
+}
+
+async function incrementClass(studentId) {
+    try {
+        const res = await fetch('/.netlify/functions/pay-admin-attendance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+            body: JSON.stringify({ student_id: studentId, action: 'increment' }),
+        });
+        const data = await res.json();
+        if (data.success) {
+            const stu = data.student;
+            showTopMsg(`${stu.name}: ${stu.classes_attended}/${stu.total_classes_per_cycle} classes`, 'success');
+            // Update local
+            const idx = allStudents.findIndex(s => s.id === studentId);
+            if (idx >= 0) {
+                allStudents[idx].classes_attended = stu.classes_attended;
+                allStudents[idx].last_class_date = stu.last_class_date;
+            }
+            updateStats();
+            renderTable();
+        } else {
+            showTopMsg(data.error || 'Failed', 'error');
+        }
+    } catch (e) {
+        showTopMsg('Network error', 'error');
+    }
+}
+
+async function resetClasses(studentId) {
+    if (!confirm('Reset class count to 0 for this student?')) return;
+    try {
+        const res = await fetch('/.netlify/functions/pay-admin-attendance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+            body: JSON.stringify({ student_id: studentId, action: 'reset' }),
+        });
+        const data = await res.json();
+        if (data.success) {
+            showTopMsg('Class count reset to 0.', 'success');
+            const idx = allStudents.findIndex(s => s.id === studentId);
+            if (idx >= 0) {
+                allStudents[idx].classes_attended = 0;
+                allStudents[idx].last_class_date = null;
+            }
+            updateStats();
+            renderTable();
+        } else {
+            showTopMsg(data.error || 'Failed', 'error');
+        }
+    } catch (e) {
+        showTopMsg('Network error', 'error');
+    }
+}
+
+async function createBillingPeriod() {
+    const now = new Date();
+    const monthName = now.toLocaleString('default', { month: 'long' });
+    const year = now.getFullYear();
+    const period = `${monthName} ${year}`;
+    if (!confirm(`Create billing records for "${period}" for all active monthly students?`)) return;
+
+    showTopMsg('Creating billing period...', 'info');
+    try {
+        const res = await fetch('/.netlify/functions/pay-admin-period', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+            body: JSON.stringify({ period }),
+        });
+        const data = await res.json();
+        if (data.success) {
+            showTopMsg(`Created ${data.created} payment records for ${period}.`, 'success');
+            currentPeriod = period;
+            await refreshData();
+        } else {
+            showTopMsg(data.error || 'Failed to create period', 'error');
+        }
+    } catch (e) {
+        showTopMsg('Network error', 'error');
+    }
+}
+
+async function seedStudents() {
+    if (!confirm('Seed all pre-loaded students into Supabase? This will skip duplicates.')) return;
+    showTopMsg('Seeding students...', 'info');
+    try {
+        const res = await fetch('/.netlify/functions/pay-admin-student', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+            body: JSON.stringify({ action: 'seed' }),
+        });
+        const data = await res.json();
+        if (data.success) {
+            showTopMsg(`Seeded ${data.inserted} students. ${data.message || ''}`, 'success');
+            await refreshData();
+        } else {
+            showTopMsg(data.error || 'Seed failed', 'error');
+        }
+    } catch (e) {
+        showTopMsg('Network error', 'error');
+    }
+}
+
+function openAddStudent() {
+    document.getElementById('add-student-msg').style.display = 'none';
+    ['ns-name','ns-phone','ns-class-days','ns-class-time','ns-notes'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    document.getElementById('ns-plan').value = 'monthly_5000';
+    document.getElementById('ns-teacher').value = 'Aditya';
+    document.getElementById('ns-billing-day').value = '1';
+    document.getElementById('ns-instrument').value = 'Piano';
+    openModal('add-student-modal');
+}
+
+function onPlanChange() {
+    const plan = document.getElementById('ns-plan').value;
+    // quarterly plan: no billing day needed
+}
+
+async function saveNewStudent() {
+    const name = document.getElementById('ns-name').value.trim();
+    const plan = document.getElementById('ns-plan').value;
+    if (!name || !plan) {
+        showModalMsg('add-student-msg', 'Name and Plan are required.', 'error');
+        return;
+    }
+    const planInfo = PLAN_AMOUNTS[plan] || { amount: 5000, type: 'monthly' };
+
+    const student = {
+        name,
+        phone: document.getElementById('ns-phone').value.trim(),
+        teacher: document.getElementById('ns-teacher').value,
+        plan,
+        payment_type: planInfo.type,
+        amount_due: planInfo.amount,
+        billing_day: parseInt(document.getElementById('ns-billing-day').value) || 1,
+        class_days: document.getElementById('ns-class-days').value.trim(),
+        class_time: document.getElementById('ns-class-time').value.trim(),
+        instrument: document.getElementById('ns-instrument').value.trim() || 'Piano',
+        notes: document.getElementById('ns-notes').value.trim(),
+    };
+
+    try {
+        const res = await fetch('/.netlify/functions/pay-admin-student', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+            body: JSON.stringify({ action: 'add', student }),
+        });
+        const data = await res.json();
+        if (data.success) {
+            closeModal('add-student-modal');
+            showTopMsg(`Added student ${name} with code ${data.student.access_code}`, 'success');
+            await refreshData();
+        } else {
+            showModalMsg('add-student-msg', data.error || 'Failed to add student', 'error');
+        }
+    } catch (e) {
+        showModalMsg('add-student-msg', 'Network error', 'error');
+    }
+}
+
+function showDetails(studentId, recordId) {
+    const student = allStudents.find(s => s.id === studentId);
+    const record = allRecords.find(r => r.id === recordId);
+    if (!student || !record) return;
+
+    document.getElementById('details-modal-title').textContent = `${student.name} — ${record.billing_period}`;
+    const screenshotLink = record.screenshot_url
+        ? `<a href="${escHtml(record.screenshot_url)}" target="_blank" rel="noopener">Open Screenshot</a>`
+        : '<span style="color:#555">Not provided</span>';
+
+    document.getElementById('details-modal-body').innerHTML = `
+        <div class="detail-row"><span class="dk">Status</span><span class="dv">${buildStatusBadge(record.status)}</span></div>
+        <div class="detail-row"><span class="dk">Amount Due</span><span class="dv">₹${(record.amount_due||0).toLocaleString('en-IN')}</span></div>
+        <div class="detail-row"><span class="dk">UPI Transaction ID</span><span class="dv">${escHtml(record.transaction_id || '—')}</span></div>
+        <div class="detail-row"><span class="dk">Screenshot</span><span class="dv">${screenshotLink}</span></div>
+        <div class="detail-row"><span class="dk">Student Marked At</span><span class="dv">${record.student_marked_at ? fmtDate(record.student_marked_at) : '—'}</span></div>
+        <div class="detail-row"><span class="dk">Admin Verified At</span><span class="dv">${record.admin_verified_at ? fmtDate(record.admin_verified_at) : '—'}</span></div>
+        <div class="detail-row"><span class="dk">Admin Notes</span><span class="dv">${escHtml(record.admin_notes || '—')}</span></div>
+        <div class="detail-row"><span class="dk">Access Code</span><span class="dv" style="font-family:monospace;color:#c9a227">${student.access_code}</span></div>
+        <div class="detail-row"><span class="dk">Phone</span><span class="dv">${escHtml(student.phone || '—')}</span></div>
+        <div class="detail-row"><span class="dk">Schedule</span><span class="dv">${escHtml(student.class_days || '')} at ${escHtml(student.class_time || '')}</span></div>
+        ${record.status === 'submitted' ? `
+        <div style="margin-top:1.25rem;display:flex;gap:0.75rem;flex-wrap:wrap">
+            <button class="btn btn-sm btn-green" onclick="updateStatus('${record.id}','verified');closeModal('details-modal')">✅ Verify Payment</button>
+            <button class="btn btn-sm btn-red" onclick="updateStatus('${record.id}','overdue');closeModal('details-modal')">⚠️ Mark Overdue</button>
+        </div>` : ''}
+    `;
+    openModal('details-modal');
+}
+
+// ----- CSV Export -----
+function downloadCSV() {
+    const period = currentPeriod || 'all';
+    const rows = [['#','Name','Teacher','Plan','Amount','Billing Day','Status','Classes Attended','Total Classes','Period','Transaction ID','Screenshot','Phone','Access Code']];
+    allStudents.forEach((s, idx) => {
+        const rec = getRecordForStudent(s.id);
+        const status = getStudentStatus(s, rec);
+        rows.push([
+            idx + 1, s.name, s.teacher, s.plan,
+            rec ? rec.amount_due : s.amount_due,
+            s.billing_day, status,
+            s.classes_attended || 0, s.total_classes_per_cycle || 8,
+            rec ? rec.billing_period : '',
+            rec ? (rec.transaction_id || '') : '',
+            rec ? (rec.screenshot_url || '') : '',
+            s.phone || '', s.access_code,
+        ]);
+    });
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `payments_${period.replace(/\s+/g,'_')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ----- Utilities -----
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function showTopMsg(msg, type) {
+    const el = document.getElementById('top-msg');
+    el.className = type === 'success' ? 'msg-success' : type === 'info' ? 'msg-info' : 'msg-error';
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+
+function showModalMsg(id, msg, type) {
+    const el = document.getElementById(id);
+    el.className = type === 'success' ? 'msg-success' : 'msg-error';
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+
+function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmtDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) + ' ' +
+           d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+}
+
+function ordinal(n) {
+    const s = ['th','st','nd','rd'];
+    const v = n % 100;
+    return s[(v-20)%10] || s[v] || s[0];
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.classList.remove('open');
+    });
+});
+
+// Auto-login from session
+(async () => {
+    const saved = sessionStorage.getItem('pay_admin_token');
+    if (saved) {
+        adminToken = saved;
+        const ok = await loadData();
+        if (ok) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('logout-btn').style.display = 'inline-block';
+            renderAll();
+        } else {
+            adminToken = '';
+            sessionStorage.removeItem('pay_admin_token');
+        }
+    }
+})();
+</script>
+
+</body>
+</html>
