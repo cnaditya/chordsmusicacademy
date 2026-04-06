@@ -379,27 +379,8 @@
                 <input type="number" id="es-classes-cycle" value="8" min="1" max="50" placeholder="e.g. 8">
             </div>
             <div class="full-col">
-                <label>Class Days</label>
-                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.25rem">
-                    <label class="day-check"><input type="checkbox" name="es-day" value="Mon"> Mon</label>
-                    <label class="day-check"><input type="checkbox" name="es-day" value="Tue"> Tue</label>
-                    <label class="day-check"><input type="checkbox" name="es-day" value="Wed"> Wed</label>
-                    <label class="day-check"><input type="checkbox" name="es-day" value="Thu"> Thu</label>
-                    <label class="day-check"><input type="checkbox" name="es-day" value="Fri"> Fri</label>
-                    <label class="day-check"><input type="checkbox" name="es-day" value="Sat"> Sat</label>
-                    <label class="day-check"><input type="checkbox" name="es-day" value="Sun"> Sun</label>
-                </div>
-            </div>
-            <div>
-                <label>Class Time</label>
-                <select id="es-class-time">
-                    <option value="">— Select —</option>
-                    <option>5:50am</option><option>6:00am</option><option>6:30am</option>
-                    <option>7:10am</option><option>7:40am</option><option>7:50am</option>
-                    <option>8:30am</option><option>9:10am</option><option>9:40am</option>
-                    <option>3pm</option><option>4pm</option><option>5:40pm</option>
-                    <option>6:20pm</option><option>7pm</option><option>7:40pm</option><option>8:20pm</option>
-                </select>
+                <label>Class Schedule (tick day, pick time)</label>
+                <div id="es-schedule" style="display:flex;flex-direction:column;gap:0.4rem;margin-top:0.4rem"></div>
             </div>
             <div>
                 <label>Instrument</label>
@@ -450,27 +431,8 @@
                 <input type="number" id="ns-billing-day" value="1" min="1" max="31">
             </div>
             <div class="full-col">
-                <label>Class Days</label>
-                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.25rem">
-                    <label class="day-check"><input type="checkbox" name="ns-day" value="Mon"> Mon</label>
-                    <label class="day-check"><input type="checkbox" name="ns-day" value="Tue"> Tue</label>
-                    <label class="day-check"><input type="checkbox" name="ns-day" value="Wed"> Wed</label>
-                    <label class="day-check"><input type="checkbox" name="ns-day" value="Thu"> Thu</label>
-                    <label class="day-check"><input type="checkbox" name="ns-day" value="Fri"> Fri</label>
-                    <label class="day-check"><input type="checkbox" name="ns-day" value="Sat"> Sat</label>
-                    <label class="day-check"><input type="checkbox" name="ns-day" value="Sun"> Sun</label>
-                </div>
-            </div>
-            <div>
-                <label>Class Time</label>
-                <select id="ns-class-time">
-                    <option value="">— Select —</option>
-                    <option>5:50am</option><option>6:00am</option><option>6:30am</option>
-                    <option>7:10am</option><option>7:40am</option><option>7:50am</option>
-                    <option>8:30am</option><option>9:10am</option><option>9:40am</option>
-                    <option>3pm</option><option>4pm</option><option>5:40pm</option>
-                    <option>6:20pm</option><option>7pm</option><option>7:40pm</option><option>8:20pm</option>
-                </select>
+                <label>Class Schedule (tick day, pick time)</label>
+                <div id="ns-schedule" style="display:flex;flex-direction:column;gap:0.4rem;margin-top:0.4rem"></div>
             </div>
             <div>
                 <label>Instrument</label>
@@ -713,7 +675,7 @@ function renderTable() {
                 <div class="code-cell" style="font-size:0.76rem;margin-top:0.2rem">${s.access_code}</div>
             </td>
             <td><span class="${teacherClass}">${escHtml(s.teacher)}</span></td>
-            <td style="font-size:0.78rem;color:#aaa;white-space:nowrap">${escHtml(s.class_days || '—')}<br><span style="color:#666">${escHtml(s.class_time || '')}</span></td>
+            <td style="font-size:0.78rem;color:#aaa">${formatScheduleCell(s.class_days, s.class_time)}</td>
             <td style="font-size:0.82rem;color:#aaa">${planLabel}</td>
             <td style="color:#c9a227;font-weight:700">₹${s.amount_due.toLocaleString('en-IN')}</td>
             <td style="color:#777;font-size:0.82rem">${isKanisha ? '15th' : (s.billing_day === 1 ? '1st' : s.billing_day + ordinal(s.billing_day))}</td>
@@ -788,6 +750,19 @@ function buildActions(s, rec, status, isKanisha) {
     return btns || '<span style="color:#555;font-size:0.76rem">—</span>';
 }
 
+function formatScheduleCell(days, time) {
+    if (!days) return '<span style="color:#555">—</span>';
+    // Per-day times stored as "Mon=6:30am, Thu=7:10am"
+    if (time && time.includes('=')) {
+        const lines = time.split(',').map(p => {
+            const [d, t] = p.trim().split('=');
+            return `<div><span style="color:#c9a227">${escHtml(d)}</span> <span style="color:#666">${escHtml(t||'')}</span></div>`;
+        });
+        return lines.join('');
+    }
+    return `<div>${escHtml(days)}</div><div style="color:#666">${escHtml(time||'')}</div>`;
+}
+
 function formatPlan(plan, type, amount) {
     if (type === 'quarterly') return 'Quarterly';
     if (type === 'per_classes') return 'Per Classes';
@@ -806,6 +781,66 @@ function setTeacher(teacher, btn) {
     document.querySelectorAll('[data-teacher]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     renderTable();
+}
+
+const ALL_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const TIME_OPTS = ['5:50am','6:00am','6:30am','7:10am','7:40am','7:50am','8:30am','9:10am','9:40am','3pm','4pm','5:40pm','6:20pm','7pm','7:40pm','8:20pm'];
+
+function buildScheduleWidget(containerId, existingDays, existingTime) {
+    // existingDays: "Mon, Thu" existingTime: "6:30am" or "Mon=6:30am, Thu=7:10am"
+    const container = document.getElementById(containerId);
+    // Parse existing per-day times if stored as "Mon=6:30am, Thu=7:10am"
+    const dayTimeMap = {};
+    if (existingTime && existingTime.includes('=')) {
+        existingTime.split(',').forEach(part => {
+            const [d, t] = part.trim().split('=');
+            if (d && t) dayTimeMap[d.trim()] = t.trim();
+        });
+    }
+    const checkedDays = (existingDays || '').split(',').map(d => d.trim()).filter(Boolean);
+    const fallbackTime = (existingTime && !existingTime.includes('=')) ? existingTime.trim() : '';
+
+    const timeOptions = TIME_OPTS.map(t => `<option value="${t}">${t}</option>`).join('');
+    container.innerHTML = ALL_DAYS.map(day => {
+        const checked = checkedDays.includes(day);
+        const selTime = dayTimeMap[day] || fallbackTime || '';
+        return `<div style="display:flex;align-items:center;gap:0.6rem">
+            <label class="day-check" style="min-width:60px">
+                <input type="checkbox" data-day="${day}" onchange="toggleDayTime(this)" ${checked ? 'checked' : ''}> ${day}
+            </label>
+            <select data-time-for="${day}" style="flex:1;padding:0.4rem 0.6rem;background:#1c1c2e;border:1px solid #33334d;border-radius:6px;color:#e0e0e0;font-size:0.82rem;${checked ? '' : 'display:none'}">
+                <option value="">— Time —</option>${timeOptions}
+            </select>
+        </div>`;
+    }).join('');
+
+    // Set selected times
+    ALL_DAYS.forEach(day => {
+        const sel = container.querySelector(`[data-time-for="${day}"]`);
+        const t = dayTimeMap[day] || fallbackTime;
+        if (sel && t) sel.value = t;
+    });
+}
+
+function toggleDayTime(cb) {
+    const day = cb.dataset.day;
+    const container = cb.closest('[id$="-schedule"]');
+    const sel = container.querySelector(`[data-time-for="${day}"]`);
+    if (sel) sel.style.display = cb.checked ? '' : 'none';
+}
+
+function readSchedule(containerId) {
+    const container = document.getElementById(containerId);
+    const days = [], times = [];
+    ALL_DAYS.forEach(day => {
+        const cb = container.querySelector(`[data-day="${day}"]`);
+        const sel = container.querySelector(`[data-time-for="${day}"]`);
+        if (cb && cb.checked) {
+            days.push(day);
+            times.push(`${day}=${sel ? (sel.value || '') : ''}`);
+        }
+    });
+    return { class_days: days.join(', '), class_time: times.join(', ') };
 }
 
 function onEditPaymentTypeChange() {
@@ -977,10 +1012,10 @@ async function seedStudents() {
 
 function openAddStudent() {
     document.getElementById('add-student-msg').style.display = 'none';
-    ['ns-name','ns-phone','ns-class-time','ns-notes'].forEach(id => {
+    ['ns-name','ns-phone','ns-notes'].forEach(id => {
         document.getElementById(id).value = '';
     });
-    document.querySelectorAll('[name="ns-day"]').forEach(cb => { cb.checked = false; });
+    buildScheduleWidget('ns-schedule', '', '');
     document.getElementById('ns-plan').value = 'monthly_5000';
     document.getElementById('ns-teacher').value = 'Aditya';
     document.getElementById('ns-billing-day').value = '1';
@@ -1010,8 +1045,7 @@ async function saveNewStudent() {
         payment_type: planInfo.type,
         amount_due: planInfo.amount,
         billing_day: parseInt(document.getElementById('ns-billing-day').value) || 1,
-        class_days: [...document.querySelectorAll('[name="ns-day"]:checked')].map(cb => cb.value).join(', '),
-        class_time: document.getElementById('ns-class-time').value,
+        ...readSchedule('ns-schedule'),
         instrument: document.getElementById('ns-instrument').value.trim() || 'Piano',
         notes: document.getElementById('ns-notes').value.trim(),
     };
@@ -1046,9 +1080,7 @@ function openEditStudent(studentId) {
     document.getElementById('es-amount').value = s.amount_due || '';
     document.getElementById('es-billing-day').value = s.billing_day || 1;
     document.getElementById('es-classes-cycle').value = s.total_classes_per_cycle || 8;
-    const esDays = (s.class_days || '').split(',').map(d => d.trim());
-    document.querySelectorAll('[name="es-day"]').forEach(cb => { cb.checked = esDays.includes(cb.value); });
-    document.getElementById('es-class-time').value = s.class_time || '';
+    buildScheduleWidget('es-schedule', s.class_days, s.class_time);
     document.getElementById('es-instrument').value = s.instrument || 'Piano';
     document.getElementById('es-notes').value = s.notes || '';
     onEditPaymentTypeChange();
@@ -1066,8 +1098,7 @@ async function saveEditStudent() {
         payment_type: paymentType,
         billing_day: paymentType === 'monthly' ? (parseInt(document.getElementById('es-billing-day').value) || 1) : 1,
         total_classes_per_cycle: paymentType !== 'monthly' ? (parseInt(document.getElementById('es-classes-cycle').value) || 8) : (paymentType === 'quarterly' ? 24 : 8),
-        class_days: [...document.querySelectorAll('[name="es-day"]:checked')].map(cb => cb.value).join(', '),
-        class_time: document.getElementById('es-class-time').value,
+        ...readSchedule('es-schedule'),
         instrument: document.getElementById('es-instrument').value.trim() || 'Piano',
         notes: document.getElementById('es-notes').value.trim(),
         amount_due: parseInt(document.getElementById('es-amount').value) || 5000,
