@@ -678,7 +678,7 @@ function renderTable() {
             <td style="font-size:0.78rem;color:#aaa">${formatScheduleCell(s.class_days, s.class_time)}</td>
             <td style="font-size:0.82rem;color:#aaa">${planLabel}</td>
             <td style="color:#c9a227;font-weight:700">₹${s.amount_due.toLocaleString('en-IN')}</td>
-            <td style="color:#777;font-size:0.82rem">${s.billing_day ? fmtDueDate(s.billing_day) : '—'}</td>
+            <td style="color:#777;font-size:0.82rem">${fmtDueDate(s.due_date || s.billing_day)}</td>
             <td>${statusBadge}</td>
             <td>${classesCell}</td>
             <td><div class="action-btns">${actions}</div></td>
@@ -784,9 +784,16 @@ function setTeacher(teacher, btn) {
 }
 
 function fmtDueDate(val) {
+    if (!val) return '—';
+    // full date "2026-05-01"
+    if (String(val).includes('-')) {
+        const [y, m, d] = val.split('-');
+        return `${d}/${m}/${y}`;
+    }
+    // legacy day-only integer
     const d = parseInt(val);
     if (!d || d < 1 || d > 31) return '—';
-    return d + ordinal(d) + ' of month';
+    return d + ordinal(d);
 }
 
 const ALL_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -1066,7 +1073,7 @@ async function saveNewStudent() {
         plan,
         payment_type: planInfo.type,
         amount_due: planInfo.amount,
-        billing_day: document.getElementById('ns-billing-day').value ? new Date(document.getElementById('ns-billing-day').value).getDate() : null,
+        due_date: document.getElementById('ns-billing-day').value || null,
         ...readSchedule('ns-schedule'),
         instrument: document.getElementById('ns-instrument').value.trim() || 'Piano',
         notes: document.getElementById('ns-notes').value.trim(),
@@ -1100,14 +1107,7 @@ function openEditStudent(studentId) {
     document.getElementById('es-teacher').value = s.teacher || 'Aditya';
     document.getElementById('es-payment-type').value = s.payment_type || 'monthly';
     document.getElementById('es-amount').value = s.amount_due || '';
-    const bd = parseInt(s.billing_day);
-    if (bd >= 1 && bd <= 31) {
-        const now = new Date();
-        const y = now.getFullYear(), mo = String(now.getMonth()+1).padStart(2,'0'), d = String(bd).padStart(2,'0');
-        document.getElementById('es-billing-day').value = `${y}-${mo}-${d}`;
-    } else {
-        document.getElementById('es-billing-day').value = '';
-    }
+    document.getElementById('es-billing-day').value = s.due_date || '';
     document.getElementById('es-classes-cycle').value = s.total_classes_per_cycle || 8;
     buildScheduleWidget('es-schedule', s.class_days, s.class_time);
     document.getElementById('es-instrument').value = s.instrument || 'Piano';
@@ -1125,7 +1125,7 @@ async function saveEditStudent() {
         phone: document.getElementById('es-phone').value.trim(),
         teacher: document.getElementById('es-teacher').value,
         payment_type: paymentType,
-        billing_day: paymentType === 'monthly' ? (document.getElementById('es-billing-day').value ? new Date(document.getElementById('es-billing-day').value).getDate() : null) : null,
+        due_date: document.getElementById('es-billing-day').value || null,
         total_classes_per_cycle: paymentType !== 'monthly' ? (parseInt(document.getElementById('es-classes-cycle').value) || 8) : (paymentType === 'quarterly' ? 24 : 8),
         ...readSchedule('es-schedule'),
         instrument: document.getElementById('es-instrument').value.trim() || 'Piano',
