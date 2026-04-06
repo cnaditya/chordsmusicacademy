@@ -785,12 +785,7 @@ function setTeacher(teacher, btn) {
 
 function fmtDueDate(val) {
     if (!val) return '—';
-    // val could be a full date "2026-04-15" or old day number
-    if (String(val).includes('-')) {
-        const d = new Date(val + 'T00:00:00');
-        return d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
-    }
-    return val + ordinal(parseInt(val));
+    return val + ordinal(parseInt(val)) + ' of month';
 }
 
 const ALL_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -1070,7 +1065,7 @@ async function saveNewStudent() {
         plan,
         payment_type: planInfo.type,
         amount_due: planInfo.amount,
-        billing_day: document.getElementById('ns-billing-day').value || null,
+        billing_day: document.getElementById('ns-billing-day').value ? new Date(document.getElementById('ns-billing-day').value).getDate() : null,
         ...readSchedule('ns-schedule'),
         instrument: document.getElementById('ns-instrument').value.trim() || 'Piano',
         notes: document.getElementById('ns-notes').value.trim(),
@@ -1104,7 +1099,13 @@ function openEditStudent(studentId) {
     document.getElementById('es-teacher').value = s.teacher || 'Aditya';
     document.getElementById('es-payment-type').value = s.payment_type || 'monthly';
     document.getElementById('es-amount').value = s.amount_due || '';
-    document.getElementById('es-billing-day').value = s.billing_day && String(s.billing_day).includes('-') ? s.billing_day : '';
+    if (s.billing_day) {
+        const now = new Date();
+        const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'), d = String(s.billing_day).padStart(2,'0');
+        document.getElementById('es-billing-day').value = `${y}-${m}-${d}`;
+    } else {
+        document.getElementById('es-billing-day').value = '';
+    }
     document.getElementById('es-classes-cycle').value = s.total_classes_per_cycle || 8;
     buildScheduleWidget('es-schedule', s.class_days, s.class_time);
     document.getElementById('es-instrument').value = s.instrument || 'Piano';
@@ -1122,7 +1123,7 @@ async function saveEditStudent() {
         phone: document.getElementById('es-phone').value.trim(),
         teacher: document.getElementById('es-teacher').value,
         payment_type: paymentType,
-        billing_day: paymentType === 'monthly' ? (document.getElementById('es-billing-day').value || null) : null,
+        billing_day: paymentType === 'monthly' ? (document.getElementById('es-billing-day').value ? new Date(document.getElementById('es-billing-day').value).getDate() : null) : null,
         total_classes_per_cycle: paymentType !== 'monthly' ? (parseInt(document.getElementById('es-classes-cycle').value) || 8) : (paymentType === 'quarterly' ? 24 : 8),
         ...readSchedule('es-schedule'),
         instrument: document.getElementById('es-instrument').value.trim() || 'Piano',
