@@ -200,6 +200,9 @@
 
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
         .form-grid .full-col { grid-column: 1/-1; }
+        .day-check { display:flex; align-items:center; gap:0.3rem; padding:0.35rem 0.7rem; background:#1c1c2e; border:1px solid #33334d; border-radius:6px; cursor:pointer; font-size:0.82rem; color:#aaa; user-select:none; }
+        .day-check input { accent-color:#c9a227; width:14px; height:14px; cursor:pointer; margin:0; }
+        .day-check:has(input:checked) { border-color:#c9a227; color:#c9a227; background:#1f1a0a; }
 
         @media (max-width: 600px) {
             .dashboard { padding: 1rem; }
@@ -375,13 +378,28 @@
                 <label>Classes per cycle</label>
                 <input type="number" id="es-classes-cycle" value="8" min="1" max="50" placeholder="e.g. 8">
             </div>
-            <div>
+            <div class="full-col">
                 <label>Class Days</label>
-                <input type="text" id="es-class-days" placeholder="e.g. Mon, Thu">
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.25rem">
+                    <label class="day-check"><input type="checkbox" name="es-day" value="Mon"> Mon</label>
+                    <label class="day-check"><input type="checkbox" name="es-day" value="Tue"> Tue</label>
+                    <label class="day-check"><input type="checkbox" name="es-day" value="Wed"> Wed</label>
+                    <label class="day-check"><input type="checkbox" name="es-day" value="Thu"> Thu</label>
+                    <label class="day-check"><input type="checkbox" name="es-day" value="Fri"> Fri</label>
+                    <label class="day-check"><input type="checkbox" name="es-day" value="Sat"> Sat</label>
+                    <label class="day-check"><input type="checkbox" name="es-day" value="Sun"> Sun</label>
+                </div>
             </div>
             <div>
                 <label>Class Time</label>
-                <input type="text" id="es-class-time" placeholder="e.g. 7:10am">
+                <select id="es-class-time">
+                    <option value="">— Select —</option>
+                    <option>5:50am</option><option>6:00am</option><option>6:30am</option>
+                    <option>7:10am</option><option>7:40am</option><option>7:50am</option>
+                    <option>8:30am</option><option>9:10am</option><option>9:40am</option>
+                    <option>3pm</option><option>4pm</option><option>5:40pm</option>
+                    <option>6:20pm</option><option>7pm</option><option>7:40pm</option><option>8:20pm</option>
+                </select>
             </div>
             <div>
                 <label>Instrument</label>
@@ -431,13 +449,28 @@
                 <label>Billing Day</label>
                 <input type="number" id="ns-billing-day" value="1" min="1" max="31">
             </div>
-            <div>
+            <div class="full-col">
                 <label>Class Days</label>
-                <input type="text" id="ns-class-days" placeholder="e.g. Mon, Thu">
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.25rem">
+                    <label class="day-check"><input type="checkbox" name="ns-day" value="Mon"> Mon</label>
+                    <label class="day-check"><input type="checkbox" name="ns-day" value="Tue"> Tue</label>
+                    <label class="day-check"><input type="checkbox" name="ns-day" value="Wed"> Wed</label>
+                    <label class="day-check"><input type="checkbox" name="ns-day" value="Thu"> Thu</label>
+                    <label class="day-check"><input type="checkbox" name="ns-day" value="Fri"> Fri</label>
+                    <label class="day-check"><input type="checkbox" name="ns-day" value="Sat"> Sat</label>
+                    <label class="day-check"><input type="checkbox" name="ns-day" value="Sun"> Sun</label>
+                </div>
             </div>
             <div>
                 <label>Class Time</label>
-                <input type="text" id="ns-class-time" placeholder="e.g. 7:10am">
+                <select id="ns-class-time">
+                    <option value="">— Select —</option>
+                    <option>5:50am</option><option>6:00am</option><option>6:30am</option>
+                    <option>7:10am</option><option>7:40am</option><option>7:50am</option>
+                    <option>8:30am</option><option>9:10am</option><option>9:40am</option>
+                    <option>3pm</option><option>4pm</option><option>5:40pm</option>
+                    <option>6:20pm</option><option>7pm</option><option>7:40pm</option><option>8:20pm</option>
+                </select>
             </div>
             <div>
                 <label>Instrument</label>
@@ -944,9 +977,10 @@ async function seedStudents() {
 
 function openAddStudent() {
     document.getElementById('add-student-msg').style.display = 'none';
-    ['ns-name','ns-phone','ns-class-days','ns-class-time','ns-notes'].forEach(id => {
+    ['ns-name','ns-phone','ns-class-time','ns-notes'].forEach(id => {
         document.getElementById(id).value = '';
     });
+    document.querySelectorAll('[name="ns-day"]').forEach(cb => { cb.checked = false; });
     document.getElementById('ns-plan').value = 'monthly_5000';
     document.getElementById('ns-teacher').value = 'Aditya';
     document.getElementById('ns-billing-day').value = '1';
@@ -976,8 +1010,8 @@ async function saveNewStudent() {
         payment_type: planInfo.type,
         amount_due: planInfo.amount,
         billing_day: parseInt(document.getElementById('ns-billing-day').value) || 1,
-        class_days: document.getElementById('ns-class-days').value.trim(),
-        class_time: document.getElementById('ns-class-time').value.trim(),
+        class_days: [...document.querySelectorAll('[name="ns-day"]:checked')].map(cb => cb.value).join(', '),
+        class_time: document.getElementById('ns-class-time').value,
         instrument: document.getElementById('ns-instrument').value.trim() || 'Piano',
         notes: document.getElementById('ns-notes').value.trim(),
     };
@@ -1012,7 +1046,8 @@ function openEditStudent(studentId) {
     document.getElementById('es-amount').value = s.amount_due || '';
     document.getElementById('es-billing-day').value = s.billing_day || 1;
     document.getElementById('es-classes-cycle').value = s.total_classes_per_cycle || 8;
-    document.getElementById('es-class-days').value = s.class_days || '';
+    const esDays = (s.class_days || '').split(',').map(d => d.trim());
+    document.querySelectorAll('[name="es-day"]').forEach(cb => { cb.checked = esDays.includes(cb.value); });
     document.getElementById('es-class-time').value = s.class_time || '';
     document.getElementById('es-instrument').value = s.instrument || 'Piano';
     document.getElementById('es-notes').value = s.notes || '';
@@ -1031,8 +1066,8 @@ async function saveEditStudent() {
         payment_type: paymentType,
         billing_day: paymentType === 'monthly' ? (parseInt(document.getElementById('es-billing-day').value) || 1) : 1,
         total_classes_per_cycle: paymentType !== 'monthly' ? (parseInt(document.getElementById('es-classes-cycle').value) || 8) : (paymentType === 'quarterly' ? 24 : 8),
-        class_days: document.getElementById('es-class-days').value.trim(),
-        class_time: document.getElementById('es-class-time').value.trim(),
+        class_days: [...document.querySelectorAll('[name="es-day"]:checked')].map(cb => cb.value).join(', '),
+        class_time: document.getElementById('es-class-time').value,
         instrument: document.getElementById('es-instrument').value.trim() || 'Piano',
         notes: document.getElementById('es-notes').value.trim(),
         amount_due: parseInt(document.getElementById('es-amount').value) || 5000,
