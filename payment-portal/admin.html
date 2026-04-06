@@ -581,6 +581,14 @@ function isClassBased(student) {
     return student.payment_type === 'quarterly' || student.payment_type === 'per_classes';
 }
 
+function isPastDue(student) {
+    if (!student.due_date) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(student.due_date + 'T00:00:00');
+    return today > due;
+}
+
 function getStudentStatus(student, record) {
     if (isClassBased(student)) {
         const attended = student.classes_attended || 0;
@@ -591,8 +599,13 @@ function getStudentStatus(student, record) {
         }
         return 'in_progress';
     }
+    const recStatus = record ? record.status : 'no_record';
+    // Auto-overdue if past due date and not yet paid
+    if (isPastDue(student) && (recStatus === 'pending' || recStatus === 'no_record')) {
+        return 'overdue';
+    }
     if (!record) return 'no_record';
-    return record.status;
+    return recStatus;
 }
 
 function updateStats() {
