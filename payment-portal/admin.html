@@ -784,7 +784,18 @@ function setTeacher(teacher, btn) {
 }
 
 const ALL_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-const TIME_OPTS = ['5:50am','6:00am','6:30am','7:10am','7:40am','7:50am','8:30am','9:10am','9:40am','3pm','4pm','5:40pm','6:20pm','7pm','7:40pm','8:20pm'];
+const TIME_OPTS = (() => {
+    const opts = [];
+    for (let h = 0; h < 24; h++) {
+        for (let m = 0; m < 60; m += 5) {
+            const ampm = h < 12 ? 'am' : 'pm';
+            const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+            const mm = m === 0 ? '' : `:${String(m).padStart(2,'0')}`;
+            opts.push(`${h12}${mm}${ampm}`);
+        }
+    }
+    return opts;
+})();
 
 function buildScheduleWidget(containerId, existingDays, existingTime) {
     // existingDays: "Mon, Thu" existingTime: "6:30am" or "Mon=6:30am, Thu=7:10am"
