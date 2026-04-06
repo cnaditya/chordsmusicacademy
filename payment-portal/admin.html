@@ -784,8 +784,9 @@ function setTeacher(teacher, btn) {
 }
 
 function fmtDueDate(val) {
-    if (!val) return '—';
-    return val + ordinal(parseInt(val)) + ' of month';
+    const d = parseInt(val);
+    if (!d || d < 1 || d > 31) return '—';
+    return d + ordinal(d) + ' of month';
 }
 
 const ALL_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -1099,10 +1100,11 @@ function openEditStudent(studentId) {
     document.getElementById('es-teacher').value = s.teacher || 'Aditya';
     document.getElementById('es-payment-type').value = s.payment_type || 'monthly';
     document.getElementById('es-amount').value = s.amount_due || '';
-    if (s.billing_day) {
+    const bd = parseInt(s.billing_day);
+    if (bd >= 1 && bd <= 31) {
         const now = new Date();
-        const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'), d = String(s.billing_day).padStart(2,'0');
-        document.getElementById('es-billing-day').value = `${y}-${m}-${d}`;
+        const y = now.getFullYear(), mo = String(now.getMonth()+1).padStart(2,'0'), d = String(bd).padStart(2,'0');
+        document.getElementById('es-billing-day').value = `${y}-${mo}-${d}`;
     } else {
         document.getElementById('es-billing-day').value = '';
     }
