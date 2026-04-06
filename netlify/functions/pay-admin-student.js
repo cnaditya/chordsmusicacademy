@@ -219,7 +219,7 @@ exports.handler = async (event) => {
       if (student.teacher) payload.teacher = student.teacher;
       if (student.payment_type) payload.payment_type = student.payment_type;
       if (student.amount_due) payload.amount_due = parseInt(student.amount_due);
-      if (student.billing_day !== undefined) payload.billing_day = parseInt(student.billing_day) || 1;
+      if (student.billing_day !== undefined) payload.billing_day = student.billing_day || null;
       if (student.total_classes_per_cycle) payload.total_classes_per_cycle = parseInt(student.total_classes_per_cycle);
       if (student.class_days !== undefined) payload.class_days = student.class_days;
       if (student.class_time !== undefined) payload.class_time = student.class_time;
