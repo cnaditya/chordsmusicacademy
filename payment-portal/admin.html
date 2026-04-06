@@ -784,18 +784,25 @@ function setTeacher(teacher, btn) {
 }
 
 const ALL_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-const TIME_OPTS = (() => {
-    const opts = [];
-    for (let h = 0; h < 24; h++) {
-        for (let m = 0; m < 60; m += 5) {
-            const ampm = h < 12 ? 'am' : 'pm';
-            const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-            const mm = m === 0 ? '' : `:${String(m).padStart(2,'0')}`;
-            opts.push(`${h12}${mm}${ampm}`);
-        }
-    }
-    return opts;
-})();
+const HOUR_OPTS = [1,2,3,4,5,6,7,8,9,10,11,12].map(h => `<option>${h}</option>`).join('');
+const MIN_OPTS = ['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => `<option>${m}</option>`).join('');
+
+function parseTime(t) {
+    // parse "6:30am" or "6am" → {h:'6', m:'00', ap:'am'}
+    if (!t) return {h:'6', m:'00', ap:'am'};
+    const match = t.match(/^(\d+)(?::(\d+))?(am|pm)$/i);
+    if (!match) return {h:'6', m:'00', ap:'am'};
+    return { h: match[1], m: match[2] ? String(match[2]).padStart(2,'0') : '00', ap: match[3].toLowerCase() };
+}
+
+function buildTimeSelect(day, selTime) {
+    const {h, m, ap} = parseTime(selTime);
+    const selH = HOUR_OPTS.replace(`<option>${h}</option>`, `<option selected>${h}</option>`);
+    const selM = MIN_OPTS.replace(`<option>${m}</option>`, `<option selected>${m}</option>`);
+    return `<select data-th="${day}" style="width:52px;padding:0.4rem 0.3rem;background:#1c1c2e;border:1px solid #33334d;border-radius:6px;color:#e0e0e0;font-size:0.82rem"><option value="">Hr</option>${selH}</select>` +
+           `<select data-tm="${day}" style="width:58px;padding:0.4rem 0.3rem;background:#1c1c2e;border:1px solid #33334d;border-radius:6px;color:#e0e0e0;font-size:0.82rem"><option value="">Min</option>${selM}</select>` +
+           `<select data-tap="${day}" style="width:58px;padding:0.4rem 0.3rem;background:#1c1c2e;border:1px solid #33334d;border-radius:6px;color:#e0e0e0;font-size:0.82rem"><option ${ap==='am'?'selected':''}>am</option><option ${ap==='pm'?'selected':''}>pm</option></select>`;
+}
 
 function buildScheduleWidget(containerId, existingDays, existingTime) {
     // existingDays: "Mon, Thu" existingTime: "6:30am" or "Mon=6:30am, Thu=7:10am"
@@ -811,33 +818,25 @@ function buildScheduleWidget(containerId, existingDays, existingTime) {
     const checkedDays = (existingDays || '').split(',').map(d => d.trim()).filter(Boolean);
     const fallbackTime = (existingTime && !existingTime.includes('=')) ? existingTime.trim() : '';
 
-    const timeOptions = TIME_OPTS.map(t => `<option value="${t}">${t}</option>`).join('');
     container.innerHTML = ALL_DAYS.map(day => {
         const checked = checkedDays.includes(day);
         const selTime = dayTimeMap[day] || fallbackTime || '';
-        return `<div style="display:flex;align-items:center;gap:0.6rem">
-            <label class="day-check" style="min-width:60px">
+        return `<div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap">
+            <label class="day-check" style="min-width:58px">
                 <input type="checkbox" data-day="${day}" onchange="toggleDayTime(this)" ${checked ? 'checked' : ''}> ${day}
             </label>
-            <select data-time-for="${day}" style="flex:1;padding:0.4rem 0.6rem;background:#1c1c2e;border:1px solid #33334d;border-radius:6px;color:#e0e0e0;font-size:0.82rem;${checked ? '' : 'display:none'}">
-                <option value="">— Time —</option>${timeOptions}
-            </select>
+            <span data-time-for="${day}" style="display:${checked ? 'flex' : 'none'};gap:0.3rem;align-items:center">
+                ${buildTimeSelect(day, selTime)}
+            </span>
         </div>`;
     }).join('');
-
-    // Set selected times
-    ALL_DAYS.forEach(day => {
-        const sel = container.querySelector(`[data-time-for="${day}"]`);
-        const t = dayTimeMap[day] || fallbackTime;
-        if (sel && t) sel.value = t;
-    });
 }
 
 function toggleDayTime(cb) {
     const day = cb.dataset.day;
     const container = cb.closest('[id$="-schedule"]');
-    const sel = container.querySelector(`[data-time-for="${day}"]`);
-    if (sel) sel.style.display = cb.checked ? '' : 'none';
+    const span = container.querySelector(`[data-time-for="${day}"]`);
+    if (span) span.style.display = cb.checked ? 'flex' : 'none';
 }
 
 function readSchedule(containerId) {
@@ -845,10 +844,16 @@ function readSchedule(containerId) {
     const days = [], times = [];
     ALL_DAYS.forEach(day => {
         const cb = container.querySelector(`[data-day="${day}"]`);
-        const sel = container.querySelector(`[data-time-for="${day}"]`);
         if (cb && cb.checked) {
             days.push(day);
-            times.push(`${day}=${sel ? (sel.value || '') : ''}`);
+            const th = container.querySelector(`[data-th="${day}"]`);
+            const tm = container.querySelector(`[data-tm="${day}"]`);
+            const tap = container.querySelector(`[data-tap="${day}"]`);
+            const h = th ? th.value : '';
+            const m = tm ? tm.value : '00';
+            const ap = tap ? tap.value : 'am';
+            const t = h ? `${h}:${m}${ap}` : '';
+            times.push(`${day}=${t}`);
         }
     });
     return { class_days: days.join(', '), class_time: times.join(', ') };
