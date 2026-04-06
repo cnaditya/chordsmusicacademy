@@ -682,7 +682,7 @@ function renderTable() {
             <td><span class="${teacherClass}">${escHtml(s.teacher)}</span></td>
             <td style="font-size:0.78rem;color:#aaa;white-space:nowrap">${escHtml(s.class_days || '—')}<br><span style="color:#666">${escHtml(s.class_time || '')}</span></td>
             <td style="font-size:0.82rem;color:#aaa">${planLabel}</td>
-            <td style="color:#c9a227;font-weight:700">₹${(rec ? rec.amount_due : s.amount_due).toLocaleString('en-IN')}</td>
+            <td style="color:#c9a227;font-weight:700">₹${s.amount_due.toLocaleString('en-IN')}</td>
             <td style="color:#777;font-size:0.82rem">${isKanisha ? '15th' : (s.billing_day === 1 ? '1st' : s.billing_day + ordinal(s.billing_day))}</td>
             <td>${statusBadge}</td>
             <td>${classesCell}</td>

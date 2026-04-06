@@ -244,6 +244,24 @@ exports.handler = async (event) => {
         return { statusCode: 500, headers, body: JSON.stringify({ error: "Update failed: " + err }) };
       }
       const updated = await updRes.json();
+
+      // If amount changed, update pending payment records too
+      if (payload.amount_due) {
+        await fetch(
+          `${SUPABASE_URL}/rest/v1/payment_records?student_id=eq.${encodeURIComponent(id)}&status=eq.pending`,
+          {
+            method: "PATCH",
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: `Bearer ${SUPABASE_KEY}`,
+              "Content-Type": "application/json",
+              Prefer: "return=minimal",
+            },
+            body: JSON.stringify({ amount_due: payload.amount_due }),
+          }
+        );
+      }
+
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: Array.isArray(updated) ? updated[0] : updated }) };
     }
 
