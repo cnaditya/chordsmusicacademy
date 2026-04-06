@@ -594,8 +594,13 @@ function getStudentStatus(student, record) {
         const attended = student.classes_attended || 0;
         const total = student.total_classes_per_cycle || (student.payment_type === 'quarterly' ? 24 : 8);
         if (attended >= total) {
-            if (record) return record.status;
-            return 'quarterly_due';
+            if (record) {
+                // Auto-overdue if past due date and still unpaid
+                if (isPastDue(student) && (record.status === 'pending')) return 'overdue';
+                return record.status;
+            }
+            // No record yet — overdue if past due date, else payment due
+            return isPastDue(student) ? 'overdue' : 'quarterly_due';
         }
         return 'in_progress';
     }
