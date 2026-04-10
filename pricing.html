@@ -11,66 +11,60 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Live Piano Classes Online — Chords Music Academy</title>
+<title>Summer Special Group Classes — Chords Music Academy</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a2e}
 
-/* Header */
 .hdr{background:#1a1a2e;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
 .hdr-icon{width:36px;height:36px;background:#e74c3c;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
 .hdr-title{font-size:0.95rem;font-weight:700;line-height:1.2}
 .hdr-sub{font-size:0.65rem;opacity:0.65}
 .hdr-wa{margin-left:auto;background:#25d366;color:#fff;border:none;border-radius:20px;padding:7px 13px;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;text-decoration:none}
 
-/* Hero */
-.hero{background:linear-gradient(135deg,#1a1a2e 0%,#2c3e6b 100%);padding:14px 16px 0;text-align:center;color:#fff}
-.hero-icon{font-size:1.6rem;margin-bottom:4px}
-.hero-title{font-size:1.1rem;font-weight:800;margin-bottom:3px}
-.hero-sub{font-size:0.75rem;opacity:0.7;line-height:1.5;margin-bottom:10px}
-.hero-pills{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-bottom:0}
-.pill{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:#fff;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:600}
+.hero{background:linear-gradient(135deg,#7b1a1a 0%,#c0392b 50%,#e67e22 100%);padding:20px 16px 16px;text-align:center;color:#fff}
+.summer-badge{display:inline-block;background:#f39c12;color:#fff;font-size:0.7rem;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:1px;margin-bottom:8px}
+.hero-title{font-size:1.2rem;font-weight:800;margin-bottom:4px}
+.hero-sub{font-size:0.78rem;opacity:0.85;line-height:1.5;margin-bottom:12px}
+.hero-pills{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+.pill{background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:4px 12px;border-radius:20px;font-size:0.7rem;font-weight:600}
 
-/* Content */
 .page{max-width:640px;margin:0 auto;padding:20px 16px 40px}
 
-/* Info strip */
 .info-strip{display:flex;gap:10px;margin-bottom:20px}
-.info-card{flex:1;background:#fff;border-radius:12px;padding:14px 10px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,0.08)}
-.info-card .ic{font-size:1.4rem;margin-bottom:5px}
-.info-card .il{font-size:0.68rem;color:#888;margin-bottom:2px}
-.info-card .iv{font-size:0.9rem;font-weight:800;color:#1a1a2e}
+.info-card{flex:1;background:#fff;border-radius:12px;padding:12px 8px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,0.08)}
+.info-card .ic{font-size:1.3rem;margin-bottom:4px}
+.info-card .il{font-size:0.62rem;color:#888;margin-bottom:2px}
+.info-card .iv{font-size:0.8rem;font-weight:800;color:#1a1a2e;line-height:1.2}
 
-/* Currency toggle */
-.curr-toggle{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:20px}
-.curr-label{font-size:0.82rem;font-weight:600;color:#888}
-.toggle-wrap{background:#e5e7eb;border-radius:30px;padding:3px;display:flex;gap:2px}
-.toggle-btn{border:none;background:transparent;padding:6px 18px;border-radius:24px;font-size:0.8rem;font-weight:700;cursor:pointer;color:#888;transition:.2s}
-.toggle-btn.on{background:#1a1a2e;color:#fff}
+.section-title{font-size:0.85rem;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px}
+
+/* Offer banner */
+.offer-banner{background:linear-gradient(135deg,#f39c12,#e74c3c);border-radius:14px;padding:16px 20px;margin-bottom:20px;text-align:center;color:#fff}
+.offer-amount{font-size:1.8rem;font-weight:900;letter-spacing:-1px}
+.offer-text{font-size:0.8rem;font-weight:700;margin-top:2px;opacity:0.9}
+.offer-note{font-size:0.68rem;margin-top:4px;opacity:0.7}
 
 /* Plans */
 .plans{display:flex;flex-direction:column;gap:14px;margin-bottom:24px}
-.plan{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 8px rgba(0,0,0,0.08);display:flex;align-items:center;gap:14px;position:relative;border:2px solid transparent;transition:.2s}
+.plan{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 8px rgba(0,0,0,0.08);border:2px solid transparent;position:relative}
 .plan.pop{border-color:#e74c3c;background:linear-gradient(135deg,#fff5f5,#fff)}
-.plan-badge{position:absolute;top:-11px;left:18px;background:#e74c3c;color:#fff;font-size:0.6rem;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:0.3px}
-.plan-left{flex:1}
+.plan.best{border-color:#27ae60;background:linear-gradient(135deg,#f0fff4,#fff)}
+.plan-badge{position:absolute;top:-11px;left:18px;font-size:0.6rem;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:0.3px;color:#fff}
+.plan-badge.red{background:#e74c3c}
+.plan-badge.green{background:#27ae60}
+.plan-row{display:flex;align-items:center;justify-content:space-between}
 .plan-period{font-size:1rem;font-weight:800;color:#1a1a2e}
-.plan-classes{font-size:0.75rem;color:#888;margin:2px 0 6px}
-.plan-saving{font-size:0.72rem;font-weight:700;color:#2e7d32;background:#e8f5e9;padding:2px 8px;border-radius:10px;display:inline-block}
-.plan-right{text-align:right;flex-shrink:0}
-.plan-price{font-size:1.5rem;font-weight:800;color:#e74c3c;line-height:1}
-.plan-orig{font-size:0.72rem;color:#bbb;text-decoration:line-through;margin-top:2px}
-.plan-btn{background:#e74c3c;color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:0.78rem;font-weight:700;cursor:pointer;margin-top:8px;white-space:nowrap}
-
-/* Instrument image */
-.inst-img-wrap{margin-top:10px;border-radius:0;overflow:hidden;height:110px;position:relative}
-.inst-img{width:100%;height:110px;object-fit:cover;display:block;transition:opacity .4s ease}
-.inst-img.fade{opacity:0}
+.plan-duration{font-size:0.72rem;color:#888;margin-top:2px}
+.plan-price-wrap{text-align:right}
+.plan-pm{font-size:1.4rem;font-weight:800;color:#e74c3c;line-height:1}
+.plan-pm-label{font-size:0.65rem;color:#888}
+.plan-total{font-size:0.78rem;font-weight:700;color:#555;margin-top:4px}
+.plan-btn{width:100%;background:#1a1a2e;color:#fff;border:none;border-radius:10px;padding:10px;font-size:0.82rem;font-weight:700;cursor:pointer;margin-top:12px}
+.plan.pop .plan-btn{background:#e74c3c}
+.plan.best .plan-btn{background:#27ae60}
 
 /* What's included */
-.section-title{font-size:0.85rem;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px}
-.inst-btn{border:2px solid #e0e0e0;background:#fff;border-radius:24px;padding:9px 16px;font-size:0.8rem;font-weight:700;cursor:pointer;color:#666;transition:.2s;flex:1;min-width:130px}
-.inst-btn.on{border-color:#e74c3c;background:#e74c3c;color:#fff}
 .includes{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 8px rgba(0,0,0,0.07);margin-bottom:20px}
 .inc-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f5f5f5}
 .inc-row:last-child{border-bottom:none;padding-bottom:0}
@@ -78,25 +72,16 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .inc-text{font-size:0.82rem;color:#444;line-height:1.5}
 .inc-text strong{color:#1a1a2e}
 
-/* CTA */
 .cta{background:#1a1a2e;border-radius:14px;padding:20px;text-align:center;margin-bottom:20px}
 .cta-title{color:#fff;font-size:1rem;font-weight:700;margin-bottom:6px}
 .cta-sub{color:rgba(255,255,255,0.6);font-size:0.78rem;margin-bottom:14px}
 .cta-wa{display:block;background:#25d366;color:#fff;text-decoration:none;border-radius:12px;padding:13px;font-size:0.92rem;font-weight:700;margin-bottom:10px}
 .cta-note{font-size:0.72rem;color:rgba(255,255,255,0.45)}
 
-/* Desktop */
 @media(min-width:768px){
-  body{background:#eaecf0}
   .hdr{padding:14px 40px}
-  .hdr-title{font-size:1.05rem}
-  .hero{padding:16px 20px 0}
-  .hero-title{font-size:1.3rem}
   .page{max-width:780px;padding:28px 24px 60px}
-  .info-strip{gap:16px}
-  .plan{padding:22px 24px}
-  .plan-period{font-size:1.1rem}
-  .plan-price{font-size:1.7rem}
+  .plan-pm{font-size:1.6rem}
 }
 </style>
 </head>
@@ -104,7 +89,7 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 
 <!-- Header -->
 <div class="hdr">
-  <div class="hdr-icon">🎹</div>
+  <div class="hdr-icon">🎵</div>
   <div>
     <div class="hdr-title">Chords Music Academy</div>
     <div class="hdr-sub">Manikonda, Hyderabad</div>
@@ -114,17 +99,15 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 
 <!-- Hero -->
 <div class="hero">
-  <div class="hero-icon" id="heroIcon">🎹</div>
-  <div class="hero-title" id="heroTitle">Live Online Piano & Keyboard Classes</div>
-  <div class="hero-sub">One-to-one personal coaching via Google Meet<br>Learn at your own pace from anywhere in the world</div>
+  <div class="summer-badge">⭐ SUMMER SPECIAL 2025</div>
+  <div class="hero-title">Group Music Classes</div>
+  <div class="hero-sub">Offline & Online · All Age Groups · 2 Classes per Week<br>Keyboard · Guitar · Drums · Violin · Vocals</div>
   <div class="hero-pills">
-    <span class="pill">📅 2 Classes / Week</span>
-    <span class="pill">⏱ 40 Min / Class</span>
-    <span class="pill">🎯 One-to-One</span>
-    <span class="pill">🌍 Google Meet</span>
-  </div>
-  <div class="inst-img-wrap">
-    <img id="instImg" class="inst-img" src="" alt="Instrument" loading="eager">
+    <span class="pill">🎹 Keyboard</span>
+    <span class="pill">🎸 Guitar</span>
+    <span class="pill">🥁 Drums</span>
+    <span class="pill">🎻 Violin</span>
+    <span class="pill">🎤 Vocals</span>
   </div>
 </div>
 
@@ -138,38 +121,28 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
       <div class="iv">2 / Week</div>
     </div>
     <div class="info-card">
-      <div class="ic">⏱</div>
-      <div class="il">Duration</div>
-      <div class="iv">40 Minutes</div>
+      <div class="ic">🏫</div>
+      <div class="il">Mode</div>
+      <div class="iv">Offline & Online</div>
     </div>
     <div class="info-card">
-      <div class="ic">🎯</div>
+      <div class="ic">👨‍👩‍👧</div>
+      <div class="il">Age Groups</div>
+      <div class="iv">All Ages</div>
+    </div>
+    <div class="info-card">
+      <div class="ic">👥</div>
       <div class="il">Format</div>
-      <div class="iv">1-on-1 Live</div>
-    </div>
-    <div class="info-card">
-      <div class="ic">🌍</div>
-      <div class="il">Platform</div>
-      <div class="iv">Google Meet</div>
+      <div class="iv">Group Class</div>
     </div>
   </div>
 
-  <!-- Instrument Selector -->
-  <div class="section-title">Choose Your Instrument</div>
-  <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
-    <button class="inst-btn on" onclick="setInst('piano')" id="inst-piano">🎹 Piano & Keyboard</button>
-    <button class="inst-btn" onclick="setInst('vocal')" id="inst-vocal">🎤 Carnatic Vocals</button>
-    <button class="inst-btn" onclick="setInst('guitar')" id="inst-guitar">🎸 Guitar</button>
-    <button class="inst-btn" onclick="setInst('drums')" id="inst-drums">🥁 Drums</button>
-  </div>
-
-  <!-- Free Demo Banner -->
-  <div style="background:linear-gradient(135deg,#1a1a2e,#2c3e6b);border-radius:16px;padding:22px 20px;margin-bottom:20px;text-align:center">
-    <div style="font-size:1.6rem;margin-bottom:8px">🎹</div>
-    <div style="color:#fff;font-size:1.05rem;font-weight:800;margin-bottom:6px">Try a Free Demo Class First</div>
-    <div style="color:rgba(255,255,255,0.65);font-size:0.8rem;line-height:1.6;margin-bottom:16px">No payment needed · 15 minutes · Live on Google Meet<br>See how we teach before you commit to any package</div>
-    <button onclick="bookDemo()" style="width:100%;background:#25d366;color:#fff;border:none;border-radius:12px;padding:14px;font-size:0.95rem;font-weight:800;cursor:pointer;margin-bottom:8px">📅 Book Free Demo Class</button>
-    <div style="color:rgba(255,255,255,0.4);font-size:0.72rem">We'll confirm your slot within minutes on WhatsApp</div>
+  <!-- Offer Banner -->
+  <div class="offer-banner">
+    <div style="font-size:0.8rem;font-weight:700;margin-bottom:4px;opacity:0.9">🎁 SPECIAL OFFER — 1 YEAR PACKAGE</div>
+    <div class="offer-amount">FLAT ₹2,000 OFF</div>
+    <div class="offer-text">On Music Instruments</div>
+    <div class="offer-note">* Conditions Apply</div>
   </div>
 
   <!-- Plans -->
@@ -177,163 +150,79 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
   <div class="plans">
 
     <div class="plan">
-      <div class="plan-left">
-        <div class="plan-period">Monthly</div>
-        <div class="plan-classes">8 classes</div>
+      <div class="plan-badge red">GROUP STARTER</div>
+      <div class="plan-row" style="margin-top:8px">
+        <div>
+          <div class="plan-period">3 Months</div>
+          <div class="plan-duration">Group classes · 2/week</div>
+        </div>
+        <div class="plan-price-wrap">
+          <div class="plan-pm">₹2,799<span style="font-size:0.65rem;font-weight:600;color:#888">/mo</span></div>
+          <div class="plan-total">Total: ₹8,397</div>
+        </div>
       </div>
-      <div class="plan-right">
-        <div class="plan-price">₹5,999</div>
-        <button class="plan-btn" onclick="bookClass('Monthly Plan', '₹5,999')">💬 Book Now</button>
-      </div>
+      <button class="plan-btn" onclick="bookClass('Group Starter - 3 Month Plan', '₹8,397')">💬 Book Now</button>
     </div>
 
     <div class="plan pop">
-      <div class="plan-badge">⭐ Best Value</div>
-      <div class="plan-left">
-        <div class="plan-period">3 Months</div>
-        <div class="plan-classes">24 classes</div>
-        <span class="plan-saving">Save ₹2,998 · 17% off</span>
+      <div class="plan-badge red">⭐ MOST POPULAR</div>
+      <div class="plan-row" style="margin-top:8px">
+        <div>
+          <div class="plan-period">6 Months</div>
+          <div class="plan-duration">Group classes · 2/week</div>
+        </div>
+        <div class="plan-price-wrap">
+          <div class="plan-pm">₹2,199<span style="font-size:0.65rem;font-weight:600;color:#888">/mo</span></div>
+          <div class="plan-total">Total: ₹13,194</div>
+        </div>
       </div>
-      <div class="plan-right">
-        <div class="plan-price">₹14,999</div>
-        <div class="plan-orig">₹17,997</div>
-        <button class="plan-btn" onclick="bookClass('3-Month Plan', '₹14,999')">💬 Book Now</button>
-      </div>
+      <button class="plan-btn" onclick="bookClass('6-Month Plan', '₹13,194')">💬 Book Now</button>
     </div>
 
-    <div class="plan">
-      <div class="plan-left">
-        <div class="plan-period">6 Months</div>
-        <div class="plan-classes">48 classes</div>
-        <span class="plan-saving">Save ₹6,995 · 19% off</span>
+    <div class="plan best">
+      <div class="plan-badge green">💎 BEST VALUE</div>
+      <div class="plan-row" style="margin-top:8px">
+        <div>
+          <div class="plan-period">1 Year</div>
+          <div class="plan-duration">Group classes · 2/week + ₹2,000 off instruments</div>
+        </div>
+        <div class="plan-price-wrap">
+          <div class="plan-pm" style="color:#27ae60">₹1,799<span style="font-size:0.65rem;font-weight:600;color:#888">/mo</span></div>
+          <div class="plan-total">Total: ₹21,588</div>
+        </div>
       </div>
-      <div class="plan-right">
-        <div class="plan-price">₹28,999</div>
-        <div class="plan-orig">₹35,994</div>
-        <button class="plan-btn" onclick="bookClass('6-Month Plan', '₹28,999')">💬 Book Now</button>
-      </div>
-    </div>
-
-    <div class="plan">
-      <div class="plan-left">
-        <div class="plan-period">1 Year</div>
-        <div class="plan-classes">96 classes</div>
-        <span class="plan-saving">Save ₹21,989 · 31% off</span>
-      </div>
-      <div class="plan-right">
-        <div class="plan-price">₹49,999</div>
-        <div class="plan-orig">₹71,988</div>
-        <button class="plan-btn" onclick="bookClass('1-Year Plan', '₹49,999')">💬 Book Now</button>
-      </div>
+      <button class="plan-btn" onclick="bookClass('1-Year Best Value Plan', '₹21,588')">💬 Book Now</button>
     </div>
 
   </div>
-
-  <!-- Curriculum -->
-  <div class="section-title">Curriculum</div>
-  <div id="curriculumBox" style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 8px rgba(0,0,0,0.07);margin-bottom:20px"></div>
 
   <!-- What's included -->
   <div class="section-title">What's Included</div>
   <div class="includes">
-    <div class="inc-row"><div class="inc-icon">🎹</div><div class="inc-text"><strong>Personalised curriculum</strong> — lessons designed around your skill level and goals</div></div>
-    <div class="inc-row"><div class="inc-icon">🎵</div><div class="inc-text"><strong>Songs you love</strong> — Telugu, Hindi, Tamil, English, Western — your choice</div></div>
-    <div class="inc-row"><div class="inc-icon">📄</div><div class="inc-text"><strong>Notes PDF after every class</strong> — practice at your own pace between sessions</div></div>
-    <div class="inc-row"><div class="inc-icon">📹</div><div class="inc-text"><strong>Class recording</strong> — review your session anytime</div></div>
+    <div class="inc-row"><div class="inc-icon">🎹</div><div class="inc-text"><strong>Choose your instrument</strong> — Keyboard, Guitar, Drums, Violin or Vocals</div></div>
+    <div class="inc-row"><div class="inc-icon">🏫</div><div class="inc-text"><strong>Offline & Online</strong> — attend at Manikonda or join online</div></div>
+    <div class="inc-row"><div class="inc-icon">👨‍👩‍👧</div><div class="inc-text"><strong>All age groups</strong> — kids, teens & adults welcome</div></div>
+    <div class="inc-row"><div class="inc-icon">📅</div><div class="inc-text"><strong>2 classes per week</strong> — structured learning schedule</div></div>
+    <div class="inc-row"><div class="inc-icon">🎓</div><div class="inc-text"><strong>Trinity College London</strong> — internationally certified curriculum</div></div>
     <div class="inc-row"><div class="inc-icon">💬</div><div class="inc-text"><strong>WhatsApp support</strong> — ask doubts between classes anytime</div></div>
-    <div class="inc-row"><div class="inc-icon">📅</div><div class="inc-text"><strong>Flexible scheduling</strong> — pick your class time, reschedule anytime</div></div>
-    <div class="inc-row"><div class="inc-icon">📖</div><div class="inc-text"><strong>Progress tracking</strong> — regular feedback to keep you improving</div></div>
+    <div class="inc-row"><div class="inc-icon">🎁</div><div class="inc-text"><strong>₹2,000 off instruments</strong> — on 1-year package (conditions apply)</div></div>
   </div>
 
   <!-- CTA -->
   <div class="cta">
-    <div class="cta-title" id="ctaTitle">Ready to Start Your Journey?</div>
-    <div class="cta-sub">Message us on WhatsApp to schedule a free 15-min demo class</div>
-    <button onclick="bookDemo()" class="cta-wa">💬 WhatsApp Us to Enrol</button>
-    <div class="cta-note">📞 +91-79815 85309 · Responds within minutes</div>
+    <div class="cta-title">Join This Summer — Limited Seats!</div>
+    <div class="cta-sub">Message us on WhatsApp to reserve your seat now</div>
+    <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hi!%20I%27m%20interested%20in%20the%20Summer%20Special%20Group%20Classes.%20Please%20share%20details%20and%20available%20slots." class="cta-wa" target="_blank">💬 WhatsApp to Enrol</a>
+    <div class="cta-note">📞 7981585309 · 7569348879 · Responds within minutes</div>
   </div>
 
 </div>
 
 <script>
-var INSTRUMENTS = {
-  piano:  { icon:'🎹', name:'Piano & Keyboard',
-    img:'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=800&h=380&fit=crop&q=80',
-    curriculum:[
-      ['🎹','Finger Techniques & Hand Development','Proper posture, hand coordination, speed & accuracy'],
-      ['🎵','Indian Classical & Ragas','Ragas, scales, Indian classical music foundations'],
-      ['🎶','Chords, Scales & Music Theory','Western & Indian scales, chord progressions, harmony'],
-      ['🎬','Songs — Your Favourites','Telugu, Hindi, Tamil, English & Western songs'],
-      ['📖','Staff Notation & Sheet Music','Read & write music professionally']
-  ]},
-  vocal:  { icon:'🎤', name:'Carnatic Vocals',
-    img:'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=800&h=380&fit=crop&q=80',
-    curriculum:[
-      ['🎤','Sarali Varisai & Voice Training','Breathing, voice culture, pitch & tone development'],
-      ['🎵','Raga Alapana & Swaras','Introduction to ragas, swara gnanam, raga bhavam'],
-      ['🥁','Talam & Rhythm','Aadi, Rupaka, Misra Chapu and other key talams'],
-      ['🎶','Keerthanams & Compositions','Classical compositions of Thyagaraja, Dikshitar & more'],
-      ['🎬','Devotional & Film Songs','Bhajans, Carnatic film songs across languages']
-  ]},
-  guitar: { icon:'🎸', name:'Guitar',
-    img:'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800&h=380&fit=crop&q=80',
-    curriculum:[
-      ['🎸','Open Chords & Basic Strumming','Beginner chords, strumming patterns, rhythm playing'],
-      ['🎵','Scales & Lead Guitar','Major, minor, pentatonic scales, melodies & solos'],
-      ['🎶','Music Theory for Guitar','Chord progressions, harmony, intervals'],
-      ['🎬','Songs — Your Favourites','Bollywood, Telugu, Tamil, English & Western songs'],
-      ['📖','Tabs & Chord Charts','Reading guitar tabs and chord diagrams']
-  ]},
-  drums:  { icon:'🥁', name:'Drums',
-    img:'https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=800&h=380&fit=crop&q=80',
-    curriculum:[
-      ['🥁','Basic Beats & Rudiments','Grip, posture, single/double stroke, paradiddles'],
-      ['🎵','Rhythm & Timing','Metronome training, time signatures, subdivisions'],
-      ['🎶','Styles — Rock, Jazz & Indian','Versatile drumming across multiple genres'],
-      ['🎬','Play Along with Songs','Telugu, Hindi, Tamil, English & Western tracks'],
-      ['📖','Reading Drum Notation','Understanding and reading drum sheet music']
-  ]}
-};
-
-var _inst = 'piano';
-
-function setInst(key) {
-  _inst = key;
-  var d = INSTRUMENTS[key];
-  document.getElementById('heroIcon').textContent = d.icon;
-  document.getElementById('heroTitle').textContent = 'Live Online ' + d.name + ' Classes';
-  document.getElementById('ctaTitle').textContent = 'Ready to Start Your ' + d.name + ' Journey?';
-  document.querySelectorAll('.inst-btn').forEach(function(b){ b.classList.remove('on'); });
-  document.getElementById('inst-' + key).classList.add('on');
-  var img = document.getElementById('instImg');
-  img.classList.add('fade');
-  setTimeout(function(){
-    img.src = d.img;
-    img.alt = d.name;
-    img.onload = function(){ img.classList.remove('fade'); };
-  }, 200);
-  var box = document.getElementById('curriculumBox');
-  var rows = d.curriculum.map(function(r){
-    return '<div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5"><span style="font-size:1.1rem">'+r[0]+'</span><div><div style="font-size:0.84rem;font-weight:700;color:#1a1a2e">'+r[1]+'</div><div style="font-size:0.73rem;color:#888">'+r[2]+'</div></div></div>';
-  });
-  rows[rows.length-1] = rows[rows.length-1].replace('border-bottom:1px solid #f5f5f5','border-bottom:none');
-  box.innerHTML = '<div style="background:linear-gradient(135deg,#1a1a2e,#2c3e6b);border-radius:10px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px"><div style="font-size:1.8rem">🎓</div><div><div style="color:#fff;font-size:0.9rem;font-weight:800">Trinity College London</div><div style="color:rgba(255,255,255,0.65);font-size:0.75rem">Internationally Recognised Certification</div></div><div style="margin-left:auto;background:#f39c12;color:#fff;font-size:0.65rem;font-weight:800;padding:4px 10px;border-radius:10px;white-space:nowrap">CERTIFIED</div></div><div style="display:flex;flex-direction:column">' + rows.join('') + '</div>';
-}
-
-function bookDemo() {
-  var name = INSTRUMENTS[_inst].name;
-  var msg = encodeURIComponent('Hi! I\'d like to book a *Free Demo Class* for ' + name + '.\n\nPlease let me know the available slots. ' + INSTRUMENTS[_inst].icon);
-  window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
-}
-
 function bookClass(plan, price) {
-  var name = INSTRUMENTS[_inst].name;
-  var msg = encodeURIComponent('Hi! I want to enrol in the *' + plan + '* (' + price + ') for Live Online ' + name + ' Classes.\n\nPlease share payment and schedule details. ' + INSTRUMENTS[_inst].icon);
+  var msg = encodeURIComponent('Hi! I\'m interested in the Summer Special *' + plan + '* (' + price + ') for Group Music Classes.\n\nPlease share available slots and enrollment details. 🎵');
   window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
 }
-
-// Init
-setInst('piano');
 </script>
 </body>
 </html>
