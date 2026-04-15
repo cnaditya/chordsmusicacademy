@@ -1,0 +1,21 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/crm"
+  to = "/crm.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/payment-portal/admin.html"
+  status = 200
+
+[[redirects]]
+  from = "/pay"
+  to = "/pay.html"
+  status = 200

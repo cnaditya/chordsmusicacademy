@@ -46,6 +46,10 @@ exports.handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: "Missing env vars" }) };
   }
 
+  // DEBUG: log what URL we're actually using
+  console.log("SUPABASE_URL:", SUPABASE_URL);
+  console.log("Node version:", process.version);
+
   const getHeaders = {
     apikey: SUPABASE_KEY,
     Authorization: `Bearer ${SUPABASE_KEY}`,
@@ -238,6 +242,6 @@ exports.handler = async (event) => {
 
   } catch (err) {
     console.error("CRM error:", err);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error", detail: err.message }) };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error", detail: err.message, supabase_url: SUPABASE_URL, node: process.version }) };
   }
 };
