@@ -1104,8 +1104,8 @@ CREATE TABLE IF NOT EXISTS crm_notes (
 /* ══════════════════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════════════════ */
-const API = '/.netlify/functions/crm-students';
-const NOTES_API = '/.netlify/functions/crm-notes';
+const API = '/.netlify/functions/crm-api';
+const NOTES_API = '/.netlify/functions/crm-api';
 let TOKEN = sessionStorage.getItem('crm_token') || '';
 let currentPage = 'dashboard';
 let allStudents = [];
