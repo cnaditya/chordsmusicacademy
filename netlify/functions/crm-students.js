@@ -20,6 +20,11 @@ exports.handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: "Missing env vars" }) };
   }
 
+  const parseJson = async (res) => {
+    const text = await res.text();
+    try { return JSON.parse(text); } catch { return text; }
+  };
+
   const sbGet = async (path) => {
     const res = await fetch(`${SUPABASE_URL}/rest/v1${path}`, {
       headers: {
@@ -27,7 +32,7 @@ exports.handler = async (event) => {
         Authorization: `Bearer ${SUPABASE_KEY}`,
       },
     });
-    const data = await res.json();
+    const data = await parseJson(res);
     return { status: res.status, data };
   };
 
@@ -42,7 +47,7 @@ exports.handler = async (event) => {
       },
       body: JSON.stringify(body),
     });
-    const data = await res.json();
+    const data = await parseJson(res);
     return { status: res.status, data };
   };
 
@@ -57,7 +62,7 @@ exports.handler = async (event) => {
       },
       body: JSON.stringify(body),
     });
-    const data = await res.json();
+    const data = await parseJson(res);
     return { status: res.status, data };
   };
 
@@ -77,6 +82,11 @@ exports.handler = async (event) => {
     try { body = JSON.parse(event.body || "{}"); } catch { body = {}; }
 
     const { action } = body;
+
+    // ── PING (debug) ──────────────────────────────────────────────────────────
+    if (action === "ping") {
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, env: { url: !!SUPABASE_URL, key: !!SUPABASE_KEY } }) };
+    }
 
     // ── LIST ──────────────────────────────────────────────────────────────────
     if (action === "list") {
