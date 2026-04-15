@@ -265,8 +265,110 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: Array.isArray(updated) ? updated[0] : updated }) };
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // CRM ACTIONS
+    // ═══════════════════════════════════════════════════════════════════════
+    const SB_H = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
+    const SB_M = { ...SB_H, "Content-Type": "application/json", Prefer: "return=representation" };
+
+    if (action === "crm_dashboard") {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&select=id,status,mode,instrument,amount_due,enrollment_date,name,student_id,teacher,class_days,class_time,level`, { headers: SB_H });
+      const all = await r.json();
+      if (!Array.isArray(all)) {
+        if (r.status === 404 || (all && all.code === "42P01")) return { statusCode: 404, headers, body: JSON.stringify({ error: "table_not_found" }) };
+        return { statusCode: 500, headers, body: JSON.stringify({ error: "Unexpected response", raw: JSON.stringify(all) }) };
+      }
+      const recent = [...all].sort((a, b) => new Date(b.enrollment_date || 0) - new Date(a.enrollment_date || 0)).slice(0, 5);
+      const stats = { total: all.length, active: all.filter(s=>s.status==="active").length, trial: all.filter(s=>s.status==="trial").length, paused: all.filter(s=>s.status==="paused").length, dropped: all.filter(s=>s.status==="dropped").length, online: all.filter(s=>s.mode==="online").length, offline: all.filter(s=>s.mode==="offline").length, revenue_this_month: all.filter(s=>s.status==="active").reduce((sum,s)=>sum+(s.amount_due||0),0) };
+      const instruments = {};
+      all.forEach(s => { if (s.instrument) instruments[s.instrument] = (instruments[s.instrument]||0)+1; });
+      const days = ["sun","mon","tue","wed","thu","fri","sat"];
+      const todayStudents = all.filter(s => s.class_days && s.class_days.toLowerCase().includes(days[new Date().getDay()]));
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, stats, instruments, recent, todayStudents }) };
+    }
+
+    if (action === "crm_list") {
+      const { status: st, instrument, teacher, mode, search, is_active } = JSON.parse(event.body);
+      let f = [is_active !== undefined ? `is_active=eq.${is_active}` : "is_active=eq.true"];
+      if (st && st !== "all") f.push(`status=eq.${st}`);
+      if (instrument && instrument !== "all") f.push(`instrument=eq.${encodeURIComponent(instrument)}`);
+      if (teacher && teacher !== "all") f.push(`teacher=eq.${encodeURIComponent(teacher)}`);
+      if (mode && mode !== "all") f.push(`mode=eq.${mode}`);
+      if (search) { const s = encodeURIComponent(search); f.push(`or=(name.ilike.*${s}*,phone.ilike.*${s}*,email.ilike.*${s}*,student_id.ilike.*${s}*)`); }
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?${f.join("&")}&order=created_at.desc`, { headers: SB_H });
+      const data = await r.json();
+      if (r.status === 404 || (data && data.code === "42P01")) return { statusCode: 404, headers, body: JSON.stringify({ error: "table_not_found" }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, students: Array.isArray(data) ? data : [] }) };
+    }
+
+    if (action === "crm_get") {
+      const { id } = JSON.parse(event.body);
+      if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: "id required" }) };
+      const [sr, ar, nr] = await Promise.all([
+        fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${id}`, { headers: SB_H }),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_attendance?student_id=eq.${id}&order=date.desc&limit=60`, { headers: SB_H }),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_notes?student_id=eq.${id}&order=created_at.desc`, { headers: SB_H }),
+      ]);
+      const students = await sr.json();
+      const attendance = await ar.json();
+      const notes = await nr.json();
+      const stu = Array.isArray(students) ? students[0] : null;
+      if (!stu) return { statusCode: 404, headers, body: JSON.stringify({ error: "Not found" }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: stu, attendance: Array.isArray(attendance)?attendance:[], notes: Array.isArray(notes)?notes:[] }) };
+    }
+
+    if (action === "crm_add") {
+      const { student: s } = JSON.parse(event.body);
+      if (!s || !s.name) return { statusCode: 400, headers, body: JSON.stringify({ error: "name required" }) };
+      const year = new Date().getFullYear();
+      const cr = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?student_id=like.CMA-${year}-*&select=student_id`, { headers: SB_H });
+      const existing = await cr.json();
+      s.student_id = `CMA-${year}-${String((Array.isArray(existing)?existing.length:0)+1).padStart(3,"0")}`;
+      if (!s.enrollment_date) s.enrollment_date = new Date().toISOString().split("T")[0];
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students`, { method:"POST", headers:SB_M, body:JSON.stringify(s) });
+      const data = await r.json();
+      if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: (data&&data.message)||"Insert failed" }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: Array.isArray(data)?data[0]:data }) };
+    }
+
+    if (action === "crm_update") {
+      const { id, student: s } = JSON.parse(event.body);
+      if (!id || !s) return { statusCode: 400, headers, body: JSON.stringify({ error: "id and student required" }) };
+      delete s.id; delete s.student_id; delete s.created_at;
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${id}`, { method:"PATCH", headers:SB_M, body:JSON.stringify(s) });
+      const data = await r.json();
+      if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: (data&&data.message)||"Update failed" }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: Array.isArray(data)?data[0]:data }) };
+    }
+
+    if (action === "crm_delete") {
+      const { id } = JSON.parse(event.body);
+      if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: "id required" }) };
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${id}`, { method:"PATCH", headers:SB_M, body:JSON.stringify({ is_active: false }) });
+      if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: "Delete failed" }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    }
+
+    if (action === "crm_mark_attendance") {
+      const { student_id, date, status: attStatus, note } = JSON.parse(event.body);
+      if (!student_id || !date) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and date required" }) };
+      await fetch(`${SUPABASE_URL}/rest/v1/crm_attendance?student_id=eq.${student_id}&date=eq.${date}`, { method:"DELETE", headers:SB_H });
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_attendance`, { method:"POST", headers:SB_M, body:JSON.stringify({ student_id, date, status: attStatus||"present", note: note||null }) });
+      if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: "Attendance failed" }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    }
+
+    if (action === "crm_add_note") {
+      const { student_id, content } = JSON.parse(event.body);
+      if (!student_id || !content) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and content required" }) };
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_notes`, { method:"POST", headers:SB_M, body:JSON.stringify({ student_id, content }) });
+      const data = await r.json();
+      if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: (data&&data.message)||"Note failed" }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, note: Array.isArray(data)?data[0]:data }) };
+    }
+
     return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid action" }) };
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error" }) };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error", detail: err.message }) };
   }
 };

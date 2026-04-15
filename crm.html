@@ -1104,8 +1104,8 @@ CREATE TABLE IF NOT EXISTS crm_notes (
 /* ══════════════════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════════════════ */
-const API = '/.netlify/functions/crm-api';
-const NOTES_API = '/.netlify/functions/crm-api';
+const API = '/.netlify/functions/pay-admin-student';
+const NOTES_API = '/.netlify/functions/pay-admin-student';
 let TOKEN = sessionStorage.getItem('crm_token') || '';
 let currentPage = 'dashboard';
 let allStudents = [];
@@ -1128,7 +1128,7 @@ function doLogin() {
   const errEl = document.getElementById('login-err');
   errEl.textContent = '';
   TOKEN = pw;
-  apiCall({ action: 'dashboard' }).then(res => {
+  apiCall({ action: 'crm_dashboard' }).then(res => {
     if (res && res.success !== false) {
       sessionStorage.setItem('crm_token', TOKEN);
       document.getElementById('login-screen').style.display = 'none';
@@ -1161,7 +1161,7 @@ function logout() {
 
 // Auto-login if token present
 if (TOKEN) {
-  apiCall({ action: 'dashboard' }).then(res => {
+  apiCall({ action: 'crm_dashboard' }).then(res => {
     if (res && res.success !== false) {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').style.display = 'flex';
@@ -1371,7 +1371,7 @@ function isDueOverdue(due_date) {
 ══════════════════════════════════════════════════════════════════ */
 async function loadDashboard() {
   try {
-    const data = await apiCall({ action: 'dashboard' });
+    const data = await apiCall({ action: 'crm_dashboard' });
     renderDashboard(data);
   } catch(e) {
     if (e.message !== 'table_not_found') {
@@ -1485,7 +1485,7 @@ function renderDashboard(data) {
 ══════════════════════════════════════════════════════════════════ */
 async function loadStudents() {
   try {
-    const data = await apiCall({ action: 'list', is_active: true });
+    const data = await apiCall({ action: 'crm_list', is_active: true });
     allStudents = data.students || [];
     // On mobile, default to card view
     if (window.innerWidth <= 768) viewMode = 'card';
@@ -1655,7 +1655,7 @@ async function deleteStudent(id, name) {
     'Remove',
     async () => {
       try {
-        await apiCall({ action: 'delete', id });
+        await apiCall({ action: 'crm_delete', id });
         toast(`${name} removed.`);
         allStudents = allStudents.filter(s=>s.id!==id);
         filteredStudents = filteredStudents.filter(s=>s.id!==id);
@@ -1681,7 +1681,7 @@ async function viewStudent(id) {
   switchTab('overview');
 
   try {
-    const data = await apiCall({ action: 'get', id });
+    const data = await apiCall({ action: 'crm_get', id });
     const s = data.student;
     panelStudent = s;
     attData = {};
@@ -1848,7 +1848,7 @@ async function markAttendance(status) {
 async function markAttendanceForDate(dateStr, status) {
   if (!currentStudentId || !dateStr) return;
   try {
-    await apiCall({ action: 'mark_attendance', student_id: currentStudentId, date: dateStr, status });
+    await apiCall({ action: 'crm_mark_attendance', student_id: currentStudentId, date: dateStr, status });
     attData[dateStr] = { date: dateStr, status, student_id: currentStudentId };
     renderAttCalendar();
     toast(`${cap(status)} on ${fmtDate(dateStr)}`);
@@ -1904,7 +1904,7 @@ async function updatePayment() {
   const amount = parseInt(document.getElementById('pay-amount').value)||0;
   const due_date = document.getElementById('pay-due-date').value || null;
   try {
-    await apiCall({ action: 'update', id: currentStudentId, student: { amount_due: amount, due_date } });
+    await apiCall({ action: 'crm_update', id: currentStudentId, student: { amount_due: amount, due_date } });
     toast('Payment updated.');
     viewStudent(currentStudentId);
   } catch(e) { toast('Update failed.','error'); }
@@ -1914,7 +1914,7 @@ async function markPaid() {
   if (!currentStudentId) return;
   showConfirm('Mark as Paid','Set amount due to ₹0?','Mark Paid', async () => {
     try {
-      await apiCall({ action: 'update', id: currentStudentId, student: { amount_due: 0, due_date: null } });
+      await apiCall({ action: 'crm_update', id: currentStudentId, student: { amount_due: 0, due_date: null } });
       toast('Marked as paid!');
       viewStudent(currentStudentId);
     } catch(e) { toast('Failed.','error'); }
@@ -1952,7 +1952,7 @@ async function addNote(studentId) {
   const content = (input?.value||'').trim();
   if (!content) return;
   try {
-    const res = await notesCall({ action: 'add_note', student_id: studentId, content });
+    const res = await notesCall({ action: 'crm_add_note', student_id: studentId, content });
     input.value = '';
     const list = document.getElementById('notes-list');
     const emptyEl = list.querySelector('div[style*="No notes"]');
@@ -1967,7 +1967,7 @@ async function addNote(studentId) {
 
 async function deleteNote(noteId) {
   try {
-    await notesCall({ action: 'delete_note', id: noteId });
+    await notesCall({ action: 'crm_delete_note', id: noteId });
     const el = document.getElementById(`note-${noteId}`);
     if (el) el.remove();
     toast('Note deleted.');
@@ -1994,7 +1994,7 @@ async function openEditStudent(id) {
   clearForm();
   document.getElementById('form-overlay').style.display = 'flex';
   try {
-    const data = await apiCall({ action: 'get', id });
+    const data = await apiCall({ action: 'crm_get', id });
     populateForm(data.student);
   } catch(e) { toast('Failed to load student.','error'); closeForm(); }
 }
@@ -2109,10 +2109,10 @@ async function submitStudentForm() {
 
   try {
     if (editingStudentId) {
-      await apiCall({ action: 'update', id: editingStudentId, student: data });
+      await apiCall({ action: 'crm_update', id: editingStudentId, student: data });
       toast('Student updated!');
     } else {
-      await apiCall({ action: 'add', student: data });
+      await apiCall({ action: 'crm_add', student: data });
       toast('Student added!');
     }
     closeForm();
@@ -2132,7 +2132,7 @@ async function submitStudentForm() {
 ══════════════════════════════════════════════════════════════════ */
 async function loadSchedule() {
   try {
-    const data = await apiCall({ action: 'dashboard' });
+    const data = await apiCall({ action: 'crm_dashboard' });
     const { todayStudents } = data;
     const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     const dayName = DAY_NAMES[new Date().getDay()];
@@ -2174,7 +2174,7 @@ async function loadSchedule() {
 
 async function markAttendanceQuick(studentId, dateStr, status) {
   try {
-    await apiCall({ action: 'mark_attendance', student_id: studentId, date: dateStr, status });
+    await apiCall({ action: 'crm_mark_attendance', student_id: studentId, date: dateStr, status });
     toast(`${cap(status)} marked!`);
   } catch(e) { toast('Failed.','error'); }
 }
@@ -2184,7 +2184,7 @@ async function markAttendanceQuick(studentId, dateStr, status) {
 ══════════════════════════════════════════════════════════════════ */
 async function loadInstruments() {
   try {
-    const data = await apiCall({ action: 'dashboard' });
+    const data = await apiCall({ action: 'crm_dashboard' });
     const { instruments } = data;
     const entries = Object.entries(instruments).sort((a,b)=>b[1]-a[1]);
 
