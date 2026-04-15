@@ -71,11 +71,9 @@ exports.handler = async (event) => {
       const { id } = body;
       if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: "id required" }) };
 
-      const [stuRes, attRes, notesRes] = await Promise.all([
-        sb(`/crm_students?id=eq.${id}`),
-        sb(`/crm_attendance?student_id=eq.${id}&order=date.desc&limit=60`),
-        sb(`/crm_notes?student_id=eq.${id}&order=created_at.desc`),
-      ]);
+      const stuRes = await sb(`/crm_students?id=eq.${id}`);
+      const attRes = await sb(`/crm_attendance?student_id=eq.${id}&order=date.desc&limit=60`);
+      const notesRes = await sb(`/crm_notes?student_id=eq.${id}&order=created_at.desc`);
 
       const student = Array.isArray(stuRes.data) ? stuRes.data[0] : null;
       if (!student) return { statusCode: 404, headers, body: JSON.stringify({ error: "Student not found" }) };
@@ -187,10 +185,7 @@ exports.handler = async (event) => {
 
     // ── DASHBOARD STATS ───────────────────────────────────────────────────────
     if (action === "dashboard") {
-      const [allRes, recentRes] = await Promise.all([
-        sb("/crm_students?is_active=eq.true&select=id,status,mode,instrument,amount_due,enrollment_date,name,student_id,teacher,class_days,class_time,level"),
-        sb("/crm_students?is_active=eq.true&order=created_at.desc&limit=5&select=id,name,instrument,status,mode,student_id,created_at,teacher"),
-      ]);
+      const allRes = await sb("/crm_students?is_active=eq.true&select=id,status,mode,instrument,amount_due,enrollment_date,name,student_id,teacher,class_days,class_time,level");
 
       // Table doesn't exist yet
       if (allRes.status === 404 || (allRes.data && allRes.data.code === "42P01")) {
@@ -198,7 +193,7 @@ exports.handler = async (event) => {
       }
 
       const all = Array.isArray(allRes.data) ? allRes.data : [];
-      const recent = Array.isArray(recentRes.data) ? recentRes.data : [];
+      const recent = [...all].sort((a, b) => new Date(b.enrollment_date || 0) - new Date(a.enrollment_date || 0)).slice(0, 5);
 
       const stats = {
         total: all.length,
@@ -236,6 +231,6 @@ exports.handler = async (event) => {
 
   } catch (err) {
     console.error("CRM error:", err);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error", detail: err.message }) };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error", detail: err.message, stack: err.stack }) };
   }
 };
