@@ -16,6 +16,10 @@ exports.handler = async (event) => {
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
 
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: "Missing env vars", SUPABASE_URL: !!SUPABASE_URL, SUPABASE_KEY: !!SUPABASE_KEY }) };
+  }
+
   const sbHeaders = {
     apikey: SUPABASE_KEY,
     Authorization: `Bearer ${SUPABASE_KEY}`,
