@@ -774,6 +774,7 @@ tr:hover td { background: rgba(255,255,255,0.015); }
     <input type="password" id="login-pw" placeholder="Enter admin password" autocomplete="current-password">
     <button class="btn-login" onclick="doLogin()">Sign In</button>
     <div class="login-err" id="login-err"></div>
+    <div id="crm-debug-err" style="margin-top:12px;padding:10px;background:#300;border-radius:8px;font-size:0.75rem;color:#f88;text-align:left;display:none;word-break:break-all"></div>
   </div>
 </div>
 
@@ -1189,8 +1190,10 @@ async function apiCall(body, endpoint) {
   try { data = JSON.parse(text); } catch { data = { error: text }; }
   if (res.status === 500) {
     const detail = data.detail || data.error || text;
-    console.error('CRM 500:', detail);
-    alert('CRM function error (500):\n\n' + detail + '\n\nCheck console for details.');
+    console.error('CRM 500 raw response:', text);
+    // Show error in page so it is always visible
+    const errBox = document.getElementById('crm-debug-err');
+    if (errBox) { errBox.style.display = 'block'; errBox.innerHTML = '<b>Function 500 error:</b> ' + detail + '<br><small>' + text.substring(0, 500) + '</small>'; }
     throw new Error(detail);
   }
   if (res.status === 404 && data.error === 'table_not_found') {

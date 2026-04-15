@@ -236,7 +236,15 @@ exports.handler = async (event) => {
 
     // ── DASHBOARD STATS ───────────────────────────────────────────────────────
     if (action === "dashboard") {
-      const allRes = await sbGet("/crm_students?is_active=eq.true&select=id,status,mode,instrument,amount_due,enrollment_date,name,student_id,teacher,class_days,class_time,level");
+      // DEBUG: test if function runs at all without Supabase
+      const testRes = { statusCode: 200, headers, body: JSON.stringify({ success: true, _debug: "no_supabase", stats: { total: 0, active: 0, trial: 0, paused: 0, dropped: 0, online: 0, offline: 0, revenue_this_month: 0 }, instruments: {}, recent: [], todayStudents: [] }) };
+      // Attempt real Supabase call, fall back to debug if it throws
+      let allRes;
+      try {
+        allRes = await sbGet("/crm_students?is_active=eq.true&select=id,status,mode,instrument,amount_due,enrollment_date,name,student_id,teacher,class_days,class_time,level");
+      } catch (sbErr) {
+        return { statusCode: 500, headers, body: JSON.stringify({ error: "Supabase fetch failed", detail: sbErr.message, url_set: !!SUPABASE_URL, key_set: !!SUPABASE_KEY }) };
+      }
 
       if (allRes.status === 404 || (allRes.data && allRes.data.code === "42P01")) {
         return { statusCode: 404, headers, body: JSON.stringify({ error: "table_not_found" }) };
