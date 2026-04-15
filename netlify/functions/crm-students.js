@@ -1,3 +1,29 @@
+const https = require("https");
+
+function sbReq(url, method, sbHeaders, body) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    const options = {
+      hostname: u.hostname,
+      path: u.pathname + u.search,
+      method: method || "GET",
+      headers: sbHeaders,
+    };
+    const req = https.request(options, (res) => {
+      let raw = "";
+      res.on("data", (chunk) => { raw += chunk; });
+      res.on("end", () => {
+        let data;
+        try { data = JSON.parse(raw); } catch { data = raw; }
+        resolve({ status: res.statusCode, data });
+      });
+    });
+    req.on("error", reject);
+    if (body) req.write(JSON.stringify(body));
+    req.end();
+  });
+}
+
 exports.handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -13,69 +39,28 @@ exports.handler = async (event) => {
     return { statusCode: 401, headers, body: JSON.stringify({ error: "Unauthorized" }) };
   }
 
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
+  const SUPABASE_URL = (process.env.SUPABASE_URL || "").trim();
+  const SUPABASE_KEY = (process.env.SUPABASE_SECRET_KEY || "").trim();
 
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: "Missing env vars" }) };
   }
 
-  const parseJson = async (res) => {
-    const text = await res.text();
-    try { return JSON.parse(text); } catch { return text; }
+  const getHeaders = {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`,
+  };
+  const mutHeaders = {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`,
+    "Content-Type": "application/json",
+    Prefer: "return=representation",
   };
 
-  const sbGet = async (path) => {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1${path}`, {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
-    });
-    const data = await parseJson(res);
-    return { status: res.status, data };
-  };
-
-  const sbPost = async (path, body) => {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1${path}`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=representation",
-      },
-      body: JSON.stringify(body),
-    });
-    const data = await parseJson(res);
-    return { status: res.status, data };
-  };
-
-  const sbPatch = async (path, body) => {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1${path}`, {
-      method: "PATCH",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=representation",
-      },
-      body: JSON.stringify(body),
-    });
-    const data = await parseJson(res);
-    return { status: res.status, data };
-  };
-
-  const sbDelete = async (path) => {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1${path}`, {
-      method: "DELETE",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
-    });
-    return { status: res.status };
-  };
+  const sbGet    = (path)         => sbReq(`${SUPABASE_URL}/rest/v1${path}`, "GET",    getHeaders, null);
+  const sbPost   = (path, body)   => sbReq(`${SUPABASE_URL}/rest/v1${path}`, "POST",   mutHeaders, body);
+  const sbPatch  = (path, body)   => sbReq(`${SUPABASE_URL}/rest/v1${path}`, "PATCH",  mutHeaders, body);
+  const sbDelete = (path)         => sbReq(`${SUPABASE_URL}/rest/v1${path}`, "DELETE", getHeaders, null);
 
   try {
     let body = {};
@@ -83,7 +68,7 @@ exports.handler = async (event) => {
 
     const { action } = body;
 
-    // ── PING (debug) ──────────────────────────────────────────────────────────
+    // ── PING ──────────────────────────────────────────────────────────────────
     if (action === "ping") {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, env: { url: !!SUPABASE_URL, key: !!SUPABASE_KEY } }) };
     }
@@ -115,7 +100,7 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, students: Array.isArray(data) ? data : [] }) };
     }
 
-    // ── GET single student with attendance + notes ────────────────────────────
+    // ── GET ───────────────────────────────────────────────────────────────────
     if (action === "get") {
       const { id } = body;
       if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: "id required" }) };
@@ -132,39 +117,32 @@ exports.handler = async (event) => {
       return {
         statusCode: 200, headers,
         body: JSON.stringify({
-          success: true,
-          student,
+          success: true, student,
           attendance: Array.isArray(attRes.data) ? attRes.data : [],
           notes: Array.isArray(notesRes.data) ? notesRes.data : [],
         }),
       };
     }
 
-    // ── ADD student ───────────────────────────────────────────────────────────
+    // ── ADD ───────────────────────────────────────────────────────────────────
     if (action === "add") {
       const { student } = body;
       if (!student || !student.name) return { statusCode: 400, headers, body: JSON.stringify({ error: "name required" }) };
 
-      // Auto-generate student_id: CMA-YYYY-NNN
       const year = new Date().getFullYear();
       const countRes = await sbGet(`/crm_students?student_id=like.CMA-${year}-*&select=student_id`);
       const existing = Array.isArray(countRes.data) ? countRes.data : [];
-      const seq = String(existing.length + 1).padStart(3, "0");
-      student.student_id = `CMA-${year}-${seq}`;
-
+      student.student_id = `CMA-${year}-${String(existing.length + 1).padStart(3, "0")}`;
       if (!student.enrollment_date) student.enrollment_date = new Date().toISOString().split("T")[0];
 
       const { status: httpStatus, data } = await sbPost("/crm_students", student);
-
-      if (httpStatus >= 400) {
-        return { statusCode: httpStatus, headers, body: JSON.stringify({ error: (data && data.message) || "Insert failed" }) };
-      }
+      if (httpStatus >= 400) return { statusCode: httpStatus, headers, body: JSON.stringify({ error: (data && data.message) || "Insert failed" }) };
 
       const inserted = Array.isArray(data) ? data[0] : data;
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: inserted }) };
     }
 
-    // ── UPDATE student ────────────────────────────────────────────────────────
+    // ── UPDATE ────────────────────────────────────────────────────────────────
     if (action === "update") {
       const { id, student } = body;
       if (!id || !student) return { statusCode: 400, headers, body: JSON.stringify({ error: "id and student required" }) };
@@ -174,10 +152,7 @@ exports.handler = async (event) => {
       delete student.created_at;
 
       const { status: httpStatus, data } = await sbPatch(`/crm_students?id=eq.${id}`, student);
-
-      if (httpStatus >= 400) {
-        return { statusCode: httpStatus, headers, body: JSON.stringify({ error: (data && data.message) || "Update failed" }) };
-      }
+      if (httpStatus >= 400) return { statusCode: httpStatus, headers, body: JSON.stringify({ error: (data && data.message) || "Update failed" }) };
 
       const updated = Array.isArray(data) ? data[0] : data;
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: updated }) };
@@ -189,10 +164,7 @@ exports.handler = async (event) => {
       if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: "id required" }) };
 
       const { status: httpStatus, data } = await sbPatch(`/crm_students?id=eq.${id}`, { is_active: false });
-
-      if (httpStatus >= 400) {
-        return { statusCode: httpStatus, headers, body: JSON.stringify({ error: (data && data.message) || "Delete failed" }) };
-      }
+      if (httpStatus >= 400) return { statusCode: httpStatus, headers, body: JSON.stringify({ error: (data && data.message) || "Delete failed" }) };
 
       return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
     }
@@ -202,19 +174,13 @@ exports.handler = async (event) => {
       const { student_id, date, status: attStatus, note } = body;
       if (!student_id || !date) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and date required" }) };
 
-      // Delete existing for that student+date first, then insert
       await sbDelete(`/crm_attendance?student_id=eq.${student_id}&date=eq.${date}`);
-
       const { status: httpStatus, data } = await sbPost("/crm_attendance", {
-        student_id,
-        date,
+        student_id, date,
         status: attStatus || "present",
         note: note || null,
       });
-
-      if (httpStatus >= 400) {
-        return { statusCode: httpStatus, headers, body: JSON.stringify({ error: (data && data.message) || "Attendance insert failed" }) };
-      }
+      if (httpStatus >= 400) return { statusCode: httpStatus, headers, body: JSON.stringify({ error: (data && data.message) || "Attendance insert failed" }) };
 
       return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
     }
@@ -225,26 +191,15 @@ exports.handler = async (event) => {
       if (!student_id || !content) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and content required" }) };
 
       const { status: httpStatus, data } = await sbPost("/crm_notes", { student_id, content });
-
-      if (httpStatus >= 400) {
-        return { statusCode: httpStatus, headers, body: JSON.stringify({ error: (data && data.message) || "Note insert failed" }) };
-      }
+      if (httpStatus >= 400) return { statusCode: httpStatus, headers, body: JSON.stringify({ error: (data && data.message) || "Note insert failed" }) };
 
       const inserted = Array.isArray(data) ? data[0] : data;
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, note: inserted }) };
     }
 
-    // ── DASHBOARD STATS ───────────────────────────────────────────────────────
+    // ── DASHBOARD ─────────────────────────────────────────────────────────────
     if (action === "dashboard") {
-      // DEBUG: test if function runs at all without Supabase
-      const testRes = { statusCode: 200, headers, body: JSON.stringify({ success: true, _debug: "no_supabase", stats: { total: 0, active: 0, trial: 0, paused: 0, dropped: 0, online: 0, offline: 0, revenue_this_month: 0 }, instruments: {}, recent: [], todayStudents: [] }) };
-      // Attempt real Supabase call, fall back to debug if it throws
-      let allRes;
-      try {
-        allRes = await sbGet("/crm_students?is_active=eq.true&select=id,status,mode,instrument,amount_due,enrollment_date,name,student_id,teacher,class_days,class_time,level");
-      } catch (sbErr) {
-        return { statusCode: 500, headers, body: JSON.stringify({ error: "Supabase fetch failed", detail: sbErr.message, url_set: !!SUPABASE_URL, key_set: !!SUPABASE_KEY }) };
-      }
+      const allRes = await sbGet("/crm_students?is_active=eq.true&select=id,status,mode,instrument,amount_due,enrollment_date,name,student_id,teacher,class_days,class_time,level");
 
       if (allRes.status === 404 || (allRes.data && allRes.data.code === "42P01")) {
         return { statusCode: 404, headers, body: JSON.stringify({ error: "table_not_found" }) };
@@ -271,10 +226,7 @@ exports.handler = async (event) => {
 
       const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
       const todayDay = days[new Date().getDay()];
-      const todayStudents = all.filter(s => {
-        if (!s.class_days) return false;
-        return s.class_days.toLowerCase().includes(todayDay);
-      });
+      const todayStudents = all.filter(s => s.class_days && s.class_days.toLowerCase().includes(todayDay));
 
       return {
         statusCode: 200, headers,
