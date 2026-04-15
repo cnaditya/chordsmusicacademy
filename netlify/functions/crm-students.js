@@ -192,6 +192,11 @@ exports.handler = async (event) => {
         sb("/crm_students?is_active=eq.true&order=created_at.desc&limit=5&select=id,name,instrument,status,mode,student_id,created_at,teacher"),
       ]);
 
+      // Table doesn't exist yet
+      if (allRes.status === 404 || (allRes.data && allRes.data.code === "42P01")) {
+        return { statusCode: 404, headers, body: JSON.stringify({ error: "table_not_found" }) };
+      }
+
       const all = Array.isArray(allRes.data) ? allRes.data : [];
       const recent = Array.isArray(recentRes.data) ? recentRes.data : [];
 
