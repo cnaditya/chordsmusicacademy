@@ -52,6 +52,36 @@
     .cta-secondary{background:rgba(243,156,18,0.12);border:1px solid rgba(243,156,18,0.4)!important;color:#f39c12}
     .no-discount{display:inline-block;background:rgba(255,255,255,0.06);border-radius:6px;padding:3px 8px;font-size:0.7rem;color:#666}
 
+    /* SUMMER FULL WIDTH */
+    .summer-section{max-width:900px;margin:0 auto 32px;padding:0 20px}
+    .summer-card{background:linear-gradient(135deg,rgba(230,126,34,0.18),rgba(243,156,18,0.08));border:2px solid #e67e22;border-radius:24px;overflow:hidden;position:relative}
+    .summer-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#e67e22,#f39c12,#e67e22)}
+    .summer-card-header{padding:28px 32px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+    .summer-card-title{display:flex;align-items:center;gap:14px}
+    .summer-card-icon{font-size:2.2rem}
+    .summer-card-name{font-size:1.4rem;font-weight:900;color:#fff}
+    .summer-card-sub{font-size:0.82rem;color:#aaa;margin-top:4px}
+    .summer-badge{background:linear-gradient(135deg,#e67e22,#f39c12);color:#000;font-size:0.72rem;font-weight:900;padding:6px 16px;border-radius:20px;text-transform:uppercase;letter-spacing:1px;animation:pulse 2s infinite}
+    .summer-card-body{padding:24px 32px}
+    .summer-details{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:20px}
+    .summer-detail{font-size:0.82rem;color:#aaa}
+    .summer-detail span{color:#eee;font-weight:700}
+    .summer-tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+    .summer-tier{background:rgba(0,0,0,0.3);border-radius:14px;padding:18px 14px;text-align:center;position:relative}
+    .summer-tier.popular{border:2px solid #f39c12}
+    .summer-tier-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#f39c12;color:#000;font-size:0.6rem;font-weight:900;padding:3px 10px;border-radius:20px;white-space:nowrap}
+    .summer-tier-plan{font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px}
+    .summer-tier-price{font-size:1.8rem;font-weight:900;color:#f39c12;line-height:1}
+    .summer-tier-per{font-size:0.65rem;color:#888;margin-top:2px}
+    .summer-tier-total{font-size:0.72rem;color:#aaa;margin-top:6px;font-weight:600}
+    .summer-cta{display:block;text-align:center;background:linear-gradient(135deg,#e67e22,#f39c12);color:#fff;font-size:0.92rem;font-weight:800;padding:14px;border-radius:12px;text-decoration:none;transition:.2s;margin-top:4px}
+    .summer-cta:hover{opacity:0.9}
+    @media(max-width:600px){
+      .summer-tiers{grid-template-columns:1fr}
+      .summer-card-header{flex-direction:column;align-items:flex-start}
+      .summer-card-body{padding:20px}
+    }
+
     /* SPECIAL OFFER */
     .special-section{max-width:900px;margin:0 auto 50px;padding:0 20px}
     .special-header{text-align:center;margin-bottom:24px}
@@ -136,11 +166,58 @@
   <span class="inst-pill">🥁 Drums</span>
 </div>
 
+<!-- Summer Special — Full Width -->
+<div class="summer-section">
+  <div class="summer-card">
+    <div class="summer-card-header">
+      <div class="summer-card-title">
+        <div class="summer-card-icon">🏫</div>
+        <div>
+          <div class="summer-card-name">Offline — Group Classes</div>
+          <div class="summer-card-sub">Manikonda · Keyboard · Guitar · Drums · Violin · Vocals · All Age Groups</div>
+        </div>
+      </div>
+      <div class="summer-badge">☀️ Summer Special 2025</div>
+    </div>
+    <div class="summer-card-body">
+      <div class="summer-details">
+        <div class="summer-detail">Frequency: <span>2 classes / week</span></div>
+        <div class="summer-detail">Mode: <span>Offline only</span></div>
+        <div class="summer-detail">Location: <span>No 602, Lanco Hills Road, Manikonda</span></div>
+      </div>
+      <div class="summer-tiers">
+        <div class="summer-tier" style="border:1px solid #e74c3c">
+          <div class="summer-tier-plan" style="color:#e74c3c">3 Months</div>
+          <div class="summer-tier-price">₹2,799</div>
+          <div class="summer-tier-per">/month</div>
+          <div class="summer-tier-total">Total ₹8,397</div>
+        </div>
+        <div class="summer-tier popular">
+          <div class="summer-tier-badge">MOST POPULAR</div>
+          <div class="summer-tier-plan" style="color:#f39c12">6 Months</div>
+          <div class="summer-tier-price">₹2,199</div>
+          <div class="summer-tier-per">/month</div>
+          <div class="summer-tier-total">Total ₹13,194</div>
+        </div>
+        <div class="summer-tier" style="border:1px solid #27ae60">
+          <div class="summer-tier-plan" style="color:#27ae60">1 Year</div>
+          <div class="summer-tier-price">₹1,799</div>
+          <div class="summer-tier-per">/month</div>
+          <div class="summer-tier-total">Total ₹21,588</div>
+        </div>
+      </div>
+      <div style="font-size:0.78rem;color:#e67e22;font-weight:700;margin-bottom:12px;text-align:center">🎁 Flat ₹2,000 off on music instruments with 1 Year package*</div>
+      <a class="summer-cta" onclick="trackWhatsApp()" href="https://wa.me/917981585309?text=Hi%2C%20I%27m%20interested%20in%20the%20Summer%20Special%20Offline%20Group%20classes%20at%20Chords%20Music%20Academy%2C%20Manikonda.%20Can%20I%20get%20more%20details%3F" target="_blank">📅 Book Free Demo — Offline Group</a>
+    </div>
+  </div>
+</div>
+
+<!-- Online Plans -->
 <div class="cards">
 
   <!-- Online 1-to-1 -->
   <div class="card featured">
-    <div class="card-badge">Most Popular</div>
+    <div class="card-badge">Most Popular Online</div>
     <div class="card-header">
       <div class="card-icon">🎯</div>
       <div class="card-title">Online — One to One</div>
@@ -180,48 +257,6 @@
       </div>
       <div style="margin-bottom:4px"><span class="no-discount">No long-term discounts on group plan</span></div>
       <a class="card-cta cta-secondary" onclick="trackWhatsApp()" href="https://wa.me/917981585309?text=Hi%2C%20I%27m%20interested%20in%20Online%20Group%20classes%20at%20Chords%20Music%20Academy.%20Can%20I%20book%20a%20free%20demo%3F" target="_blank">📅 Book Free Demo</a>
-    </div>
-  </div>
-
-  <!-- Offline Group — Summer Special -->
-  <div class="card" style="border-color:#e67e22;position:relative;overflow:visible">
-    <div class="card-badge" style="background:linear-gradient(135deg,#e67e22,#f39c12);top:-14px">☀️ Summer Special</div>
-    <div class="card-header">
-      <div class="card-icon">🏫</div>
-      <div class="card-title">Offline — Group Classes</div>
-      <div class="card-sub">Manikonda · Keyboard · Guitar · Drums · Violin · Vocals</div>
-    </div>
-    <div class="card-body">
-      <div class="detail-row"><span class="detail-label">Frequency</span><span class="detail-value">2 classes / week</span></div>
-      <div class="detail-row"><span class="detail-label">Mode</span><span class="detail-value">Offline only (Not online)</span></div>
-      <div class="detail-row"><span class="detail-label">Age</span><span class="detail-value">All age groups</span></div>
-      <div class="detail-row"><span class="detail-label">Location</span><span class="detail-value">No 602, Lanco Hills Road, Manikonda</span></div>
-
-      <!-- 3 pricing tiers -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.6rem;margin:1rem 0">
-        <div style="background:#1a1a2e;border:1px solid #e74c3c;border-radius:10px;padding:0.7rem;text-align:center">
-          <div style="font-size:0.7rem;color:#e74c3c;font-weight:700;text-transform:uppercase">3 Months</div>
-          <div style="font-size:1.3rem;font-weight:900;color:#f39c12">₹2,799</div>
-          <div style="font-size:0.65rem;color:#aaa">/month</div>
-          <div style="font-size:0.65rem;color:#666;margin-top:4px">Total ₹8,397</div>
-        </div>
-        <div style="background:#1a1a2e;border:2px solid #c9a227;border-radius:10px;padding:0.7rem;text-align:center;position:relative">
-          <div style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#c9a227;color:#000;font-size:0.6rem;font-weight:800;padding:2px 8px;border-radius:20px;white-space:nowrap">MOST POPULAR</div>
-          <div style="font-size:0.7rem;color:#c9a227;font-weight:700;text-transform:uppercase">6 Months</div>
-          <div style="font-size:1.3rem;font-weight:900;color:#f39c12">₹2,199</div>
-          <div style="font-size:0.65rem;color:#aaa">/month</div>
-          <div style="font-size:0.65rem;color:#666;margin-top:4px">Total ₹13,194</div>
-        </div>
-        <div style="background:#1a1a2e;border:1px solid #27ae60;border-radius:10px;padding:0.7rem;text-align:center">
-          <div style="font-size:0.7rem;color:#27ae60;font-weight:700;text-transform:uppercase">1 Year</div>
-          <div style="font-size:1.3rem;font-weight:900;color:#f39c12">₹1,799</div>
-          <div style="font-size:0.65rem;color:#aaa">/month</div>
-          <div style="font-size:0.65rem;color:#666;margin-top:4px">Total ₹21,588</div>
-        </div>
-      </div>
-
-      <div style="font-size:0.72rem;color:#e67e22;font-weight:700;margin-bottom:8px;text-align:center">🎁 Flat ₹2,000 off on music instruments with 1 Year package*</div>
-      <a class="card-cta cta-primary" onclick="trackWhatsApp()" href="https://wa.me/917981585309?text=Hi%2C%20I%27m%20interested%20in%20the%20Summer%20Special%20Offline%20Group%20classes%20at%20Chords%20Music%20Academy%2C%20Manikonda.%20Can%20I%20get%20more%20details%3F" target="_blank">📅 Book Free Demo</a>
     </div>
   </div>
 
