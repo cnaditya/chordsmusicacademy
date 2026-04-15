@@ -1184,7 +1184,15 @@ async function apiCall(body, endpoint) {
     TOKEN = ''; sessionStorage.removeItem('crm_token');
     throw new Error('Unauthorized');
   }
-  const data = await res.json();
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); } catch { data = { error: text }; }
+  if (res.status === 500) {
+    const detail = data.detail || data.error || text;
+    console.error('CRM 500:', detail);
+    alert('CRM function error (500):\n\n' + detail + '\n\nCheck console for details.');
+    throw new Error(detail);
+  }
   if (res.status === 404 && data.error === 'table_not_found') {
     document.getElementById('sql-modal').style.display = 'flex';
     throw new Error('table_not_found');
