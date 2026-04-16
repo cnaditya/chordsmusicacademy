@@ -272,6 +272,8 @@ exports.handler = async (event) => {
     const SB_M = { ...SB_H, "Content-Type": "application/json", Prefer: "return=representation" };
 
     if (action === "crm_dashboard") {
+      // TEST: skip fetch entirely - return empty dashboard to check if code reaches here
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, _test: "no_fetch", stats: { total:0,active:0,trial:0,paused:0,dropped:0,online:0,offline:0,revenue_this_month:0 }, instruments:{}, recent:[], todayStudents:[] }) };
       const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&select=id,status,mode,instrument,amount_due,enrollment_date,name,student_id,teacher,class_days,class_time,level`, { headers: SB_H });
       const all = await r.json();
       if (!Array.isArray(all)) {
