@@ -2312,7 +2312,10 @@ async function loadLeads() {
     window._allLeads = leads;
     document.getElementById('page-content').innerHTML = `
       <div style="margin-bottom:16px;">
-        <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px;">Registrations from chordsmusicacademy.in/register automatically appear here.</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+          <div style="font-size:0.82rem;color:var(--muted);">Registrations from chordsmusicacademy.in/register automatically appear here.</div>
+          <button onclick="importFromFirebase()" style="padding:7px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--gold);font-size:0.78rem;font-weight:700;cursor:pointer;">⬇ Import old registrations from Firebase</button>
+        </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;" id="lead-filters">${filterBtns}</div>
       </div>
       <div id="leads-list"></div>`;
@@ -2442,6 +2445,73 @@ document.addEventListener('keydown', e => {
     }
   }
 });
+</script>
+
+<!-- Firebase SDK for importing old registrations -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const fbApp = initializeApp({
+  apiKey: "AIzaSyDvuCr7IHM7oLYY6e675P_KtcTxsNEJr1c",
+  authDomain: "chords-music-academy.firebaseapp.com",
+  projectId: "chords-music-academy",
+  storageBucket: "chords-music-academy.firebasestorage.app",
+  messagingSenderId: "146425788425",
+  appId: "1:146425788425:web:8abbafbc93287a14ab20d8"
+}, "crm-import");
+const fbDb = getFirestore(fbApp);
+
+window.importFromFirebase = async function() {
+  const btn = event.target;
+  btn.textContent = '⏳ Importing…';
+  btn.disabled = true;
+
+  try {
+    const snapshot = await getDocs(collection(fbDb, 'registrations'));
+    const docs = [];
+    snapshot.forEach(doc => docs.push(doc.data()));
+
+    if (docs.length === 0) {
+      toast('No registrations found in Firebase.', 'error');
+      btn.textContent = '⬇ Import old registrations from Firebase';
+      btn.disabled = false;
+      return;
+    }
+
+    let saved = 0, skipped = 0;
+    for (const d of docs) {
+      try {
+        const res = await fetch('/.netlify/functions/crm-lead-save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            reg_id: d.reg_id || null,
+            full_name: d.full_name || d.name || '—',
+            phone: d.phone || null,
+            email: d.email || null,
+            dob: d.dob || null,
+            address: d.address || null,
+            guardian: d.guardian && d.guardian !== '—' ? d.guardian : null,
+            instrument: d.instrument || null,
+            level: d.level || null,
+            mode: d.mode || null,
+            notes: d.notes && d.notes !== '—' ? d.notes : null,
+          }),
+        });
+        if (res.ok) saved++; else skipped++;
+      } catch { skipped++; }
+    }
+
+    toast(`Imported ${saved} leads${skipped ? `, ${skipped} skipped (duplicates)` : ''}.`);
+    loadLeads();
+  } catch(e) {
+    console.error('Firebase import error:', e);
+    toast('Import failed: ' + e.message, 'error');
+    btn.textContent = '⬇ Import old registrations from Firebase';
+    btn.disabled = false;
+  }
+};
 </script>
 </body>
 </html>
