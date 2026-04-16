@@ -367,6 +367,37 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, note: Array.isArray(data)?data[0]:data }) };
     }
 
+    // ── LEADS ─────────────────────────────────────────────────────────────────
+    if (action === "crm_leads_list") {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_leads?order=created_at.desc`, { headers: SB_H });
+      const data = await r.json();
+      if (r.status === 404 || (data && data.code === "42P01")) return { statusCode: 404, headers, body: JSON.stringify({ error: "table_not_found" }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, leads: Array.isArray(data) ? data : [] }) };
+    }
+
+    if (action === "crm_lead_status") {
+      const { id, status: st } = JSON.parse(event.body);
+      if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: "id required" }) };
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_leads?id=eq.${id}`, { method:"PATCH", headers:SB_M, body:JSON.stringify({ status: st }) });
+      if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: "Update failed" }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    }
+
+    if (action === "crm_lead_convert") {
+      const { id, student } = JSON.parse(event.body);
+      if (!id || !student || !student.name) return { statusCode: 400, headers, body: JSON.stringify({ error: "id and student required" }) };
+      const year = new Date().getFullYear();
+      const cr = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?student_id=like.CMA-${year}-*&select=student_id`, { headers: SB_H });
+      const existing = await cr.json();
+      student.student_id = `CMA-${year}-${String((Array.isArray(existing)?existing.length:0)+1).padStart(3,"0")}`;
+      if (!student.enrollment_date) student.enrollment_date = new Date().toISOString().split("T")[0];
+      const sr = await fetch(`${SUPABASE_URL}/rest/v1/crm_students`, { method:"POST", headers:SB_M, body:JSON.stringify(student) });
+      const sdata = await sr.json();
+      if (sr.status >= 400) return { statusCode: sr.status, headers, body: JSON.stringify({ error: (sdata&&sdata.message)||"Insert failed" }) };
+      await fetch(`${SUPABASE_URL}/rest/v1/crm_leads?id=eq.${id}`, { method:"PATCH", headers:SB_M, body:JSON.stringify({ status: "converted" }) });
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: Array.isArray(sdata)?sdata[0]:sdata }) };
+    }
+
     return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid action" }) };
   } catch (err) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: "Server error", detail: err.message }) };

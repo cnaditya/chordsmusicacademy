@@ -433,6 +433,13 @@ function submitReg() {
     status: 'new', createdAt: new Date().toISOString()
   });
 
+  // Save to CRM leads
+  fetch('/.netlify/functions/crm-lead-save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reg_id: regId, full_name: fullName, phone: phone, email: email, dob: dob, address: address, guardian: guardian||'', instrument: inst, level: level, mode: mode, notes: notes||'' })
+  }).catch(function(e){ console.log('CRM lead save error', e); });
+
   fetch('https://api.web3forms.com/submit', { method: 'POST', body: body.toString(), headers: {'Content-Type':'application/x-www-form-urlencoded'} })
     .catch(function(e){ console.log('Form submit error', e); })
     .finally(function() {

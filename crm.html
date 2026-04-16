@@ -874,6 +874,9 @@ CREATE TABLE IF NOT EXISTS crm_notes (
       <div class="nav-item" onclick="navigate('instruments')" data-page="instruments">
         <span class="nav-icon">🎵</span> Instruments
       </div>
+      <div class="nav-item" onclick="navigate('leads')" data-page="leads">
+        <span class="nav-icon">📋</span> Leads <span id="leads-badge" style="background:#e74c3c;color:#fff;border-radius:10px;padding:1px 7px;font-size:0.65rem;margin-left:4px;display:none"></span>
+      </div>
     </div>
     <div class="sidebar-footer">
       <div style="color:var(--muted);font-size:0.72rem;margin-bottom:8px;">Logged in as Admin</div>
@@ -910,6 +913,9 @@ CREATE TABLE IF NOT EXISTS crm_notes (
     </button>
     <button class="bottom-nav-item" onclick="navigate('instruments')" data-page="instruments">
       <span class="nav-emoji">🎵</span> More
+    </button>
+    <button class="bottom-nav-item" onclick="navigate('leads')" data-page="leads">
+      <span class="nav-emoji">📋</span> Leads
     </button>
   </nav>
 </div>
@@ -1203,6 +1209,7 @@ function navigate(page) {
     students: 'Students',
     schedule: "Today's Schedule",
     instruments: 'Instruments',
+    leads: 'Leads & Registrations',
   };
   document.getElementById('topbar-title').textContent = titles[page] || page;
   document.getElementById('page-content').innerHTML = renderLoading();
@@ -1212,6 +1219,7 @@ function navigate(page) {
   else if (page === 'students') loadStudents();
   else if (page === 'schedule') loadSchedule();
   else if (page === 'instruments') loadInstruments();
+  else if (page === 'leads') loadLeads();
 }
 
 function toggleSidebar() {
@@ -2279,6 +2287,146 @@ async function loadInstruments() {
 function filterByInstrument(inst) {
   currentFilters = { status:'all', instrument:inst, teacher:'all', mode:'all', search:'' };
   navigate('students');
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   LEADS PAGE
+══════════════════════════════════════════════════════════════════ */
+const LEAD_STATUS_COLORS = { new:'#e74c3c', contacted:'#f39c12', demo_scheduled:'#3498db', converted:'#27ae60', dropped:'#666' };
+const LEAD_STATUS_LABELS = { new:'New', contacted:'Contacted', demo_scheduled:'Demo Scheduled', converted:'Converted', dropped:'Dropped' };
+
+async function loadLeads() {
+  try {
+    const data = await apiCall({ action: 'crm_leads_list' });
+    const leads = data.leads || [];
+
+    // Update badge
+    const newCount = leads.filter(l => l.status === 'new').length;
+    const badge = document.getElementById('leads-badge');
+    if (badge) { badge.textContent = newCount; badge.style.display = newCount ? 'inline' : 'none'; }
+
+    const filterBtns = ['all','new','contacted','demo_scheduled','converted','dropped'].map(s =>
+      `<button onclick="filterLeads('${s}')" id="lead-filter-${s}" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:${s==='all'?'var(--gold)':'var(--surface2)'};color:${s==='all'?'#000':'var(--text)'};font-size:0.78rem;font-weight:600;cursor:pointer;">${s==='all'?'All':LEAD_STATUS_LABELS[s]}</button>`
+    ).join('');
+
+    window._allLeads = leads;
+    document.getElementById('page-content').innerHTML = `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px;">Registrations from chordsmusicacademy.in/register automatically appear here.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="lead-filters">${filterBtns}</div>
+      </div>
+      <div id="leads-list"></div>`;
+    renderLeads(leads);
+  } catch(e) {
+    if (e.message === 'table_not_found') {
+      document.getElementById('page-content').innerHTML = `<div style="padding:20px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);">
+        <b>Run this SQL in Supabase first:</b>
+        <pre style="margin-top:10px;font-size:0.75rem;background:var(--surface2);padding:12px;border-radius:8px;overflow:auto;">CREATE TABLE IF NOT EXISTS crm_leads (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  reg_id text,
+  full_name text NOT NULL,
+  phone text,
+  email text,
+  dob text,
+  address text,
+  guardian text,
+  instrument text,
+  level text,
+  mode text,
+  notes text,
+  status text DEFAULT 'new',
+  created_at timestamptz DEFAULT now()
+);</pre>
+      </div>`;
+    } else {
+      document.getElementById('page-content').innerHTML = renderEmpty('⚠️','Failed to load leads',e.message,'Retry','loadLeads()');
+    }
+  }
+}
+
+function filterLeads(status) {
+  document.querySelectorAll('[id^="lead-filter-"]').forEach(b => {
+    const active = b.id === `lead-filter-${status}`;
+    b.style.background = active ? 'var(--gold)' : 'var(--surface2)';
+    b.style.color = active ? '#000' : 'var(--text)';
+  });
+  const filtered = status === 'all' ? window._allLeads : window._allLeads.filter(l => l.status === status);
+  renderLeads(filtered);
+}
+
+function renderLeads(leads) {
+  const el = document.getElementById('leads-list');
+  if (!el) return;
+  if (!leads.length) { el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">No leads in this category.</div>`; return; }
+  el.innerHTML = leads.map(l => `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:12px;">
+      <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+        <div class="avatar" style="background:${avatarColor(l.full_name)};color:#000;flex-shrink:0;">${initials(l.full_name)}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+            <span style="font-weight:700;font-size:0.95rem;">${l.full_name}</span>
+            <span style="background:${LEAD_STATUS_COLORS[l.status]||'#666'};color:#fff;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;">${LEAD_STATUS_LABELS[l.status]||l.status}</span>
+            ${l.reg_id ? `<span style="font-size:0.7rem;color:var(--muted);">${l.reg_id}</span>` : ''}
+          </div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:0.8rem;color:var(--muted);margin-bottom:8px;">
+            ${l.phone ? `<span>📞 <a href="tel:${l.phone}" style="color:var(--gold);text-decoration:none;">${l.phone}</a></span>` : ''}
+            ${l.email ? `<span>✉️ ${l.email}</span>` : ''}
+            ${l.instrument ? `<span>${instrumentIcon(l.instrument)} ${l.instrument}</span>` : ''}
+            ${l.mode ? `<span>📡 ${cap(l.mode)}</span>` : ''}
+            ${l.level ? `<span>📊 ${cap(l.level)}</span>` : ''}
+          </div>
+          ${l.address ? `<div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px;">📍 ${l.address}</div>` : ''}
+          ${l.notes && l.notes !== '—' ? `<div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px;">💬 ${l.notes}</div>` : ''}
+          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:10px;">Registered: ${fmtDatetime(l.created_at)}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            ${l.phone ? `<a href="https://wa.me/${l.phone.replace(/\D/g,'')}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#25d366;color:#fff;font-size:0.78rem;font-weight:700;padding:6px 12px;border-radius:8px;text-decoration:none;">💬 WhatsApp</a>` : ''}
+            <select onchange="updateLeadStatus('${l.id}', this.value)" style="padding:5px 8px;font-size:0.78rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+              ${Object.entries(LEAD_STATUS_LABELS).map(([v,label])=>`<option value="${v}"${l.status===v?' selected':''}>${label}</option>`).join('')}
+            </select>
+            ${l.status !== 'converted' ? `<button onclick="convertLead('${l.id}', ${JSON.stringify(l).replace(/"/g,'&quot;')})" style="padding:6px 12px;font-size:0.78rem;font-weight:700;background:var(--gold);color:#000;border:none;border-radius:8px;cursor:pointer;">✅ Convert to Student</button>` : '<span style="font-size:0.78rem;color:#27ae60;font-weight:600;">✓ Converted</span>'}
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function updateLeadStatus(id, status) {
+  try {
+    await apiCall({ action: 'crm_lead_status', id, status });
+    const lead = window._allLeads.find(l => l.id === id);
+    if (lead) lead.status = status;
+    // Refresh badge
+    const newCount = window._allLeads.filter(l => l.status === 'new').length;
+    const badge = document.getElementById('leads-badge');
+    if (badge) { badge.textContent = newCount; badge.style.display = newCount ? 'inline' : 'none'; }
+    toast('Status updated.');
+  } catch(e) { toast('Failed to update.','error'); }
+}
+
+function convertLead(id, lead) {
+  const student = {
+    name: lead.full_name,
+    phone: lead.phone || '',
+    email: lead.email || '',
+    address: lead.address || '',
+    instrument: lead.instrument || '',
+    level: lead.level || 'beginner',
+    mode: lead.mode || 'online',
+    status: 'trial',
+    notes: lead.notes !== '—' ? lead.notes : '',
+  };
+  showConfirm(
+    'Convert to Student',
+    `Add ${lead.full_name} as a new trial student?`,
+    'Convert',
+    async () => {
+      try {
+        await apiCall({ action: 'crm_lead_convert', id, student });
+        toast(`${lead.full_name} added as student!`);
+        loadLeads();
+      } catch(e) { toast('Conversion failed.','error'); }
+    }
+  );
 }
 
 /* ══════════════════════════════════════════════════════════════════
