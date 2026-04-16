@@ -619,6 +619,11 @@ tr:hover td { background: rgba(255,255,255,0.015); }
 }
 .radio-btn input[type=radio] { display: none; }
 .radio-btn:has(input:checked) { border-color: var(--gold); background: var(--gold-bg); color: var(--gold); font-weight: 600; }
+.sched-day-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sched-day-btn { display:flex;align-items:center;justify-content:center;width:40px;height:34px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:0.78rem;font-weight:600;color:var(--muted);background:var(--surface2);user-select:none;transition:.15s; }
+.sched-day-btn.active { border-color:var(--gold);background:var(--gold-bg);color:var(--gold); }
+.sched-time-picks { display:flex;gap:4px;align-items:center; }
+.sched-time-picks select { padding:4px 6px;font-size:0.8rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text); }
 .checkbox-days { display: flex; gap: 6px; flex-wrap: wrap; }
 .day-check {
   display: flex; align-items: center; justify-content: center;
@@ -1030,34 +1035,8 @@ CREATE TABLE IF NOT EXISTS crm_notes (
           <input type="date" id="f-enrollment-date">
         </div>
         <div class="form-group full">
-          <label>Class Days</label>
-          <div class="checkbox-days">
-            <label class="day-check"><input type="checkbox" name="f-days" value="Mon"> Mon</label>
-            <label class="day-check"><input type="checkbox" name="f-days" value="Tue"> Tue</label>
-            <label class="day-check"><input type="checkbox" name="f-days" value="Wed"> Wed</label>
-            <label class="day-check"><input type="checkbox" name="f-days" value="Thu"> Thu</label>
-            <label class="day-check"><input type="checkbox" name="f-days" value="Fri"> Fri</label>
-            <label class="day-check"><input type="checkbox" name="f-days" value="Sat"> Sat</label>
-            <label class="day-check"><input type="checkbox" name="f-days" value="Sun"> Sun</label>
-          </div>
-        </div>
-        <div class="form-group full">
-          <label>Class Time</label>
-          <div class="time-row">
-            <select id="f-time-h">
-              <option value="">Hr</option>
-              <option>1</option><option>2</option><option>3</option><option>4</option>
-              <option>5</option><option>6</option><option>7</option><option>8</option>
-              <option>9</option><option>10</option><option>11</option><option>12</option>
-            </select>
-            <select id="f-time-m">
-              <option value="00">:00</option><option value="15">:15</option>
-              <option value="30">:30</option><option value="45">:45</option>
-            </select>
-            <select id="f-time-ap">
-              <option value="AM">AM</option><option value="PM">PM</option>
-            </select>
-          </div>
+          <label>Schedule — pick days and set a time for each</label>
+          <div id="f-schedule-widget" style="display:flex;flex-direction:column;gap:8px;margin-top:4px;"></div>
         </div>
       </div>
 
@@ -1299,6 +1278,30 @@ function avatarColor(name) {
 function initials(name) {
   if (!name) return '?';
   return name.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+
+function getTodayTime(s) {
+  if (!s.class_time) return '—';
+  if (s.class_time.includes('=')) {
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const todayAbbr = days[new Date().getDay()];
+    const match = s.class_time.split(',').find(p => p.trim().startsWith(todayAbbr+'='));
+    return match ? match.trim().split('=')[1] : s.class_time.split(',')[0].split('=')[1]||'—';
+  }
+  return s.class_time;
+}
+
+function formatScheduleDisplay(class_days, class_time) {
+  if (!class_days) return '—';
+  if (class_time && class_time.includes('=')) {
+    // New format: "Mon=6:30AM, Wed=7:10AM"
+    return class_time.split(',').map(p => {
+      const [day, t] = p.trim().split('=');
+      return `${day} ${t}`;
+    }).join(' · ');
+  }
+  // Legacy: days + single time
+  return class_days + (class_time ? ' · ' + class_time : '');
 }
 
 function fmtDate(d) {
@@ -1732,8 +1735,7 @@ function renderOverviewTab(s) {
     ['Teacher', s.teacher||'—'],
     ['Status', badge(s.status)],
     ['Enrollment', fmtDate(s.enrollment_date)],
-    ['Class Days', s.class_days||'—'],
-    ['Class Time', s.class_time||'—'],
+    ['Schedule', formatScheduleDisplay(s.class_days, s.class_time)],
     ['Payment Type', cap((s.payment_type||'').replace('_',' '))],
     ['Amount Due', s.amount_due ? `₹${Number(s.amount_due).toLocaleString('en-IN')}` : '—'],
     ['Due Date', s.due_date ? fmtDate(s.due_date) : '—'],
@@ -2008,6 +2010,92 @@ function closeForm() {
   editingStudentId = null;
 }
 
+const SCHED_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function buildScheduleWidget(existingDays, existingTime) {
+  // existingDays: "Mon, Wed"
+  // existingTime: "Mon=6:30AM, Wed=7:10AM" or legacy "6:30 AM"
+  const activeDays = existingDays ? existingDays.split(',').map(d=>d.trim()) : [];
+
+  // Parse per-day times: "Mon=6:30AM, Wed=7:10AM"
+  const dayTimes = {};
+  if (existingTime) {
+    if (existingTime.includes('=')) {
+      existingTime.split(',').forEach(part => {
+        const [day, t] = part.trim().split('=');
+        if (day && t) dayTimes[day.trim()] = t.trim();
+      });
+    } else {
+      // Legacy single time — apply to all days
+      activeDays.forEach(d => dayTimes[d] = existingTime.trim());
+    }
+  }
+
+  const container = document.getElementById('f-schedule-widget');
+  container.innerHTML = '';
+
+  // Day toggle row
+  const dayRow = document.createElement('div');
+  dayRow.className = 'sched-day-row';
+  SCHED_DAYS.forEach(day => {
+    const btn = document.createElement('div');
+    btn.className = 'sched-day-btn' + (activeDays.some(d=>d.toLowerCase()===day.toLowerCase()) ? ' active' : '');
+    btn.textContent = day;
+    btn.dataset.day = day;
+    btn.onclick = () => {
+      btn.classList.toggle('active');
+      renderTimePickers();
+    };
+    dayRow.appendChild(btn);
+  });
+  container.appendChild(dayRow);
+
+  // Time pickers per active day
+  const timeArea = document.createElement('div');
+  timeArea.id = 'f-time-area';
+  timeArea.style.cssText = 'display:flex;flex-direction:column;gap:6px;margin-top:6px;';
+  container.appendChild(timeArea);
+
+  function renderTimePickers() {
+    timeArea.innerHTML = '';
+    const active = [...dayRow.querySelectorAll('.sched-day-btn.active')].map(b=>b.dataset.day);
+    active.forEach(day => {
+      const existing = dayTimes[day] || '';
+      const m = existing.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      const row = document.createElement('div');
+      row.className = 'sched-time-picks';
+      row.dataset.day = day;
+      row.innerHTML = `
+        <span style="font-size:0.8rem;font-weight:600;color:var(--gold);min-width:36px;">${day}</span>
+        <select class="sched-h">
+          <option value="">Hr</option>
+          ${[1,2,3,4,5,6,7,8,9,10,11,12].map(h=>`<option${m&&m[1]==h?' selected':''}>${h}</option>`).join('')}
+        </select>
+        <select class="sched-m">
+          ${['00','05','10','15','20','25','30','35','40','45','50','55'].map(mn=>`<option${m&&m[2]===mn?' selected':''}>${mn}</option>`).join('')}
+        </select>
+        <select class="sched-ap">
+          <option${m&&m[3].toUpperCase()==='AM'?' selected':''}>AM</option>
+          <option${m&&m[3].toUpperCase()==='PM'?' selected':''}>PM</option>
+        </select>`;
+      timeArea.appendChild(row);
+    });
+  }
+
+  renderTimePickers();
+}
+
+function readSchedule() {
+  const days = [...document.querySelectorAll('#f-schedule-widget .sched-day-btn.active')].map(b=>b.dataset.day);
+  const times = [...document.querySelectorAll('#f-time-area .sched-time-picks')].map(row => {
+    const h = row.querySelector('.sched-h').value;
+    const m = row.querySelector('.sched-m').value;
+    const ap = row.querySelector('.sched-ap').value;
+    return h ? `${row.dataset.day}=${h}:${m}${ap}` : null;
+  }).filter(Boolean);
+  return { days: days.join(', '), time: times.join(', ') };
+}
+
 function clearForm() {
   ['f-name','f-phone','f-email','f-age','f-parent-name','f-parent-phone',
    'f-address','f-instrument','f-teacher','f-enrollment-date','f-due-date',
@@ -2018,11 +2106,8 @@ function clearForm() {
   document.getElementById('f-level').value = 'beginner';
   document.getElementById('f-status').value = 'trial';
   document.getElementById('f-payment-type').value = 'monthly';
-  document.getElementById('f-time-h').value = '';
-  document.getElementById('f-time-m').value = '00';
-  document.getElementById('f-time-ap').value = 'AM';
   document.querySelectorAll('input[name="f-mode"]').forEach(r=>r.checked = r.value==='online');
-  document.querySelectorAll('input[name="f-days"]').forEach(cb=>cb.checked=false);
+  buildScheduleWidget('', '');
 }
 
 function populateForm(s) {
@@ -2050,29 +2135,13 @@ function populateForm(s) {
 
   document.querySelectorAll('input[name="f-mode"]').forEach(r=>r.checked = r.value===(s.mode||'online'));
 
-  if (s.class_days) {
-    const days = s.class_days.split(',').map(d=>d.trim().toLowerCase());
-    document.querySelectorAll('input[name="f-days"]').forEach(cb=>{
-      cb.checked = days.some(d=>d===cb.value.toLowerCase());
-    });
-  }
-
-  if (s.class_time) {
-    const m = s.class_time.match(/(\d+):(\d+)\s*(AM|PM)/i);
-    if (m) {
-      document.getElementById('f-time-h').value = m[1];
-      document.getElementById('f-time-m').value = m[2];
-      document.getElementById('f-time-ap').value = m[3].toUpperCase();
-    }
-  }
+  buildScheduleWidget(s.class_days || '', s.class_time || '');
 }
 
 function getFormData() {
   const get = id => (document.getElementById(id)?.value||'').trim();
   const mode = document.querySelector('input[name="f-mode"]:checked')?.value || 'online';
-  const days = [...document.querySelectorAll('input[name="f-days"]:checked')].map(cb=>cb.value).join(', ');
-  const h = get('f-time-h'), m = get('f-time-m')||'00', ap = get('f-time-ap')||'AM';
-  const classTime = h ? `${h}:${m} ${ap}` : '';
+  const sched = readSchedule();
 
   return {
     name: get('f-name'),
@@ -2088,8 +2157,8 @@ function getFormData() {
     teacher: get('f-teacher'),
     status: get('f-status')||'trial',
     enrollment_date: get('f-enrollment-date') || todayStr(),
-    class_days: days,
-    class_time: classTime,
+    class_days: sched.days,
+    class_time: sched.time,
     payment_type: get('f-payment-type')||'monthly',
     amount_due: parseInt(get('f-amount-due'))||0,
     due_date: get('f-due-date') || null,
@@ -2149,7 +2218,7 @@ async function loadSchedule() {
           ${todayStudents.sort((a,b)=>(a.class_time||'').localeCompare(b.class_time||'')).map(s=>`
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:border-color var(--transition);" onclick="viewStudent('${s.id}')" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
             <div style="text-align:center;min-width:68px;flex-shrink:0;">
-              <div style="font-size:1.05rem;font-weight:700;color:var(--gold);">${s.class_time||'—'}</div>
+              <div style="font-size:1.05rem;font-weight:700;color:var(--gold);">${getTodayTime(s)}</div>
             </div>
             <div class="avatar" style="background:${avatarColor(s.name)};color:#000;flex-shrink:0;">${initials(s.name)}</div>
             <div style="flex:1;min-width:0;">
