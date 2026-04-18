@@ -58,7 +58,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="upi-id-row">
     <div>
       <div style="font-size:0.65rem;color:#888;margin-bottom:2px">Or pay to UPI ID</div>
-      <div class="upi-id-val">7702031818@ybl</div>
+      <div class="upi-id-val">7702031818-3@ybl</div>
     </div>
     <button class="copy-btn" onclick="copyUPI(this)">Copy</button>
   </div>
@@ -87,7 +87,7 @@ document.getElementById('orderId').textContent  = orderId;
 document.getElementById('pkgName').textContent  = decodeURIComponent(pkg);
 document.getElementById('amtDisplay').textContent = '\u20B9' + Number(amount).toLocaleString('en-IN');
 
-var base = 'pa=7702031818@ybl&pn=Chords+Music+Academy&am=' + amount + '&cu=INR&tn=' + encodeURIComponent(orderId);
+var base = 'pa=7702031818-3@ybl&pn=Chords+Music+Academy&am=' + amount + '&cu=INR&tn=' + encodeURIComponent(orderId);
 
 function trackPay(app) {
   document.getElementById('doneMsg').style.display = 'block';
@@ -102,7 +102,7 @@ var waMsg = encodeURIComponent('💳 Payment for Order ' + orderId + ' (' + deco
 document.getElementById('waBtn').onclick = function(){ window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + waMsg, '_blank'); };
 
 function copyUPI(btn) {
-  navigator.clipboard.writeText('7702031818@ybl').then(function(){
+  navigator.clipboard.writeText('7702031818-3@ybl').then(function(){
     btn.textContent = 'Copied!';
     setTimeout(function(){ btn.textContent = 'Copy'; }, 2000);
   });
