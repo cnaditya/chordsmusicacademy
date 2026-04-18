@@ -456,6 +456,32 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, synced: results.length, results }) };
     }
 
+    // ── AISENSY SEND FROM CRM ────────────────────────────────────────────────
+    if (action === "crm_aisensy_send") {
+      const { phone, name, amount, due_date, template } = JSON.parse(event.body);
+      const AISENSY_KEY = process.env.AISENSY_API_KEY;
+      if (!AISENSY_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: "AISENSY_API_KEY not configured" }) };
+      let p = String(phone || "").replace(/\D/g, "");
+      if (p.length === 10) p = "91" + p;
+      else if (p.startsWith("0") && p.length === 11) p = "91" + p.slice(1);
+      const dueStr = due_date ? new Date(due_date).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" }) : "soon";
+      const res = await fetch("https://backend.aisensy.com/campaign/t1/api/v2", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          apiKey: AISENSY_KEY,
+          campaignName: template || "fee_reminder_advance",
+          destination: p,
+          userName: name,
+          templateParams: [name, `Rs.${amount}`, dueStr],
+          source: "cma-crm",
+          media: {}, buttons: [], carouselCards: [], location: {},
+        }),
+      });
+      const text = await res.text();
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, wa_status: res.status, wa_response: text }) };
+    }
+
     // ── AISENSY SEND TEST ─────────────────────────────────────────────────────
     if (action === "crm_aisensy_test") {
       const { phone, name } = JSON.parse(event.body);

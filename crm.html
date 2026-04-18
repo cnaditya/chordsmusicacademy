@@ -1770,6 +1770,7 @@ function renderOverviewTab(s) {
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
     <button class="btn btn-primary btn-sm" onclick="openEditFromPanel()">✏️ Edit Student</button>
     ${s.phone?`<a href="${waLink(s)}" target="_blank" class="btn btn-sm btn-ghost" style="color:var(--success);">💬 WhatsApp</a>`:''}
+    ${s.phone && s.amount_due > 0 ? `<button class="btn btn-sm btn-ghost" style="background:#25d366;color:#fff;border:none;" onclick="sendWaReminder('${s.id}','${escapeHtml(s.name).replace(/'/g,"\\'")}','${s.phone}',${s.amount_due},'${s.due_date||''}')">📲 Fee Reminder</button>` : ''}
     <button class="btn btn-sm btn-ghost" style="color:var(--danger);" onclick="deleteStudent('${s.id}','${escapeHtml(s.name).replace(/'/g,"\\'")}')">🗑 Remove</button>
   </div>`;
 }
@@ -2444,6 +2445,33 @@ function convertLead(id, lead) {
 /* ══════════════════════════════════════════════════════════════════
    AISENSY WHATSAPP SYNC
 ══════════════════════════════════════════════════════════════════ */
+async function sendWaReminder(id, name, phone, amount, due_date) {
+  // Pick template based on due date
+  let template = 'fee_reminder_advance';
+  let dueFmt = '—';
+  if (due_date) {
+    const due = new Date(due_date); due.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff = Math.round((due - today) / 86400000);
+    dueFmt = due.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    if (diff === 1) template = 'fee_reminder_tomorrow';
+    else if (diff < 0) template = 'fee_overdue';
+  } else {
+    dueFmt = 'soon';
+  }
+
+  const label = { fee_reminder_advance: '3-day advance notice', fee_reminder_tomorrow: 'due tomorrow', fee_overdue: 'overdue' }[template];
+  if (!confirm(`Send "${label}" WhatsApp reminder to ${name}?\n\nAmount: ₹${amount}\nDue: ${dueFmt}`)) return;
+
+  try {
+    const res = await apiCall({ action: 'crm_aisensy_send', phone, name, amount, due_date, template });
+    if (res.wa_status === 200) toast(`Reminder sent to ${name} on WhatsApp!`);
+    else toast(`Sent (AiSensy: ${res.wa_response||'check AiSensy'})`, 'error');
+  } catch(e) {
+    toast('Failed to send: ' + e.message, 'error');
+  }
+}
+
 async function syncAllAiSensy() {
   const btn = document.getElementById('sync-wa-btn');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Syncing...'; }
