@@ -1492,10 +1492,11 @@ function renderDashboard(data) {
     }
   </div>
 
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
     <button class="btn btn-primary" onclick="openAddStudent()">+ Add Student</button>
     <button class="btn btn-ghost" onclick="navigate('students')">View All Students →</button>
     <button class="btn btn-ghost" onclick="navigate('schedule')">Today's Schedule →</button>
+    <button class="btn btn-ghost" id="sync-wa-btn" onclick="syncAllAiSensy()" style="background:#25d366;color:#fff;border:none;">📲 Sync All to WhatsApp</button>
   </div>`;
 }
 
@@ -2438,6 +2439,22 @@ function convertLead(id, lead) {
       } catch(e) { toast('Conversion failed.','error'); }
     }
   );
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   AISENSY WHATSAPP SYNC
+══════════════════════════════════════════════════════════════════ */
+async function syncAllAiSensy() {
+  const btn = document.getElementById('sync-wa-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Syncing...'; }
+  try {
+    const res = await apiCall({ action: 'crm_aisensy_sync' });
+    toast(`Synced ${res.synced || 0} contacts to WhatsApp!`);
+  } catch(e) {
+    toast('WhatsApp sync failed: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📲 Sync All to WhatsApp'; }
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════
