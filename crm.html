@@ -1017,7 +1017,21 @@ CREATE TABLE IF NOT EXISTS crm_notes (
       <div class="qe-row">
         <div class="qe-group">
           <label>Phone *</label>
-          <input type="tel" id="qe-phone" placeholder="+91 99999 99999">
+          <div style="display:flex;gap:6px;">
+            <select id="qe-country" style="flex:0 0 auto;width:110px;padding:10px 6px;font-size:0.82rem;">
+              <option value="91">🇮🇳 +91</option>
+              <option value="1">🇺🇸 +1</option>
+              <option value="1-ca">🇨🇦 +1</option>
+              <option value="44">🇬🇧 +44</option>
+              <option value="61">🇦🇺 +61</option>
+              <option value="971">🇦🇪 +971</option>
+              <option value="65">🇸🇬 +65</option>
+              <option value="60">🇲🇾 +60</option>
+              <option value="49">🇩🇪 +49</option>
+              <option value="other">🌍 Other</option>
+            </select>
+            <input type="tel" id="qe-phone" placeholder="Phone number" style="flex:1;">
+          </div>
         </div>
         <div class="qe-group">
           <label>Date of Joining</label>
@@ -2708,6 +2722,7 @@ function openQuickEnroll() {
   document.getElementById('qe-joining').value = today;
   document.getElementById('qe-name').value = '';
   document.getElementById('qe-phone').value = '';
+  document.getElementById('qe-country').value = '91';
   document.getElementById('qe-reg-fee').checked = true;
   qeMode = 'offline';
   document.getElementById('qe-mode-online').classList.remove('selected');
@@ -2778,7 +2793,9 @@ document.getElementById('qe-amount').addEventListener('input', updateQETotalPrev
 
 async function submitQuickEnroll() {
   const name = document.getElementById('qe-name').value.trim();
-  const phone = document.getElementById('qe-phone').value.trim();
+  const rawPhone = document.getElementById('qe-phone').value.trim().replace(/^0+/, '').replace(/\D/g, '');
+  const countryCode = document.getElementById('qe-country').value.replace('-ca', '');
+  const phone = rawPhone ? '+' + countryCode + rawPhone : '';
   const joiningVal = document.getElementById('qe-joining').value;
   const instrument = document.getElementById('qe-instrument').value;
   const finalAmount = parseInt(document.getElementById('qe-amount').value) || 0;
