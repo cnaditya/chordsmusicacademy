@@ -1040,14 +1040,27 @@ CREATE TABLE IF NOT EXISTS crm_notes (
         <div class="qe-group">
           <label>Mode</label>
           <div class="qe-mode-row">
-            <button class="qe-mode-btn selected" id="qe-mode-online" onclick="selectQEMode('online')">🌐 Online</button>
-            <button class="qe-mode-btn" id="qe-mode-offline" onclick="selectQEMode('offline')">🏫 Offline</button>
+            <button class="qe-mode-btn" id="qe-mode-online" onclick="selectQEMode('online')">🌐 Online</button>
+            <button class="qe-mode-btn selected" id="qe-mode-offline" onclick="selectQEMode('offline')">🏫 Offline Group</button>
           </div>
         </div>
       </div>
       <div class="qe-group">
         <label>Fees Package</label>
         <div class="qe-package-cards" id="qe-packages"></div>
+      </div>
+      <div class="qe-row">
+        <div class="qe-group">
+          <label>Registration Fee</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);">
+            <input type="checkbox" id="qe-reg-fee" checked style="width:16px;height:16px;accent-color:var(--gold);">
+            <span style="font-size:0.88rem;">Charge ₹500 registration</span>
+          </label>
+        </div>
+        <div class="qe-group">
+          <label>Final Amount (editable) <span style="color:var(--gold);font-weight:700;" id="qe-amount-preview">—</span></label>
+          <input type="number" id="qe-amount" placeholder="Total amount" min="0" style="font-size:1rem;font-weight:700;">
+        </div>
       </div>
       <div class="qe-due-preview" id="qe-due-preview">
         <span class="due-label">Next Due Date</span>
@@ -2672,15 +2685,22 @@ document.addEventListener('keydown', e => {
 /* ══════════════════════════════════════════════════════════════════
    QUICK ENROLL
 ══════════════════════════════════════════════════════════════════ */
-const QE_PACKAGES = [
-  { id: 'monthly_5000',  label: 'Monthly',   amount: 5000,  months: 1,  type: 'monthly',   sub: '₹5,000' },
-  { id: 'monthly_6000',  label: 'Monthly',   amount: 6000,  months: 1,  type: 'monthly',   sub: '₹6,000' },
-  { id: 'quarterly',     label: '3 Months',  amount: 13500, months: 3,  type: 'quarterly', sub: '₹13,500' },
-  { id: 'biannual',      label: '6 Months',  amount: 25500, months: 6,  type: 'biannual',  sub: '₹25,500' },
-  { id: 'annual',        label: '1 Year',    amount: 48000, months: 12, type: 'annual',    sub: '₹48,000' },
-];
-let qeSelectedPkg = QE_PACKAGES[0];
-let qeMode = 'online';
+const QE_PACKAGES = {
+  offline: [
+    { id: 'og_3m', label: '3 Months', amount: 8397,  months: 3,  type: 'quarterly', sub: '₹2,799/mo · Total ₹8,397',  badge: 'Starter' },
+    { id: 'og_6m', label: '6 Months', amount: 13194, months: 6,  type: 'biannual',  sub: '₹2,199/mo · Total ₹13,194', badge: '★ Popular' },
+    { id: 'og_1y', label: '1 Year',   amount: 21588, months: 12, type: 'annual',    sub: '₹1,799/mo · Total ₹21,588', badge: 'Best Value' },
+  ],
+  online: [
+    { id: 'on_m1', label: 'Monthly',  amount: 5000,  months: 1,  type: 'monthly',   sub: '₹5,000/mo' },
+    { id: 'on_m2', label: 'Monthly',  amount: 6000,  months: 1,  type: 'monthly',   sub: '₹6,000/mo' },
+    { id: 'on_3m', label: '3 Months', amount: 13500, months: 3,  type: 'quarterly', sub: '₹4,500/mo · Total ₹13,500' },
+    { id: 'on_6m', label: '6 Months', amount: 25500, months: 6,  type: 'biannual',  sub: '₹4,250/mo · Total ₹25,500' },
+    { id: 'on_1y', label: '1 Year',   amount: 48000, months: 12, type: 'annual',    sub: '₹4,000/mo · Total ₹48,000' },
+  ],
+};
+let qeSelectedPkg = QE_PACKAGES.offline[1];
+let qeMode = 'offline';
 
 function openQuickEnroll() {
   document.getElementById('qe-overlay').style.display = 'flex';
@@ -2688,11 +2708,13 @@ function openQuickEnroll() {
   document.getElementById('qe-joining').value = today;
   document.getElementById('qe-name').value = '';
   document.getElementById('qe-phone').value = '';
-  qeMode = 'online';
-  document.getElementById('qe-mode-online').classList.add('selected');
-  document.getElementById('qe-mode-offline').classList.remove('selected');
-  qeSelectedPkg = QE_PACKAGES[0];
+  document.getElementById('qe-reg-fee').checked = true;
+  qeMode = 'offline';
+  document.getElementById('qe-mode-online').classList.remove('selected');
+  document.getElementById('qe-mode-offline').classList.add('selected');
+  qeSelectedPkg = QE_PACKAGES.offline[1];
   renderQEPackages();
+  updateQEAmount();
   updateQEDueDate();
   setTimeout(() => document.getElementById('qe-name').focus(), 100);
 }
@@ -2705,11 +2727,17 @@ function selectQEMode(mode) {
   qeMode = mode;
   document.getElementById('qe-mode-online').classList.toggle('selected', mode === 'online');
   document.getElementById('qe-mode-offline').classList.toggle('selected', mode === 'offline');
+  qeSelectedPkg = QE_PACKAGES[mode][0];
+  renderQEPackages();
+  updateQEAmount();
+  updateQEDueDate();
 }
 
 function renderQEPackages() {
-  document.getElementById('qe-packages').innerHTML = QE_PACKAGES.map(p => `
+  const pkgs = QE_PACKAGES[qeMode];
+  document.getElementById('qe-packages').innerHTML = pkgs.map(p => `
     <div class="qe-pkg${p.id === qeSelectedPkg.id ? ' selected' : ''}" onclick="selectQEPackage('${p.id}')">
+      ${p.badge ? `<div style="font-size:0.6rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">${p.badge}</div>` : ''}
       <div class="pkg-label">${p.label}</div>
       <div class="pkg-sub">${p.sub}</div>
     </div>
@@ -2717,9 +2745,23 @@ function renderQEPackages() {
 }
 
 function selectQEPackage(id) {
-  qeSelectedPkg = QE_PACKAGES.find(p => p.id === id);
+  qeSelectedPkg = [...QE_PACKAGES.offline, ...QE_PACKAGES.online].find(p => p.id === id);
   renderQEPackages();
+  updateQEAmount();
   updateQEDueDate();
+}
+
+function updateQEAmount() {
+  const regChecked = document.getElementById('qe-reg-fee').checked;
+  const base = qeSelectedPkg.amount;
+  const total = regChecked ? base + 500 : base;
+  document.getElementById('qe-amount').value = total;
+  updateQETotalPreview();
+}
+
+function updateQETotalPreview() {
+  const val = parseInt(document.getElementById('qe-amount').value) || 0;
+  document.getElementById('qe-amount-preview').textContent = '₹' + val.toLocaleString('en-IN');
 }
 
 function updateQEDueDate() {
@@ -2731,16 +2773,21 @@ function updateQEDueDate() {
 }
 
 document.getElementById('qe-joining').addEventListener('change', updateQEDueDate);
+document.getElementById('qe-reg-fee').addEventListener('change', updateQEAmount);
+document.getElementById('qe-amount').addEventListener('input', updateQETotalPreview);
 
 async function submitQuickEnroll() {
   const name = document.getElementById('qe-name').value.trim();
   const phone = document.getElementById('qe-phone').value.trim();
   const joiningVal = document.getElementById('qe-joining').value;
   const instrument = document.getElementById('qe-instrument').value;
+  const finalAmount = parseInt(document.getElementById('qe-amount').value) || 0;
+  const regWaived = !document.getElementById('qe-reg-fee').checked;
 
   if (!name) { toast('Enter student name', 'error'); document.getElementById('qe-name').focus(); return; }
   if (!phone) { toast('Enter phone number', 'error'); document.getElementById('qe-phone').focus(); return; }
   if (!joiningVal) { toast('Select joining date', 'error'); return; }
+  if (finalAmount <= 0) { toast('Enter a valid fees amount', 'error'); return; }
 
   const dueDate = new Date(joiningVal + 'T12:00:00');
   dueDate.setMonth(dueDate.getMonth() + qeSelectedPkg.months);
@@ -2749,6 +2796,10 @@ async function submitQuickEnroll() {
   const btn = document.getElementById('qe-submit-btn');
   btn.disabled = true;
   btn.textContent = 'Saving…';
+
+  const notesArr = [];
+  if (regWaived) notesArr.push('Registration fee waived');
+  if (finalAmount !== qeSelectedPkg.amount && finalAmount !== qeSelectedPkg.amount + 500) notesArr.push(`Custom fee: ₹${finalAmount.toLocaleString('en-IN')} (negotiated)`);
 
   try {
     const res = await apiCall({
@@ -2759,14 +2810,15 @@ async function submitQuickEnroll() {
         status: 'active',
         enrollment_date: joiningVal,
         payment_type: qeSelectedPkg.type,
-        amount_due: qeSelectedPkg.amount,
+        amount_due: finalAmount,
         due_date: dueDateStr,
         level: 'beginner',
         is_active: true,
+        notes: notesArr.length ? notesArr.join(' | ') : null,
       }
     });
     const sid = res.student ? res.student.student_id : '';
-    toast(`✅ ${name} enrolled! ${sid ? '(' + sid + ')' : ''} · Due: ${dueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`);
+    toast(`✅ ${name} enrolled! ${sid} · ₹${finalAmount.toLocaleString('en-IN')} · Due: ${dueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`);
     closeQuickEnroll();
     if (currentPage === 'students') loadStudents();
     else loadDashboard();
