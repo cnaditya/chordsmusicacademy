@@ -2659,6 +2659,7 @@ async function syncAllAiSensy() {
 ══════════════════════════════════════════════════════════════════ */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
+    if (document.getElementById('qe-overlay').style.display !== 'none') { closeQuickEnroll(); return; }
     if (document.getElementById('form-overlay').style.display !== 'none') { closeForm(); return; }
     if (document.getElementById('confirm-modal').style.display !== 'none') { closeConfirm(); return; }
     if (document.getElementById('detail-panel').classList.contains('open')) { closePanel(); return; }
@@ -2667,6 +2668,115 @@ document.addEventListener('keydown', e => {
     }
   }
 });
+
+/* ══════════════════════════════════════════════════════════════════
+   QUICK ENROLL
+══════════════════════════════════════════════════════════════════ */
+const QE_PACKAGES = [
+  { id: 'monthly_5000',  label: 'Monthly',   amount: 5000,  months: 1,  type: 'monthly',   sub: '₹5,000' },
+  { id: 'monthly_6000',  label: 'Monthly',   amount: 6000,  months: 1,  type: 'monthly',   sub: '₹6,000' },
+  { id: 'quarterly',     label: '3 Months',  amount: 13500, months: 3,  type: 'quarterly', sub: '₹13,500' },
+  { id: 'biannual',      label: '6 Months',  amount: 25500, months: 6,  type: 'biannual',  sub: '₹25,500' },
+  { id: 'annual',        label: '1 Year',    amount: 48000, months: 12, type: 'annual',    sub: '₹48,000' },
+];
+let qeSelectedPkg = QE_PACKAGES[0];
+let qeMode = 'online';
+
+function openQuickEnroll() {
+  document.getElementById('qe-overlay').style.display = 'flex';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('qe-joining').value = today;
+  document.getElementById('qe-name').value = '';
+  document.getElementById('qe-phone').value = '';
+  qeMode = 'online';
+  document.getElementById('qe-mode-online').classList.add('selected');
+  document.getElementById('qe-mode-offline').classList.remove('selected');
+  qeSelectedPkg = QE_PACKAGES[0];
+  renderQEPackages();
+  updateQEDueDate();
+  setTimeout(() => document.getElementById('qe-name').focus(), 100);
+}
+
+function closeQuickEnroll() {
+  document.getElementById('qe-overlay').style.display = 'none';
+}
+
+function selectQEMode(mode) {
+  qeMode = mode;
+  document.getElementById('qe-mode-online').classList.toggle('selected', mode === 'online');
+  document.getElementById('qe-mode-offline').classList.toggle('selected', mode === 'offline');
+}
+
+function renderQEPackages() {
+  document.getElementById('qe-packages').innerHTML = QE_PACKAGES.map(p => `
+    <div class="qe-pkg${p.id === qeSelectedPkg.id ? ' selected' : ''}" onclick="selectQEPackage('${p.id}')">
+      <div class="pkg-label">${p.label}</div>
+      <div class="pkg-sub">${p.sub}</div>
+    </div>
+  `).join('');
+}
+
+function selectQEPackage(id) {
+  qeSelectedPkg = QE_PACKAGES.find(p => p.id === id);
+  renderQEPackages();
+  updateQEDueDate();
+}
+
+function updateQEDueDate() {
+  const joiningVal = document.getElementById('qe-joining').value;
+  if (!joiningVal || !qeSelectedPkg) { document.getElementById('qe-due-val').textContent = '—'; return; }
+  const d = new Date(joiningVal + 'T12:00:00');
+  d.setMonth(d.getMonth() + qeSelectedPkg.months);
+  document.getElementById('qe-due-val').textContent = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+document.getElementById('qe-joining').addEventListener('change', updateQEDueDate);
+
+async function submitQuickEnroll() {
+  const name = document.getElementById('qe-name').value.trim();
+  const phone = document.getElementById('qe-phone').value.trim();
+  const joiningVal = document.getElementById('qe-joining').value;
+  const instrument = document.getElementById('qe-instrument').value;
+
+  if (!name) { toast('Enter student name', 'error'); document.getElementById('qe-name').focus(); return; }
+  if (!phone) { toast('Enter phone number', 'error'); document.getElementById('qe-phone').focus(); return; }
+  if (!joiningVal) { toast('Select joining date', 'error'); return; }
+
+  const dueDate = new Date(joiningVal + 'T12:00:00');
+  dueDate.setMonth(dueDate.getMonth() + qeSelectedPkg.months);
+  const dueDateStr = dueDate.toISOString().split('T')[0];
+
+  const btn = document.getElementById('qe-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    const res = await apiCall({
+      action: 'crm_add',
+      student: {
+        name, phone, instrument,
+        mode: qeMode,
+        status: 'active',
+        enrollment_date: joiningVal,
+        payment_type: qeSelectedPkg.type,
+        amount_due: qeSelectedPkg.amount,
+        due_date: dueDateStr,
+        level: 'beginner',
+        is_active: true,
+      }
+    });
+    const sid = res.student ? res.student.student_id : '';
+    toast(`✅ ${name} enrolled! ${sid ? '(' + sid + ')' : ''} · Due: ${dueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`);
+    closeQuickEnroll();
+    if (currentPage === 'students') loadStudents();
+    else loadDashboard();
+  } catch(e) {
+    toast('Enroll failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enroll Student →';
+  }
+}
 </script>
 
 <!-- Firebase SDK for importing old registrations -->
@@ -2734,120 +2844,6 @@ window.importFromFirebase = async function() {
     btn.disabled = false;
   }
 };
-
-/* ══════════════════════════════════════════════════════════════════
-   QUICK ENROLL
-══════════════════════════════════════════════════════════════════ */
-const QE_PACKAGES = [
-  { id: 'monthly_5000',  label: 'Monthly',   amount: 5000,  months: 1,  type: 'monthly',   sub: '₹5,000' },
-  { id: 'monthly_6000',  label: 'Monthly',   amount: 6000,  months: 1,  type: 'monthly',   sub: '₹6,000' },
-  { id: 'quarterly',     label: '3 Months',  amount: 13500, months: 3,  type: 'quarterly', sub: '₹13,500' },
-  { id: 'biannual',      label: '6 Months',  amount: 25500, months: 6,  type: 'biannual',  sub: '₹25,500' },
-  { id: 'annual',        label: '1 Year',    amount: 48000, months: 12, type: 'annual',    sub: '₹48,000' },
-];
-let qeSelectedPkg = QE_PACKAGES[0];
-let qeMode = 'online';
-
-function openQuickEnroll() {
-  const overlay = document.getElementById('qe-overlay');
-  overlay.style.display = 'flex';
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('qe-joining').value = today;
-  document.getElementById('qe-name').value = '';
-  document.getElementById('qe-phone').value = '';
-  qeMode = 'online';
-  document.getElementById('qe-mode-online').classList.add('selected');
-  document.getElementById('qe-mode-offline').classList.remove('selected');
-  renderQEPackages();
-  updateQEDueDate();
-  setTimeout(() => document.getElementById('qe-name').focus(), 100);
-}
-
-function closeQuickEnroll() {
-  document.getElementById('qe-overlay').style.display = 'none';
-}
-
-function selectQEMode(mode) {
-  qeMode = mode;
-  document.getElementById('qe-mode-online').classList.toggle('selected', mode === 'online');
-  document.getElementById('qe-mode-offline').classList.toggle('selected', mode === 'offline');
-}
-
-function renderQEPackages() {
-  const container = document.getElementById('qe-packages');
-  container.innerHTML = QE_PACKAGES.map(p => `
-    <div class="qe-pkg${p.id === qeSelectedPkg.id ? ' selected' : ''}" onclick="selectQEPackage('${p.id}')">
-      <div class="pkg-label">${p.label}</div>
-      <div class="pkg-sub">${p.sub}</div>
-    </div>
-  `).join('');
-}
-
-function selectQEPackage(id) {
-  qeSelectedPkg = QE_PACKAGES.find(p => p.id === id);
-  renderQEPackages();
-  updateQEDueDate();
-}
-
-function updateQEDueDate() {
-  const joiningVal = document.getElementById('qe-joining').value;
-  if (!joiningVal || !qeSelectedPkg) { document.getElementById('qe-due-val').textContent = '—'; return; }
-  const d = new Date(joiningVal + 'T12:00:00');
-  d.setMonth(d.getMonth() + qeSelectedPkg.months);
-  const dueStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-  document.getElementById('qe-due-val').textContent = dueStr;
-}
-
-document.getElementById('qe-joining').addEventListener('change', updateQEDueDate);
-
-async function submitQuickEnroll() {
-  const name = document.getElementById('qe-name').value.trim();
-  const phone = document.getElementById('qe-phone').value.trim();
-  const joiningVal = document.getElementById('qe-joining').value;
-  const instrument = document.getElementById('qe-instrument').value;
-
-  if (!name) { toast('Enter student name', 'error'); document.getElementById('qe-name').focus(); return; }
-  if (!phone) { toast('Enter phone number', 'error'); document.getElementById('qe-phone').focus(); return; }
-  if (!joiningVal) { toast('Select joining date', 'error'); return; }
-
-  const dueDate = new Date(joiningVal + 'T12:00:00');
-  dueDate.setMonth(dueDate.getMonth() + qeSelectedPkg.months);
-  const dueDateStr = dueDate.toISOString().split('T')[0];
-
-  const btn = document.getElementById('qe-submit-btn');
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
-
-  try {
-    const res = await apiCall({
-      action: 'crm_add',
-      student: {
-        name,
-        phone,
-        instrument,
-        mode: qeMode,
-        status: 'active',
-        enrollment_date: joiningVal,
-        payment_type: qeSelectedPkg.type,
-        amount_due: qeSelectedPkg.amount,
-        due_date: dueDateStr,
-        level: 'beginner',
-        is_active: true,
-      }
-    });
-
-    const sid = res.student ? res.student.student_id : '';
-    toast(`✅ ${name} enrolled! ${sid ? '(' + sid + ')' : ''} · Due: ${dueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`);
-    closeQuickEnroll();
-    if (currentPage === 'students') loadStudents();
-    else if (currentPage === 'dashboard') loadDashboard();
-  } catch(e) {
-    toast('Enroll failed: ' + e.message, 'error');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Enroll Student →';
-  }
-}
 </script>
 </body>
 </html>
