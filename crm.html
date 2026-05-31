@@ -3033,33 +3033,51 @@ function closeReceiptModal() {
   rcptSelectedStudent = null;
 }
 
+function resizeImageToBase64(file, maxPx, quality) {
+  // Resizes image client-side (phone photos can be 5MB+, Netlify limit is ~6MB base64)
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxPx || height > maxPx) {
+        if (width >= height) { height = Math.round(height * maxPx / width); width = maxPx; }
+        else { width = Math.round(width * maxPx / height); height = maxPx; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      resolve(dataUrl.split(',')[1]);
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
 async function handleReceiptUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
 
   openReceiptModal();
 
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const dataUrl = e.target.result;
-    const base64 = dataUrl.split(',')[1];
-    const mimeType = file.type || 'image/jpeg';
+  try {
+    // Resize to max 1400px, JPEG 0.80 — keeps it well under Netlify's body limit
+    const base64 = await resizeImageToBase64(file, 1400, 0.80);
 
-    try {
-      const res = await fetch('/.netlify/functions/receipt-scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
-        body: JSON.stringify({ image: base64, mimeType }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Scan failed');
-      showReceiptResult(data.data);
-    } catch (err) {
-      closeReceiptModal();
-      toast('Receipt scan failed: ' + err.message, 'error');
-    }
-  };
-  reader.readAsDataURL(file);
+    const res = await fetch('/.netlify/functions/receipt-scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
+      body: JSON.stringify({ image: base64, mimeType: 'image/jpeg' }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Scan failed');
+    showReceiptResult(data.data);
+  } catch (err) {
+    closeReceiptModal();
+    toast('Receipt scan failed: ' + err.message, 'error');
+  }
 }
 
 function showReceiptResult(d) {
