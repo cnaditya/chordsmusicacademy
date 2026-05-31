@@ -1062,9 +1062,9 @@ CREATE TABLE IF NOT EXISTS crm_notes (
           <input type="number" id="qe-amount" placeholder="Total amount" min="0" style="font-size:1rem;font-weight:700;">
         </div>
       </div>
-      <div class="qe-due-preview" id="qe-due-preview">
-        <span class="due-label">Next Due Date</span>
-        <span class="due-val" id="qe-due-val">—</span>
+      <div class="qe-group">
+        <label>Next Due Date <span style="color:var(--muted);font-size:0.7rem;font-weight:400;">(auto-calculated, editable)</span></label>
+        <input type="date" id="qe-due-val" style="font-size:0.95rem;font-weight:600;color:var(--gold);">
       </div>
     </div>
     <div class="qe-footer">
@@ -2766,10 +2766,10 @@ function updateQETotalPreview() {
 
 function updateQEDueDate() {
   const joiningVal = document.getElementById('qe-joining').value;
-  if (!joiningVal || !qeSelectedPkg) { document.getElementById('qe-due-val').textContent = '—'; return; }
+  if (!joiningVal || !qeSelectedPkg) { document.getElementById('qe-due-val').value = ''; return; }
   const d = new Date(joiningVal + 'T12:00:00');
   d.setMonth(d.getMonth() + qeSelectedPkg.months);
-  document.getElementById('qe-due-val').textContent = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('qe-due-val').value = d.toISOString().split('T')[0];
 }
 
 document.getElementById('qe-joining').addEventListener('change', updateQEDueDate);
@@ -2789,9 +2789,8 @@ async function submitQuickEnroll() {
   if (!joiningVal) { toast('Select joining date', 'error'); return; }
   if (finalAmount <= 0) { toast('Enter a valid fees amount', 'error'); return; }
 
-  const dueDate = new Date(joiningVal + 'T12:00:00');
-  dueDate.setMonth(dueDate.getMonth() + qeSelectedPkg.months);
-  const dueDateStr = dueDate.toISOString().split('T')[0];
+  const dueDateStr = document.getElementById('qe-due-val').value;
+  const dueDate = dueDateStr ? new Date(dueDateStr + 'T12:00:00') : null;
 
   const btn = document.getElementById('qe-submit-btn');
   btn.disabled = true;
@@ -2818,7 +2817,7 @@ async function submitQuickEnroll() {
       }
     });
     const sid = res.student ? res.student.student_id : '';
-    toast(`✅ ${name} enrolled! ${sid} · ₹${finalAmount.toLocaleString('en-IN')} · Due: ${dueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`);
+    toast(`✅ ${name} enrolled! ${sid} · ₹${finalAmount.toLocaleString('en-IN')}${dueDate ? ' · Due: ' + dueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}`);
     closeQuickEnroll();
     if (currentPage === 'students') loadStudents();
     else loadDashboard();
