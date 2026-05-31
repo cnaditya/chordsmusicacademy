@@ -1044,7 +1044,7 @@ CREATE TABLE IF NOT EXISTS crm_notes (
         <span class="search-icon">🔍</span>
         <input type="text" id="global-search" placeholder="Search students…" oninput="globalSearch(this.value)">
       </div>
-      <input type="file" id="rcpt-file-input" accept="image/*" capture="environment" style="display:none" onchange="handleReceiptUpload(event)">
+      <input type="file" id="rcpt-file-input" accept="image/*" multiple style="display:none" onchange="handleReceiptUpload(event)">
       <button class="btn-add" onclick="document.getElementById('rcpt-file-input').click()" style="background:#1a3a2a;border:1px solid #2a5a3a;margin-right:6px;" title="Scan a receipt to record payment or enroll student">📷 Scan Bill</button>
       <button class="btn-add" onclick="openQuickEnroll()" style="background:#c9a227;margin-right:6px;">⚡ Quick Enroll</button>
       <button class="btn-add" onclick="openAddStudent()">+ Add Student</button>
@@ -1179,7 +1179,7 @@ CREATE TABLE IF NOT EXISTS crm_notes (
     <div id="rcpt-result" style="display:none;">
       <div class="rcpt-header">
         <div>
-          <h2>📄 Receipt Scanned</h2>
+          <h2>📄 Receipt Scanned <span id="rcpt-progress" style="font-size:0.78rem;color:var(--muted);font-weight:400;"></span></h2>
           <span id="rcpt-receipt-label">Review and confirm the details below</span>
         </div>
         <button class="panel-close" onclick="closeReceiptModal()" style="font-size:1.1rem;">✕</button>
@@ -1248,7 +1248,8 @@ CREATE TABLE IF NOT EXISTS crm_notes (
         </div>
       </div>
       <div class="rcpt-footer">
-        <button class="btn btn-ghost" onclick="closeReceiptModal()">Cancel</button>
+        <button class="btn btn-ghost" id="rcpt-cancel-btn" onclick="closeReceiptModal()">✕ Done</button>
+        <button class="btn btn-ghost" id="rcpt-skip-btn" onclick="rcptSkipToNext()" style="display:none;">Skip →</button>
         <button class="btn btn-ghost" onclick="receiptQuickEnroll()" style="border-color:var(--gold);color:var(--gold);" title="Open Quick Enroll pre-filled with receipt data">+ Enroll as New</button>
         <button class="btn btn-primary" id="rcpt-update-btn" onclick="submitReceiptUpdate()" disabled style="opacity:0.4;cursor:not-allowed;">✓ Update Student</button>
       </div>
@@ -2905,6 +2906,7 @@ function openQuickEnroll() {
 
 function closeQuickEnroll() {
   document.getElementById('qe-overlay').style.display = 'none';
+  if (typeof window._qeCloseHook === 'function') { const h = window._qeCloseHook; window._qeCloseHook = null; h(); }
 }
 
 function selectQEMode(mode) {
@@ -3018,7 +3020,9 @@ async function submitQuickEnroll() {
 /* ══════════════════════════════════════════════════════════════════
    RECEIPT SCAN
 ══════════════════════════════════════════════════════════════════ */
-let rcptSelectedStudent = null; // { id, name, student_id }
+let rcptSelectedStudent = null;
+let rcptQueue = [];   // array of File objects
+let rcptQueueIdx = 0; // current position in queue
 
 function openReceiptModal() {
   rcptSelectedStudent = null;
@@ -3031,6 +3035,30 @@ function closeReceiptModal() {
   document.getElementById('rcpt-overlay').style.display = 'none';
   document.getElementById('rcpt-file-input').value = '';
   rcptSelectedStudent = null;
+  rcptQueue = [];
+  rcptQueueIdx = 0;
+}
+
+function updateRcptProgress() {
+  const total = rcptQueue.length;
+  const prog = document.getElementById('rcpt-progress');
+  const skip = document.getElementById('rcpt-skip-btn');
+  const cancel = document.getElementById('rcpt-cancel-btn');
+  if (total > 1) {
+    prog.textContent = `(${rcptQueueIdx + 1} of ${total})`;
+    skip.style.display = 'inline-flex';
+    cancel.textContent = '✕ Cancel all';
+  } else {
+    prog.textContent = '';
+    skip.style.display = 'none';
+    cancel.textContent = '✕ Done';
+  }
+}
+
+async function rcptSkipToNext() {
+  rcptQueueIdx++;
+  if (rcptQueueIdx >= rcptQueue.length) { closeReceiptModal(); return; }
+  await rcptScanFile(rcptQueue[rcptQueueIdx]);
 }
 
 function resizeImageToBase64(file, maxPx, quality) {
@@ -3057,15 +3085,27 @@ function resizeImageToBase64(file, maxPx, quality) {
 }
 
 async function handleReceiptUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
+  const files = Array.from(event.target.files);
+  if (!files.length) return;
+  rcptQueue = files;
+  rcptQueueIdx = 0;
   openReceiptModal();
+  await rcptScanFile(files[0]);
+}
+
+async function rcptScanFile(file) {
+  // Reset state for this bill
+  rcptSelectedStudent = null;
+  document.getElementById('rcpt-loading').style.display = 'flex';
+  document.getElementById('rcpt-result').style.display = 'none';
+  document.getElementById('rcpt-matches-wrap').style.display = 'none';
+  document.getElementById('rcpt-matches').innerHTML = '';
+  document.getElementById('rcpt-search-input').value = '';
+  const updateBtn = document.getElementById('rcpt-update-btn');
+  updateBtn.disabled = true; updateBtn.style.opacity = '0.4'; updateBtn.style.cursor = 'not-allowed'; updateBtn.textContent = '✓ Update Student';
 
   try {
-    // Resize to max 1400px, JPEG 0.80 — keeps it well under Netlify's body limit
     const base64 = await resizeImageToBase64(file, 1400, 0.80);
-
     const res = await fetch('/.netlify/functions/receipt-scan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
@@ -3074,9 +3114,12 @@ async function handleReceiptUpload(event) {
     const data = await res.json();
     if (!res.ok || !data.success) throw new Error(data.error || 'Scan failed');
     showReceiptResult(data.data);
+    updateRcptProgress();
   } catch (err) {
-    closeReceiptModal();
-    toast('Receipt scan failed: ' + err.message, 'error');
+    // On error, skip to next if queue has more; otherwise close
+    toast('Scan failed for bill ' + (rcptQueueIdx + 1) + ': ' + err.message, 'error');
+    if (rcptQueueIdx + 1 < rcptQueue.length) { rcptQueueIdx++; await rcptScanFile(rcptQueue[rcptQueueIdx]); }
+    else closeReceiptModal();
   }
 }
 
@@ -3211,9 +3254,12 @@ async function submitReceiptUpdate() {
       content: noteText,
     });
     toast(`✅ ${rcptSelectedStudent.name} updated — next due: ${newDueDate ? new Date(newDueDate + 'T12:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}`);
-    closeReceiptModal();
     if (currentPage === 'dashboard') loadDashboard();
     else if (currentPage === 'students') loadStudents();
+    // Advance to next bill or close
+    rcptQueueIdx++;
+    if (rcptQueueIdx < rcptQueue.length) { await rcptScanFile(rcptQueue[rcptQueueIdx]); }
+    else closeReceiptModal();
   } catch(err) {
     toast('Update failed: ' + err.message, 'error');
     btn.disabled = false;
@@ -3222,20 +3268,27 @@ async function submitReceiptUpdate() {
 }
 
 function receiptQuickEnroll() {
-  // Pre-fill Quick Enroll with receipt data and open it
   const name = document.getElementById('rcpt-name').value.trim();
   const instrument = document.getElementById('rcpt-instrument').value;
   const dateStr = document.getElementById('rcpt-date').value;
 
-  closeReceiptModal();
-  openQuickEnroll();
+  // If more bills remain, don't close the queue — just open QE overlay and come back
+  const hasMore = rcptQueueIdx + 1 < rcptQueue.length;
+  if (!hasMore) closeReceiptModal();
 
-  // Fill in what we know
+  openQuickEnroll();
   if (name) document.getElementById('qe-name').value = name;
   if (instrument) document.getElementById('qe-instrument').value = instrument;
-  if (dateStr) {
-    document.getElementById('qe-joining').value = dateStr;
-    updateQEDueDate();
+  if (dateStr) { document.getElementById('qe-joining').value = dateStr; updateQEDueDate(); }
+
+  // After QE closes (user enrolled), auto-advance to next bill if any
+  if (hasMore) {
+    const origClose = window._qeCloseHook;
+    window._qeCloseHook = async () => {
+      window._qeCloseHook = origClose;
+      rcptQueueIdx++;
+      if (rcptQueueIdx < rcptQueue.length) await rcptScanFile(rcptQueue[rcptQueueIdx]);
+    };
   }
 }
 </script>
