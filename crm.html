@@ -1047,6 +1047,7 @@ CREATE TABLE IF NOT EXISTS crm_notes (
       <input type="file" id="rcpt-file-input" accept="image/*" multiple style="display:none" onchange="handleReceiptUpload(event)">
       <button class="btn-add" onclick="document.getElementById('rcpt-file-input').click()" style="background:#1a3a2a;border:1px solid #2a5a3a;margin-right:6px;" title="Scan a receipt to record payment or enroll student">📷 Scan Bill</button>
       <button class="btn-add" onclick="openQuickEnroll()" style="background:#c9a227;margin-right:6px;">⚡ Quick Enroll</button>
+      <button class="btn-add" onclick="exportStudents()" style="background:#1a2a3a;border:1px solid #2a4a5a;margin-right:6px;" title="Download all students as Excel/CSV">⬇ Export</button>
       <button class="btn-add" onclick="openAddStudent()">+ Add Student</button>
     </header>
     <main class="page-content" id="page-content"></main>
@@ -3289,6 +3290,80 @@ function receiptQuickEnroll() {
       rcptQueueIdx++;
       if (rcptQueueIdx < rcptQueue.length) await rcptScanFile(rcptQueue[rcptQueueIdx]);
     };
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   EXPORT STUDENTS TO CSV
+══════════════════════════════════════════════════════════════════ */
+async function exportStudents() {
+  const btn = document.querySelector('button[onclick="exportStudents()"]');
+  const orig = btn.textContent;
+  btn.textContent = '⏳ Exporting…';
+  btn.disabled = true;
+
+  try {
+    // Fetch active + inactive students (two calls, no backend change needed)
+    const [activeRes, inactiveRes] = await Promise.all([
+      apiCall({ action: 'crm_list', is_active: true }),
+      apiCall({ action: 'crm_list', is_active: false }),
+    ]);
+    const all = [
+      ...(activeRes.students || []),
+      ...(inactiveRes.students || []),
+    ].sort((a, b) => (a.student_id || '').localeCompare(b.student_id || ''));
+
+    if (!all.length) { toast('No students found to export', 'error'); return; }
+
+    const COLS = [
+      ['student_id',      'Student ID'],
+      ['name',            'Name'],
+      ['phone',           'Phone'],
+      ['email',           'Email'],
+      ['instrument',      'Instrument'],
+      ['mode',            'Mode'],
+      ['status',          'Status'],
+      ['level',           'Level'],
+      ['teacher',         'Teacher'],
+      ['enrollment_date', 'Joining Date'],
+      ['due_date',        'Due Date'],
+      ['amount_due',      'Amount Due (₹)'],
+      ['payment_type',    'Payment Type'],
+      ['class_days',      'Class Days'],
+      ['class_time',      'Class Time'],
+      ['is_active',       'Active'],
+      ['notes',           'Notes'],
+    ];
+
+    const csvEscape = v => {
+      const s = v == null ? '' : String(v);
+      return s.includes(',') || s.includes('"') || s.includes('\n')
+        ? '"' + s.replace(/"/g, '""') + '"'
+        : s;
+    };
+
+    const header = COLS.map(([, label]) => label).join(',');
+    const rows = all.map(s =>
+      COLS.map(([key]) => csvEscape(s[key])).join(',')
+    );
+    const csv = [header, ...rows].join('\r\n');
+
+    // Trigger download
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' }); // BOM for Excel
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const today = new Date().toISOString().split('T')[0];
+    a.href = url;
+    a.download = `CMA-Students-${today}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    toast(`✅ Exported ${all.length} students`);
+  } catch(err) {
+    toast('Export failed: ' + err.message, 'error');
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
   }
 }
 </script>
