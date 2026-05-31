@@ -272,7 +272,7 @@ exports.handler = async (event) => {
     const SB_M = { ...SB_H, "Content-Type": "application/json", Prefer: "return=representation" };
 
     if (action === "crm_dashboard") {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&select=id,status,mode,instrument,amount_due,enrollment_date,name,student_id,teacher,class_days,class_time,level`, { headers: SB_H });
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&select=id,status,mode,instrument,amount_due,due_date,enrollment_date,name,student_id,teacher,class_days,class_time,level,phone`, { headers: SB_H });
       const all = await r.json();
       if (!Array.isArray(all)) {
         if (r.status === 404 || (all && all.code === "42P01")) return { statusCode: 404, headers, body: JSON.stringify({ error: "table_not_found" }) };
@@ -284,7 +284,13 @@ exports.handler = async (event) => {
       all.forEach(s => { if (s.instrument) instruments[s.instrument] = (instruments[s.instrument]||0)+1; });
       const days = ["sun","mon","tue","wed","thu","fri","sat"];
       const todayStudents = all.filter(s => s.class_days && s.class_days.toLowerCase().includes(days[new Date().getDay()]));
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, stats, instruments, recent, todayStudents }) };
+      // Dues: overdue or due within 7 days, with a due_date and amount_due set
+      const today = new Date(); today.setHours(0,0,0,0);
+      const dueStudents = all.filter(s => s.due_date && s.amount_due > 0).map(s => {
+        const d = new Date(s.due_date); d.setHours(0,0,0,0);
+        return { ...s, days_diff: Math.round((d - today) / 86400000) };
+      }).filter(s => s.days_diff <= 7).sort((a,b) => a.days_diff - b.days_diff);
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, stats, instruments, recent, todayStudents, dueStudents }) };
     }
 
     if (action === "crm_list") {

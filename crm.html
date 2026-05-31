@@ -766,6 +766,82 @@ tr:hover td { background: rgba(255,255,255,0.015); }
 @media (min-width: 769px) {
   .bottom-nav { display: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   QUICK ENROLL
+══════════════════════════════════════════════════════════════════ */
+.qe-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 800; padding: 20px;
+}
+.qe-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%; max-width: 480px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.qe-header {
+  background: linear-gradient(135deg, #1a1a2e, #2c2c50);
+  padding: 20px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.qe-header h2 { font-size: 1.05rem; font-weight: 700; color: var(--gold); }
+.qe-header span { font-size: 0.78rem; color: var(--muted); margin-top: 2px; display: block; }
+.qe-body { padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+.qe-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.qe-group { display: flex; flex-direction: column; gap: 5px; }
+.qe-group.full { grid-column: 1/-1; }
+.qe-group label { font-size: 0.75rem; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+.qe-group input, .qe-group select {
+  padding: 10px 12px; font-size: 0.9rem;
+  border-radius: var(--radius-sm);
+}
+.qe-package-cards { display: flex; flex-wrap: wrap; gap: 8px; }
+.qe-pkg {
+  flex: 1; min-width: 120px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; cursor: pointer;
+  background: var(--surface2); transition: all .15s;
+  text-align: center;
+}
+.qe-pkg:hover { border-color: var(--gold); }
+.qe-pkg.selected { border-color: var(--gold); background: var(--gold-bg); }
+.qe-pkg .pkg-label { font-size: 0.8rem; font-weight: 700; color: var(--text); }
+.qe-pkg .pkg-sub { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+.qe-pkg.selected .pkg-label { color: var(--gold); }
+.qe-due-preview {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.85rem;
+}
+.qe-due-preview .due-label { color: var(--muted); }
+.qe-due-preview .due-val { color: var(--gold); font-weight: 700; }
+.qe-mode-row { display: flex; gap: 8px; }
+.qe-mode-btn {
+  flex: 1; padding: 9px; border: 1.5px solid var(--border);
+  border-radius: 8px; background: var(--surface2);
+  color: var(--muted); font-size: 0.85rem; cursor: pointer;
+  transition: all .15s; font-family: var(--font);
+}
+.qe-mode-btn.selected { border-color: var(--gold); background: var(--gold-bg); color: var(--gold); font-weight: 600; }
+.qe-footer {
+  padding: 16px 24px; border-top: 1px solid var(--border);
+  display: flex; gap: 10px; justify-content: flex-end;
+}
+.btn-qe {
+  background: var(--gold); color: #000; border: none;
+  border-radius: 8px; padding: 11px 28px;
+  font-size: 0.92rem; font-weight: 700; cursor: pointer;
+  transition: opacity .15s; font-family: var(--font);
+}
+.btn-qe:hover { opacity: 0.87; }
+.btn-qe:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>
 </head>
 <body>
@@ -892,6 +968,7 @@ CREATE TABLE IF NOT EXISTS crm_notes (
         <span class="search-icon">🔍</span>
         <input type="text" id="global-search" placeholder="Search students…" oninput="globalSearch(this.value)">
       </div>
+      <button class="btn-add" onclick="openQuickEnroll()" style="background:#c9a227;margin-right:6px;">⚡ Quick Enroll</button>
       <button class="btn-add" onclick="openAddStudent()">+ Add Student</button>
     </header>
     <main class="page-content" id="page-content"></main>
@@ -918,6 +995,70 @@ CREATE TABLE IF NOT EXISTS crm_notes (
       <span class="nav-emoji">📋</span> Leads
     </button>
   </nav>
+</div>
+
+<!-- QUICK ENROLL MODAL -->
+<div class="qe-overlay" id="qe-overlay" style="display:none;" onclick="if(event.target===this)closeQuickEnroll()">
+  <div class="qe-box">
+    <div class="qe-header">
+      <div>
+        <h2>⚡ Quick Enroll</h2>
+        <span>Enter details — due date auto-calculated</span>
+      </div>
+      <button class="panel-close" onclick="closeQuickEnroll()">✕</button>
+    </div>
+    <div class="qe-body">
+      <div class="qe-row">
+        <div class="qe-group full">
+          <label>Student Name *</label>
+          <input type="text" id="qe-name" placeholder="Full name">
+        </div>
+      </div>
+      <div class="qe-row">
+        <div class="qe-group">
+          <label>Phone *</label>
+          <input type="tel" id="qe-phone" placeholder="+91 99999 99999">
+        </div>
+        <div class="qe-group">
+          <label>Date of Joining</label>
+          <input type="date" id="qe-joining">
+        </div>
+      </div>
+      <div class="qe-row">
+        <div class="qe-group">
+          <label>Instrument</label>
+          <select id="qe-instrument">
+            <option value="Keyboard">Keyboard</option>
+            <option value="Piano">Piano</option>
+            <option value="Guitar">Guitar</option>
+            <option value="Drums">Drums</option>
+            <option value="Carnatic Vocal">Carnatic Vocal</option>
+            <option value="Hindustani Vocal">Hindustani Vocal</option>
+            <option value="Violin">Violin</option>
+          </select>
+        </div>
+        <div class="qe-group">
+          <label>Mode</label>
+          <div class="qe-mode-row">
+            <button class="qe-mode-btn selected" id="qe-mode-online" onclick="selectQEMode('online')">🌐 Online</button>
+            <button class="qe-mode-btn" id="qe-mode-offline" onclick="selectQEMode('offline')">🏫 Offline</button>
+          </div>
+        </div>
+      </div>
+      <div class="qe-group">
+        <label>Fees Package</label>
+        <div class="qe-package-cards" id="qe-packages"></div>
+      </div>
+      <div class="qe-due-preview" id="qe-due-preview">
+        <span class="due-label">Next Due Date</span>
+        <span class="due-val" id="qe-due-val">—</span>
+      </div>
+    </div>
+    <div class="qe-footer">
+      <button class="btn btn-ghost" onclick="closeQuickEnroll()">Cancel</button>
+      <button class="btn-qe" id="qe-submit-btn" onclick="submitQuickEnroll()">Enroll Student →</button>
+    </div>
+  </div>
 </div>
 
 <!-- PANEL OVERLAY -->
@@ -1401,7 +1542,7 @@ async function loadDashboard() {
 }
 
 function renderDashboard(data) {
-  const { stats, instruments, recent, todayStudents } = data;
+  const { stats, instruments, recent, todayStudents, dueStudents = [] } = data;
   const instEntries = Object.entries(instruments).sort((a,b)=>b[1]-a[1]);
   const instMax = Math.max(...Object.values(instruments), 1);
 
@@ -1491,6 +1632,35 @@ function renderDashboard(data) {
         </div>`
     }
   </div>
+
+  ${dueStudents.length > 0 ? `
+  <div class="dash-card" style="margin-bottom:24px;border-color:${dueStudents.some(s=>s.days_diff<0)?'rgba(231,76,60,0.4)':'rgba(243,156,18,0.4)'};">
+    <div class="dash-card-title" style="color:${dueStudents.some(s=>s.days_diff<0)?'var(--danger)':'var(--warn)'};">
+      💸 Fee Alerts — ${dueStudents.length} student${dueStudents.length>1?'s':''} need attention
+    </div>
+    <div class="recent-list">
+      ${dueStudents.map(s => {
+        const overdue = s.days_diff < 0;
+        const today0 = s.days_diff === 0;
+        const label = overdue
+          ? `<span style="color:var(--danger);font-weight:700;">${Math.abs(s.days_diff)}d overdue</span>`
+          : today0
+          ? `<span style="color:var(--warn);font-weight:700;">Due today</span>`
+          : `<span style="color:var(--warn);">Due in ${s.days_diff}d (${fmtDate(s.due_date)})</span>`;
+        const phone = (s.phone||'').replace(/\D/g,'');
+        const intl = phone.startsWith('91')?phone:'91'+phone;
+        const waMsg = encodeURIComponent(`Hi ${s.name.split(' ')[0]}, your Chords Music Academy fee of ₹${(s.amount_due||0).toLocaleString('en-IN')} is due${overdue?' (overdue)':''}. Please pay at chordsmusicacademy.in/pay 🎵`);
+        return `<div class="recent-item">
+          <div class="avatar" style="background:${overdue?'rgba(231,76,60,0.2)':today0?'rgba(231,76,60,0.15)':'rgba(243,156,18,0.15)'};color:${overdue?'var(--danger)':'var(--warn)'};">${initials(s.name)}</div>
+          <div class="recent-info">
+            <div class="recent-name">${escapeHtml(s.name)}</div>
+            <div class="recent-meta">₹${(s.amount_due||0).toLocaleString('en-IN')} · ${instrumentIcon(s.instrument)} ${s.instrument||''} · ${label}</div>
+          </div>
+          ${phone ? `<a href="https://wa.me/${intl}?text=${waMsg}" target="_blank" style="background:#25d366;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:0.78rem;font-weight:700;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">💬 Remind</a>` : ''}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>` : ''}
 
   <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
     <button class="btn btn-primary" onclick="openAddStudent()">+ Add Student</button>
@@ -2564,6 +2734,120 @@ window.importFromFirebase = async function() {
     btn.disabled = false;
   }
 };
+
+/* ══════════════════════════════════════════════════════════════════
+   QUICK ENROLL
+══════════════════════════════════════════════════════════════════ */
+const QE_PACKAGES = [
+  { id: 'monthly_5000',  label: 'Monthly',   amount: 5000,  months: 1,  type: 'monthly',   sub: '₹5,000' },
+  { id: 'monthly_6000',  label: 'Monthly',   amount: 6000,  months: 1,  type: 'monthly',   sub: '₹6,000' },
+  { id: 'quarterly',     label: '3 Months',  amount: 13500, months: 3,  type: 'quarterly', sub: '₹13,500' },
+  { id: 'biannual',      label: '6 Months',  amount: 25500, months: 6,  type: 'biannual',  sub: '₹25,500' },
+  { id: 'annual',        label: '1 Year',    amount: 48000, months: 12, type: 'annual',    sub: '₹48,000' },
+];
+let qeSelectedPkg = QE_PACKAGES[0];
+let qeMode = 'online';
+
+function openQuickEnroll() {
+  const overlay = document.getElementById('qe-overlay');
+  overlay.style.display = 'flex';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('qe-joining').value = today;
+  document.getElementById('qe-name').value = '';
+  document.getElementById('qe-phone').value = '';
+  qeMode = 'online';
+  document.getElementById('qe-mode-online').classList.add('selected');
+  document.getElementById('qe-mode-offline').classList.remove('selected');
+  renderQEPackages();
+  updateQEDueDate();
+  setTimeout(() => document.getElementById('qe-name').focus(), 100);
+}
+
+function closeQuickEnroll() {
+  document.getElementById('qe-overlay').style.display = 'none';
+}
+
+function selectQEMode(mode) {
+  qeMode = mode;
+  document.getElementById('qe-mode-online').classList.toggle('selected', mode === 'online');
+  document.getElementById('qe-mode-offline').classList.toggle('selected', mode === 'offline');
+}
+
+function renderQEPackages() {
+  const container = document.getElementById('qe-packages');
+  container.innerHTML = QE_PACKAGES.map(p => `
+    <div class="qe-pkg${p.id === qeSelectedPkg.id ? ' selected' : ''}" onclick="selectQEPackage('${p.id}')">
+      <div class="pkg-label">${p.label}</div>
+      <div class="pkg-sub">${p.sub}</div>
+    </div>
+  `).join('');
+}
+
+function selectQEPackage(id) {
+  qeSelectedPkg = QE_PACKAGES.find(p => p.id === id);
+  renderQEPackages();
+  updateQEDueDate();
+}
+
+function updateQEDueDate() {
+  const joiningVal = document.getElementById('qe-joining').value;
+  if (!joiningVal || !qeSelectedPkg) { document.getElementById('qe-due-val').textContent = '—'; return; }
+  const d = new Date(joiningVal + 'T12:00:00');
+  d.setMonth(d.getMonth() + qeSelectedPkg.months);
+  const dueStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('qe-due-val').textContent = dueStr;
+}
+
+document.getElementById('qe-joining').addEventListener('change', updateQEDueDate);
+
+async function submitQuickEnroll() {
+  const name = document.getElementById('qe-name').value.trim();
+  const phone = document.getElementById('qe-phone').value.trim();
+  const joiningVal = document.getElementById('qe-joining').value;
+  const instrument = document.getElementById('qe-instrument').value;
+
+  if (!name) { toast('Enter student name', 'error'); document.getElementById('qe-name').focus(); return; }
+  if (!phone) { toast('Enter phone number', 'error'); document.getElementById('qe-phone').focus(); return; }
+  if (!joiningVal) { toast('Select joining date', 'error'); return; }
+
+  const dueDate = new Date(joiningVal + 'T12:00:00');
+  dueDate.setMonth(dueDate.getMonth() + qeSelectedPkg.months);
+  const dueDateStr = dueDate.toISOString().split('T')[0];
+
+  const btn = document.getElementById('qe-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  try {
+    const res = await apiCall({
+      action: 'crm_add',
+      student: {
+        name,
+        phone,
+        instrument,
+        mode: qeMode,
+        status: 'active',
+        enrollment_date: joiningVal,
+        payment_type: qeSelectedPkg.type,
+        amount_due: qeSelectedPkg.amount,
+        due_date: dueDateStr,
+        level: 'beginner',
+        is_active: true,
+      }
+    });
+
+    const sid = res.student ? res.student.student_id : '';
+    toast(`✅ ${name} enrolled! ${sid ? '(' + sid + ')' : ''} · Due: ${dueDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`);
+    closeQuickEnroll();
+    if (currentPage === 'students') loadStudents();
+    else if (currentPage === 'dashboard') loadDashboard();
+  } catch(e) {
+    toast('Enroll failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Enroll Student →';
+  }
+}
 </script>
 </body>
 </html>
