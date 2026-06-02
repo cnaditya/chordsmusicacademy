@@ -3690,7 +3690,6 @@ async function generateBillPDF() {
     doc.setFontSize(7.5);
     doc.setTextColor(120, 110, 90);
     doc.text('Flat No. 602, Abhinandana Jewel, Lancohills Road, near Harivillu Apartments, Manikonda, Hyderabad - 500089', mx, y);
-    doc.text('chordsmusicacademy.in', W - mx, y, { align: 'right' });
     y += 6;
 
     // ── TERMS & CONDITIONS ────────────────────────────────
@@ -3740,7 +3739,7 @@ async function generateBillPDF() {
     doc.text('This is a computer-generated receipt and does not require a physical signature.', W/2, footerY + 8, { align: 'center' });
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
-    doc.text('chordsmusicacademy.in  |  7981585309  |  7569348879', W/2, footerY + 14, { align: 'center' });
+    doc.text('chordsmusicacademy.in', W/2, footerY + 14, { align: 'center' });
 
     // Save PDF
     const fileName = `Receipt-${receiptNo}-${name.replace(/\s+/g, '-')}.pdf`;
