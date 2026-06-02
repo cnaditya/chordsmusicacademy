@@ -3367,10 +3367,14 @@ function loadPayments() {
             <input type="text" id="pay-towards" placeholder="e.g. 3 Months · Piano · Offline Group"
               style="padding:10px 12px;font-size:0.9rem;border-radius:var(--radius-sm);">
           </div>
-          <div class="form-group full" id="pay-cheque-row" style="display:none;">
+          <div class="form-group" id="pay-cheque-row" style="display:none;">
             <label style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Cheque Number</label>
             <input type="text" id="pay-cheque-no" placeholder="Cheque number"
               style="padding:10px 12px;font-size:0.9rem;border-radius:var(--radius-sm);">
+          </div>
+          <div class="form-group">
+            <label style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Next Due Date</label>
+            <input type="date" id="pay-next-due" style="padding:10px 12px;font-size:0.9rem;border-radius:var(--radius-sm);">
           </div>
         </div>
 
@@ -3449,6 +3453,7 @@ function selectPayStudent(s) {
   const inst = s.instrument || '';
   const mode = s.mode ? (s.mode === 'offline' ? 'Offline Group' : 'Online') : '';
   document.getElementById('pay-towards').value = [pkg, inst, mode].filter(Boolean).join(' · ');
+  if (s.due_date) document.getElementById('pay-next-due').value = s.due_date;
   updatePayWords();
 
   const info = document.getElementById('pay-student-info');
@@ -3499,6 +3504,8 @@ async function generateBillPDF() {
   const towards = document.getElementById('pay-towards').value.trim() || '—';
   const method = document.getElementById('pay-method').value;
   const chequeNo = document.getElementById('pay-cheque-no')?.value.trim() || '';
+  const nextDueVal = document.getElementById('pay-next-due').value;
+  const nextDueStr = nextDueVal ? new Date(nextDueVal + 'T12:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
 
   if (!name) { toast('Select a student first', 'error'); return; }
   if (!amount) { toast('Enter the amount', 'error'); return; }
@@ -3635,9 +3642,11 @@ async function generateBillPDF() {
     y += 7;
     doc.setDrawColor(220, 215, 200);
     doc.setLineWidth(0.3);
+    const extraRows = (chequeNo ? 1 : 0) + (nextDueStr ? 1 : 0);
+    const boxH = 16 + extraRows * 8;
     doc.setFillColor(252, 251, 247);
-    doc.rect(mx, y, W - mx*2, chequeNo ? 22 : 16, 'F');
-    doc.rect(mx, y, W - mx*2, chequeNo ? 22 : 16);
+    doc.rect(mx, y, W - mx*2, boxH, 'F');
+    doc.rect(mx, y, W - mx*2, boxH);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
@@ -3647,17 +3656,27 @@ async function generateBillPDF() {
     doc.setTextColor(10, 10, 26);
     doc.text(methodLabel, W - mx - 4, y + 7, { align: 'right' });
 
+    let rowY = y + 15;
     if (chequeNo) {
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(80, 80, 90);
-      doc.text('Cheque No.', mx + 4, y + 15);
+      doc.text('Cheque No.', mx + 4, rowY);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(10, 10, 26);
-      doc.text(chequeNo, W - mx - 4, y + 15, { align: 'right' });
+      doc.text(chequeNo, W - mx - 4, rowY, { align: 'right' });
+      rowY += 8;
+    }
+    if (nextDueStr) {
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 90);
+      doc.text('Next Due Date', mx + 4, rowY);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(180, 50, 50);
+      doc.text(nextDueStr, W - mx - 4, rowY, { align: 'right' });
     }
 
     // ── AMOUNT IN WORDS ───────────────────────────────────
-    y += (chequeNo ? 22 : 16) + 10;
+    y += boxH + 10;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(130, 100, 20);
