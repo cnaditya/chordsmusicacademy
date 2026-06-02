@@ -3524,51 +3524,44 @@ async function generateBillPDF() {
     const methodMap = { cash: 'Cash', online: 'Online / UPI', card: 'Card', cheque: 'Cheque' };
     const methodLabel = methodMap[method] || 'Cash';
 
-    // ── HEADER BAND (dark navy) ───────────────────────────
+    // ── HEADER BAND (dark navy, compact) ─────────────────
     doc.setFillColor(10, 10, 26);
-    doc.rect(0, 0, W, 42, 'F');
+    doc.rect(0, 0, W, 28, 'F');
 
     // Academy name
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(20);
-    doc.setTextColor(201, 162, 39); // gold
-    doc.text('CHORDS MUSIC ACADEMY', mx, 17);
+    doc.setFontSize(18);
+    doc.setTextColor(201, 162, 39);
+    doc.text('CHORDS MUSIC ACADEMY', mx, 12);
 
-    // Tagline
+    // Single-line address + phones on same row
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
+    doc.setFontSize(7.5);
     doc.setTextColor(160, 160, 180);
-    doc.text('Music Education · Hyderabad', mx, 24);
-
-    // Contact right side
-    doc.setFontSize(8);
-    doc.setTextColor(180, 180, 200);
-    doc.text('7981585309  |  7569348879', W - mx, 17, { align: 'right' });
-    doc.text('Flat No. 602, Abhinandana Jewels, Lancohills Road', W - mx, 23, { align: 'right' });
-    doc.text('Manikonda, Hyderabad - 500089', W - mx, 28.5, { align: 'right' });
-    doc.text('chordsmusicacademy.in', W - mx, 34, { align: 'right' });
+    doc.text('Flat No. 602, Abhinandana Jewels, Lancohills Road, Manikonda, Hyderabad - 500089', mx, 19);
+    doc.text('7981585309  |  7569348879  |  chordsmusicacademy.in', mx, 25);
 
     // Gold accent line under header
     doc.setFillColor(201, 162, 39);
-    doc.rect(0, 42, W, 1.2, 'F');
+    doc.rect(0, 28, W, 1, 'F');
 
     // ── RECEIPT LABEL + NUMBER ────────────────────────────
     doc.setFillColor(248, 247, 242);
-    doc.rect(0, 43.2, W, 22, 'F');
+    doc.rect(0, 29, W, 18, 'F');
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(22);
+    doc.setFontSize(20);
     doc.setTextColor(10, 10, 26);
-    doc.text('PAYMENT RECEIPT', mx, 57);
+    doc.text('PAYMENT RECEIPT', mx, 42);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(100, 100, 110);
-    doc.text(`Receipt No.  #${receiptNo}`, W - mx, 51, { align: 'right' });
-    doc.text(`Date:  ${dateStr}`, W - mx, 58, { align: 'right' });
+    doc.text(`Receipt No.  #${receiptNo}`, W - mx, 36, { align: 'right' });
+    doc.text(`Date:  ${dateStr}`, W - mx, 43, { align: 'right' });
 
     // ── BILLED TO ─────────────────────────────────────────
-    let y = 82;
+    let y = 60;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(130, 100, 20);
@@ -3689,7 +3682,7 @@ async function generateBillPDF() {
     doc.text(wordLines, mx, y);
 
     // ── TERMS & CONDITIONS ────────────────────────────────
-    const footerY = H - 35;
+    const footerY = H - 20;
     const tcs = [
       '1. Fees & Refunds: All fees paid are strictly non-refundable under any circumstances.',
       '2. Due Dates: Fees must be paid by the due date; delay may result in suspension of classes.',
@@ -3724,20 +3717,18 @@ async function generateBillPDF() {
       doc.text(splitLines, mx + 4, tcStartY + 9 + i * lineH);
     });
 
-    // ── THANK YOU FOOTER ──────────────────────────────────
-    doc.setFillColor(10, 10, 26);
-    doc.rect(0, footerY, W, 35, 'F');
+    // ── SLIM PROFESSIONAL FOOTER ──────────────────────────
+    doc.setDrawColor(201, 162, 39);
+    doc.setLineWidth(0.5);
+    doc.line(mx, footerY + 2, W - mx, footerY + 2);
 
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(201, 162, 39);
-    doc.text('Thank you for your payment!', W/2, footerY + 12, { align: 'center' });
-
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 110);
+    doc.text('This is a computer-generated receipt and does not require a physical signature.', W/2, footerY + 8, { align: 'center' });
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor(160, 160, 180);
-    doc.text('For queries: 7981585309  |  7569348879', W/2, footerY + 20, { align: 'center' });
-    doc.text('chordsmusicacademy.in', W/2, footerY + 27, { align: 'center' });
+    doc.setFontSize(7.5);
+    doc.text('chordsmusicacademy.in  |  7981585309  |  7569348879', W/2, footerY + 14, { align: 'center' });
 
     // Save PDF
     const fileName = `Receipt-${receiptNo}-${name.replace(/\s+/g, '-')}.pdf`;
