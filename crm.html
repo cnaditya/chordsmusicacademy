@@ -3688,8 +3688,43 @@ async function generateBillPDF() {
     const wordLines = doc.splitTextToSize(words, W - mx*2);
     doc.text(wordLines, mx, y);
 
-    // ── THANK YOU FOOTER ──────────────────────────────────
+    // ── TERMS & CONDITIONS ────────────────────────────────
     const footerY = H - 35;
+    const tcs = [
+      '1. Fees & Refunds: All fees paid are strictly non-refundable under any circumstances.',
+      '2. Due Dates: Fees must be paid by the due date; delay may result in suspension of classes.',
+      '3. Classes: 3 months = 24 classes, 6 months = 48, 1 year = 96, calculated from joining date. Extra classes in longer months are complimentary.',
+      '4. Missed Classes: No refunds, compensation, or makeup classes for absences by the student.',
+      '5. Vacation Pause: Up to 1 month pause permitted with prior intimation only; post-absence requests will not be accepted.',
+      '6. Privacy: Personal contact details of teachers/staff must not be solicited; violation may result in termination of enrollment.',
+      '7. Belongings: The academy is not liable for loss or damage to personal belongings on the premises.',
+      '8. Conduct: Respectful behaviour is mandatory; misconduct may result in termination without refund.',
+      '9. Public Holidays: Academy remains closed on all public holidays; no compensation for classes falling on holidays.',
+      '10. Fee Revisions: Fees may be revised at any time. Existing packages continue at agreed rates; current offers apply at renewal.',
+    ];
+    const tcStartY = y + 8;
+    const tcBoxH = footerY - tcStartY - 4;
+
+    doc.setFillColor(248, 247, 245);
+    doc.setDrawColor(210, 205, 195);
+    doc.setLineWidth(0.3);
+    doc.rect(mx, tcStartY, W - mx*2, tcBoxH, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.setTextColor(130, 100, 20);
+    doc.text('TERMS & CONDITIONS', mx + 4, tcStartY + 5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(5.8);
+    doc.setTextColor(70, 70, 75);
+    const lineH = (tcBoxH - 8) / tcs.length;
+    tcs.forEach((line, i) => {
+      const splitLines = doc.splitTextToSize(line, W - mx*2 - 8);
+      doc.text(splitLines, mx + 4, tcStartY + 9 + i * lineH);
+    });
+
+    // ── THANK YOU FOOTER ──────────────────────────────────
     doc.setFillColor(10, 10, 26);
     doc.rect(0, footerY, W, 35, 'F');
 
