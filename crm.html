@@ -3526,42 +3526,41 @@ async function generateBillPDF() {
 
     // ── HEADER BAND (dark navy, compact) ─────────────────
     doc.setFillColor(10, 10, 26);
-    doc.rect(0, 0, W, 28, 'F');
+    doc.rect(0, 0, W, 22, 'F');
 
-    // Academy name
+    // Academy name left
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
     doc.setTextColor(201, 162, 39);
-    doc.text('CHORDS MUSIC ACADEMY', mx, 12);
+    doc.text('CHORDS MUSIC ACADEMY', mx, 14);
 
-    // Single-line address + phones on same row
+    // Phones right
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
+    doc.setFontSize(8);
     doc.setTextColor(160, 160, 180);
-    doc.text('Flat No. 602, Abhinandana Jewels, Lancohills Road, Manikonda, Hyderabad - 500089', mx, 19);
-    doc.text('7981585309  |  7569348879  |  chordsmusicacademy.in', mx, 25);
+    doc.text('7981585309  |  7569348879', W - mx, 14, { align: 'right' });
 
     // Gold accent line under header
     doc.setFillColor(201, 162, 39);
-    doc.rect(0, 28, W, 1, 'F');
+    doc.rect(0, 22, W, 0.8, 'F');
 
     // ── RECEIPT LABEL + NUMBER ────────────────────────────
     doc.setFillColor(248, 247, 242);
-    doc.rect(0, 29, W, 18, 'F');
+    doc.rect(0, 22.8, W, 16, 'F');
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(20);
     doc.setTextColor(10, 10, 26);
-    doc.text('PAYMENT RECEIPT', mx, 42);
+    doc.text('PAYMENT RECEIPT', mx, 34);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(100, 100, 110);
-    doc.text(`Receipt No.  #${receiptNo}`, W - mx, 36, { align: 'right' });
-    doc.text(`Date:  ${dateStr}`, W - mx, 43, { align: 'right' });
+    doc.text(`Receipt No.  #${receiptNo}`, W - mx, 28, { align: 'right' });
+    doc.text(`Date:  ${dateStr}`, W - mx, 35, { align: 'right' });
 
     // ── BILLED TO ─────────────────────────────────────────
-    let y = 60;
+    let y = 52;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(130, 100, 20);
@@ -3681,6 +3680,19 @@ async function generateBillPDF() {
     const wordLines = doc.splitTextToSize(words, W - mx*2);
     doc.text(wordLines, mx, y);
 
+    // ── ADDRESS (below content) ───────────────────────────
+    y += 6;
+    doc.setDrawColor(220, 215, 200);
+    doc.setLineWidth(0.2);
+    doc.line(mx, y, W - mx, y);
+    y += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(120, 110, 90);
+    doc.text('Flat No. 602, Abhinandana Jewel, Lancohills Road, near Harivillu Apartments, Manikonda, Hyderabad - 500089', mx, y);
+    doc.text('chordsmusicacademy.in', W - mx, y, { align: 'right' });
+    y += 6;
+
     // ── TERMS & CONDITIONS ────────────────────────────────
     const footerY = H - 20;
     const tcs = [
@@ -3704,12 +3716,12 @@ async function generateBillPDF() {
     doc.rect(mx, tcStartY, W - mx*2, tcBoxH, 'FD');
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.5);
+    doc.setFontSize(7);
     doc.setTextColor(130, 100, 20);
     doc.text('TERMS & CONDITIONS', mx + 4, tcStartY + 5);
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5.8);
+    doc.setFontSize(6.5);
     doc.setTextColor(70, 70, 75);
     const lineH = (tcBoxH - 8) / tcs.length;
     tcs.forEach((line, i) => {
