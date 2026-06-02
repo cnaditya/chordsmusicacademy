@@ -3358,6 +3358,7 @@ function loadPayments() {
             <select id="pay-method" onchange="togglePayCheque()" style="padding:10px 12px;font-size:0.9rem;border-radius:var(--radius-sm);">
               <option value="cash">Cash</option>
               <option value="online">Online / UPI</option>
+              <option value="card">Card</option>
               <option value="cheque">Cheque</option>
             </select>
           </div>
@@ -3605,7 +3606,7 @@ async function generateBillPDF() {
     // ── Payment method ────────────────────────────────────
     const payY = towardsY + 12;
     doc.setFont('helvetica', 'normal');
-    const methodLabel = method === 'cash' ? 'by Cash' : method === 'cheque' ? 'by Cheque No.' : 'by Online / UPI';
+    const methodLabel = method === 'cash' ? 'by Cash' : method === 'cheque' ? 'by Cheque No.' : method === 'card' ? 'by Card' : 'by Online / UPI';
     doc.text(methodLabel, marginX + 5, payY);
     if (method === 'cheque' && chequeNo) {
       doc.setFont('helvetica', 'bold');
