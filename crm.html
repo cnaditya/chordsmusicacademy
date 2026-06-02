@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chords Music Academy — CRM</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 /* ══════════════════════════════════════════════════════════════════
    RESET & ROOT
@@ -1029,6 +1030,9 @@ CREATE TABLE IF NOT EXISTS crm_notes (
       <div class="nav-item" onclick="navigate('leads')" data-page="leads">
         <span class="nav-icon">📋</span> Leads <span id="leads-badge" style="background:#e74c3c;color:#fff;border-radius:10px;padding:1px 7px;font-size:0.65rem;margin-left:4px;display:none"></span>
       </div>
+      <div class="nav-item" onclick="navigate('payments')" data-page="payments">
+        <span class="nav-icon">💳</span> Payments
+      </div>
     </div>
     <div class="sidebar-footer">
       <div style="color:var(--muted);font-size:0.72rem;margin-bottom:8px;">Logged in as Admin</div>
@@ -1550,6 +1554,7 @@ function navigate(page) {
     schedule: "Today's Schedule",
     instruments: 'Instruments',
     leads: 'Leads & Registrations',
+    payments: 'Payments & Billing',
   };
   document.getElementById('topbar-title').textContent = titles[page] || page;
   document.getElementById('page-content').innerHTML = renderLoading();
@@ -1560,6 +1565,7 @@ function navigate(page) {
   else if (page === 'schedule') loadSchedule();
   else if (page === 'instruments') loadInstruments();
   else if (page === 'leads') loadLeads();
+  else if (page === 'payments') loadPayments();
 }
 
 function toggleSidebar() {
@@ -3292,6 +3298,369 @@ function receiptQuickEnroll() {
       rcptQueueIdx++;
       if (rcptQueueIdx < rcptQueue.length) await rcptScanFile(rcptQueue[rcptQueueIdx]);
     };
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PAYMENTS & BILLING
+══════════════════════════════════════════════════════════════════ */
+let paySelectedStudent = null;
+let paySearchTimer = null;
+
+function loadPayments() {
+  const nextRcpt = parseInt(localStorage.getItem('cma_receipt_no') || '1000') + 1;
+  const today = new Date().toISOString().split('T')[0];
+
+  document.getElementById('page-content').innerHTML = `
+  <div style="max-width:680px;margin:0 auto;">
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px;">
+      <div style="background:linear-gradient(135deg,#1a1a2e,#2c2c50);padding:20px 28px;border-bottom:1px solid var(--border);">
+        <div style="font-size:1.05rem;font-weight:700;color:var(--gold);">💳 Generate Receipt</div>
+        <div style="font-size:0.8rem;color:var(--muted);margin-top:3px;">Search a student, fill in payment details, download a professional PDF receipt</div>
+      </div>
+      <div style="padding:28px;display:flex;flex-direction:column;gap:16px;">
+
+        <!-- Student search -->
+        <div class="form-group full">
+          <label style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Student <span style="color:var(--gold);">*</span></label>
+          <div style="position:relative;">
+            <input type="text" id="pay-student-search" placeholder="Type student name or ID…"
+              style="width:100%;padding:10px 12px;font-size:0.9rem;border-radius:var(--radius-sm);"
+              oninput="debouncePaySearch()" autocomplete="off">
+            <div id="pay-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;
+              background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+              z-index:200;max-height:220px;overflow-y:auto;box-shadow:var(--shadow);"></div>
+          </div>
+        </div>
+
+        <div id="pay-student-info" style="display:none;background:var(--gold-bg);border:1px solid rgba(201,162,39,0.3);
+          border-radius:8px;padding:12px 16px;font-size:0.85rem;"></div>
+
+        <!-- Bill details grid -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Receipt No</label>
+            <input type="text" id="pay-receipt-no" value="${nextRcpt}" style="padding:10px 12px;font-size:0.9rem;border-radius:var(--radius-sm);">
+          </div>
+          <div class="form-group">
+            <label style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Date</label>
+            <input type="date" id="pay-date" value="${today}" style="padding:10px 12px;font-size:0.9rem;border-radius:var(--radius-sm);">
+          </div>
+          <div class="form-group">
+            <label style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Amount (₹) <span style="color:var(--gold);">*</span></label>
+            <input type="number" id="pay-amount" placeholder="0" min="0"
+              style="padding:10px 12px;font-size:0.9rem;border-radius:var(--radius-sm);"
+              oninput="updatePayWords()">
+          </div>
+          <div class="form-group">
+            <label style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Payment Method</label>
+            <select id="pay-method" onchange="togglePayCheque()" style="padding:10px 12px;font-size:0.9rem;border-radius:var(--radius-sm);">
+              <option value="cash">Cash</option>
+              <option value="online">Online / UPI</option>
+              <option value="cheque">Cheque</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Towards</label>
+            <input type="text" id="pay-towards" placeholder="e.g. 3 Months · Piano · Offline Group"
+              style="padding:10px 12px;font-size:0.9rem;border-radius:var(--radius-sm);">
+          </div>
+          <div class="form-group full" id="pay-cheque-row" style="display:none;">
+            <label style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Cheque Number</label>
+            <input type="text" id="pay-cheque-no" placeholder="Cheque number"
+              style="padding:10px 12px;font-size:0.9rem;border-radius:var(--radius-sm);">
+          </div>
+        </div>
+
+        <!-- Amount in words preview -->
+        <div id="pay-words-preview" style="background:var(--surface2);border:1px solid var(--border);
+          border-radius:8px;padding:12px 16px;font-size:0.83rem;color:var(--muted);min-height:40px;
+          font-style:italic;">
+          Enter an amount to see words preview
+        </div>
+
+        <button onclick="generateBillPDF()" id="pay-generate-btn"
+          style="background:var(--gold);color:#000;border:none;border-radius:8px;padding:13px 28px;
+          font-size:0.95rem;font-weight:700;cursor:pointer;transition:opacity .15s;font-family:var(--font);align-self:flex-end;">
+          ⬇ Download Receipt PDF
+        </button>
+
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 28px;">
+      <div style="font-size:0.85rem;color:var(--muted);font-weight:600;margin-bottom:10px;">💡 Tips</div>
+      <ul style="font-size:0.82rem;color:var(--muted);line-height:2;padding-left:16px;">
+        <li>Receipt number auto-increments each time you download</li>
+        <li>Student details (instrument, amount) are pre-filled from CRM</li>
+        <li>All fields are editable before generating</li>
+        <li>PDF matches your physical receipt letterhead</li>
+      </ul>
+    </div>
+  </div>`;
+}
+
+function debouncePaySearch() {
+  clearTimeout(paySearchTimer);
+  paySearchTimer = setTimeout(searchPayStudent, 280);
+}
+
+async function searchPayStudent() {
+  const q = document.getElementById('pay-student-search').value.trim();
+  const dd = document.getElementById('pay-dropdown');
+  if (!q) { dd.style.display = 'none'; return; }
+
+  dd.style.display = 'block';
+  dd.innerHTML = '<div style="padding:10px 14px;font-size:0.82rem;color:var(--muted);">Searching…</div>';
+
+  try {
+    const res = await apiCall({ action: 'crm_list', search: q });
+    const students = (res.students || []).slice(0, 8);
+    if (!students.length) {
+      dd.innerHTML = '<div style="padding:10px 14px;font-size:0.82rem;color:var(--muted);">No students found</div>';
+      return;
+    }
+    dd.innerHTML = students.map(s => `
+      <div onclick="selectPayStudent(${JSON.stringify(s).replace(/"/g,'&quot;')})"
+        style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;
+        border-bottom:1px solid var(--border);transition:background .12s;"
+        onmouseover="this.style.background='var(--gold-bg)'" onmouseout="this.style.background=''">
+        <div class="avatar" style="background:${avatarColor(s.name)};color:#000;width:30px;height:30px;font-size:0.72rem;flex-shrink:0;">${initials(s.name)}</div>
+        <div>
+          <div style="font-size:0.88rem;font-weight:600;">${escapeHtml(s.name)}</div>
+          <div style="font-size:0.75rem;color:var(--muted);">${s.student_id||''} · ${s.instrument||'—'} · ₹${(s.amount_due||0).toLocaleString('en-IN')}</div>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    dd.innerHTML = `<div style="padding:10px 14px;font-size:0.82rem;color:var(--danger);">Error: ${e.message}</div>`;
+  }
+}
+
+function selectPayStudent(s) {
+  paySelectedStudent = s;
+  document.getElementById('pay-student-search').value = s.name;
+  document.getElementById('pay-dropdown').style.display = 'none';
+
+  // Pre-fill fields
+  if (s.amount_due) document.getElementById('pay-amount').value = s.amount_due;
+  const pkg = s.payment_type ? cap(s.payment_type) : '';
+  const inst = s.instrument || '';
+  const mode = s.mode ? (s.mode === 'offline' ? 'Offline Group' : 'Online') : '';
+  document.getElementById('pay-towards').value = [pkg, inst, mode].filter(Boolean).join(' · ');
+  updatePayWords();
+
+  const info = document.getElementById('pay-student-info');
+  info.style.display = 'block';
+  info.innerHTML = `<span style="color:var(--gold);font-weight:700;">${escapeHtml(s.name)}</span>
+    <span style="color:var(--muted);margin:0 8px;">·</span>${s.student_id||''}
+    <span style="color:var(--muted);margin:0 8px;">·</span>${instrumentIcon(s.instrument)} ${s.instrument||'—'}
+    <span style="color:var(--muted);margin:0 8px;">·</span>${cap(s.mode||'')}
+    <span style="color:var(--muted);margin:0 8px;">·</span>${badge(s.status)}`;
+}
+
+function togglePayCheque() {
+  const isCheque = document.getElementById('pay-method').value === 'cheque';
+  document.getElementById('pay-cheque-row').style.display = isCheque ? '' : 'none';
+}
+
+function updatePayWords() {
+  const amt = parseInt(document.getElementById('pay-amount').value) || 0;
+  const el = document.getElementById('pay-words-preview');
+  if (!el) return;
+  el.textContent = amt > 0 ? numberToWords(amt) : 'Enter an amount to see words preview';
+  el.style.color = amt > 0 ? 'var(--text)' : 'var(--muted)';
+}
+
+function numberToWords(num) {
+  const ones = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine',
+    'Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  const tens = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  function convert(n) {
+    if (n === 0) return '';
+    if (n < 20) return ones[n];
+    if (n < 100) return tens[Math.floor(n/10)] + (n%10 ? ' ' + ones[n%10] : '');
+    if (n < 1000) return ones[Math.floor(n/100)] + ' Hundred' + (n%100 ? ' ' + convert(n%100) : '');
+    if (n < 100000) return convert(Math.floor(n/1000)) + ' Thousand' + (n%1000 ? ' ' + convert(n%1000) : '');
+    if (n < 10000000) return convert(Math.floor(n/100000)) + ' Lakh' + (n%100000 ? ' ' + convert(n%100000) : '');
+    return convert(Math.floor(n/10000000)) + ' Crore' + (n%10000000 ? ' ' + convert(n%10000000) : '');
+  }
+  const intPart = Math.floor(num);
+  return (convert(intPart) || 'Zero') + ' Rupees Only';
+}
+
+async function generateBillPDF() {
+  const name = paySelectedStudent ? paySelectedStudent.name : document.getElementById('pay-student-search').value.trim();
+  const studentId = paySelectedStudent ? (paySelectedStudent.student_id || '') : '';
+  const amount = parseInt(document.getElementById('pay-amount').value) || 0;
+  const receiptNo = document.getElementById('pay-receipt-no').value.trim() || '—';
+  const dateVal = document.getElementById('pay-date').value;
+  const towards = document.getElementById('pay-towards').value.trim() || '—';
+  const method = document.getElementById('pay-method').value;
+  const chequeNo = document.getElementById('pay-cheque-no')?.value.trim() || '';
+
+  if (!name) { toast('Select a student first', 'error'); return; }
+  if (!amount) { toast('Enter the amount', 'error'); return; }
+
+  const btn = document.getElementById('pay-generate-btn');
+  btn.textContent = '⏳ Generating…'; btn.disabled = true;
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210, marginX = 14;
+
+    // Format date
+    const dateObj = dateVal ? new Date(dateVal + 'T12:00:00') : new Date();
+    const dateStr = dateObj.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+
+    // ── Outer border ─────────────────────────────────────
+    doc.setDrawColor(180, 145, 40);
+    doc.setLineWidth(0.8);
+    doc.rect(marginX, 10, W - marginX*2, 148);
+
+    // ── Inner border (thin) ───────────────────────────────
+    doc.setLineWidth(0.25);
+    doc.rect(marginX + 2, 12, W - marginX*2 - 4, 144);
+
+    // ── RECEIPT heading ───────────────────────────────────
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(30, 30, 30);
+    doc.text('RECEIPT', W/2, 22, { align: 'center' });
+
+    // Phone numbers top right
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    doc.text('Ph: 7702032373, 7981585309', W - marginX - 4, 19, { align: 'right' });
+
+    // ── Academy name ──────────────────────────────────────
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(17);
+    doc.setTextColor(180, 140, 30);
+    doc.text('CHORDS MUSIC ACADEMY', W/2, 33, { align: 'center' });
+
+    // Address
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    doc.text('Flat No. 603, Abhinandana Jewels, Lancohills Road', W/2, 39, { align: 'center' });
+    doc.text('near Harivillu Apartments, Manikonda, Hyderabad - 500089.', W/2, 44, { align: 'center' });
+
+    // Gold divider
+    doc.setDrawColor(180, 145, 40);
+    doc.setLineWidth(0.4);
+    doc.line(marginX + 4, 48, W - marginX - 4, 48);
+
+    // ── Receipt No & Date ─────────────────────────────────
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text('No:', marginX + 5, 58);
+    doc.setFont('helvetica', 'normal');
+    doc.text(receiptNo, marginX + 14, 58);
+    doc.setDrawColor(150, 150, 150);
+    doc.setLineWidth(0.2);
+    doc.line(marginX + 13, 59, marginX + 50, 59);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Date:', W - 65, 58);
+    doc.setFont('helvetica', 'normal');
+    doc.text(dateStr, W - 55, 58);
+    doc.line(W - 56, 59, W - marginX - 4, 59);
+
+    // ── Received from ─────────────────────────────────────
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(30, 30, 30);
+    doc.text('Received with thanks from', marginX + 5, 72);
+    doc.setFont('helvetica', 'bold');
+    const nameDisplay = studentId ? `${name}  (${studentId})` : name;
+    doc.text(nameDisplay, marginX + 68, 72);
+    doc.setLineWidth(0.2);
+    doc.setDrawColor(150, 150, 150);
+    doc.line(marginX + 67, 73, W - marginX - 4, 73);
+
+    // ── Amount in words ───────────────────────────────────
+    doc.setFont('helvetica', 'normal');
+    doc.text('The Sum of Rupees', marginX + 5, 84);
+    doc.setFont('helvetica', 'bold');
+    const words = numberToWords(amount);
+    const wordLines = doc.splitTextToSize(words, W - marginX*2 - 60);
+    doc.text(wordLines, marginX + 52, 84);
+    doc.setLineWidth(0.2);
+    doc.setDrawColor(150, 150, 150);
+    doc.line(marginX + 51, 85, W - marginX - 4, 85);
+    if (wordLines.length > 1) doc.line(marginX + 5, 91, W - marginX - 4, 91);
+
+    // ── Towards ───────────────────────────────────────────
+    const towardsY = wordLines.length > 1 ? 100 : 96;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Towards', marginX + 5, towardsY);
+    doc.setFont('helvetica', 'bold');
+    doc.text(towards, marginX + 27, towardsY);
+    doc.line(marginX + 26, towardsY + 1, W - marginX - 4, towardsY + 1);
+
+    // ── Payment method ────────────────────────────────────
+    const payY = towardsY + 12;
+    doc.setFont('helvetica', 'normal');
+    const methodLabel = method === 'cash' ? 'by Cash' : method === 'cheque' ? 'by Cheque No.' : 'by Online / UPI';
+    doc.text(methodLabel, marginX + 5, payY);
+    if (method === 'cheque' && chequeNo) {
+      doc.setFont('helvetica', 'bold');
+      doc.text(chequeNo, marginX + 42, payY);
+    }
+    doc.line(marginX + 40, payY + 1, marginX + 100, payY + 1);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Dated', marginX + 103, payY);
+    doc.line(marginX + 114, payY + 1, W - marginX - 4, payY + 1);
+
+    // ── Signature area ────────────────────────────────────
+    const sigY = payY + 14;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text('For Chords Music Academy', W - marginX - 4, sigY, { align: 'right' });
+
+    // Bottom line — amount + roles
+    const botY = 152;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(30, 30, 30);
+    doc.text(`Rs. ${amount.toLocaleString('en-IN')}/-`, marginX + 5, botY);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(80, 80, 80);
+    doc.text('Accountant', W/2, botY, { align: 'center' });
+    doc.text('Authorised Signature', W - marginX - 4, botY, { align: 'right' });
+
+    // Save PDF
+    const fileName = `Receipt-${receiptNo}-${name.replace(/\s+/g, '-')}.pdf`;
+    doc.save(fileName);
+
+    // Save receipt number to localStorage and add note to student
+    localStorage.setItem('cma_receipt_no', receiptNo);
+
+    if (paySelectedStudent) {
+      await apiCall({
+        action: 'crm_add_note',
+        student_id: paySelectedStudent.id,
+        content: `Receipt #${receiptNo} issued — ₹${amount.toLocaleString('en-IN')} · ${towards} · ${cap(method)} · ${dateStr}`,
+      });
+    }
+
+    // Auto-increment receipt number for next time
+    const next = (parseInt(receiptNo) || 0) + 1;
+    localStorage.setItem('cma_receipt_no', String(next - 1));
+    document.getElementById('pay-receipt-no').value = String(next);
+
+    toast(`✅ Receipt #${receiptNo} downloaded`);
+  } catch(err) {
+    toast('PDF generation failed: ' + err.message, 'error');
+    console.error(err);
+  } finally {
+    btn.textContent = '⬇ Download Receipt PDF';
+    btn.disabled = false;
   }
 }
 
