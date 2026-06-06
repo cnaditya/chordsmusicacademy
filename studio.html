@@ -470,8 +470,9 @@
                 <div class="booking-form">
                     <h2>🎙 Book a Session</h2>
                     <div class="studio-hours-note">
-                        <p>📅 <strong>Studio Hours:</strong> Mon – Sat &nbsp;|&nbsp; 10:00 AM – 8:00 PM</p>
-                        <p>Select your preferred slot — we'll check availability &amp; confirm via WhatsApp.</p>
+                        <p>📅 <strong>Mon / Wed / Fri:</strong> 6:00 AM – 12:00 AM (Midnight)</p>
+                        <p>📅 <strong>Tue / Thu / Sat / Sun:</strong> 6:00 AM – 4:00 PM &amp; 8:00 PM – 12:00 AM</p>
+                        <p>Pick a date — available slots will load automatically. We'll confirm via WhatsApp.</p>
                     </div>
                     <form id="bookingForm">
                         <input type="text" id="clientName" placeholder="Your Full Name" required>
@@ -490,17 +491,7 @@
                         </select>
                         <input type="date" id="preferredDate" required>
                         <select id="preferredTime" required>
-                            <option value="">Preferred Time Slot</option>
-                            <option>10:00 AM – 11:00 AM</option>
-                            <option>11:00 AM – 12:00 PM</option>
-                            <option>12:00 PM – 1:00 PM</option>
-                            <option>1:00 PM – 2:00 PM</option>
-                            <option>2:00 PM – 3:00 PM</option>
-                            <option>3:00 PM – 4:00 PM</option>
-                            <option>4:00 PM – 5:00 PM</option>
-                            <option>5:00 PM – 6:00 PM</option>
-                            <option>6:00 PM – 7:00 PM</option>
-                            <option>7:00 PM – 8:00 PM</option>
+                            <option value="">Select a date first</option>
                         </select>
                         <textarea id="sessionDetails" placeholder="Tell us about your project (optional)" rows="2"></textarea>
                         <button type="submit">
@@ -604,6 +595,33 @@
 
         // Set min date to today
         document.getElementById('preferredDate').min = new Date().toISOString().split('T')[0];
+
+        const ALL_SLOTS = [
+            '6:00 AM – 7:00 AM','7:00 AM – 8:00 AM','8:00 AM – 9:00 AM',
+            '9:00 AM – 10:00 AM','10:00 AM – 11:00 AM','11:00 AM – 12:00 PM',
+            '12:00 PM – 1:00 PM','1:00 PM – 2:00 PM','2:00 PM – 3:00 PM',
+            '3:00 PM – 4:00 PM',
+            // 4 PM – 8 PM blocked on Tue/Thu/Sat/Sun
+            '4:00 PM – 5:00 PM','5:00 PM – 6:00 PM','6:00 PM – 7:00 PM','7:00 PM – 8:00 PM',
+            '8:00 PM – 9:00 PM','9:00 PM – 10:00 PM','10:00 PM – 11:00 PM','11:00 PM – 12:00 AM'
+        ];
+        const BLOCKED_SLOTS = new Set(['4:00 PM – 5:00 PM','5:00 PM – 6:00 PM','6:00 PM – 7:00 PM','7:00 PM – 8:00 PM']);
+
+        document.getElementById('preferredDate').addEventListener('change', function() {
+            const sel = document.getElementById('preferredTime');
+            sel.innerHTML = '<option value="">Preferred Time Slot</option>';
+            if (!this.value) return;
+            // Use local date to avoid timezone day-shift
+            const [y, m, d] = this.value.split('-').map(Number);
+            const day = new Date(y, m - 1, d).getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+            const restricted = [0, 2, 4, 6].includes(day); // Sun, Tue, Thu, Sat
+            ALL_SLOTS.forEach(slot => {
+                if (restricted && BLOCKED_SLOTS.has(slot)) return;
+                const opt = document.createElement('option');
+                opt.value = opt.textContent = slot;
+                sel.appendChild(opt);
+            });
+        });
 
         document.getElementById('bookingForm').addEventListener('submit', function(e) {
             e.preventDefault();
