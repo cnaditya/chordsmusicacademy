@@ -159,13 +159,22 @@
 
         /* Booking */
         .booking { background: #0d0d0d; }
-        .booking-content { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.6fr; gap: 3rem; align-items: start; }
-        .booking-info h2 { text-align: left; font-size: 1.6rem; margin-bottom: 1.2rem; color: #f39c12; }
+        .booking-content { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+        .booking-info h2, .booking-form h2 { text-align: left; font-size: 1.6rem; margin-bottom: 1.2rem; color: #f39c12; }
         .booking-info p { color: #aaa; margin-bottom: 0.5rem; font-size: 0.95rem; }
         .map-embed { margin-top: 1.5rem; border-radius: 12px; overflow: hidden; border: 1px solid rgba(243,156,18,0.2); }
-        .cal-embed-wrapper { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(243,156,18,0.25); box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
-        .cal-embed-wrapper h2 { background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; font-size: 1.2rem; font-weight: 700; padding: 1rem 1.5rem; margin: 0; text-align: left; }
-        #cal-booking-inline { width: 100%; height: 680px; overflow: scroll; }
+        .studio-hours-note { background: rgba(243,156,18,0.08); border: 1px solid rgba(243,156,18,0.25); border-radius: 10px; padding: 0.9rem 1.1rem; margin-bottom: 1.2rem; }
+        .studio-hours-note p { color: #ccc; font-size: 0.9rem; margin-bottom: 0.3rem; }
+        .studio-hours-note p:last-child { margin-bottom: 0; color: #f39c12; font-size: 0.85rem; font-style: italic; }
+        .booking-form form { display: flex; flex-direction: column; gap: 0.85rem; }
+        .booking-form input, .booking-form select, .booking-form textarea { padding: 0.85rem 1rem; border: 1px solid rgba(243,156,18,0.2); border-radius: 10px; background: #1a1a1a; color: #eee; font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s; outline: none; }
+        .booking-form input:focus, .booking-form select:focus, .booking-form textarea:focus { border-color: #f39c12; }
+        .booking-form select option { background: #1a1a1a; }
+        .booking-form input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
+        .booking-form textarea { resize: vertical; }
+        .booking-form button { background: linear-gradient(135deg, #25d366, #128c7e); color: #fff; border: none; padding: 1rem; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .booking-form button:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(37,211,102,0.4); }
+        .booking-success { display:none; margin-top:1rem; padding:1rem; background:rgba(39,174,96,0.15); border:1px solid rgba(39,174,96,0.4); border-radius:8px; color:#27ae60; font-weight:600; text-align:center; }
 
         /* Footer */
         .footer { background: #070707; border-top: 1px solid rgba(243,156,18,0.15); padding: 3rem 2rem 1rem; }
@@ -196,8 +205,7 @@
             .nav-links { display: none; position: fixed; top: 70px; left: 0; right: 0; background: rgba(10,10,10,0.98); flex-direction: column; padding: 2rem; gap: 1.2rem; border-bottom: 1px solid rgba(243,156,18,0.2); }
             .nav-links.active { display: flex; }
             .booking-content { grid-template-columns: 1fr; gap: 2rem; }
-            .booking-info h2 { text-align: center; }
-            #cal-booking-inline { height: 580px; }
+            .booking-info h2, .booking-form h2 { text-align: center; }
             .hero-btns { flex-direction: column; align-items: center; }
             .gallery-grid { grid-template-columns: repeat(2, 1fr); }
             .gallery-grid img { height: 160px; }
@@ -459,9 +467,50 @@
                         <iframe src="https://maps.google.com/maps?q=No602+Abhinandana+Jewel+Lanco+Hills+Road+Manikonda+Hyderabad+Telangana+500089&output=embed" width="100%" height="220" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
                     </div>
                 </div>
-                <div class="cal-embed-wrapper">
-                    <h2>🎙 Book a Recording Session</h2>
-                    <div id="cal-booking-inline"></div>
+                <div class="booking-form">
+                    <h2>🎙 Book a Session</h2>
+                    <div class="studio-hours-note">
+                        <p>📅 <strong>Studio Hours:</strong> Mon – Sat &nbsp;|&nbsp; 10:00 AM – 8:00 PM</p>
+                        <p>Select your preferred slot — we'll check availability &amp; confirm via WhatsApp.</p>
+                    </div>
+                    <form id="bookingForm">
+                        <input type="text" id="clientName" placeholder="Your Full Name" required>
+                        <input type="tel" id="clientPhone" placeholder="Your Phone Number" pattern="[6-9][0-9]{9}" title="Enter valid 10-digit mobile number" required>
+                        <input type="email" id="clientEmail" placeholder="Email Address (optional)">
+                        <select id="serviceSelect" required>
+                            <option value="">Select Service</option>
+                            <option>Vocal Recording</option>
+                            <option>Instrument Recording</option>
+                            <option>Dubbing</option>
+                            <option>Mixing &amp; Mastering</option>
+                            <option>Song Production / Composing</option>
+                            <option>Podcast Recording</option>
+                            <option>Jingle &amp; Ad Recording</option>
+                            <option>Music Video</option>
+                        </select>
+                        <input type="date" id="preferredDate" required>
+                        <select id="preferredTime" required>
+                            <option value="">Preferred Time Slot</option>
+                            <option>10:00 AM – 11:00 AM</option>
+                            <option>11:00 AM – 12:00 PM</option>
+                            <option>12:00 PM – 1:00 PM</option>
+                            <option>1:00 PM – 2:00 PM</option>
+                            <option>2:00 PM – 3:00 PM</option>
+                            <option>3:00 PM – 4:00 PM</option>
+                            <option>4:00 PM – 5:00 PM</option>
+                            <option>5:00 PM – 6:00 PM</option>
+                            <option>6:00 PM – 7:00 PM</option>
+                            <option>7:00 PM – 8:00 PM</option>
+                        </select>
+                        <textarea id="sessionDetails" placeholder="Tell us about your project (optional)" rows="2"></textarea>
+                        <button type="submit">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                            Send Booking Request on WhatsApp
+                        </button>
+                        <div class="booking-success" id="bookingSuccess">
+                            ✅ Request sent! We'll check availability and confirm your slot shortly.
+                        </div>
+                    </form>
                 </div>
             </div>
         </section>
@@ -553,18 +602,35 @@
 
         document.getElementById('copyrightYear').textContent = new Date().getFullYear();
 
-        // Cal.com inline embed
-        (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["-namespace", namespace]);}else p(cal, ar); return; } p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
-        Cal("init", {origin:"https://app.cal.com"});
-        Cal("inline", {
-            elementOrSelector: "#cal-booking-inline",
-            calLink: "chords-music-studios/recording-studio-booking",
-            layout: "month_view"
-        });
-        Cal("ui", {
-            styles: { branding: { brandColor: "#f39c12" } },
-            hideEventTypeDetails: false,
-            layout: "month_view"
+        // Set min date to today
+        document.getElementById('preferredDate').min = new Date().toISOString().split('T')[0];
+
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name    = document.getElementById('clientName').value.trim();
+            const phone   = document.getElementById('clientPhone').value.trim();
+            const email   = document.getElementById('clientEmail').value.trim() || 'Not provided';
+            const service = document.getElementById('serviceSelect').value;
+            const date    = new Date(document.getElementById('preferredDate').value).toLocaleDateString('en-IN', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+            const time    = document.getElementById('preferredTime').value;
+            const details = document.getElementById('sessionDetails').value.trim() || 'None';
+
+            const msg =
+`🎙 *New Studio Booking Request*
+
+👤 *Name:* ${name}
+📞 *Phone:* ${phone}
+📧 *Email:* ${email}
+🎵 *Service:* ${service}
+📅 *Date:* ${date}
+⏰ *Time Slot:* ${time}
+📝 *Project Details:* ${details}
+
+_Sent from chordsmusicacademy.in/studio_`;
+
+            window.open(`https://api.whatsapp.com/send?phone=917702031818&text=${encodeURIComponent(msg)}`, '_blank');
+            document.getElementById('bookingSuccess').style.display = 'block';
+            this.reset();
         });
     </script>
 </body>
