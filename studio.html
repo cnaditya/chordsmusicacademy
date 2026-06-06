@@ -159,17 +159,13 @@
 
         /* Booking */
         .booking { background: #0d0d0d; }
-        .booking-content { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
-        .booking-info h2, .booking-form h2 { text-align: left; font-size: 1.6rem; margin-bottom: 1.2rem; color: #f39c12; }
+        .booking-content { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.6fr; gap: 3rem; align-items: start; }
+        .booking-info h2 { text-align: left; font-size: 1.6rem; margin-bottom: 1.2rem; color: #f39c12; }
         .booking-info p { color: #aaa; margin-bottom: 0.5rem; font-size: 0.95rem; }
         .map-embed { margin-top: 1.5rem; border-radius: 12px; overflow: hidden; border: 1px solid rgba(243,156,18,0.2); }
-        .booking-form form { display: flex; flex-direction: column; gap: 1rem; }
-        .booking-form input, .booking-form select, .booking-form textarea { padding: 0.85rem 1rem; border: 1px solid rgba(243,156,18,0.2); border-radius: 10px; background: #1a1a1a; color: #eee; font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s; outline: none; }
-        .booking-form input:focus, .booking-form select:focus, .booking-form textarea:focus { border-color: #f39c12; }
-        .booking-form select option { background: #1a1a1a; }
-        .booking-form textarea { resize: vertical; }
-        .booking-form button { background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; border: none; padding: 1rem; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-        .booking-form button:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(243,156,18,0.4); }
+        .cal-embed-wrapper { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(243,156,18,0.25); box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+        .cal-embed-wrapper h2 { background: linear-gradient(135deg, #f39c12, #e67e22); color: #fff; font-size: 1.2rem; font-weight: 700; padding: 1rem 1.5rem; margin: 0; text-align: left; }
+        #cal-booking-inline { width: 100%; height: 680px; overflow: scroll; }
 
         /* Footer */
         .footer { background: #070707; border-top: 1px solid rgba(243,156,18,0.15); padding: 3rem 2rem 1rem; }
@@ -200,7 +196,8 @@
             .nav-links { display: none; position: fixed; top: 70px; left: 0; right: 0; background: rgba(10,10,10,0.98); flex-direction: column; padding: 2rem; gap: 1.2rem; border-bottom: 1px solid rgba(243,156,18,0.2); }
             .nav-links.active { display: flex; }
             .booking-content { grid-template-columns: 1fr; gap: 2rem; }
-            .booking-info h2, .booking-form h2 { text-align: center; }
+            .booking-info h2 { text-align: center; }
+            #cal-booking-inline { height: 580px; }
             .hero-btns { flex-direction: column; align-items: center; }
             .gallery-grid { grid-template-columns: repeat(2, 1fr); }
             .gallery-grid img { height: 160px; }
@@ -462,29 +459,9 @@
                         <iframe src="https://maps.google.com/maps?q=No602+Abhinandana+Jewel+Lanco+Hills+Road+Manikonda+Hyderabad+Telangana+500089&output=embed" width="100%" height="220" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
                     </div>
                 </div>
-                <div class="booking-form">
-                    <h2>🎙 Book a Session</h2>
-                    <form id="bookingForm">
-                        <input type="text" id="clientName" placeholder="Your Name" required>
-                        <input type="tel" id="clientPhone" placeholder="Phone Number" pattern="[6-9][0-9]{9}" title="Enter valid 10-digit mobile number" required>
-                        <input type="email" id="clientEmail" placeholder="Email Address">
-                        <select id="serviceSelect" required>
-                            <option value="">Select Service</option>
-                            <option value="Vocal Recording">Vocal Recording</option>
-                            <option value="Instrument Recording">Instrument Recording</option>
-                            <option value="Dubbing">Dubbing</option>
-                            <option value="Mixing & Mastering">Mixing & Mastering</option>
-                            <option value="Song Production">Song Production / Composing</option>
-                            <option value="Podcast Recording">Podcast Recording</option>
-                            <option value="Jingle & Ad Recording">Jingle & Ad Recording</option>
-                            <option value="Music Video">Music Video</option>
-                        </select>
-                        <textarea id="sessionDetails" placeholder="Tell us about your project (optional)" rows="3"></textarea>
-                        <button type="submit">Send Booking Request via WhatsApp 💬</button>
-                        <div id="bookingSuccess" style="display:none;margin-top:1rem;padding:1rem;background:rgba(39,174,96,0.15);border:1px solid rgba(39,174,96,0.4);border-radius:8px;color:#27ae60;font-weight:600;text-align:center;">
-                            ✅ Request sent! We'll contact you shortly to confirm your session.
-                        </div>
-                    </form>
+                <div class="cal-embed-wrapper">
+                    <h2>🎙 Book a Recording Session</h2>
+                    <div id="cal-booking-inline"></div>
                 </div>
             </div>
         </section>
@@ -574,20 +551,21 @@
         }
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
-        document.getElementById('bookingForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const name = document.getElementById('clientName').value;
-            const phone = document.getElementById('clientPhone').value;
-            const email = document.getElementById('clientEmail').value || 'N/A';
-            const service = document.getElementById('serviceSelect').value;
-            const details = document.getElementById('sessionDetails').value || 'N/A';
-            const msg = `Hello! I'd like to book a session at Chords Music Studio.%0A%0AName: ${encodeURIComponent(name)}%0APhone: ${phone}%0AEmail: ${encodeURIComponent(email)}%0AService: ${encodeURIComponent(service)}%0AProject Details: ${encodeURIComponent(details)}`;
-            window.open(`https://api.whatsapp.com/send?phone=917981585309&text=${msg}`, '_blank');
-            document.getElementById('bookingSuccess').style.display = 'block';
-            this.reset();
-        });
-
         document.getElementById('copyrightYear').textContent = new Date().getFullYear();
+
+        // Cal.com inline embed
+        (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["-namespace", namespace]);}else p(cal, ar); return; } p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+        Cal("init", {origin:"https://app.cal.com"});
+        Cal("inline", {
+            elementOrSelector: "#cal-booking-inline",
+            calLink: "chords-music-studios/recording-studio-booking",
+            layout: "month_view"
+        });
+        Cal("ui", {
+            styles: { branding: { brandColor: "#f39c12" } },
+            hideEventTypeDetails: false,
+            layout: "month_view"
+        });
     </script>
 </body>
 </html>
