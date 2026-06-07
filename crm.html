@@ -2755,6 +2755,14 @@ async function loadLeads() {
                 </select>
               </div>
               <div>
+                <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Which contacts</label>
+                <select id="promo-status-filter" style="width:100%;padding:10px 12px;font-size:0.9rem;border-radius:8px;">
+                  <option value="new" selected>🟢 New only — not yet messaged (recommended)</option>
+                  <option value="all">All contacts in this group</option>
+                </select>
+                <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">Each contact is automatically marked "Contacted" when you open their WhatsApp — so tomorrow's session picks up exactly where you left off.</div>
+              </div>
+              <div>
                 <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Time gap between contacts</label>
                 <select id="promo-gap" style="width:100%;padding:10px 12px;font-size:0.9rem;border-radius:8px;">
                   <option value="0">Manual — I'll click Next myself (safest)</option>
@@ -3019,11 +3027,13 @@ function updatePromoCount() {
   const list = g === 'all' ? window._allLeads : window._allLeads.filter(l => l.mode === g);
   const withPhone = list.filter(l => l.phone);
   const noName = withPhone.filter(l => /^\+?[\d\s\-]+$/.test((l.full_name||'').trim()));
+  const newOnly = withPhone.filter(l => !l.status || l.status === 'new');
+  const alreadyDone = withPhone.length - newOnly.length;
   let html = withPhone.length
-    ? `<span style="color:var(--gold)">${withPhone.length} contacts will be messaged</span>`
+    ? `<span style="color:var(--gold)">${newOnly.length} new</span> <span style="color:var(--muted)">/ ${withPhone.length} total</span>${alreadyDone ? ` · <span style="color:#27ae60;font-size:0.72rem;">✓ ${alreadyDone} already contacted</span>` : ''}`
     : `<span style="color:var(--muted)">No contacts with phone numbers in this group yet</span>`;
   if (noName.length) {
-    html += `<br><span style="color:var(--warn);font-size:0.72rem;">⚠️ ${noName.length} contacts have no name — {{name}} will say "there" for them</span>`;
+    html += `<br><span style="color:var(--warn);font-size:0.72rem;">⚠️ ${noName.length} have no name — {{name}} will say "there"</span>`;
   }
   el.innerHTML = html;
 }
@@ -3043,11 +3053,17 @@ window.startCampaign = function() {
 
   if (!msg) { alert('Please type your promotion message first.'); return; }
 
-  const leads = group === 'all' ? window._allLeads
-    : (window._allLeads || []).filter(l => l.mode === group);
+  const statusFilter = document.getElementById('promo-status-filter').value;
+  let leads = group === 'all' ? window._allLeads : (window._allLeads || []).filter(l => l.mode === group);
+  if (statusFilter === 'new') leads = leads.filter(l => !l.status || l.status === 'new');
 
   const withPhone = leads.filter(l => l.phone);
-  if (!withPhone.length) { alert('No contacts with phone numbers found in this group.'); return; }
+  if (!withPhone.length) {
+    alert(statusFilter === 'new'
+      ? 'No new uncontacted contacts found. Everyone has already been messaged! Switch to "All contacts" if you want to re-message.'
+      : 'No contacts with phone numbers found in this group.');
+    return;
+  }
 
   const capped = (limitVal > 0) ? withPhone.slice(0, limitVal) : withPhone;
 
@@ -3143,6 +3159,11 @@ window.openCurrentWA = function() {
   const text  = encodeURIComponent(personalised);
   window.open(`https://web.whatsapp.com/send?phone=${phone}&text=${text}`, '_blank');
   p.sent++;
+  // Mark as contacted so next session skips them
+  if (lead.id) {
+    apiCall({ action: 'crm_lead_status', id: lead.id, status: 'contacted' }).catch(() => {});
+    lead.status = 'contacted';
+  }
 };
 
 window.nextContact = function(skip) {
