@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Import Online Students — CMA</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:24px;background:#1a1a2e;color:#fff;min-height:100vh}
+h2{color:#e74c3c;margin-bottom:8px;font-size:1.2rem}
+p{font-size:0.82rem;color:#aaa;margin-bottom:20px;line-height:1.5}
+#btn{background:#e74c3c;color:#fff;border:none;padding:13px 28px;font-size:0.95rem;font-weight:700;cursor:pointer;border-radius:10px;margin-bottom:20px}
+#btn:disabled{opacity:0.5;cursor:not-allowed}
+#summary{display:none;background:#0f3460;border-radius:12px;padding:16px;margin-bottom:16px;font-size:0.85rem;line-height:1.8}
+#summary .big{font-size:1.6rem;font-weight:800;color:#27ae60}
+#summary .skip-c{color:#f39c12;font-weight:700}
+#log{background:#0a0a0a;border-radius:10px;padding:16px;max-height:55vh;overflow-y:auto;font-family:monospace;font-size:0.78rem;line-height:1.7}
+.ok{color:#27ae60}
+.skip{color:#f39c12}
+.err{color:#e74c3c}
+.info{color:#aaa}
+</style>
+</head>
+<body>
+
+<h2>CMA — Import Online Students from Schedule</h2>
+<p>Imports 33 online students from your weekly schedule.<br>
+   Duplicates (matched by name, case-insensitive) are skipped automatically.<br>
+   All students are added as <strong>Online Live Classes · Joined</strong> with their schedule slot saved in Notes.</p>
+
+<button id="btn" onclick="runImport()">Start Import →</button>
+
+<div id="summary"></div>
+<div id="log"><span class="info">Press "Start Import" to begin…</span></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getFirestore, collection, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDvuCr7IHM7oLYY6e675P_KtcTxsNEJr1c",
+  authDomain: "chords-music-academy.firebaseapp.com",
+  projectId: "chords-music-academy",
+  storageBucket: "chords-music-academy.firebasestorage.app",
+  messagingSenderId: "146425788425",
+  appId: "1:146425788425:web:8abbafbc93287a14ab20d8"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 33 students extracted from the weekly schedule image
+// Each has 2 classes/week (schedule shown in notes)
+const students = [
+  // Morning batch
+  { full_name: "Sriram",     notes: "Mon & Thu 5:50am IST" },
+  { full_name: "Gayatri",    notes: "Mon 6:30am + Sat 7:10am IST" },
+  { full_name: "Pranay",     notes: "Mon & Fri 8:30am IST" },
+  { full_name: "Pratham",    notes: "Mon & Fri 9:10am IST" },
+  { full_name: "Kanvas",     notes: "Mon & Wed 9:40am IST" },
+  { full_name: "Adyya Sri",  notes: "Tue 5:50am + Sat 8:20pm IST" },
+  { full_name: "Mayukha",    notes: "Tue & Fri 6:30am IST" },
+  { full_name: "Nitya",      notes: "Tue 7:50am + Thu 8:30am IST" },
+  { full_name: "Anshi",      notes: "Tue 8:30am IST" },
+  { full_name: "Vanshini",   notes: "Tue 9:10am IST" },
+  { full_name: "Harshith",   notes: "Wed 5:50am + Sat 5:40pm IST" },
+  { full_name: "Aashi",      notes: "Wed 6:30am + Sat 7:40pm IST" },
+  { full_name: "Siri",       notes: "Wed & Fri 7:10am IST" },
+  { full_name: "Darshil",    notes: "Wed & Sat 7:50am IST" },
+  { full_name: "Ryan",       notes: "Wed & Sat 8:30am IST" },
+  { full_name: "Hanvitha",   notes: "Thu 6:30am + Sat 9:00pm IST" },
+  { full_name: "Swarooopa",  notes: "Thu 7:50am IST (also noted as Srinka)" },
+  { full_name: "Mihira",     notes: "Mon & Thu 3:00pm IST" },
+  { full_name: "Sami",       notes: "Fri 5:50am IST" },
+  { full_name: "Jaasritha",  notes: "Fri 7:50am + Sat 6:30am IST" },
+  { full_name: "Pavan",      notes: "Sat 5:50am IST" },
+  { full_name: "Ashwini",    notes: "Sat 7:50am IST" },
+  // Evening batch
+  { full_name: "Gita",       notes: "Mon & Fri 5:40pm IST" },
+  { full_name: "Siyanta",    notes: "Mon & Wed 6:20pm IST" },
+  { full_name: "Lishita",    notes: "Mon & Fri 8:20pm IST" },
+  { full_name: "Hanish",     notes: "Tue & Wed 5:40pm IST" },
+  { full_name: "Amukta",     notes: "Tue & Thu 7:00pm IST" },
+  { full_name: "Revanth",    notes: "Tue & Thu 7:40pm IST" },
+  { full_name: "Dyuthi",     notes: "Tue & Wed 8:20pm IST" },
+  { full_name: "Padmavati",  notes: "Wed & Fri 7:00pm IST" },
+  { full_name: "Krishna",    notes: "Wed & Fri 7:40pm IST" },
+  { full_name: "Parinita",   notes: "Sat 5:00pm IST" },
+  { full_name: "Ishita",     notes: "Sat 6:20pm IST" },
+];
+
+function log(msg, cls) {
+  var d = document.getElementById('log');
+  d.innerHTML += '<div class="' + (cls||'info') + '">' + msg + '</div>';
+  d.scrollTop = d.scrollHeight;
+}
+
+function genRegId() {
+  var now = new Date();
+  var yy = String(now.getFullYear()).slice(2);
+  var mm = String(now.getMonth()+1).padStart(2,'0');
+  var dd = String(now.getDate()).padStart(2,'0');
+  var rand = Math.floor(Math.random()*9000)+1000;
+  return 'CMA-REG-' + yy + mm + dd + '-' + rand;
+}
+
+window.runImport = async function() {
+  var btn = document.getElementById('btn');
+  btn.disabled = true;
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('summary').style.display = 'none';
+
+  log('Connecting to Firestore…');
+  var snap;
+  try {
+    snap = await getDocs(collection(db, 'registrations'));
+  } catch(e) {
+    log('ERROR connecting to Firestore: ' + e.message, 'err');
+    btn.disabled = false;
+    return;
+  }
+
+  var existing = new Set();
+  snap.forEach(function(d) {
+    existing.add((d.data().full_name || '').toLowerCase().trim());
+  });
+  log('Found ' + existing.size + ' existing students in CRM.', 'info');
+  log('Checking ' + students.length + ' students to import…', 'info');
+  log('─────────────────────────────────────', 'info');
+
+  var added = 0, skipped = 0, errors = 0;
+  var now = new Date().toISOString();
+
+  for (var s of students) {
+    var nameLower = s.full_name.toLowerCase().trim();
+    if (existing.has(nameLower)) {
+      log('SKIP  ' + s.full_name + ' — already in CRM', 'skip');
+      skipped++;
+      continue;
+    }
+    try {
+      await addDoc(collection(db, 'registrations'), {
+        reg_id:     genRegId(),
+        full_name:  s.full_name,
+        dob:        '—',
+        address:    '—',
+        phone:      '—',
+        email:      '—',
+        guardian:   '—',
+        instrument: '—',
+        level:      '—',
+        mode:       'Online Live Classes',
+        notes:      'Schedule: ' + s.notes,
+        status:     'joined',
+        createdAt:  now,
+        updatedAt:  now
+      });
+      log('ADDED ' + s.full_name + '  ·  ' + s.notes, 'ok');
+      added++;
+    } catch(e) {
+      log('ERROR ' + s.full_name + ' — ' + e.message, 'err');
+      errors++;
+    }
+  }
+
+  log('─────────────────────────────────────', 'info');
+  log('Done.', 'ok');
+
+  var sumEl = document.getElementById('summary');
+  sumEl.style.display = 'block';
+  sumEl.innerHTML =
+    '<span class="big">' + added + '</span> students added &nbsp;·&nbsp; ' +
+    '<span class="skip-c">' + skipped + ' skipped</span> (already existed)' +
+    (errors ? ' &nbsp;·&nbsp; <span style="color:#e74c3c">' + errors + ' errors</span>' : '') +
+    '<br><br>Go to <a href="/admin" style="color:#e74c3c">chordsmusicacademy.in/admin</a> → filter <strong>Joined</strong> → then filter by mode tag to see online students.';
+};
+</script>
+</body>
+</html>
