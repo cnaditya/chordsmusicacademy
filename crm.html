@@ -2738,10 +2738,16 @@ async function loadLeads() {
                 </select>
               </div>
               <div>
+                <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:6px;">
+                  Message Templates &nbsp;<span style="color:var(--muted);">— tap to load, then edit</span>
+                </label>
+                <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;" id="promo-templates"></div>
+              </div>
+              <div>
                 <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">
                   Your Message &nbsp;<span style="color:var(--gold);">— use {{name}} to personalise</span>
                 </label>
-                <textarea id="promo-msg" rows="6" placeholder="Hi {{name}}, thanks for your enquiry about our recording studio! We have professional recording, mixing &amp; dubbing services. Can I share more details?" style="width:100%;padding:10px 12px;font-size:0.88rem;border-radius:8px;resize:vertical;line-height:1.5;"></textarea>
+                <textarea id="promo-msg" rows="6" placeholder="Select a template above or type your own message…" style="width:100%;padding:10px 12px;font-size:0.88rem;border-radius:8px;resize:vertical;line-height:1.5;"></textarea>
                 <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">Use {{name}} to personalise — replaced with each person's first name (or "there" if name unknown).</div>
                 <div id="promo-msg-preview" style="display:none;margin-top:8px;background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:0.8rem;color:var(--text);line-height:1.5;border-left:3px solid #25d366;"></div>
               </div>
@@ -2991,20 +2997,105 @@ window.runBulkUpload = async function() {
 
 window._promo = null;
 
+const PROMO_TEMPLATES = [
+  {
+    tag: 'studio',
+    label: '🎙 Studio — General enquiry',
+    msg: `Hi {{name}}! Thanks for your interest in Chords Music Academy Recording Studio 🎙
+
+We offer professional song recording, music production, mixing & dubbing in Hyderabad.
+
+Would you like to know more about our packages and studio availability?`,
+  },
+  {
+    tag: 'studio',
+    label: '🎙 Studio — Special offer',
+    msg: `Hi {{name}}! 🎵 Special offer at Chords Music Academy Recording Studio, Hyderabad!
+
+🎙 Professional song recording
+🎚 Mixing & mastering
+🎬 Dubbing & voice-over
+🎼 Music production
+
+Limited slots available this month. Interested? Reply and I'll share the details!`,
+  },
+  {
+    tag: 'studio',
+    label: '🎙 Studio — Follow up',
+    msg: `Hi {{name}}, just following up on your enquiry about our recording studio 🎙
+
+We still have slots available. Let me know if you'd like to book a session or need any information!`,
+  },
+  {
+    tag: 'academy',
+    label: '🎵 Academy — Online classes',
+    msg: `Hi {{name}}! Thanks for your interest in Chords Music Academy 🎵
+
+We offer online live 1-on-1 music classes for Piano, Guitar, Vocals & Drums — from anywhere in the world!
+
+🕐 Flexible timings
+👨‍🏫 Certified teachers
+🎓 Trinity College London curriculum
+
+Would you like to schedule a free demo class?`,
+  },
+  {
+    tag: 'academy',
+    label: '🎵 Academy — Free demo offer',
+    msg: `Hi {{name}}! 🎶 Chords Music Academy is offering a FREE demo class this week!
+
+Piano | Guitar | Carnatic Vocals | Drums
+Online & Offline classes available in Hyderabad.
+
+Interested? Reply YES and I'll schedule your free demo! 😊`,
+  },
+  {
+    tag: 'academy',
+    label: '🎵 Academy — Follow up',
+    msg: `Hi {{name}}, following up on your enquiry about music classes at Chords Music Academy 🎵
+
+We'd love to have you join! Would you like to book a free demo class this week?`,
+  },
+];
+
+function renderPromoTemplates(group) {
+  const el = document.getElementById('promo-templates');
+  if (!el) return;
+  const filtered = group === 'all' ? PROMO_TEMPLATES : PROMO_TEMPLATES.filter(t => t.tag === group || group === 'all');
+  el.innerHTML = filtered.map((t, i) => `
+    <button onclick="loadTemplate(${PROMO_TEMPLATES.indexOf(t)})"
+      style="text-align:left;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.78rem;font-weight:600;cursor:pointer;line-height:1.4;">
+      ${t.label}
+    </button>`).join('');
+}
+
+window.loadTemplate = function(idx) {
+  const t = PROMO_TEMPLATES[idx];
+  if (!t) return;
+  document.getElementById('promo-msg').value = t.msg;
+  updateMsgPreview();
+  document.getElementById('promo-msg').focus();
+};
+
 window.openPromoModal = function() {
   const m = document.getElementById('promo-modal');
   if (!m) return;
   document.getElementById('promo-step1').style.display = 'block';
   document.getElementById('promo-step2').style.display = 'none';
   document.getElementById('promo-step3').style.display = 'none';
-  // Preview count
+  document.getElementById('promo-msg').value = '';
+  document.getElementById('promo-msg-preview').style.display = 'none';
   const group = document.getElementById('promo-group').value;
+  renderPromoTemplates(group);
   updatePromoCount();
   m.style.display = 'flex';
 };
 
 document.addEventListener('change', function(e) {
-  if (e.target && e.target.id === 'promo-group') updatePromoCount();
+  if (e.target && e.target.id === 'promo-group') {
+    updatePromoCount();
+    renderPromoTemplates(e.target.value);
+  }
 });
 document.addEventListener('input', function(e) {
   if (e.target && e.target.id === 'promo-msg') updateMsgPreview();
