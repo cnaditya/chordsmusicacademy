@@ -2738,22 +2738,36 @@ async function loadLeads() {
                 </select>
               </div>
               <div>
-                <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Your Message</label>
-                <textarea id="promo-msg" rows="6" placeholder="Type your promotion message here…&#10;&#10;Tip: Keep it short and personal. You can paste the same image/video in each WhatsApp tab." style="width:100%;padding:10px 12px;font-size:0.88rem;border-radius:8px;resize:vertical;line-height:1.5;"></textarea>
+                <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">
+                  Your Message &nbsp;<span style="color:var(--gold);">— use {{name}} to personalise</span>
+                </label>
+                <textarea id="promo-msg" rows="6" placeholder="Hi {{name}}, thanks for your enquiry about our recording studio! We have professional recording, mixing &amp; dubbing services. Can I share more details?" style="width:100%;padding:10px 12px;font-size:0.88rem;border-radius:8px;resize:vertical;line-height:1.5;"></textarea>
+                <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">{{name}} is replaced with each person's name automatically. Personalised messages are much less likely to be flagged.</div>
+              </div>
+              <div>
+                <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Daily limit <span style="color:var(--muted);">(recommended max 50/day for safety)</span></label>
+                <select id="promo-limit" style="width:100%;padding:10px 12px;font-size:0.9rem;border-radius:8px;">
+                  <option value="20">20 per session</option>
+                  <option value="30">30 per session</option>
+                  <option value="50" selected>50 per session</option>
+                  <option value="0">No limit</option>
+                </select>
               </div>
               <div>
                 <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Time gap between contacts</label>
                 <select id="promo-gap" style="width:100%;padding:10px 12px;font-size:0.9rem;border-radius:8px;">
                   <option value="0">Manual — I'll click Next myself (safest)</option>
-                  <option value="30">Auto 30 sec gap</option>
-                  <option value="60" selected>Auto 1 min gap</option>
-                  <option value="120">Auto 2 min gap</option>
-                  <option value="180">Auto 3 min gap</option>
+                  <option value="r3060">Random 30–60 sec (recommended)</option>
+                  <option value="r60120">Random 1–2 min</option>
+                  <option value="r120180">Random 2–3 min</option>
+                  <option value="60">Fixed 1 min</option>
+                  <option value="120">Fixed 2 min</option>
                 </select>
               </div>
-              <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:0.75rem;color:var(--muted);line-height:1.6;">
-                💡 <strong style="color:var(--text);">How it works:</strong> Each contact opens in WhatsApp Web with your message already typed. Just hit <strong style="color:var(--text);">Send</strong> and come back here.<br>
-                📎 <strong style="color:var(--text);">For images/videos:</strong> Keep the file ready — paste it (Ctrl+V or drag) into each WhatsApp chat before sending.
+              <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:0.75rem;color:var(--muted);line-height:1.7;">
+                ✅ <strong style="color:#27ae60;">Safe:</strong> YOU manually hit Send each time — this is just opening WhatsApp Web, not automation.<br>
+                💡 <strong style="color:var(--text);">For images/videos:</strong> Keep the file ready — paste (Cmd+V) into each WhatsApp tab before sending.<br>
+                ⚠️ <strong style="color:var(--warn);">Tip:</strong> Ask a question in your first message — replies protect you from spam flags.
               </div>
               <div id="promo-count-preview" style="font-size:0.8rem;color:var(--gold);font-weight:600;text-align:center;"></div>
               <button onclick="startCampaign()" style="width:100%;padding:13px;background:#25d366;color:#fff;border:none;border-radius:8px;font-size:0.95rem;font-weight:700;cursor:pointer;">Start →</button>
@@ -3004,7 +3018,8 @@ window.closePromoModal = function() {
 window.startCampaign = function() {
   const msg   = (document.getElementById('promo-msg').value || '').trim();
   const group = document.getElementById('promo-group').value;
-  const gap   = parseInt(document.getElementById('promo-gap').value, 10);
+  const gapRaw  = document.getElementById('promo-gap').value;
+  const limitVal = parseInt(document.getElementById('promo-limit').value, 10);
 
   if (!msg) { alert('Please type your promotion message first.'); return; }
 
@@ -3014,10 +3029,23 @@ window.startCampaign = function() {
   const withPhone = leads.filter(l => l.phone);
   if (!withPhone.length) { alert('No contacts with phone numbers found in this group.'); return; }
 
+  const capped = (limitVal > 0) ? withPhone.slice(0, limitVal) : withPhone;
+
+  // Parse gap: fixed number or random range like "r3060" meaning 30–60s
+  let gapMin = 0, gapMax = 0, gapFixed = 0, gapMode = 'manual';
+  if (gapRaw && gapRaw.startsWith('r')) {
+    const nums = gapRaw.slice(1).match(/\d+/g);
+    gapMin = parseInt(nums[0], 10); gapMax = parseInt(nums[1], 10);
+    gapMode = 'random';
+  } else if (gapRaw && parseInt(gapRaw, 10) > 0) {
+    gapFixed = parseInt(gapRaw, 10);
+    gapMode = 'fixed';
+  }
+
   window._promo = {
-    leads:   withPhone,
+    leads:   capped,
     message: msg,
-    gap,
+    gapMode, gapMin, gapMax, gapFixed,
     index:   0,
     sent:    0,
     skipped: 0,
@@ -3062,14 +3090,17 @@ function renderCampaignStep() {
   // Auto-timer
   if (p.timer) clearInterval(p.timer);
   document.getElementById('promo-timer-display').textContent = '';
-  if (p.gap > 0) {
-    let remaining = p.gap;
+  let gapSecs = 0;
+  if (p.gapMode === 'fixed')  gapSecs = p.gapFixed;
+  if (p.gapMode === 'random') gapSecs = p.gapMin + Math.floor(Math.random() * (p.gapMax - p.gapMin + 1));
+
+  if (gapSecs > 0) {
+    let remaining = gapSecs;
     document.getElementById('promo-timer-display').textContent = `Auto-next in ${remaining}s — send your message then come back`;
     p.timer = setInterval(function() {
       remaining--;
       if (remaining <= 0) {
-        clearInterval(p.timer);
-        p.timer = null;
+        clearInterval(p.timer); p.timer = null;
         document.getElementById('promo-timer-display').textContent = '';
         nextContact(false);
       } else {
@@ -3082,8 +3113,12 @@ function renderCampaignStep() {
 window.openCurrentWA = function() {
   const p = window._promo;
   if (!p || p.index >= p.leads.length) return;
-  const phone = (p.leads[p.index].phone || '').replace(/\D/g, '');
-  const text  = encodeURIComponent(p.message);
+  const lead  = p.leads[p.index];
+  const phone = (lead.phone || '').replace(/\D/g, '');
+  // Personalise: replace {{name}} with first word of their name
+  const firstName = (lead.full_name || '').split(/[\s_]/)[0] || 'there';
+  const personalised = p.message.replace(/\{\{name\}\}/gi, firstName);
+  const text  = encodeURIComponent(personalised);
   window.open(`https://web.whatsapp.com/send?phone=${phone}&text=${text}`, '_blank');
   p.sent++;
 };
