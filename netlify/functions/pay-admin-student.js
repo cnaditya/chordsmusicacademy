@@ -381,6 +381,26 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, leads: Array.isArray(data) ? data : [] }) };
     }
 
+    if (action === "crm_lead_add") {
+      const { lead } = JSON.parse(event.body);
+      if (!lead || !lead.full_name) return { statusCode: 400, headers, body: JSON.stringify({ error: "full_name required" }) };
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_leads`, {
+        method: "POST",
+        headers: { ...SB_M, Prefer: "return=representation" },
+        body: JSON.stringify({
+          full_name: lead.full_name.trim(),
+          phone:     lead.phone   || null,
+          email:     lead.email   || null,
+          mode:      lead.mode    || null,
+          notes:     lead.notes   || null,
+          status:    "new",
+        }),
+      });
+      const data = await r.json();
+      if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: (data&&data.message)||"Insert failed" }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, lead: Array.isArray(data)?data[0]:data }) };
+    }
+
     if (action === "crm_lead_status") {
       const { id, status: st } = JSON.parse(event.body);
       if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: "id required" }) };

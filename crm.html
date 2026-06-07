@@ -2693,16 +2693,58 @@ async function loadLeads() {
       `<button onclick="filterLeads('${s}')" id="lead-filter-${s}" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:${s==='all'?'var(--gold)':'var(--surface2)'};color:${s==='all'?'#000':'var(--text)'};font-size:0.78rem;font-weight:600;cursor:pointer;">${s==='all'?'All':LEAD_STATUS_LABELS[s]}</button>`
     ).join('');
 
+    const tagBtns = [
+      { v:'all',     label:'All Types' },
+      { v:'academy', label:'🎵 Music Academy' },
+      { v:'studio',  label:'🎙 Recording Studio' },
+    ].map(t =>
+      `<button onclick="filterLeadsByTag('${t.v}')" id="tag-filter-${t.v}" style="padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:${t.v==='all'?'var(--info)':'var(--surface2)'};color:${t.v==='all'?'#fff':'var(--text)'};font-size:0.75rem;font-weight:600;cursor:pointer;">${t.label}</button>`
+    ).join('');
+
     window._allLeads = leads;
+    window._leadTagFilter = 'all';
     document.getElementById('page-content').innerHTML = `
       <div style="margin-bottom:16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
-          <div style="font-size:0.82rem;color:var(--muted);">Registrations from chordsmusicacademy.in/register automatically appear here.</div>
-          <button onclick="importFromFirebase()" style="padding:7px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--gold);font-size:0.78rem;font-weight:700;cursor:pointer;">⬇ Import old registrations from Firebase</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+          <div style="font-size:0.82rem;color:var(--muted);">WhatsApp/Instagram contacts + registrations from your website.</div>
+          <button onclick="openAddLeadModal()" style="padding:9px 18px;background:var(--gold);color:#000;border:none;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;">+ Add Contact</button>
         </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;" id="lead-tag-filters">${tagBtns}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;" id="lead-filters">${filterBtns}</div>
       </div>
-      <div id="leads-list"></div>`;
+      <div id="leads-list"></div>
+
+      <!-- Add Contact Modal -->
+      <div id="add-lead-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;align-items:center;justify-content:center;padding:20px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 20px;width:100%;max-width:400px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+            <span style="font-weight:700;font-size:1rem;">Add WhatsApp Contact</span>
+            <button onclick="closeAddLeadModal()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div>
+              <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Name *</label>
+              <input id="al-name" placeholder="Full name" style="width:100%;padding:10px 12px;font-size:0.9rem;border-radius:8px;">
+            </div>
+            <div>
+              <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">WhatsApp Number *</label>
+              <input id="al-phone" placeholder="e.g. 919876543210 (with country code)" style="width:100%;padding:10px 12px;font-size:0.9rem;border-radius:8px;" type="tel">
+            </div>
+            <div>
+              <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Enquiry Type *</label>
+              <select id="al-tag" style="width:100%;padding:10px 12px;font-size:0.9rem;border-radius:8px;">
+                <option value="academy">🎵 Music Academy</option>
+                <option value="studio">🎙 Recording Studio</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Note (optional)</label>
+              <input id="al-note" placeholder="e.g. Interested in guitar, saw Instagram ad" style="width:100%;padding:10px 12px;font-size:0.9rem;border-radius:8px;">
+            </div>
+            <button onclick="saveAddLead()" id="al-save-btn" style="width:100%;padding:12px;background:var(--gold);color:#000;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;margin-top:4px;">Save Contact</button>
+          </div>
+        </div>
+      </div>`;
     renderLeads(leads);
   } catch(e) {
     if (e.message === 'table_not_found') {
@@ -2737,9 +2779,73 @@ function filterLeads(status) {
     b.style.background = active ? 'var(--gold)' : 'var(--surface2)';
     b.style.color = active ? '#000' : 'var(--text)';
   });
-  const filtered = status === 'all' ? window._allLeads : window._allLeads.filter(l => l.status === status);
-  renderLeads(filtered);
+  applyLeadFilters();
 }
+
+function filterLeadsByTag(tag) {
+  window._leadTagFilter = tag;
+  document.querySelectorAll('[id^="tag-filter-"]').forEach(b => {
+    const active = b.id === `tag-filter-${tag}`;
+    b.style.background = active ? 'var(--info)' : 'var(--surface2)';
+    b.style.color = active ? '#fff' : 'var(--text)';
+  });
+  applyLeadFilters();
+}
+
+function applyLeadFilters() {
+  const activeStatus = document.querySelector('[id^="lead-filter-"][style*="var(--gold)"]');
+  const status = activeStatus ? activeStatus.id.replace('lead-filter-', '') : 'all';
+  const tag = window._leadTagFilter || 'all';
+  let list = window._allLeads;
+  if (status !== 'all') list = list.filter(l => l.status === status);
+  if (tag !== 'all') list = list.filter(l => l.mode === tag);
+  renderLeads(list);
+}
+
+window.openAddLeadModal = function() {
+  const m = document.getElementById('add-lead-modal');
+  if (!m) return;
+  document.getElementById('al-name').value = '';
+  document.getElementById('al-phone').value = '';
+  document.getElementById('al-note').value = '';
+  document.getElementById('al-tag').value = 'academy';
+  m.style.display = 'flex';
+};
+
+window.closeAddLeadModal = function() {
+  const m = document.getElementById('add-lead-modal');
+  if (m) m.style.display = 'none';
+};
+
+window.saveAddLead = async function() {
+  const name  = document.getElementById('al-name').value.trim();
+  const phone = document.getElementById('al-phone').value.trim();
+  const tag   = document.getElementById('al-tag').value;
+  const note  = document.getElementById('al-note').value.trim();
+
+  if (!name)  { alert('Please enter a name.'); return; }
+  if (!phone) { alert('Please enter a WhatsApp number.'); return; }
+
+  const btn = document.getElementById('al-save-btn');
+  btn.textContent = 'Saving…';
+  btn.disabled = true;
+
+  try {
+    await apiCall({ action: 'crm_lead_add', lead: {
+      full_name: name,
+      phone,
+      mode:  tag,
+      notes: note || null,
+    }});
+    closeAddLeadModal();
+    toast(name + ' added!');
+    loadLeads();
+  } catch(e) {
+    toast('Failed to save: ' + e.message, 'error');
+    btn.textContent = 'Save Contact';
+    btn.disabled = false;
+  }
+};
 
 function renderLeads(leads) {
   const el = document.getElementById('leads-list');
@@ -2755,11 +2861,15 @@ function renderLeads(leads) {
             <span style="background:${LEAD_STATUS_COLORS[l.status]||'#666'};color:#fff;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;">${LEAD_STATUS_LABELS[l.status]||l.status}</span>
             ${l.reg_id ? `<span style="font-size:0.7rem;color:var(--muted);">${l.reg_id}</span>` : ''}
           </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+            ${l.mode === 'academy' ? `<span style="background:#1a3a5c;color:#5dade2;font-size:0.65rem;font-weight:700;padding:2px 9px;border-radius:10px;">🎵 Music Academy</span>` : ''}
+            ${l.mode === 'studio'  ? `<span style="background:#3b1f3b;color:#c39bd3;font-size:0.65rem;font-weight:700;padding:2px 9px;border-radius:10px;">🎙 Recording Studio</span>` : ''}
+          </div>
           <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:0.8rem;color:var(--muted);margin-bottom:8px;">
             ${l.phone ? `<span>📞 <a href="tel:${l.phone}" style="color:var(--gold);text-decoration:none;">${l.phone}</a></span>` : ''}
             ${l.email ? `<span>✉️ ${l.email}</span>` : ''}
             ${l.instrument ? `<span>${instrumentIcon(l.instrument)} ${l.instrument}</span>` : ''}
-            ${l.mode ? `<span>📡 ${cap(l.mode)}</span>` : ''}
+            ${l.mode && l.mode !== 'academy' && l.mode !== 'studio' ? `<span>📡 ${cap(l.mode)}</span>` : ''}
             ${l.level ? `<span>📊 ${cap(l.level)}</span>` : ''}
           </div>
           ${l.address ? `<div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px;">📍 ${l.address}</div>` : ''}
