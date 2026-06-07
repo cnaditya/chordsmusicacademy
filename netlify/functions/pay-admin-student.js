@@ -381,6 +381,44 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, leads: Array.isArray(data) ? data : [] }) };
     }
 
+    if (action === "crm_lead_bulk_add") {
+      const { leads: bulkLeads, mode: bulkMode } = JSON.parse(event.body);
+      if (!Array.isArray(bulkLeads) || !bulkLeads.length) return { statusCode: 400, headers, body: JSON.stringify({ error: "leads array required" }) };
+
+      // Fetch existing phones to skip duplicates
+      const exRes = await fetch(`${SUPABASE_URL}/rest/v1/crm_leads?select=phone`, { headers: SB_H });
+      const exData = await exRes.json();
+      const existingPhones = new Set((Array.isArray(exData) ? exData : []).map(r => (r.phone || '').replace(/\D/g, '')));
+
+      const toInsert = [];
+      const skipped = [];
+      for (const l of bulkLeads) {
+        const digits = (l.phone || '').replace(/\D/g, '');
+        if (!digits || existingPhones.has(digits)) { skipped.push(l.phone); continue; }
+        existingPhones.add(digits);
+        toInsert.push({
+          full_name: l.full_name || digits,
+          phone:     digits.length === 10 ? '91' + digits : digits,
+          mode:      bulkMode || l.mode || 'studio',
+          notes:     l.notes || null,
+          status:    'new',
+        });
+      }
+
+      if (!toInsert.length) return { statusCode: 200, headers, body: JSON.stringify({ success: true, added: 0, skipped: skipped.length }) };
+
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_leads`, {
+        method: "POST",
+        headers: { ...SB_M, Prefer: "return=minimal" },
+        body: JSON.stringify(toInsert),
+      });
+      if (r.status >= 400) {
+        const err = await r.text();
+        return { statusCode: r.status, headers, body: JSON.stringify({ error: err }) };
+      }
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, added: toInsert.length, skipped: skipped.length }) };
+    }
+
     if (action === "crm_lead_add") {
       const { lead } = JSON.parse(event.body);
       if (!lead || !lead.full_name) return { statusCode: 400, headers, body: JSON.stringify({ error: "full_name required" }) };

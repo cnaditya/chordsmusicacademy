@@ -2707,12 +2707,42 @@ async function loadLeads() {
       <div style="margin-bottom:16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
           <div style="font-size:0.82rem;color:var(--muted);">WhatsApp/Instagram contacts + registrations from your website.</div>
-          <button onclick="openAddLeadModal()" style="padding:9px 18px;background:var(--gold);color:#000;border:none;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;">+ Add Contact</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button onclick="openAddLeadModal()" style="padding:9px 18px;background:var(--gold);color:#000;border:none;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;">+ Add Contact</button>
+            <button onclick="openBulkModal()" style="padding:9px 18px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;">📥 Bulk Upload Numbers</button>
+          </div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;" id="lead-tag-filters">${tagBtns}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;" id="lead-filters">${filterBtns}</div>
       </div>
       <div id="leads-list"></div>
+
+      <!-- Bulk Upload Modal -->
+      <div id="bulk-lead-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;align-items:center;justify-content:center;padding:20px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 20px;width:100%;max-width:480px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-weight:700;font-size:1rem;">📥 Bulk Upload Numbers</span>
+            <button onclick="closeBulkModal()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
+          </div>
+          <p style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">Paste phone numbers — any format, comma or newline separated. Duplicates are skipped automatically.</p>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div>
+              <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Enquiry Type</label>
+              <select id="bl-tag" style="width:100%;padding:10px 12px;font-size:0.9rem;border-radius:8px;">
+                <option value="studio">🎙 Recording Studio</option>
+                <option value="academy">🎵 Music Academy</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Phone Numbers</label>
+              <textarea id="bl-numbers" rows="8" placeholder="7032285288&#10;9966665582&#10;9493490937, 7842257801&#10;..." style="width:100%;padding:10px 12px;font-size:0.85rem;border-radius:8px;resize:vertical;font-family:monospace;"></textarea>
+            </div>
+            <div id="bl-preview" style="font-size:0.75rem;color:var(--muted);"></div>
+            <button onclick="runBulkUpload()" id="bl-save-btn" style="width:100%;padding:12px;background:var(--gold);color:#000;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;">Upload →</button>
+            <div id="bl-result" style="font-size:0.82rem;text-align:center;display:none;"></div>
+          </div>
+        </div>
+      </div>
 
       <!-- Add Contact Modal -->
       <div id="add-lead-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;align-items:center;justify-content:center;padding:20px;">
@@ -2801,6 +2831,67 @@ function applyLeadFilters() {
   if (tag !== 'all') list = list.filter(l => l.mode === tag);
   renderLeads(list);
 }
+
+window.openBulkModal = function() {
+  const m = document.getElementById('bulk-lead-modal');
+  if (!m) return;
+  document.getElementById('bl-numbers').value = '';
+  document.getElementById('bl-preview').textContent = '';
+  document.getElementById('bl-result').style.display = 'none';
+  document.getElementById('bl-save-btn').disabled = false;
+  document.getElementById('bl-save-btn').textContent = 'Upload →';
+  m.style.display = 'flex';
+};
+
+window.closeBulkModal = function() {
+  const m = document.getElementById('bulk-lead-modal');
+  if (m) m.style.display = 'none';
+};
+
+document.addEventListener('input', function(e) {
+  if (e.target && e.target.id === 'bl-numbers') {
+    const nums = parseBulkNumbers(e.target.value);
+    const pre = document.getElementById('bl-preview');
+    if (pre) pre.textContent = nums.length ? nums.length + ' numbers detected' : '';
+  }
+});
+
+function parseBulkNumbers(text) {
+  return text
+    .split(/[\n,;\s]+/)
+    .map(n => n.replace(/\D/g, ''))
+    .filter(n => n.length >= 8);
+}
+
+window.runBulkUpload = async function() {
+  const raw   = document.getElementById('bl-numbers').value;
+  const tag   = document.getElementById('bl-tag').value;
+  const nums  = parseBulkNumbers(raw);
+  const btn   = document.getElementById('bl-save-btn');
+  const res   = document.getElementById('bl-result');
+
+  if (!nums.length) { alert('No valid numbers found. Paste at least one phone number.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Uploading…';
+  res.style.display = 'none';
+
+  const leads = nums.map(n => ({ phone: n, full_name: n }));
+
+  try {
+    const data = await apiCall({ action: 'crm_lead_bulk_add', leads, mode: tag });
+    res.style.display = 'block';
+    res.innerHTML = `<span style="color:#27ae60;font-weight:700;">✅ ${data.added} added</span>${data.skipped ? `  ·  <span style="color:#f39c12;">${data.skipped} skipped (already exist)</span>` : ''}`;
+    btn.textContent = 'Upload →';
+    btn.disabled = false;
+    loadLeads();
+  } catch(e) {
+    res.style.display = 'block';
+    res.innerHTML = `<span style="color:#e74c3c;">Error: ${e.message}</span>`;
+    btn.textContent = 'Upload →';
+    btn.disabled = false;
+  }
+};
 
 window.openAddLeadModal = function() {
   const m = document.getElementById('add-lead-modal');
