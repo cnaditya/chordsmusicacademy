@@ -2742,7 +2742,8 @@ async function loadLeads() {
                   Your Message &nbsp;<span style="color:var(--gold);">— use {{name}} to personalise</span>
                 </label>
                 <textarea id="promo-msg" rows="6" placeholder="Hi {{name}}, thanks for your enquiry about our recording studio! We have professional recording, mixing &amp; dubbing services. Can I share more details?" style="width:100%;padding:10px 12px;font-size:0.88rem;border-radius:8px;resize:vertical;line-height:1.5;"></textarea>
-                <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">{{name}} is replaced with each person's name automatically. Personalised messages are much less likely to be flagged.</div>
+                <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">Use {{name}} to personalise — replaced with each person's first name (or "there" if name unknown).</div>
+                <div id="promo-msg-preview" style="display:none;margin-top:8px;background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:0.8rem;color:var(--text);line-height:1.5;border-left:3px solid #25d366;"></div>
               </div>
               <div>
                 <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Daily limit <span style="color:var(--muted);">(recommended max 50/day for safety)</span></label>
@@ -2997,15 +2998,34 @@ window.openPromoModal = function() {
 document.addEventListener('change', function(e) {
   if (e.target && e.target.id === 'promo-group') updatePromoCount();
 });
+document.addEventListener('input', function(e) {
+  if (e.target && e.target.id === 'promo-msg') updateMsgPreview();
+});
+function updateMsgPreview() {
+  const msg = (document.getElementById('promo-msg')||{}).value || '';
+  const el  = document.getElementById('promo-msg-preview');
+  if (!el) return;
+  if (!msg.includes('{{name}}')) { el.style.display='none'; return; }
+  const sample = msg.replace(/\{\{name\}\}/gi, 'Ravi');
+  el.style.display = 'block';
+  el.innerHTML = '<span style="color:var(--muted);font-size:0.7rem;">Preview → </span>' + sample.replace(/\n/g,'<br>');
+}
 
 function updatePromoCount() {
   const group = document.getElementById('promo-group');
   const el    = document.getElementById('promo-count-preview');
   if (!group || !el || !window._allLeads) return;
   const g = group.value;
-  const count = g === 'all' ? window._allLeads.length
-    : window._allLeads.filter(l => l.mode === g).length;
-  el.textContent = count ? count + ' contacts will be messaged' : 'No contacts in this group yet';
+  const list = g === 'all' ? window._allLeads : window._allLeads.filter(l => l.mode === g);
+  const withPhone = list.filter(l => l.phone);
+  const noName = withPhone.filter(l => /^\+?[\d\s\-]+$/.test((l.full_name||'').trim()));
+  let html = withPhone.length
+    ? `<span style="color:var(--gold)">${withPhone.length} contacts will be messaged</span>`
+    : `<span style="color:var(--muted)">No contacts with phone numbers in this group yet</span>`;
+  if (noName.length) {
+    html += `<br><span style="color:var(--warn);font-size:0.72rem;">⚠️ ${noName.length} contacts have no name — {{name}} will say "there" for them</span>`;
+  }
+  el.innerHTML = html;
 }
 
 window.closePromoModal = function() {
@@ -3115,8 +3135,10 @@ window.openCurrentWA = function() {
   if (!p || p.index >= p.leads.length) return;
   const lead  = p.leads[p.index];
   const phone = (lead.phone || '').replace(/\D/g, '');
-  // Personalise: replace {{name}} with first word of their name
-  const firstName = (lead.full_name || '').split(/[\s_]/)[0] || 'there';
+  // Personalise: replace {{name}} with first name, fall back to "there" if name is just digits
+  const rawName   = (lead.full_name || '').trim();
+  const isUnknown = /^\+?[\d\s\-]+$/.test(rawName); // name is actually a phone number
+  const firstName = isUnknown ? 'there' : rawName.split(/[\s_]/)[0];
   const personalised = p.message.replace(/\{\{name\}\}/gi, firstName);
   const text  = encodeURIComponent(personalised);
   window.open(`https://web.whatsapp.com/send?phone=${phone}&text=${text}`, '_blank');
