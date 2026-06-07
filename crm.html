@@ -2997,6 +2997,8 @@ window.runBulkUpload = async function() {
 
 window._promo = null;
 
+const STUDIO_LOCATION = 'https://maps.app.goo.gl/QB8eobnMkJ4ZGzet6';
+
 const PROMO_TEMPLATES = [
   {
     tag: 'studio',
@@ -3005,7 +3007,9 @@ const PROMO_TEMPLATES = [
 
 We offer professional song recording, music production, mixing & dubbing in Hyderabad.
 
-Would you like to know more about our packages and studio availability?`,
+📍 Studio location: ${STUDIO_LOCATION}
+
+Would you like to know more about our packages and availability?`,
   },
   {
     tag: 'studio',
@@ -3017,6 +3021,8 @@ Would you like to know more about our packages and studio availability?`,
 🎬 Dubbing & voice-over
 🎼 Music production
 
+📍 ${STUDIO_LOCATION}
+
 Limited slots available this month. Interested? Reply and I'll share the details!`,
   },
   {
@@ -3024,7 +3030,10 @@ Limited slots available this month. Interested? Reply and I'll share the details
     label: '🎙 Studio — Follow up',
     msg: `Hi {{name}}, just following up on your enquiry about our recording studio 🎙
 
-We still have slots available. Let me know if you'd like to book a session or need any information!`,
+We still have slots available at our Hyderabad studio.
+📍 ${STUDIO_LOCATION}
+
+Let me know if you'd like to book a session or have any questions!`,
   },
   {
     tag: 'academy',
@@ -3037,6 +3046,8 @@ We offer online live 1-on-1 music classes for Piano, Guitar, Vocals & Drums — 
 👨‍🏫 Certified teachers
 🎓 Trinity College London curriculum
 
+Also available for offline classes in Hyderabad 📍 ${STUDIO_LOCATION}
+
 Would you like to schedule a free demo class?`,
   },
   {
@@ -3047,6 +3058,8 @@ Would you like to schedule a free demo class?`,
 Piano | Guitar | Carnatic Vocals | Drums
 Online & Offline classes available in Hyderabad.
 
+📍 ${STUDIO_LOCATION}
+
 Interested? Reply YES and I'll schedule your free demo! 😊`,
   },
   {
@@ -3054,7 +3067,9 @@ Interested? Reply YES and I'll schedule your free demo! 😊`,
     label: '🎵 Academy — Follow up',
     msg: `Hi {{name}}, following up on your enquiry about music classes at Chords Music Academy 🎵
 
-We'd love to have you join! Would you like to book a free demo class this week?`,
+We'd love to have you join! Our academy is in Hyderabad 📍 ${STUDIO_LOCATION}
+
+Would you like to book a free demo class this week?`,
   },
 ];
 
