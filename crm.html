@@ -2713,6 +2713,9 @@ async function loadLeads() {
             <button onclick="openPromoModal()" style="padding:9px 18px;background:#25d366;color:#fff;border:none;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;">📢 Send Promotion</button>
           </div>
         </div>
+        <div style="margin-bottom:10px;">
+          <input id="lead-search" type="search" placeholder="🔍  Search by name or phone number…" oninput="applyLeadFilters()" style="width:100%;padding:10px 14px;font-size:0.88rem;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);outline:none;" onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;" id="lead-tag-filters">${tagBtns}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;" id="lead-filters">${filterBtns}</div>
       </div>
@@ -2926,9 +2929,20 @@ function applyLeadFilters() {
   const activeStatus = document.querySelector('[id^="lead-filter-"][style*="var(--gold)"]');
   const status = activeStatus ? activeStatus.id.replace('lead-filter-', '') : 'all';
   const tag = window._leadTagFilter || 'all';
+  const searchEl = document.getElementById('lead-search');
+  const q = (searchEl ? searchEl.value : '').trim().toLowerCase().replace(/\D/g, '') ||
+            (searchEl ? searchEl.value : '').trim().toLowerCase();
   let list = window._allLeads;
   if (status !== 'all') list = list.filter(l => l.status === status);
   if (tag !== 'all') list = list.filter(l => l.mode === tag);
+  if (q) {
+    list = list.filter(l => {
+      const name  = (l.full_name || '').toLowerCase();
+      const phone = (l.phone || '').replace(/\D/g, '');
+      // Match on name or any part of phone digits
+      return name.includes(q) || phone.includes(q.replace(/\D/g, ''));
+    });
+  }
   renderLeads(list);
 }
 
