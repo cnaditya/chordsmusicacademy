@@ -2710,12 +2710,83 @@ async function loadLeads() {
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button onclick="openAddLeadModal()" style="padding:9px 18px;background:var(--gold);color:#000;border:none;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;">+ Add Contact</button>
             <button onclick="openBulkModal()" style="padding:9px 18px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;">📥 Bulk Upload Numbers</button>
+            <button onclick="openPromoModal()" style="padding:9px 18px;background:#25d366;color:#fff;border:none;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;">📢 Send Promotion</button>
           </div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;" id="lead-tag-filters">${tagBtns}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;" id="lead-filters">${filterBtns}</div>
       </div>
       <div id="leads-list"></div>
+
+      <!-- Send Promotion Modal -->
+      <div id="promo-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:600;align-items:center;justify-content:center;padding:16px;overflow-y:auto;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 20px;width:100%;max-width:500px;position:relative;">
+
+          <!-- STEP 1: Setup -->
+          <div id="promo-step1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <span style="font-weight:700;font-size:1rem;">📢 Send Promotion</span>
+              <button onclick="closePromoModal()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div>
+                <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Send to</label>
+                <select id="promo-group" style="width:100%;padding:10px 12px;font-size:0.9rem;border-radius:8px;">
+                  <option value="studio">🎙 Recording Studio enquiries</option>
+                  <option value="academy">🎵 Music Academy enquiries</option>
+                  <option value="all">All leads</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Your Message</label>
+                <textarea id="promo-msg" rows="6" placeholder="Type your promotion message here…&#10;&#10;Tip: Keep it short and personal. You can paste the same image/video in each WhatsApp tab." style="width:100%;padding:10px 12px;font-size:0.88rem;border-radius:8px;resize:vertical;line-height:1.5;"></textarea>
+              </div>
+              <div>
+                <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Time gap between contacts</label>
+                <select id="promo-gap" style="width:100%;padding:10px 12px;font-size:0.9rem;border-radius:8px;">
+                  <option value="0">Manual — I'll click Next myself (safest)</option>
+                  <option value="30">Auto 30 sec gap</option>
+                  <option value="60" selected>Auto 1 min gap</option>
+                  <option value="120">Auto 2 min gap</option>
+                  <option value="180">Auto 3 min gap</option>
+                </select>
+              </div>
+              <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:0.75rem;color:var(--muted);line-height:1.6;">
+                💡 <strong style="color:var(--text);">How it works:</strong> Each contact opens in WhatsApp Web with your message already typed. Just hit <strong style="color:var(--text);">Send</strong> and come back here.<br>
+                📎 <strong style="color:var(--text);">For images/videos:</strong> Keep the file ready — paste it (Ctrl+V or drag) into each WhatsApp chat before sending.
+              </div>
+              <div id="promo-count-preview" style="font-size:0.8rem;color:var(--gold);font-weight:600;text-align:center;"></div>
+              <button onclick="startCampaign()" style="width:100%;padding:13px;background:#25d366;color:#fff;border:none;border-radius:8px;font-size:0.95rem;font-weight:700;cursor:pointer;">Start →</button>
+            </div>
+          </div>
+
+          <!-- STEP 2: Campaign runner -->
+          <div id="promo-step2" style="display:none;">
+            <div style="text-align:center;margin-bottom:20px;">
+              <div id="promo-progress-label" style="font-size:0.78rem;color:var(--muted);margin-bottom:6px;"></div>
+              <div style="background:var(--surface2);border-radius:20px;height:6px;overflow:hidden;margin-bottom:16px;">
+                <div id="promo-progress-bar" style="height:100%;background:#25d366;border-radius:20px;transition:width 0.4s;width:0%;"></div>
+              </div>
+              <div id="promo-contact-card" style="background:var(--surface2);border-radius:12px;padding:20px;margin-bottom:16px;"></div>
+              <div id="promo-timer-display" style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;min-height:20px;"></div>
+              <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+                <button onclick="openCurrentWA()" id="promo-wa-btn" style="padding:12px 24px;background:#25d366;color:#fff;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;">💬 Open WhatsApp</button>
+                <button onclick="nextContact(false)" style="padding:12px 24px;background:var(--gold);color:#000;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;">Next →</button>
+                <button onclick="nextContact(true)" style="padding:12px 20px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:10px;font-size:0.85rem;font-weight:600;cursor:pointer;">Skip</button>
+                <button onclick="stopCampaign()" style="padding:12px 20px;background:var(--surface2);color:#e74c3c;border:1px solid #e74c3c;border-radius:10px;font-size:0.85rem;font-weight:600;cursor:pointer;">Stop</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: Done -->
+          <div id="promo-step3" style="display:none;text-align:center;padding:20px 0;">
+            <div style="font-size:3rem;margin-bottom:12px;">🎉</div>
+            <div style="font-size:1.1rem;font-weight:700;margin-bottom:6px;">Campaign Complete!</div>
+            <div id="promo-done-stats" style="font-size:0.85rem;color:var(--muted);margin-bottom:20px;"></div>
+            <button onclick="closePromoModal()" style="padding:12px 28px;background:var(--gold);color:#000;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;">Done</button>
+          </div>
+        </div>
+      </div>
 
       <!-- Bulk Upload Modal -->
       <div id="bulk-lead-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;align-items:center;justify-content:center;padding:20px;">
@@ -2891,6 +2962,151 @@ window.runBulkUpload = async function() {
     btn.textContent = 'Upload →';
     btn.disabled = false;
   }
+};
+
+// ── Promotion Campaign ────────────────────────────────────────────────────────
+
+window._promo = null;
+
+window.openPromoModal = function() {
+  const m = document.getElementById('promo-modal');
+  if (!m) return;
+  document.getElementById('promo-step1').style.display = 'block';
+  document.getElementById('promo-step2').style.display = 'none';
+  document.getElementById('promo-step3').style.display = 'none';
+  // Preview count
+  const group = document.getElementById('promo-group').value;
+  updatePromoCount();
+  m.style.display = 'flex';
+};
+
+document.addEventListener('change', function(e) {
+  if (e.target && e.target.id === 'promo-group') updatePromoCount();
+});
+
+function updatePromoCount() {
+  const group = document.getElementById('promo-group');
+  const el    = document.getElementById('promo-count-preview');
+  if (!group || !el || !window._allLeads) return;
+  const g = group.value;
+  const count = g === 'all' ? window._allLeads.length
+    : window._allLeads.filter(l => l.mode === g).length;
+  el.textContent = count ? count + ' contacts will be messaged' : 'No contacts in this group yet';
+}
+
+window.closePromoModal = function() {
+  const m = document.getElementById('promo-modal');
+  if (m) m.style.display = 'none';
+  if (window._promo && window._promo.timer) clearInterval(window._promo.timer);
+  window._promo = null;
+};
+
+window.startCampaign = function() {
+  const msg   = (document.getElementById('promo-msg').value || '').trim();
+  const group = document.getElementById('promo-group').value;
+  const gap   = parseInt(document.getElementById('promo-gap').value, 10);
+
+  if (!msg) { alert('Please type your promotion message first.'); return; }
+
+  const leads = group === 'all' ? window._allLeads
+    : (window._allLeads || []).filter(l => l.mode === group);
+
+  const withPhone = leads.filter(l => l.phone);
+  if (!withPhone.length) { alert('No contacts with phone numbers found in this group.'); return; }
+
+  window._promo = {
+    leads:   withPhone,
+    message: msg,
+    gap,
+    index:   0,
+    sent:    0,
+    skipped: 0,
+    timer:   null,
+  };
+
+  document.getElementById('promo-step1').style.display = 'none';
+  document.getElementById('promo-step2').style.display = 'block';
+  renderCampaignStep();
+};
+
+function renderCampaignStep() {
+  const p = window._promo;
+  if (!p) return;
+
+  if (p.index >= p.leads.length) {
+    if (p.timer) clearInterval(p.timer);
+    document.getElementById('promo-step2').style.display = 'none';
+    document.getElementById('promo-step3').style.display = 'block';
+    document.getElementById('promo-done-stats').textContent =
+      p.sent + ' messages sent · ' + p.skipped + ' skipped';
+    return;
+  }
+
+  const lead    = p.leads[p.index];
+  const total   = p.leads.length;
+  const current = p.index + 1;
+  const pct     = Math.round(((p.index) / total) * 100);
+
+  document.getElementById('promo-progress-label').textContent = `Contact ${current} of ${total}`;
+  document.getElementById('promo-progress-bar').style.width = pct + '%';
+
+  const name  = lead.full_name || lead.phone;
+  const phone = (lead.phone || '').replace(/\D/g,'');
+  document.getElementById('promo-contact-card').innerHTML = `
+    <div style="font-size:1.05rem;font-weight:700;margin-bottom:4px;">${name}</div>
+    <div style="font-size:0.85rem;color:var(--muted);">+${phone}</div>
+    ${lead.mode === 'studio' ? '<div style="margin-top:6px;font-size:0.72rem;background:#3b1f3b;color:#c39bd3;display:inline-block;padding:2px 9px;border-radius:10px;font-weight:700;">🎙 Recording Studio</div>' : ''}
+    ${lead.mode === 'academy' ? '<div style="margin-top:6px;font-size:0.72rem;background:#1a3a5c;color:#5dade2;display:inline-block;padding:2px 9px;border-radius:10px;font-weight:700;">🎵 Music Academy</div>' : ''}
+  `;
+
+  // Auto-timer
+  if (p.timer) clearInterval(p.timer);
+  document.getElementById('promo-timer-display').textContent = '';
+  if (p.gap > 0) {
+    let remaining = p.gap;
+    document.getElementById('promo-timer-display').textContent = `Auto-next in ${remaining}s — send your message then come back`;
+    p.timer = setInterval(function() {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(p.timer);
+        p.timer = null;
+        document.getElementById('promo-timer-display').textContent = '';
+        nextContact(false);
+      } else {
+        document.getElementById('promo-timer-display').textContent = `Auto-next in ${remaining}s — send your message then come back`;
+      }
+    }, 1000);
+  }
+}
+
+window.openCurrentWA = function() {
+  const p = window._promo;
+  if (!p || p.index >= p.leads.length) return;
+  const phone = (p.leads[p.index].phone || '').replace(/\D/g, '');
+  const text  = encodeURIComponent(p.message);
+  window.open(`https://web.whatsapp.com/send?phone=${phone}&text=${text}`, '_blank');
+  p.sent++;
+};
+
+window.nextContact = function(skip) {
+  const p = window._promo;
+  if (!p) return;
+  if (p.timer) { clearInterval(p.timer); p.timer = null; }
+  if (skip) p.skipped++;
+  p.index++;
+  renderCampaignStep();
+};
+
+window.stopCampaign = function() {
+  const p = window._promo;
+  if (!p) return;
+  if (!confirm('Stop campaign? You sent ' + p.sent + ' messages so far.')) return;
+  if (p.timer) clearInterval(p.timer);
+  document.getElementById('promo-step2').style.display = 'none';
+  document.getElementById('promo-step3').style.display = 'block';
+  document.getElementById('promo-done-stats').textContent =
+    p.sent + ' messages sent · ' + p.skipped + ' skipped · stopped at ' + (p.index) + ' of ' + p.leads.length;
+  window._promo = null;
 };
 
 window.openAddLeadModal = function() {
