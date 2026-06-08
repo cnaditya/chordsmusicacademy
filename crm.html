@@ -2703,7 +2703,9 @@ async function loadLeads() {
 
     window._allLeads = leads;
     window._leadTagFilter = 'all';
+    setTimeout(function(){ renderLeadStats(leads); }, 0);
     document.getElementById('page-content').innerHTML = `
+      <div id="lead-stats-panel" style="margin-bottom:18px;"></div>
       <div style="margin-bottom:16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
           <div style="font-size:0.82rem;color:var(--muted);">WhatsApp/Instagram contacts + registrations from your website.</div>
@@ -2913,6 +2915,85 @@ function filterLeads(status) {
     b.style.color = active ? '#000' : 'var(--text)';
   });
   applyLeadFilters();
+}
+
+function renderLeadStats(leads) {
+  const el = document.getElementById('lead-stats-panel');
+  if (!el) return;
+
+  const today     = new Date().toISOString().slice(0, 10);
+  const todayLeads = leads.filter(l => (l.created_at || '').slice(0, 10) === today);
+
+  const studio  = leads.filter(l => l.mode === 'studio').length;
+  const academy = leads.filter(l => l.mode === 'academy').length;
+  const other   = leads.length - studio - academy;
+
+  const studioToday  = todayLeads.filter(l => l.mode === 'studio').length;
+  const academyToday = todayLeads.filter(l => l.mode === 'academy').length;
+
+  // Contacted stats
+  const contacted = leads.filter(l => l.status === 'contacted' || l.status === 'demo_scheduled' || l.status === 'converted').length;
+
+  // Day-wise last 14 days
+  const days = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push(d.toISOString().slice(0, 10));
+  }
+  const dayRows = days.map(d => {
+    const dl = leads.filter(l => (l.created_at || '').slice(0, 10) === d);
+    return { date: d, studio: dl.filter(l => l.mode === 'studio').length, academy: dl.filter(l => l.mode === 'academy').length, total: dl.length };
+  }).filter(r => r.total > 0);
+
+  const statCard = (num, label, color, sub) =>
+    `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;flex:1;min-width:100px;text-align:center;">
+      <div style="font-size:1.8rem;font-weight:800;color:${color};line-height:1;">${num}</div>
+      <div style="font-size:0.7rem;font-weight:700;color:var(--muted);margin-top:3px;">${label}</div>
+      ${sub ? `<div style="font-size:0.68rem;color:var(--muted);margin-top:2px;">${sub}</div>` : ''}
+    </div>`;
+
+  const tableRows = dayRows.length ? dayRows.slice().reverse().map(r =>
+    `<tr>
+      <td style="padding:7px 10px;font-size:0.8rem;color:var(--muted);white-space:nowrap;">${formatDay(r.date)}</td>
+      <td style="padding:7px 10px;text-align:center;font-size:0.85rem;font-weight:700;color:#c39bd3;">${r.studio || '—'}</td>
+      <td style="padding:7px 10px;text-align:center;font-size:0.85rem;font-weight:700;color:#5dade2;">${r.academy || '—'}</td>
+      <td style="padding:7px 10px;text-align:center;font-size:0.85rem;font-weight:700;color:var(--gold);">${r.total}</td>
+    </tr>`).join('')
+  : `<tr><td colspan="4" style="padding:14px;text-align:center;color:var(--muted);font-size:0.8rem;">No leads added yet in the last 14 days</td></tr>`;
+
+  el.innerHTML = `
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+      ${statCard(leads.length, 'TOTAL LEADS', 'var(--gold)', `${contacted} contacted`)}
+      ${statCard(studio,  '🎙 STUDIO',  '#c39bd3', `${studioToday} today`)}
+      ${statCard(academy, '🎵 ACADEMY', '#5dade2', `${academyToday} today`)}
+      ${statCard(todayLeads.length, "TODAY'S LEADS", '#27ae60', '')}
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <div style="padding:10px 16px;font-size:0.78rem;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <span>DAY-WISE BREAKDOWN (last 14 days)</span>
+        <span style="font-size:0.7rem;color:var(--muted2);">${dayRows.length} active days</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:var(--surface2);">
+            <th style="padding:7px 10px;text-align:left;font-size:0.7rem;color:var(--muted);font-weight:700;">DATE</th>
+            <th style="padding:7px 10px;text-align:center;font-size:0.7rem;color:#c39bd3;font-weight:700;">🎙 STUDIO</th>
+            <th style="padding:7px 10px;text-align:center;font-size:0.7rem;color:#5dade2;font-weight:700;">🎵 ACADEMY</th>
+            <th style="padding:7px 10px;text-align:center;font-size:0.7rem;color:var(--gold);font-weight:700;">TOTAL</th>
+          </tr>
+        </thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>`;
+}
+
+function formatDay(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const today = new Date().toISOString().slice(0,10);
+  const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if (dateStr === today) return 'Today';
+  if (dateStr === yesterday) return 'Yesterday';
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
 function filterLeadsByTag(tag) {
