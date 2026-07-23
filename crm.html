@@ -732,6 +732,58 @@ tr:hover td { background: rgba(79,70,229,0.04); }
 .inst-card .inst-sub { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
 
 /* ══════════════════════════════════════════════════════════════════
+   ATTENDANCE PAGE
+══════════════════════════════════════════════════════════════════ */
+.att-stat-pill {
+  flex: 1; min-width: 90px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px 16px; text-align: center;
+  display: flex; flex-direction: column; gap: 3px; cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+.att-stat-pill:hover { transform: translateY(-1px); }
+.att-stat-p { color: #16a34a; }
+.att-stat-a { color: #dc2626; }
+.att-stat-u { color: var(--muted); }
+.att-stat-all { color: var(--gold); }
+
+.att-scanner-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; margin-bottom: 18px; overflow: hidden;
+}
+.att-scanner-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 13px 18px; cursor: pointer; font-size: 0.87rem;
+  font-weight: 600; color: var(--text);
+}
+.att-scanner-header:hover { background: var(--surface2); }
+
+.att-list { display: flex; flex-direction: column; gap: 6px; }
+.att-row {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; transition: opacity 0.2s;
+}
+.att-row-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.att-row-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.att-badge {
+  font-size: 0.72rem; font-weight: 600; padding: 3px 10px;
+  border-radius: 20px; white-space: nowrap;
+}
+.att-badge.att-present { background: #dcfce7; color: #16a34a; }
+.att-badge.att-absent  { background: #fee2e2; color: #dc2626; }
+.att-badge.att-unmarked{ background: var(--surface2); color: var(--muted); }
+.att-btn {
+  width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface2); cursor: pointer; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0.45; transition: opacity 0.15s, background 0.15s;
+}
+.att-btn:hover { opacity: 1; }
+.att-btn-active-p { background: #dcfce7 !important; border-color: #86efac !important; opacity: 1 !important; }
+.att-btn-active-a { background: #fee2e2 !important; border-color: #fca5a5 !important; opacity: 1 !important; }
+
+/* ══════════════════════════════════════════════════════════════════
    QR / SCAN MODE
 ══════════════════════════════════════════════════════════════════ */
 .scan-page { max-width: 680px; margin: 0 auto; }
@@ -1180,8 +1232,8 @@ CREATE TABLE IF NOT EXISTS crm_notes (
       <div class="nav-item" onclick="navigate('payments')" data-page="payments">
         <span class="nav-icon">💳</span> Payments
       </div>
-      <div class="nav-item" onclick="navigate('scan')" data-page="scan">
-        <span class="nav-icon">📷</span> Scan Attendance
+      <div class="nav-item" onclick="navigate('attendance')" data-page="attendance">
+        <span class="nav-icon">🗓️</span> Attendance
       </div>
     </div>
     <div class="sidebar-footer">
@@ -1752,14 +1804,15 @@ function navigate(page) {
     instruments: 'Instruments',
     leads: 'Leads & Registrations',
     payments: 'Payments & Billing',
-    scan: '📷 Scan Attendance',
+    attendance: 'Attendance',
   };
   document.getElementById('topbar-title').textContent = titles[page] || page;
   document.getElementById('sidebar').classList.remove('open');
 
-  if (page === 'scan') { renderScanPage(); return; }
-  scanModeActive = false;
-  stopCameraScanner(); // release camera if leaving scan page
+  if (page !== 'attendance') {
+    scanModeActive = false;
+    stopCameraScanner();
+  }
   document.getElementById('page-content').innerHTML = renderLoading();
   if (page === 'dashboard') loadDashboard();
   else if (page === 'students') loadStudents();
@@ -1767,6 +1820,7 @@ function navigate(page) {
   else if (page === 'instruments') loadInstruments();
   else if (page === 'leads') loadLeads();
   else if (page === 'payments') loadPayments();
+  else if (page === 'attendance') loadAttendancePage();
 }
 
 function toggleSidebar() {
@@ -1790,34 +1844,185 @@ function renderLoading() {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   QR SCAN MODE
+   ATTENDANCE PAGE
 ══════════════════════════════════════════════════════════════════ */
-function renderScanPage() {
-  scanModeActive = true;
-  document.getElementById('page-content').innerHTML = `
-    <div class="scan-page">
-      <div class="scan-ready-zone" id="scan-zone">
+let _attDate = new Date().toISOString().slice(0,10);
+let _attFilter = 'all';
+let _attStudents = [];
+let _attMap = {}; // student_id → {status}
 
-        <!-- USB scanner default state -->
-        <div id="usb-scan-inner">
-          <div class="scan-pulse">📷</div>
-          <div style="font-size:1.1rem;font-weight:700;margin-bottom:8px;">Ready to Scan</div>
-          <div style="font-size:0.85rem;color:var(--muted);">Hold student ID card under your USB 2D scanner</div>
-          <div style="font-size:0.75rem;color:var(--muted2);margin-top:10px;">Attendance is marked automatically · card info shown below</div>
-        </div>
+async function loadAttendancePage() {
+  _attDate = _attDate || new Date().toISOString().slice(0,10);
+  renderAttendanceSkeleton();
+  try {
+    const data = await apiCall({ action: 'crm_attendance_today', date: _attDate });
+    _attStudents = data.students || [];
+    _attMap = {};
+    (data.attendance || []).forEach(a => { _attMap[a.student_id] = a; });
+    renderAttendancePage();
+  } catch(e) {
+    document.getElementById('page-content').innerHTML = `<div class="empty-state">Failed to load attendance: ${e.message}</div>`;
+  }
+}
 
-        <!-- Camera mode (hidden by default) -->
-        <div id="cam-scan-inner" style="display:none;">
-          <div id="qr-cam-view"></div>
-          <div style="font-size:0.82rem;color:var(--muted);margin-top:12px;">Point camera at the QR code on the student's ID card</div>
-        </div>
+function renderAttendanceSkeleton() {
+  document.getElementById('page-content').innerHTML = `<div class="loading-state"><div class="spinner"></div><div>Loading attendance…</div></div>`;
+}
 
-        <div style="margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-          <button id="cam-toggle-btn" class="btn btn-ghost" onclick="toggleCameraScanner()">📸 Use Laptop Camera</button>
+function renderAttendancePage() {
+  const present  = _attStudents.filter(s => _attMap[s.id]?.status === 'present').length;
+  const absent   = _attStudents.filter(s => _attMap[s.id]?.status === 'absent').length;
+  const unmarked = _attStudents.length - present - absent;
+
+  const dateObj  = new Date(_attDate + 'T00:00:00');
+  const today    = new Date().toISOString().slice(0,10);
+  const isToday  = _attDate === today;
+  const dateLabel = dateObj.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  const prevDate = new Date(dateObj); prevDate.setDate(prevDate.getDate()-1);
+  const nextDate = new Date(dateObj); nextDate.setDate(nextDate.getDate()+1);
+  const prevStr  = prevDate.toISOString().slice(0,10);
+  const nextStr  = nextDate.toISOString().slice(0,10);
+  const canNext  = nextStr <= today;
+
+  let filtered = _attStudents;
+  if (_attFilter === 'present')  filtered = _attStudents.filter(s => _attMap[s.id]?.status === 'present');
+  if (_attFilter === 'absent')   filtered = _attStudents.filter(s => _attMap[s.id]?.status === 'absent');
+  if (_attFilter === 'unmarked') filtered = _attStudents.filter(s => !_attMap[s.id]);
+
+  const rows = filtered.map(s => {
+    const rec    = _attMap[s.id];
+    const status = rec?.status;
+    const isPres = status === 'present';
+    const isAbs  = status === 'absent';
+    const statusBadge = isPres
+      ? `<span class="att-badge att-present">✅ Present</span>`
+      : isAbs
+        ? `<span class="att-badge att-absent">❌ Absent</span>`
+        : `<span class="att-badge att-unmarked">— Not marked</span>`;
+    return `
+    <div class="att-row" id="att-row-${s.id}">
+      <div class="att-row-left">
+        <div class="student-av" style="background:${avatarColor(s.name)};width:38px;height:38px;font-size:0.9rem;flex-shrink:0;">${initials(s.name)}</div>
+        <div>
+          <div style="font-weight:600;font-size:0.9rem;color:var(--text);">${escapeHtml(s.name)}</div>
+          <div style="font-size:0.75rem;color:var(--muted);">${s.instrument||'—'} · ${s.teacher||'—'}</div>
         </div>
       </div>
-      <div id="scan-result"></div>
+      <div class="att-row-right">
+        ${statusBadge}
+        <button class="att-btn att-btn-present ${isPres?'att-btn-active-p':''}" onclick="attMark('${s.id}','present')" title="Mark Present">✅</button>
+        <button class="att-btn att-btn-absent  ${isAbs?'att-btn-active-a':''}" onclick="attMark('${s.id}','absent')"  title="Mark Absent">❌</button>
+      </div>
     </div>`;
+  }).join('');
+
+  document.getElementById('page-content').innerHTML = `
+  <div style="max-width:780px;margin:0 auto;padding:0 4px;">
+
+    <!-- Date nav -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" style="padding:6px 12px;" onclick="attGoDate('${prevStr}')">← Prev</button>
+      <div style="flex:1;text-align:center;font-weight:700;font-size:1rem;color:var(--text);">${dateLabel}${isToday?' <span style=\"font-size:0.7rem;background:var(--gold);color:#fff;border-radius:8px;padding:2px 8px;vertical-align:middle;\">Today</span>':''}</div>
+      <button class="btn btn-ghost" style="padding:6px 12px;" onclick="attGoDate('${nextStr}')" ${canNext?'':'disabled'}>Next →</button>
+    </div>
+
+    <!-- Summary pills -->
+    <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+      <div class="att-stat-pill att-stat-p" onclick="setAttFilter('present')" style="${_attFilter==='present'?'box-shadow:0 0 0 2px var(--gold);':''}">
+        <span style="font-size:1.4rem;font-weight:800;">${present}</span>
+        <span style="font-size:0.75rem;">Present</span>
+      </div>
+      <div class="att-stat-pill att-stat-a" onclick="setAttFilter('absent')" style="${_attFilter==='absent'?'box-shadow:0 0 0 2px var(--gold);':''}">
+        <span style="font-size:1.4rem;font-weight:800;">${absent}</span>
+        <span style="font-size:0.75rem;">Absent</span>
+      </div>
+      <div class="att-stat-pill att-stat-u" onclick="setAttFilter('unmarked')" style="${_attFilter==='unmarked'?'box-shadow:0 0 0 2px var(--gold);':''}">
+        <span style="font-size:1.4rem;font-weight:800;">${unmarked}</span>
+        <span style="font-size:0.75rem;">Not marked</span>
+      </div>
+      <div class="att-stat-pill att-stat-all" onclick="setAttFilter('all')" style="${_attFilter==='all'?'box-shadow:0 0 0 2px var(--gold);':''}">
+        <span style="font-size:1.4rem;font-weight:800;">${_attStudents.length}</span>
+        <span style="font-size:0.75rem;">Total</span>
+      </div>
+    </div>
+
+    <!-- QR Scanner (collapsible) -->
+    <div class="att-scanner-wrap" id="att-scanner-wrap">
+      <div class="att-scanner-header" onclick="toggleAttScanner()">
+        <span>📷 QR Scanner — scan student ID card to mark automatically</span>
+        <span id="att-scanner-chevron">▾</span>
+      </div>
+      <div id="att-scanner-body" style="display:none;padding:16px;">
+        <div class="scan-ready-zone" id="scan-zone" style="margin:0;border-radius:10px;">
+          <div id="usb-scan-inner">
+            <div class="scan-pulse">📷</div>
+            <div style="font-size:1rem;font-weight:700;margin-bottom:6px;">Ready to Scan</div>
+            <div style="font-size:0.82rem;color:var(--muted);">Hold student ID card under your USB 2D scanner</div>
+          </div>
+          <div id="cam-scan-inner" style="display:none;">
+            <div id="qr-cam-view"></div>
+            <div style="font-size:0.82rem;color:var(--muted);margin-top:10px;">Point camera at QR code</div>
+          </div>
+          <div style="margin-top:16px;">
+            <button id="cam-toggle-btn" class="btn btn-ghost" onclick="toggleCameraScanner()">📸 Use Laptop Camera</button>
+          </div>
+        </div>
+        <div id="scan-result" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <!-- Student list -->
+    <div class="att-list">
+      ${filtered.length === 0
+        ? `<div class="empty-state" style="padding:40px 0;">No students in this filter</div>`
+        : rows}
+    </div>
+  </div>`;
+
+  // Enable USB scan mode
+  scanModeActive = true;
+}
+
+function toggleAttScanner() {
+  const body = document.getElementById('att-scanner-body');
+  const chev = document.getElementById('att-scanner-chevron');
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  chev.textContent = open ? '▴' : '▾';
+  if (!open) stopCameraScanner();
+}
+
+function setAttFilter(f) {
+  _attFilter = f;
+  renderAttendancePage();
+}
+
+function attGoDate(d) {
+  _attDate = d;
+  _attFilter = 'all';
+  loadAttendancePage();
+}
+
+async function attMark(studentId, status) {
+  const scannerWasOpen = document.getElementById('att-scanner-body')?.style.display !== 'none';
+  const row = document.getElementById('att-row-' + studentId);
+  if (row) row.style.opacity = '0.5';
+  try {
+    await apiCall({ action: 'crm_mark_attendance', student_id: studentId, date: _attDate, status });
+    _attMap[studentId] = { student_id: studentId, date: _attDate, status };
+    renderAttendancePage();
+    if (scannerWasOpen) {
+      const body = document.getElementById('att-scanner-body');
+      const chev = document.getElementById('att-scanner-chevron');
+      if (body) { body.style.display = 'block'; chev.textContent = '▴'; }
+    }
+    const s = _attStudents.find(x => x.id === studentId);
+    toast(`${s?.name || 'Student'} marked ${status}`, status === 'present' ? 'success' : 'error');
+  } catch(e) {
+    if (row) row.style.opacity = '1';
+    toast('Failed to mark: ' + e.message, 'error');
+  }
 }
 
 // USB 2D scanner acts as HID keyboard — sends chars very fast then Enter

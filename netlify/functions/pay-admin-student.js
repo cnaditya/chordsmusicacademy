@@ -355,6 +355,23 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
     }
 
+    if (action === "crm_attendance_today") {
+      const { date } = JSON.parse(event.body);
+      const d = date || new Date().toISOString().slice(0,10);
+      const [studR, attR] = await Promise.all([
+        fetch(`${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&order=name.asc`, { headers: SB_H }),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_attendance?date=eq.${d}`, { headers: SB_H }),
+      ]);
+      const students = await studR.json();
+      const attendance = await attR.json();
+      return { statusCode: 200, headers, body: JSON.stringify({
+        success: true,
+        students: Array.isArray(students) ? students : [],
+        attendance: Array.isArray(attendance) ? attendance : [],
+        date: d
+      })};
+    }
+
     if (action === "crm_mark_attendance") {
       const { student_id, date, status: attStatus, note } = JSON.parse(event.body);
       if (!student_id || !date) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and date required" }) };
