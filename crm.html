@@ -1896,8 +1896,12 @@ async function processScan(raw) {
   const resultEl = document.getElementById('scan-result');
   if (!zone || !resultEl) return;
 
-  // QR content format: "CMA:STUDENT_UUID"
-  const studentId = raw.startsWith('CMA:') ? raw.slice(4) : raw;
+  // QR may encode URL (new) or legacy "CMA:UUID" prefix (old cards)
+  let studentId = raw.trim();
+  if (studentId.startsWith('CMA:')) studentId = studentId.slice(4);
+  else if (studentId.includes('/attend?id=')) {
+    try { studentId = new URL(studentId).searchParams.get('id') || studentId; } catch(e) {}
+  }
   const student = allStudents.find(s => s.id === studentId);
 
   if (!student) {
@@ -2066,13 +2070,24 @@ function openIdCardModal(s) {
     if (!box) return;
     try {
       new QRCode(box, {
-        text: 'CMA:' + s.id,
-        width: 148, height: 148,
+        text: 'https://chordsmusicacademy.in/attend?id=' + s.id,
+        width: 160, height: 160,
         colorDark: '#1e293b', colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.H
       });
+      // Convert canvas → <img> so it prints correctly (canvas is often skipped by print engines)
+      setTimeout(() => {
+        const cv = box.querySelector('canvas');
+        if (cv) {
+          const img = new Image();
+          img.src = cv.toDataURL('image/png');
+          img.style.cssText = 'width:160px;height:160px;border-radius:8px;display:block;';
+          cv.replaceWith(img);
+          box.querySelectorAll('table').forEach(t => t.remove()); // qrcode.js fallback table
+        }
+      }, 200);
     } catch(e) {
-      box.innerHTML = `<div style="font-size:0.75rem;color:#94a3b8;padding:16px;">QR: CMA:${s.id.slice(0,8)}</div>`;
+      box.innerHTML = `<div style="font-size:0.75rem;color:#94a3b8;padding:16px;">QR unavailable</div>`;
     }
   }, 60);
 }

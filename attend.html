@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Attendance — Chords Music Academy</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;background:#f0f2f5;display:flex;align-items:center;justify-content:center;padding:16px;}
+
+.card{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,0.12);width:100%;max-width:380px;overflow:hidden;}
+
+.header{background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:24px 20px;text-align:center;color:#fff;}
+.header .logo{font-size:2rem;line-height:1;margin-bottom:6px;}
+.header h1{font-size:1rem;font-weight:700;margin-bottom:2px;}
+.header .date{font-size:0.75rem;opacity:0.75;}
+.header.green{background:linear-gradient(135deg,#16a34a,#15803d);}
+.header.amber{background:linear-gradient(135deg,#d97706,#b45309);}
+.header.red  {background:linear-gradient(135deg,#dc2626,#b91c1c);}
+
+.body{padding:24px 20px;}
+
+/* Student */
+.student-row{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #e2e8f0;}
+.av{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:#fff;flex-shrink:0;}
+.sname{font-size:1.05rem;font-weight:700;color:#0f172a;margin-bottom:3px;}
+.smeta{font-size:0.78rem;color:#64748b;line-height:1.5;}
+
+/* Status box */
+.status-box{display:flex;align-items:center;gap:12px;border-radius:12px;padding:14px 16px;margin-bottom:16px;}
+.status-box.present{background:#dcfce7;border:1px solid #bbf7d0;}
+.status-box.absent {background:#fee2e2;border:1px solid #fecaca;}
+.status-box.pending{background:#f1f5f9;border:1px solid #e2e8f0;}
+.status-icon{font-size:1.8rem;flex-shrink:0;}
+.status-title{font-size:0.95rem;font-weight:700;color:#0f172a;}
+.status-sub  {font-size:0.75rem;color:#64748b;margin-top:2px;}
+
+/* Fee pill */
+.fee-pill{background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;font-size:0.82rem;color:#92400e;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+
+/* Buttons */
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:0.95rem;font-weight:700;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.15s;}
+.btn:hover{opacity:0.88;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-change{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;}
+.btn-ghost {background:transparent;color:#64748b;border:1px solid #e2e8f0;margin-bottom:0;}
+
+/* Login */
+.input{width:100%;padding:13px 16px;border:1px solid #e2e8f0;border-radius:10px;font-size:1rem;outline:none;margin-bottom:12px;color:#0f172a;background:#f8fafc;}
+.input:focus{border-color:#4f46e5;}
+.remember-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:0.85rem;color:#64748b;}
+.err{color:#dc2626;font-size:0.82rem;text-align:center;min-height:20px;margin-top:-6px;margin-bottom:8px;}
+
+/* Spinner */
+.spin-wrap{text-align:center;padding:40px 20px;}
+.spinner{width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#4f46e5;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-label{font-size:0.85rem;color:#64748b;}
+
+/* Success big */
+.big-icon{font-size:4rem;text-align:center;margin-bottom:12px;}
+.big-title{font-size:1.2rem;font-weight:700;color:#0f172a;text-align:center;margin-bottom:4px;}
+.big-sub{font-size:0.82rem;color:#64748b;text-align:center;}
+
+.crm-link{text-align:center;margin-top:16px;}
+.crm-link a{font-size:0.8rem;color:#4f46e5;text-decoration:none;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="card">
+    <div class="body spin-wrap">
+      <div class="spinner"></div>
+      <div class="spin-label">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API       = '/.netlify/functions/pay-admin-student';
+const TOKEN_KEY = 'cma_attend_token';
+const params    = new URLSearchParams(location.search);
+const SID       = params.get('id');
+
+let token = localStorage.getItem(TOKEN_KEY) || '';
+
+/* ── helpers ──────────────────────────────────────────────────── */
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function fmtDate(d) {
+  return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+}
+function avatarColor(name) {
+  const c=['#6366f1','#10b981','#3b82f6','#8b5cf6','#ef4444','#f97316','#06b6d4','#ec4899','#14b8a6','#a855f7'];
+  let h=0; for(const ch of(name||''))h=ch.charCodeAt(0)+((h<<5)-h);
+  return c[Math.abs(h)%c.length];
+}
+function initials(n){ return (n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+
+async function post(body) {
+  const r = await fetch(API,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-admin-token':token},
+    body: JSON.stringify(body)
+  });
+  if(r.status===401) throw Object.assign(new Error('auth'),{auth:true});
+  const d = await r.json();
+  if(!d.success && d.error) throw new Error(d.error);
+  return d;
+}
+
+/* ── init ─────────────────────────────────────────────────────── */
+async function init() {
+  if (!SID) { return showErr('Invalid QR code. Please scan a valid student ID card.'); }
+  if (!token) { return showLogin(); }
+  await autoMark();
+}
+
+/* ── auto-mark: check then mark in one flow ───────────────────── */
+async function autoMark() {
+  showSpinner('Checking attendance…');
+  let data;
+  try {
+    data = await post({ action:'crm_get', id:SID });
+  } catch(e) {
+    if (e.auth) { token=''; localStorage.removeItem(TOKEN_KEY); return showLogin(); }
+    return showErr(e.message);
+  }
+
+  const student = data.student;
+  if (!student) return showErr('Student not found.');
+
+  const today = todayStr();
+  const existing = (data.attendance||[]).find(a=>a.date===today);
+
+  if (existing) {
+    // Already marked — just show info, do NOT change it
+    return showResult(student, existing.status, false);
+  }
+
+  // Not yet marked — auto-mark present now
+  showSpinner('Marking present…');
+  try {
+    await post({ action:'crm_mark_attendance', student_id:student.id, date:today, status:'present' });
+    showResult(student, 'present', true);
+  } catch(e) {
+    if (e.auth) { token=''; localStorage.removeItem(TOKEN_KEY); return showLogin(); }
+    showErr('Could not mark attendance: '+e.message);
+  }
+}
+
+/* ── login screen (shown once, password saved) ────────────────── */
+function showLogin() {
+  document.getElementById('app').innerHTML = `
+    <div class="card">
+      <div class="header">
+        <div class="logo">🎵</div>
+        <h1>Chords Music Academy</h1>
+        <div class="date">Enter admin password once to enable attendance marking on this device</div>
+      </div>
+      <div class="body">
+        <input class="input" type="password" id="pw" placeholder="Admin password" autocomplete="current-password">
+        <div class="remember-row">
+          <input type="checkbox" id="rem" checked>
+          <label for="rem">Remember on this device</label>
+        </div>
+        <div class="err" id="lerr"></div>
+        <button class="btn" style="background:#4f46e5;color:#fff;" onclick="doLogin()">Continue →</button>
+      </div>
+    </div>`;
+  const inp = document.getElementById('pw');
+  inp.focus();
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+}
+
+async function doLogin() {
+  const pw  = document.getElementById('pw').value.trim();
+  const err = document.getElementById('lerr');
+  const btn = document.querySelector('.btn');
+  if (!pw) { err.textContent='Enter your password'; return; }
+  err.textContent = '';
+  btn.disabled = true; btn.textContent = 'Checking…';
+  token = pw;
+  try {
+    await autoMark();
+    if (document.getElementById('rem') && document.getElementById('rem').checked) {
+      localStorage.setItem(TOKEN_KEY, pw);
+    }
+  } catch(e) {
+    token = '';
+    err.textContent = 'Wrong password';
+    btn.disabled = false; btn.textContent = 'Continue →';
+  }
+}
+
+/* ── result screen ────────────────────────────────────────────── */
+function showResult(student, status, justMarked) {
+  const present = status === 'present';
+  const headerClass = present ? 'green' : 'red';
+  const statusClass = present ? 'present' : 'absent';
+  const icon  = present ? '✅' : '❌';
+  const title = justMarked
+    ? (present ? 'Marked Present!' : 'Marked Absent')
+    : (present ? 'Already Present today' : 'Already marked Absent today');
+
+  const amt = student.amount_due || 0;
+  const feePill = amt > 0
+    ? `<div class="fee-pill">💳 Fee due: ₹${amt.toLocaleString('en-IN')}${student.due_date?' · '+fmtDate(student.due_date):''}</div>`
+    : '';
+
+  document.getElementById('app').innerHTML = `
+    <div class="card">
+      <div class="header ${headerClass}">
+        <div class="logo">${icon}</div>
+        <h1>${title}</h1>
+        <div class="date">${fmtDate(todayStr())}</div>
+      </div>
+      <div class="body">
+        <div class="student-row">
+          <div class="av" style="background:${avatarColor(student.name)};">${initials(student.name)}</div>
+          <div>
+            <div class="sname">${student.name||''}</div>
+            <div class="smeta">${student.instrument||''}${student.teacher?' · '+student.teacher:''}</div>
+            <div class="smeta">${student.class_days||''}${student.class_time?' @ '+student.class_time:''}</div>
+          </div>
+        </div>
+        ${feePill}
+        <button class="btn btn-change" onclick="changeStatus('${student.id}','${present?'absent':'present'}')">
+          Change to ${present ? '✗ Absent' : '✅ Present'}
+        </button>
+        <div class="crm-link"><a href="/crm">Open full CRM →</a></div>
+      </div>
+    </div>`;
+}
+
+async function changeStatus(id, newStatus) {
+  showSpinner(newStatus==='present'?'Marking present…':'Marking absent…');
+  try {
+    await post({ action:'crm_mark_attendance', student_id:id, date:todayStr(), status:newStatus });
+    const data = await post({ action:'crm_get', id });
+    showResult(data.student, newStatus, true);
+  } catch(e) {
+    showErr('Failed: '+e.message);
+  }
+}
+
+/* ── misc ─────────────────────────────────────────────────────── */
+function showSpinner(msg) {
+  document.getElementById('app').innerHTML = `
+    <div class="card">
+      <div class="body spin-wrap">
+        <div class="spinner"></div>
+        <div class="spin-label">${msg||'Loading…'}</div>
+      </div>
+    </div>`;
+}
+
+function showErr(msg) {
+  document.getElementById('app').innerHTML = `
+    <div class="card">
+      <div class="body spin-wrap">
+        <div class="big-icon">❌</div>
+        <div class="big-title">Something went wrong</div>
+        <div class="big-sub">${msg}</div>
+      </div>
+    </div>`;
+}
+
+init();
+</script>
+</body>
+</html>
