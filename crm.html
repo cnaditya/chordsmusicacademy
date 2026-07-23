@@ -1916,11 +1916,22 @@ async function processScan(raw) {
 
   zone.classList.add('has-result');
 
-  // Mark attendance via existing API
   const today = todayStr();
+
+  // Check if already marked today before writing
+  let existingRecord = null;
   try {
-    await apiCall({ action:'crm_mark_attendance', student_id:student.id, date:today, status:'present' });
-  } catch(e) { /* already marked or network issue — still show card */ }
+    const data = await apiCall({ action:'crm_get', id:student.id });
+    existingRecord = (data.attendance || []).find(a => a.date === today) || null;
+  } catch(e) {}
+
+  let markedNow = false;
+  if (!existingRecord) {
+    try {
+      await apiCall({ action:'crm_mark_attendance', student_id:student.id, date:today, status:'present' });
+      markedNow = true;
+    } catch(e) {}
+  }
 
   // Fee status
   let feePillHtml = '';
@@ -1951,13 +1962,26 @@ async function processScan(raw) {
     </div>`;
   }
 
+  const alreadyStatus = existingRecord ? existingRecord.status : null;
+  const headerBg = markedNow
+    ? 'linear-gradient(135deg,#16a34a,#15803d)'           // green  — fresh mark
+    : alreadyStatus === 'absent'
+      ? 'linear-gradient(135deg,#dc2626,#b91c1c)'          // red    — was absent
+      : 'linear-gradient(135deg,#d97706,#b45309)';          // amber  — already present
+
+  const statusLine = markedNow
+    ? `✅ Attendance marked · ${fmtDate(today)}`
+    : alreadyStatus === 'absent'
+      ? `⚠️ Already marked <strong>Absent</strong> on ${fmtDate(today)}`
+      : `⚠️ Already scanned today · marked Present on ${fmtDate(today)}`;
+
   resultEl.innerHTML = `<div class="scan-result-card">
-    <div class="scan-result-header">
+    <div class="scan-result-header" style="background:${headerBg};">
       <div class="avatar" style="background:${avatarColor(student.name)};color:#fff;width:56px;height:56px;font-size:1.2rem;flex-shrink:0;">${initials(student.name)}</div>
       <div style="flex:1;min-width:0;">
         <div style="color:#fff;font-weight:700;font-size:1.1rem;">${escapeHtml(student.name)}</div>
         <div style="color:rgba(255,255,255,0.75);font-size:0.82rem;margin-top:2px;">${instrumentIcon(student.instrument)} ${student.instrument||'—'} · ${student.teacher||'—'}</div>
-        <div style="color:rgba(255,255,255,0.65);font-size:0.72rem;margin-top:3px;">✅ Attendance marked · ${fmtDate(today)}</div>
+        <div style="color:rgba(255,255,255,0.85);font-size:0.78rem;margin-top:4px;">${statusLine}</div>
       </div>
     </div>
     <div class="scan-result-body">
