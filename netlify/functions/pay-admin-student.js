@@ -378,7 +378,26 @@ exports.handler = async (event) => {
       await fetch(`${SUPABASE_URL}/rest/v1/crm_attendance?student_id=eq.${student_id}&date=eq.${date}`, { method:"DELETE", headers:SB_H });
       const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_attendance`, { method:"POST", headers:SB_M, body:JSON.stringify({ student_id, date, status: attStatus||"present", note: note||null }) });
       if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: "Attendance failed" }) };
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+
+      // Return class progress stats for immediate display
+      const [cntR, stuR] = await Promise.all([
+        fetch(`${SUPABASE_URL}/rest/v1/crm_attendance?student_id=eq.${student_id}&status=eq.present`, {
+          headers: { ...SB_H, "Prefer": "count=exact", "Range": "0-0" }
+        }),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${student_id}&select=name,phone,parent_name,parent_phone,total_classes_per_cycle`, { headers: SB_H })
+      ]);
+      const cRange = cntR.headers.get("content-range") || "";
+      const presentCount = parseInt(cRange.split("/")[1] || "0") || 0;
+      const stuArr = await stuR.json();
+      const stu = Array.isArray(stuArr) ? stuArr[0] : {};
+      const total = stu.total_classes_per_cycle || 0;
+      return { statusCode: 200, headers, body: JSON.stringify({
+        success: true,
+        present_count: presentCount,
+        total_classes: total || null,
+        remaining: total ? Math.max(0, total - presentCount) : null,
+        student: stu
+      })};
     }
 
     if (action === "crm_add_note") {

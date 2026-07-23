@@ -1930,15 +1930,15 @@ function renderAttendancePage() {
     <!-- Summary pills -->
     <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
       <div class="att-stat-pill att-stat-p" onclick="setAttFilter('present')" style="${_attFilter==='present'?'box-shadow:0 0 0 2px var(--gold);':''}">
-        <span style="font-size:1.4rem;font-weight:800;">${present}</span>
+        <span id="att-count-present" style="font-size:1.4rem;font-weight:800;">${present}</span>
         <span style="font-size:0.75rem;">Present</span>
       </div>
       <div class="att-stat-pill att-stat-a" onclick="setAttFilter('absent')" style="${_attFilter==='absent'?'box-shadow:0 0 0 2px var(--gold);':''}">
-        <span style="font-size:1.4rem;font-weight:800;">${absent}</span>
+        <span id="att-count-absent" style="font-size:1.4rem;font-weight:800;">${absent}</span>
         <span style="font-size:0.75rem;">Absent</span>
       </div>
       <div class="att-stat-pill att-stat-u" onclick="setAttFilter('unmarked')" style="${_attFilter==='unmarked'?'box-shadow:0 0 0 2px var(--gold);':''}">
-        <span style="font-size:1.4rem;font-weight:800;">${unmarked}</span>
+        <span id="att-count-unmarked" style="font-size:1.4rem;font-weight:800;">${unmarked}</span>
         <span style="font-size:0.75rem;">Not marked</span>
       </div>
       <div class="att-stat-pill att-stat-all" onclick="setAttFilter('all')" style="${_attFilter==='all'?'box-shadow:0 0 0 2px var(--gold);':''}">
@@ -2005,24 +2005,102 @@ function attGoDate(d) {
 }
 
 async function attMark(studentId, status) {
-  const scannerWasOpen = document.getElementById('att-scanner-body')?.style.display !== 'none';
-  const row = document.getElementById('att-row-' + studentId);
-  if (row) row.style.opacity = '0.5';
+  const rowEl = document.getElementById('att-row-' + studentId);
+  if (rowEl) rowEl.style.opacity = '0.5';
+  // Remove any previous result card for this student
+  document.getElementById('att-result-' + studentId)?.remove();
+
   try {
-    await apiCall({ action: 'crm_mark_attendance', student_id: studentId, date: _attDate, status });
+    const res = await apiCall({ action: 'crm_mark_attendance', student_id: studentId, date: _attDate, status });
     _attMap[studentId] = { student_id: studentId, date: _attDate, status };
-    renderAttendancePage();
-    if (scannerWasOpen) {
-      const body = document.getElementById('att-scanner-body');
-      const chev = document.getElementById('att-scanner-chevron');
-      if (body) { body.style.display = 'block'; chev.textContent = '▴'; }
+
+    // Update the student row in-place (no full re-render)
+    if (rowEl) {
+      rowEl.style.opacity = '1';
+      const isPres = status === 'present';
+      const isAbs  = status === 'absent';
+      const badgeEl = rowEl.querySelector('.att-badge');
+      if (badgeEl) {
+        badgeEl.className = `att-badge ${isPres ? 'att-present' : isAbs ? 'att-absent' : 'att-unmarked'}`;
+        badgeEl.innerHTML = isPres ? '✅ Present' : isAbs ? '❌ Absent' : '— Not marked';
+      }
+      const pBtn = rowEl.querySelector('.att-btn-present');
+      const aBtn = rowEl.querySelector('.att-btn-absent');
+      if (pBtn) pBtn.classList.toggle('att-btn-active-p', isPres);
+      if (aBtn) aBtn.classList.toggle('att-btn-active-a', isAbs);
     }
+
+    // Update summary pill counts
+    const p = _attStudents.filter(s => _attMap[s.id]?.status === 'present').length;
+    const a = _attStudents.filter(s => _attMap[s.id]?.status === 'absent').length;
+    const u = _attStudents.length - p - a;
+    const pEl = document.getElementById('att-count-present');
+    const aEl = document.getElementById('att-count-absent');
+    const uEl = document.getElementById('att-count-unmarked');
+    if (pEl) pEl.textContent = p;
+    if (aEl) aEl.textContent = a;
+    if (uEl) uEl.textContent = u;
+
+    // Show result card with class progress + WhatsApp
     const s = _attStudents.find(x => x.id === studentId);
-    toast(`${s?.name || 'Student'} marked ${status}`, status === 'present' ? 'success' : 'error');
+    if (rowEl) showAttMarkResult(rowEl, studentId, s, status, res);
+
   } catch(e) {
-    if (row) row.style.opacity = '1';
+    if (rowEl) rowEl.style.opacity = '1';
     toast('Failed to mark: ' + e.message, 'error');
   }
+}
+
+function showAttMarkResult(rowEl, studentId, student, status, res) {
+  const presentCount = res.present_count || 0;
+  const total        = res.total_classes || student?.total_classes_per_cycle || 0;
+  const remaining    = total ? Math.max(0, total - presentCount) : null;
+
+  const dateLabel = new Date(_attDate + 'T00:00:00').toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+  const name = student?.name || '';
+  const firstName = name.split(' ')[0] || 'there';
+  const parentFirst = (student?.parent_name || '').split(' ')[0] || firstName;
+  const phone = (student?.parent_phone || student?.phone || '').replace(/\D/g,'');
+  const intlPhone = phone ? (phone.startsWith('91') ? phone : '91' + phone.replace(/^0/,'')) : '';
+
+  const progressHtml = total
+    ? `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;">
+        <span style="font-size:1.15rem;font-weight:800;color:#16a34a;">${presentCount}</span>
+        <span style="font-size:0.8rem;color:var(--muted);">of ${total} classes done</span>
+        <span style="background:#fef3c7;color:#92400e;border-radius:20px;padding:2px 10px;font-size:0.72rem;font-weight:700;">${remaining} remaining</span>
+      </div>`
+    : `<div style="font-size:0.82rem;color:var(--muted);margin-top:3px;">${presentCount} classes attended all-time</div>`;
+
+  const waMsg = encodeURIComponent(
+    `Hi ${parentFirst}! 🎵\n\n` +
+    `${name} attended their Chords Music Academy class today (${dateLabel}).\n\n` +
+    (total ? `📊 Progress: ${presentCount} of ${total} classes done · ${remaining} remaining.\n\n` : '') +
+    `Keep practising! See you next time.\n— Chords Music Academy`
+  );
+  const waBtn = intlPhone.length >= 10
+    ? `<a href="https://wa.me/${intlPhone}?text=${waMsg}" target="_blank"
+         style="display:inline-flex;align-items:center;gap:6px;background:#25d366;color:#fff;border-radius:8px;padding:8px 14px;font-size:0.82rem;font-weight:600;text-decoration:none;white-space:nowrap;">
+         📱 WhatsApp
+       </a>`
+    : `<span style="font-size:0.72rem;color:var(--muted);">No phone on record</span>`;
+
+  const isPresent = status === 'present';
+  const card = document.createElement('div');
+  card.id = 'att-result-' + studentId;
+  card.style.cssText = `background:${isPresent?'linear-gradient(135deg,#f0fdf4,#dcfce7)':'linear-gradient(135deg,#fff5f5,#fee2e2)'};border:1px solid ${isPresent?'#86efac':'#fca5a5'};border-radius:12px;padding:12px 16px;margin:2px 0 6px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;`;
+  card.innerHTML = `
+    <div>
+      <div style="font-size:0.78rem;color:${isPresent?'#16a34a':'#dc2626'};font-weight:700;">
+        ${isPresent ? '✅' : '❌'} ${name} marked ${status} · ${dateLabel}
+      </div>
+      ${isPresent ? progressHtml : ''}
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      ${isPresent ? waBtn : ''}
+      <button onclick="document.getElementById('att-result-${studentId}').remove()"
+        style="background:none;border:none;color:#94a3b8;font-size:1.1rem;cursor:pointer;padding:4px;line-height:1;">✕</button>
+    </div>`;
+  rowEl.insertAdjacentElement('afterend', card);
 }
 
 // USB 2D scanner acts as HID keyboard — sends chars very fast then Enter
