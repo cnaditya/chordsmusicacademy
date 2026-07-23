@@ -2213,9 +2213,10 @@ async function processScan(raw) {
   } catch(e) {}
 
   let markedNow = false;
+  let markRes = null;
   if (!existingRecord) {
     try {
-      await apiCall({ action:'crm_mark_attendance', student_id:student.id, date:today, status:'present' });
+      markRes = await apiCall({ action:'crm_mark_attendance', student_id:student.id, date:today, status:'present' });
       markedNow = true;
     } catch(e) {}
   }
@@ -2262,6 +2263,39 @@ async function processScan(raw) {
       ? `⚠️ Already marked <strong>Absent</strong> on ${fmtDate(today)}`
       : `⚠️ Already scanned today · marked Present on ${fmtDate(today)}`;
 
+  // Class progress (use mark response if freshly marked, else count from crm_get data)
+  const presentCount = markedNow
+    ? (markRes?.present_count || 0)
+    : (data?.attendance || []).filter(a => a.status === 'present').length;
+  const total     = student.total_classes_per_cycle || 0;
+  const remaining = total ? Math.max(0, total - presentCount) : null;
+
+  const progressHtml = markedNow ? (total
+    ? `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0 6px;">
+        <span style="font-size:1.1rem;font-weight:800;color:#16a34a;">${presentCount}</span>
+        <span style="font-size:0.8rem;color:var(--muted);">of ${total} classes done</span>
+        <span style="background:#fef3c7;color:#92400e;border-radius:20px;padding:2px 10px;font-size:0.72rem;font-weight:700;">${remaining} remaining</span>
+      </div>`
+    : `<div style="font-size:0.82rem;color:var(--muted);padding:8px 0;">${presentCount} classes attended all-time</div>`)
+    : '';
+
+  // WhatsApp button (only on fresh mark)
+  const rawPhone = (student.parent_phone || student.phone || '').replace(/\D/g,'');
+  const intlPhone = rawPhone ? (rawPhone.startsWith('91') ? rawPhone : '91' + rawPhone.replace(/^0/,'')) : '';
+  const parentFirst = (student.parent_name || student.name || '').split(' ')[0] || 'there';
+  const waMsg = encodeURIComponent(
+    `Hi ${parentFirst}! 🎵\n\n` +
+    `${student.name} attended their Chords Music Academy class today (${fmtDate(today)}).\n\n` +
+    (total ? `📊 Progress: ${presentCount} of ${total} classes done · ${remaining} remaining.\n\n` : '') +
+    `Keep practising! See you next time.\n— Chords Music Academy`
+  );
+  const waBtn = (markedNow && intlPhone.length >= 10)
+    ? `<a href="https://wa.me/${intlPhone}?text=${waMsg}" target="_blank"
+         style="display:inline-flex;align-items:center;gap:6px;background:#25d366;color:#fff;border-radius:8px;padding:8px 14px;font-size:0.82rem;font-weight:600;text-decoration:none;">
+         📱 WhatsApp
+       </a>`
+    : '';
+
   resultEl.innerHTML = `<div class="scan-result-card">
     <div class="scan-result-header" style="background:${headerBg};">
       <div class="avatar" style="background:${avatarColor(student.name)};color:#fff;width:56px;height:56px;font-size:1.2rem;flex-shrink:0;">${initials(student.name)}</div>
@@ -2273,13 +2307,15 @@ async function processScan(raw) {
     </div>
     <div class="scan-result-body">
       ${feePillHtml}
+      ${progressHtml}
       <div class="scan-info-grid">
         <div class="scan-info-item"><label>Mode</label><div class="sval">${student.mode==='online'?'🌐 Online':'🏫 Offline'}</div></div>
         <div class="scan-info-item"><label>Status</label><div class="sval">${badge(student.status)}</div></div>
         <div class="scan-info-item"><label>Class Days</label><div class="sval">${student.class_days||'—'}</div></div>
         <div class="scan-info-item"><label>Class Time</label><div class="sval">${student.class_time||'—'}</div></div>
       </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        ${waBtn}
         <button class="btn btn-sm" style="background:rgba(220,38,38,0.1);color:var(--danger);border:1px solid rgba(220,38,38,0.2);"
           onclick="scanMarkAbsent('${student.id}')">✗ Mark Absent Instead</button>
         <button class="btn btn-primary btn-sm" onclick="scanOpenProfile('${student.id}')">👤 Full Profile</button>
