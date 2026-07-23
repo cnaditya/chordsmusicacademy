@@ -6,6 +6,7 @@
 <title>Chords Music Academy — CRM</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
 /* ══════════════════════════════════════════════════════════════════
    RESET & ROOT
@@ -777,6 +778,10 @@ tr:hover td { background: rgba(79,70,229,0.04); }
 .fee-pill.overdue { background:rgba(220,38,38,0.08); border:1px solid rgba(220,38,38,0.2); }
 .fee-pill.due     { background:rgba(217,119,6,0.08);  border:1px solid rgba(217,119,6,0.2);  }
 .fee-pill.ok      { background:rgba(22,163,74,0.08);  border:1px solid rgba(22,163,74,0.2);  }
+/* Camera viewfinder */
+#qr-cam-view { width:100%; max-width:340px; margin:0 auto; border-radius:12px; overflow:hidden; background:#000; min-height:240px; }
+#qr-cam-view video { width:100% !important; border-radius:0; display:block; }
+#qr-cam-view img  { display:none; } /* hide library's snapshot element */
 
 /* ── ID Card ── */
 .id-card-wrap { display:flex; justify-content:center; padding:8px 0 20px; }
@@ -1637,6 +1642,8 @@ let confirmCallback = null;
 let panelStudent = null;
 let scanModeActive = false;
 let _scanBuf = '', _scanTimer = null;
+let html5QrScanner = null;
+let _camCooldown = false;
 
 /* ══════════════════════════════════════════════════════════════════
    AUTH
@@ -1752,6 +1759,7 @@ function navigate(page) {
 
   if (page === 'scan') { renderScanPage(); return; }
   scanModeActive = false;
+  stopCameraScanner(); // release camera if leaving scan page
   document.getElementById('page-content').innerHTML = renderLoading();
   if (page === 'dashboard') loadDashboard();
   else if (page === 'students') loadStudents();
@@ -1789,10 +1797,24 @@ function renderScanPage() {
   document.getElementById('page-content').innerHTML = `
     <div class="scan-page">
       <div class="scan-ready-zone" id="scan-zone">
-        <div class="scan-pulse">📷</div>
-        <div style="font-size:1.1rem;font-weight:700;margin-bottom:8px;">Ready to Scan</div>
-        <div style="font-size:0.85rem;color:var(--muted);">Hold the student ID card under your 2D scanner</div>
-        <div style="font-size:0.75rem;color:var(--muted2);margin-top:10px;">Attendance is marked automatically · Card info shown below</div>
+
+        <!-- USB scanner default state -->
+        <div id="usb-scan-inner">
+          <div class="scan-pulse">📷</div>
+          <div style="font-size:1.1rem;font-weight:700;margin-bottom:8px;">Ready to Scan</div>
+          <div style="font-size:0.85rem;color:var(--muted);">Hold student ID card under your USB 2D scanner</div>
+          <div style="font-size:0.75rem;color:var(--muted2);margin-top:10px;">Attendance is marked automatically · card info shown below</div>
+        </div>
+
+        <!-- Camera mode (hidden by default) -->
+        <div id="cam-scan-inner" style="display:none;">
+          <div id="qr-cam-view"></div>
+          <div style="font-size:0.82rem;color:var(--muted);margin-top:12px;">Point camera at the QR code on the student's ID card</div>
+        </div>
+
+        <div style="margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <button id="cam-toggle-btn" class="btn btn-ghost" onclick="toggleCameraScanner()">📸 Use Laptop Camera</button>
+        </div>
       </div>
       <div id="scan-result"></div>
     </div>`;
@@ -1812,6 +1834,62 @@ document.addEventListener('keydown', function(e) {
     _scanTimer = setTimeout(() => { _scanBuf = ''; }, 120); // reset if human-speed typing
   }
 });
+
+async function stopCameraScanner() {
+  if (html5QrScanner) {
+    try { await html5QrScanner.stop(); } catch(e) {}
+    html5QrScanner = null;
+    _camCooldown = false;
+  }
+}
+
+async function toggleCameraScanner() {
+  const btn      = document.getElementById('cam-toggle-btn');
+  const usbInner = document.getElementById('usb-scan-inner');
+  const camInner = document.getElementById('cam-scan-inner');
+
+  if (html5QrScanner) {
+    // ── Stop camera ──────────────────────────────────────────────
+    await stopCameraScanner();
+    usbInner.style.display = '';
+    camInner.style.display = 'none';
+    if (btn) { btn.textContent = '📸 Use Laptop Camera'; btn.style.color = ''; }
+    return;
+  }
+
+  // ── Start camera ────────────────────────────────────────────────
+  if (!window.Html5Qrcode) {
+    toast('Camera library not loaded — check internet connection', 'error'); return;
+  }
+  usbInner.style.display = 'none';
+  camInner.style.display = '';
+  if (btn) { btn.textContent = '⛔ Stop Camera'; btn.style.color = 'var(--danger)'; }
+
+  try {
+    html5QrScanner = new Html5Qrcode('qr-cam-view');
+    await html5QrScanner.start(
+      { facingMode: 'environment' },          // back cam on phone, default on laptop
+      { fps: 10, qrbox: { width:220, height:220 }, aspectRatio:1.0 },
+      (decoded) => {
+        if (_camCooldown) return;
+        _camCooldown = true;
+        processScan(decoded);
+        setTimeout(() => { _camCooldown = false; }, 9000); // match auto-clear delay
+      },
+      () => {} // ignore per-frame "QR not found" errors
+    );
+  } catch(err) {
+    await stopCameraScanner();
+    usbInner.style.display = '';
+    camInner.style.display = 'none';
+    if (btn) { btn.textContent = '📸 Use Laptop Camera'; btn.style.color = ''; }
+    const denied = /Permission|NotAllowed|denied/i.test(err.toString());
+    toast(denied
+      ? 'Camera blocked — click the 🔒 icon in the address bar and allow camera access, then try again.'
+      : 'Camera error: ' + (err.message || err),
+    'error');
+  }
+}
 
 async function processScan(raw) {
   const zone = document.getElementById('scan-zone');
