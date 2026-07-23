@@ -279,11 +279,11 @@ function showResult(student, status, justMarked, presentCount) {
       `Please pay here: https://chordsmusicacademy.in/pay\n\n` +
       `Thank you!\n— Chords Music Academy`
     );
-    const waFeeBtn = intlPhone.length >= 10
+    const waFeeBtn = (present && intlPhone.length >= 10)
       ? `<a class="pay-btn pay-btn-wa" href="https://wa.me/${intlPhone}?text=${waFeeMsg}" target="_blank">
           📱 Send Fee Reminder on WhatsApp
          </a>`
-      : `<div style="font-size:0.78rem;color:#94a3b8;text-align:center;">No phone number on record</div>`;
+      : '';
 
     feeHtml = `
       <div class="fee-alert ${alertClass}">
