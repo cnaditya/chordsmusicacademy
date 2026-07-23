@@ -1496,6 +1496,31 @@ const API = '/.netlify/functions/pay-admin-student';
 const NOTES_API = '/.netlify/functions/pay-admin-student';
 let TOKEN = sessionStorage.getItem('crm_token') || '';
 
+/* ── Reminder tracking (per-student, persisted in localStorage) ─── */
+function getRmdCount(id) { return parseInt(localStorage.getItem('crm_rmd_'+id)||'0'); }
+function incRmdCount(id) {
+  const n = getRmdCount(id) + 1;
+  localStorage.setItem('crm_rmd_'+id, n);
+  return n;
+}
+function rmdLabel(id, defaultLabel) {
+  const n = getRmdCount(id);
+  return n > 0 ? `✅ Reminder ${n} sent` : defaultLabel;
+}
+function dashRemind(btn) {
+  const { id, name, intl, amount, overdue } = btn.dataset;
+  const firstName = (name||'').split(' ')[0] || 'there';
+  const waMsg = encodeURIComponent(
+    `Hi ${firstName}, your Chords Music Academy fee of ₹${parseFloat(amount||0).toLocaleString('en-IN')} is due${overdue==='true'?' (overdue)':''}. Please pay at chordsmusicacademy.in/pay 🎵`
+  );
+  window.open('https://wa.me/' + intl + '?text=' + waMsg, '_blank');
+  const count = incRmdCount(id);
+  btn.innerHTML = `✅ Reminder ${count} sent`;
+  btn.style.background = 'var(--surface2)';
+  btn.style.border = '1px solid var(--border)';
+  btn.style.color = 'var(--text)';
+}
+
 /* ── Theme toggle ───────────────────────────────────────────────── */
 function initTheme() {
   const saved = localStorage.getItem('crm_theme') || 'light';
@@ -1937,7 +1962,16 @@ function renderDashboard(data) {
             <div class="recent-name">${escapeHtml(s.name)}</div>
             <div class="recent-meta">₹${(s.amount_due||0).toLocaleString('en-IN')} · ${instrumentIcon(s.instrument)} ${s.instrument||''} · ${label}</div>
           </div>
-          ${phone ? `<a href="https://wa.me/${intl}?text=${waMsg}" target="_blank" style="background:#25d366;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:0.78rem;font-weight:700;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">💬 Remind</a>` : ''}
+          ${phone ? `<button
+            data-id="${s.id}" data-name="${escapeHtml(s.name)}" data-intl="${intl}"
+            data-amount="${s.amount_due||0}" data-overdue="${overdue}"
+            onclick="dashRemind(this)"
+            style="${getRmdCount(s.id)>0
+              ? 'background:var(--surface2);border:1px solid var(--border);color:var(--text);'
+              : 'background:#25d366;color:#fff;border:none;'
+            }border-radius:8px;padding:6px 12px;font-size:0.78rem;font-weight:700;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
+            ${rmdLabel(s.id,'💬 Remind')}
+          </button>` : ''}
         </div>`;
       }).join('')}
     </div>
@@ -2220,7 +2254,10 @@ function renderOverviewTab(s) {
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
     <button class="btn btn-primary btn-sm" onclick="openEditFromPanel()">✏️ Edit Student</button>
     ${s.phone?`<a href="${waLink(s)}" target="_blank" class="btn btn-sm btn-ghost" style="color:var(--success);">💬 WhatsApp</a>`:''}
-    ${s.phone && s.amount_due > 0 ? `<button class="btn btn-sm btn-ghost" style="background:#25d366;color:#fff;border:none;" onclick="sendWaReminder('${s.id}','${escapeHtml(s.name).replace(/'/g,"\\'")}','${s.phone}',${s.amount_due},'${s.due_date||''}')">📲 Fee Reminder</button>` : ''}
+    ${s.phone && s.amount_due > 0 ? `<button data-remind-btn="${s.id}" class="btn btn-sm btn-ghost"
+        style="${getRmdCount(s.id)>0?'':'background:#25d366;color:#fff;border:none;'}"
+        onclick="sendWaReminder('${s.id}','${escapeHtml(s.name).replace(/'/g,"\\'")}','${s.phone}',${s.amount_due},'${s.due_date||''}')">
+        ${rmdLabel(s.id,'📲 Fee Reminder')}</button>` : ''}
     <button class="btn btn-sm btn-ghost" style="color:var(--danger);" onclick="deleteStudent('${s.id}','${escapeHtml(s.name).replace(/'/g,"\\'")}')">🗑 Remove</button>
   </div>`;
 }
@@ -3611,8 +3648,18 @@ async function sendWaReminder(id, name, phone, amount, due_date) {
 
   try {
     const res = await apiCall({ action: 'crm_aisensy_send', phone, name, amount, due_date, template });
-    if (res.wa_status === 200) toast(`Reminder sent to ${name} on WhatsApp!`);
-    else toast(`Sent (AiSensy: ${res.wa_response||'check AiSensy'})`, 'error');
+    if (res.wa_status === 200) {
+      const count = incRmdCount(id);
+      document.querySelectorAll(`[data-remind-btn="${id}"]`).forEach(btn => {
+        btn.textContent = `✅ Reminder ${count} sent`;
+        btn.style.background = 'var(--surface2)';
+        btn.style.border = '1px solid var(--border)';
+        btn.style.color = 'var(--text)';
+      });
+      toast(`Reminder ${count} sent to ${name}!`);
+    } else {
+      toast(`Sent (AiSensy: ${res.wa_response||'check AiSensy'})`, 'error');
+    }
   } catch(e) {
     toast('Failed to send: ' + e.message, 'error');
   }
