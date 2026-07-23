@@ -60,11 +60,11 @@ exports.handler = async (event) => {
     const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
     const SB_H_PRE = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
 
-    // Return list of unique teacher names for the login screen
+    // Return teacher roles from TEACHER_PASSWORDS env var keys (what shows on login screen)
     if (preBody.action === "crm_teachers_list") {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?select=teacher&is_active=eq.true`, { headers: SB_H_PRE });
-      const rows = await r.json();
-      const teachers = [...new Set((Array.isArray(rows) ? rows : []).map(r => r.teacher).filter(Boolean))].sort();
+      let teacherPasswords = {};
+      try { teacherPasswords = JSON.parse(process.env.TEACHER_PASSWORDS || "{}"); } catch(e) {}
+      const teachers = Object.keys(teacherPasswords);
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, teachers }) };
     }
 

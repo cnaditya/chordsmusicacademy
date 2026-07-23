@@ -69,11 +69,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-heig
 .input:focus{border-color:#4f46e5;}
 .remember-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:0.85rem;color:#64748b;}
 .err{color:#dc2626;font-size:0.82rem;text-align:center;min-height:20px;margin-top:-6px;margin-bottom:8px;}
-.login-name-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.login-name-btn{padding:12px 8px;border:2px solid #e2e8f0;border-radius:12px;background:#f8fafc;font-size:0.9rem;font-weight:600;color:#334155;cursor:pointer;transition:all 0.15s;}
+.login-name-grid{display:flex;flex-direction:column;gap:8px;}
+.login-name-btn{width:100%;padding:13px 16px;border:2px solid #e2e8f0;border-radius:12px;background:#f8fafc;font-size:0.92rem;font-weight:600;color:#334155;cursor:pointer;transition:all 0.15s;text-align:left;}
 .login-name-btn:hover{border-color:#6366f1;background:#eef2ff;color:#4f46e5;}
 .login-name-btn.selected{border-color:#4f46e5;background:#eef2ff;color:#4f46e5;box-shadow:0 0 0 3px rgba(99,102,241,0.15);}
-.login-admin-btn{background:#fdf4ff;border-color:#e9d5ff;color:#7c3aed;}
+.login-admin-btn{background:#fdf4ff;border-color:#e9d5ff;color:#7c3aed;margin-top:4px;}
 .login-admin-btn.selected{border-color:#7c3aed;background:#f3e8ff;color:#6d28d9;box-shadow:0 0 0 3px rgba(124,58,237,0.15);}
 
 /* Spinner */
