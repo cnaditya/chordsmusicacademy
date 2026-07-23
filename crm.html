@@ -32,8 +32,13 @@
   --transition: 0.18s ease;
   --sidebar-w: 220px;
   --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+  --studio-color: #7e22ce;
+  --academy-color: #1d4ed8;
 }
 html { font-size: 15px; }
+@media (min-width: 1440px) { html { font-size: 16px; } }
+@media (min-width: 1920px) { html { font-size: 17px; } }
+@media (min-width: 2560px) { html { font-size: 19px; } }
 body {
   font-family: var(--font);
   background: var(--bg);
@@ -725,6 +730,58 @@ tr:hover td { background: rgba(79,70,229,0.04); }
 .inst-card .inst-sub { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
 
 /* ══════════════════════════════════════════════════════════════════
+   DARK MODE
+══════════════════════════════════════════════════════════════════ */
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface2: #273549;
+  --border: #334155;
+  --gold: #6366f1;
+  --gold-dim: #4f46e5;
+  --gold-bg: rgba(99,102,241,0.15);
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --muted2: #64748b;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --success: #22c55e;
+  --danger: #f87171;
+  --info: #38bdf8;
+  --warn: #fbbf24;
+  --studio-color: #c084fc;
+  --academy-color: #60a5fa;
+}
+[data-theme="dark"] .sidebar { background: #0a0f1e; }
+[data-theme="dark"] .badge-trial  { background: rgba(56,189,248,0.12);  color: #38bdf8; }
+[data-theme="dark"] .badge-trial::before  { background: #38bdf8; }
+[data-theme="dark"] .badge-active { background: rgba(34,197,94,0.12);  color: #22c55e; }
+[data-theme="dark"] .badge-active::before { background: #22c55e; }
+[data-theme="dark"] .badge-paused { background: rgba(251,191,36,0.12); color: #fbbf24; }
+[data-theme="dark"] .badge-paused::before { background: #fbbf24; }
+[data-theme="dark"] .badge-dropped{ background: rgba(248,113,113,0.12);color: #f87171; }
+[data-theme="dark"] .badge-dropped::before{ background: #f87171; }
+[data-theme="dark"] .mode-tag-studio  { background: rgba(192,132,252,0.12); color: #c084fc; }
+[data-theme="dark"] .mode-tag-academy { background: rgba(96,165,250,0.12);  color: #60a5fa; }
+[data-theme="dark"] .sql-block { background: #0a0f1e; border-color: #1e293b; }
+[data-theme="dark"] #login-screen { background: linear-gradient(135deg, #1e293b 0%, #4f46e5 100%); }
+
+/* MODE TAGS (used in lead cards – theme-aware via CSS classes) */
+.mode-tag { display: inline-block; padding: 2px 9px; border-radius: 10px; font-weight: 700; }
+.mode-tag-studio  { background: #f3e8ff; color: #7e22ce; }
+.mode-tag-academy { background: #dbeafe; color: #1d4ed8; }
+
+/* THEME TOGGLE BUTTON */
+.theme-toggle {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); border-radius: var(--radius-sm);
+  padding: 7px 11px; font-size: 1.05rem; cursor: pointer;
+  transition: all var(--transition); line-height: 1;
+  display: flex; align-items: center; margin-right: 6px;
+  flex-shrink: 0;
+}
+.theme-toggle:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ══════════════════════════════════════════════════════════════════
    MOBILE
 ══════════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
@@ -1050,9 +1107,10 @@ CREATE TABLE IF NOT EXISTS crm_notes (
         <input type="text" id="global-search" placeholder="Search students…" oninput="globalSearch(this.value)">
       </div>
       <input type="file" id="rcpt-file-input" accept="image/*" multiple style="display:none" onchange="handleReceiptUpload(event)">
-      <button class="btn-add" onclick="document.getElementById('rcpt-file-input').click()" style="background:#1a3a2a;border:1px solid #2a5a3a;margin-right:6px;" title="Scan a receipt to record payment or enroll student">📷 Scan Bill</button>
-      <button class="btn-add" onclick="openQuickEnroll()" style="background:#c9a227;margin-right:6px;">⚡ Quick Enroll</button>
-      <button class="btn-add" onclick="exportStudents()" style="background:#1a2a3a;border:1px solid #2a4a5a;margin-right:6px;" title="Download all students as Excel/CSV">⬇ Export</button>
+      <button class="btn-add" onclick="document.getElementById('rcpt-file-input').click()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);margin-right:6px;" title="Scan a receipt to record payment or enroll student">📷 Scan Bill</button>
+      <button class="btn-add" onclick="openQuickEnroll()" style="margin-right:6px;">⚡ Quick Enroll</button>
+      <button class="btn-add" onclick="exportStudents()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);margin-right:6px;" title="Download all students as Excel/CSV">⬇ Export</button>
+      <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle-btn" title="Toggle dark / light mode">🌙</button>
       <button class="btn-add" onclick="openAddStudent()">+ Add Student</button>
     </header>
     <main class="page-content" id="page-content"></main>
@@ -1437,6 +1495,23 @@ CREATE TABLE IF NOT EXISTS crm_notes (
 const API = '/.netlify/functions/pay-admin-student';
 const NOTES_API = '/.netlify/functions/pay-admin-student';
 let TOKEN = sessionStorage.getItem('crm_token') || '';
+
+/* ── Theme toggle ───────────────────────────────────────────────── */
+function initTheme() {
+  const saved = localStorage.getItem('crm_theme') || 'light';
+  document.documentElement.dataset.theme = saved;
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.textContent = saved === 'dark' ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  const current = document.documentElement.dataset.theme || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem('crm_theme', next);
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
+}
+initTheme();
 let currentPage = 'dashboard';
 let allStudents = [];
 let filteredStudents = [];
@@ -2956,8 +3031,8 @@ function renderLeadStats(leads) {
   const tableRows = dayRows.length ? dayRows.slice().reverse().map(r =>
     `<tr>
       <td style="padding:7px 10px;font-size:0.8rem;color:var(--muted);white-space:nowrap;">${formatDay(r.date)}</td>
-      <td style="padding:7px 10px;text-align:center;font-size:0.85rem;font-weight:700;color:#7e22ce;">${r.studio || '—'}</td>
-      <td style="padding:7px 10px;text-align:center;font-size:0.85rem;font-weight:700;color:#1d4ed8;">${r.academy || '—'}</td>
+      <td style="padding:7px 10px;text-align:center;font-size:0.85rem;font-weight:700;color:var(--studio-color);">${r.studio || '—'}</td>
+      <td style="padding:7px 10px;text-align:center;font-size:0.85rem;font-weight:700;color:var(--academy-color);">${r.academy || '—'}</td>
       <td style="padding:7px 10px;text-align:center;font-size:0.85rem;font-weight:700;color:var(--gold);">${r.total}</td>
     </tr>`).join('')
   : `<tr><td colspan="4" style="padding:14px;text-align:center;color:var(--muted);font-size:0.8rem;">No leads added yet in the last 14 days</td></tr>`;
@@ -2978,8 +3053,8 @@ function renderLeadStats(leads) {
         <thead>
           <tr style="background:var(--surface2);">
             <th style="padding:7px 10px;text-align:left;font-size:0.7rem;color:var(--muted);font-weight:700;">DATE</th>
-            <th style="padding:7px 10px;text-align:center;font-size:0.7rem;color:#7e22ce;font-weight:700;">🎙 STUDIO</th>
-            <th style="padding:7px 10px;text-align:center;font-size:0.7rem;color:#1d4ed8;font-weight:700;">🎵 ACADEMY</th>
+            <th style="padding:7px 10px;text-align:center;font-size:0.7rem;color:var(--studio-color);font-weight:700;">🎙 STUDIO</th>
+            <th style="padding:7px 10px;text-align:center;font-size:0.7rem;color:var(--academy-color);font-weight:700;">🎵 ACADEMY</th>
             <th style="padding:7px 10px;text-align:center;font-size:0.7rem;color:var(--gold);font-weight:700;">TOTAL</th>
           </tr>
         </thead>
@@ -3321,8 +3396,8 @@ function renderCampaignStep() {
   document.getElementById('promo-contact-card').innerHTML = `
     <div style="font-size:1.05rem;font-weight:700;margin-bottom:4px;">${name}</div>
     <div style="font-size:0.85rem;color:var(--muted);">+${phone}</div>
-    ${lead.mode === 'studio' ? '<div style="margin-top:6px;font-size:0.72rem;background:#f3e8ff;color:#7e22ce;display:inline-block;padding:2px 9px;border-radius:10px;font-weight:700;">🎙 Recording Studio</div>' : ''}
-    ${lead.mode === 'academy' ? '<div style="margin-top:6px;font-size:0.72rem;background:#dbeafe;color:#1d4ed8;display:inline-block;padding:2px 9px;border-radius:10px;font-weight:700;">🎵 Music Academy</div>' : ''}
+    ${lead.mode === 'studio' ? '<div style="margin-top:6px;" class="mode-tag mode-tag-studio" style="font-size:0.72rem;">🎙 Recording Studio</div>' : ''}
+    ${lead.mode === 'academy' ? '<div style="margin-top:6px;" class="mode-tag mode-tag-academy" style="font-size:0.72rem;">🎵 Music Academy</div>' : ''}
   `;
 
   // Auto-timer
@@ -3449,8 +3524,8 @@ function renderLeads(leads) {
             ${l.reg_id ? `<span style="font-size:0.7rem;color:var(--muted);">${l.reg_id}</span>` : ''}
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-            ${l.mode === 'academy' ? `<span style="background:#dbeafe;color:#1d4ed8;font-size:0.65rem;font-weight:700;padding:2px 9px;border-radius:10px;">🎵 Music Academy</span>` : ''}
-            ${l.mode === 'studio'  ? `<span style="background:#f3e8ff;color:#7e22ce;font-size:0.65rem;font-weight:700;padding:2px 9px;border-radius:10px;">🎙 Recording Studio</span>` : ''}
+            ${l.mode === 'academy' ? `<span class="mode-tag mode-tag-academy" style="font-size:0.65rem;">🎵 Music Academy</span>` : ''}
+            ${l.mode === 'studio'  ? `<span class="mode-tag mode-tag-studio"  style="font-size:0.65rem;">🎙 Recording Studio</span>` : ''}
           </div>
           <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:0.8rem;color:var(--muted);margin-bottom:8px;">
             ${l.phone ? `<span>📞 <a href="tel:${l.phone}" style="color:var(--gold);text-decoration:none;">${l.phone}</a></span>` : ''}
