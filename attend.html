@@ -46,7 +46,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-heig
 .fee-btns{display:flex;flex-direction:column;gap:8px;}
 .pay-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border:none;border-radius:10px;font-size:0.88rem;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;}
 .pay-btn-wa{background:#25d366;color:#fff;}
-.pay-btn-upi{background:#5f259f;color:#fff;}
 
 /* Class progress */
 .progress-box{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #86efac;border-radius:14px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:14px;}
@@ -254,9 +253,8 @@ function showResult(student, status, justMarked, presentCount) {
     : '';
 
   /* ── Fee alert ── */
-  const UPI_ID  = '7702031818-3@ybl';
-  const amt     = student.amount_due || 0;
-  let feeHtml   = '';
+  const amt = student.amount_due || 0;
+  let feeHtml = '';
   if (amt > 0) {
     const diff       = student.due_date
       ? Math.round((new Date(student.due_date) - new Date(today)) / 86400000)
@@ -266,36 +264,32 @@ function showResult(student, status, justMarked, presentCount) {
     const alertClass = isOverdue ? 'overdue' : isDueSoon ? 'due-soon' : 'due-later';
     const alertIcon  = isOverdue ? '🚨' : isDueSoon ? '⚠️' : '💳';
     const alertColor = isOverdue ? '#dc2626' : isDueSoon ? '#d97706' : '#475569';
-    const dueTxt     = diff === null  ? 'Fee Pending'
-                     : diff < 0      ? `Overdue by ${Math.abs(diff)} day${Math.abs(diff)===1?'':'s'}`
-                     : diff === 0    ? 'Due TODAY'
-                     : diff === 1    ? 'Due TOMORROW'
-                     :                 `Due in ${diff} days`;
-    const amtTxt     = `₹${amt.toLocaleString('en-IN')}${student.due_date?' · due '+fmtDate(student.due_date):''}`;
+    const dueTxt     = diff === null ? 'Fee Pending'
+                     : diff < 0     ? `Overdue by ${Math.abs(diff)} day${Math.abs(diff)===1?'':'s'}`
+                     : diff === 0   ? 'Due TODAY'
+                     : diff === 1   ? 'Due TOMORROW'
+                     :                `Due in ${diff} days`;
+    const amtTxt = `₹${amt.toLocaleString('en-IN')}${student.due_date?' · due '+fmtDate(student.due_date):''}`;
 
-    const upiLink = `upi://pay?pa=${UPI_ID}&pn=Chords+Music+Academy&am=${amt}&cu=INR&tn=CMA+Fees`;
     const waFeeMsg = encodeURIComponent(
       `Hi ${parentFirst}! 🎵\n\n` +
       `This is a reminder that *${student.name}'s* Chords Music Academy fee is *${dueTxt.toLowerCase()}*.\n\n` +
       `💰 Amount: ₹${amt.toLocaleString('en-IN')}\n` +
       (student.due_date ? `📅 Due date: ${fmtDate(student.due_date)}\n\n` : '\n') +
-      `To pay, use UPI ID: *${UPI_ID}*\n\n` +
+      `Please pay here: https://chordsmusicacademy.in/pay\n\n` +
       `Thank you!\n— Chords Music Academy`
     );
     const waFeeBtn = intlPhone.length >= 10
       ? `<a class="pay-btn pay-btn-wa" href="https://wa.me/${intlPhone}?text=${waFeeMsg}" target="_blank">
           📱 Send Fee Reminder on WhatsApp
          </a>`
-      : '';
+      : `<div style="font-size:0.78rem;color:#94a3b8;text-align:center;">No phone number on record</div>`;
 
     feeHtml = `
       <div class="fee-alert ${alertClass}">
         <div class="fee-alert-title" style="color:${alertColor};">${alertIcon} ${dueTxt}</div>
         <div class="fee-alert-sub">${amtTxt}</div>
-        <div class="fee-btns">
-          ${waFeeBtn}
-          <a class="pay-btn pay-btn-upi" href="${upiLink}">💜 Pay Now via PhonePe / GPay / UPI</a>
-        </div>
+        <div class="fee-btns">${waFeeBtn}</div>
       </div>`;
   } else {
     feeHtml = `<div class="fee-alert paid"><div class="fee-alert-title" style="color:#16a34a;">✅ All fees paid up</div></div>`;

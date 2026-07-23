@@ -2226,9 +2226,6 @@ async function processScan(raw) {
   const amt = student.amount_due || 0;
   const feePhone = (student.parent_phone || student.phone || '').replace(/\D/g,'');
   const feeIntl  = feePhone ? (feePhone.startsWith('91') ? feePhone : '91' + feePhone.replace(/^0/,'')) : '';
-  const UPI_ID   = '7702031818-3@ybl';
-  const upiLink  = `upi://pay?pa=${UPI_ID}&pn=Chords+Music+Academy&am=${amt}&cu=INR&tn=CMA+Fees`;
-  const payPageLink = `https://chordsmusicacademy.in/pay`;
 
   if (amt > 0) {
     const diff = student.due_date
@@ -2249,30 +2246,21 @@ async function processScan(raw) {
     const alertIcon   = isOverdue ? '🚨' : isDueSoon ? '⚠️' : '💳';
     const alertColor  = isOverdue ? '#dc2626' : isDueSoon ? '#d97706' : '#64748b';
 
-    // WhatsApp message with payment link
+    // WhatsApp message with payment page link
     const parentFirst = (student.parent_name || student.name || '').split(' ')[0] || 'there';
     const waMsgFee = encodeURIComponent(
       `Hi ${parentFirst}! 🎵\n\n` +
       `This is a reminder that *${student.name}'s* Chords Music Academy fee is *${dueTxt.toLowerCase()}*.\n\n` +
       `💰 Amount: ₹${amt.toLocaleString('en-IN')}\n` +
       (student.due_date ? `📅 Due date: ${fmtDate(student.due_date)}\n\n` : '\n') +
-      `To pay online, use UPI ID: *${UPI_ID}*\n` +
-      `Or visit: ${payPageLink}\n\n` +
+      `Please pay here: https://chordsmusicacademy.in/pay\n\n` +
       `Thank you!\n— Chords Music Academy`
     );
     const waBtnFee = feeIntl.length >= 10
       ? `<a href="https://wa.me/${feeIntl}?text=${waMsgFee}" target="_blank"
            style="display:inline-flex;align-items:center;gap:5px;background:#25d366;color:#fff;border-radius:8px;padding:7px 12px;font-size:0.78rem;font-weight:700;text-decoration:none;white-space:nowrap;">
-           📱 WhatsApp
+           📱 Send Fee Reminder
          </a>`
-      : '';
-
-    // AiSensy button (sends official template with payment details)
-    const aiBtn = (feePhone && (isOverdue || isDueSoon))
-      ? `<button onclick="scanSendFeeReminder('${student.id}','${escapeHtml(student.name)}','${feePhone}',${amt},'${student.due_date||''}')"
-           style="display:inline-flex;align-items:center;gap:5px;background:#4f46e5;color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;">
-           📨 Send Reminder
-         </button>`
       : '';
 
     feePillHtml = `
@@ -2283,11 +2271,7 @@ async function processScan(raw) {
             <div style="font-weight:800;font-size:0.9rem;color:${alertColor};">${dueTxt}</div>
             <div style="font-size:0.8rem;color:var(--muted);margin-top:2px;">${amtTxt}</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center;">
-              ${aiBtn}
               ${waBtnFee}
-              <a href="${upiLink}" style="display:inline-flex;align-items:center;gap:5px;background:#5f259f;color:#fff;border-radius:8px;padding:7px 12px;font-size:0.78rem;font-weight:700;text-decoration:none;white-space:nowrap;">
-                💜 Pay via UPI
-              </a>
             </div>
           </div>
         </div>
