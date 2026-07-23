@@ -105,6 +105,7 @@ let token = localStorage.getItem(TOKEN_KEY) || '';
 
 /* ── helpers ──────────────────────────────────────────────────── */
 function todayStr() { return new Date().toISOString().slice(0,10); }
+function nowTimeIST() { return new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata' }); }
 function fmtDate(d) {
   return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
 }
@@ -160,7 +161,7 @@ async function autoMark() {
   // Not yet marked — auto-mark present now
   showSpinner('Marking present…');
   try {
-    const markRes = await post({ action:'crm_mark_attendance', student_id:student.id, date:today, status:'present' });
+    const markRes = await post({ action:'crm_mark_attendance', student_id:student.id, date:today, status:'present', marked_time: nowTimeIST() });
     const presentCount = markRes.present_count || (data.attendance||[]).filter(a=>a.status==='present').length + 1;
     showResult(student, 'present', true, presentCount);
   } catch(e) {
@@ -325,7 +326,7 @@ function showResult(student, status, justMarked, presentCount) {
 async function changeStatus(id, newStatus) {
   showSpinner(newStatus==='present'?'Marking present…':'Marking absent…');
   try {
-    const markRes = await post({ action:'crm_mark_attendance', student_id:id, date:todayStr(), status:newStatus });
+    const markRes = await post({ action:'crm_mark_attendance', student_id:id, date:todayStr(), status:newStatus, marked_time: nowTimeIST() });
     const data    = await post({ action:'crm_get', id });
     const presentCount = markRes.present_count || (data.attendance||[]).filter(a=>a.status==='present').length;
     showResult(data.student, newStatus, true, presentCount);

@@ -1828,6 +1828,11 @@ function toggleSidebar() {
 }
 
 function globalSearch(val) {
+  if (currentPage === 'attendance') {
+    _attSearch = val;
+    renderAttList();
+    return;
+  }
   currentFilters.search = val;
   if (currentPage !== 'students') {
     navigate('students');
@@ -1848,8 +1853,15 @@ function renderLoading() {
 ══════════════════════════════════════════════════════════════════ */
 let _attDate = new Date().toISOString().slice(0,10);
 let _attFilter = 'all';
+let _attSearch = '';
 let _attStudents = [];
-let _attMap = {}; // student_id → {status}
+let _attMap = {}; // student_id → {status, marked_time}
+
+function nowTimeIST() {
+  return new Date().toLocaleTimeString('en-IN', {
+    hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata'
+  });
+}
 
 async function loadAttendancePage() {
   _attDate = _attDate || new Date().toISOString().slice(0,10);
@@ -1869,36 +1881,27 @@ function renderAttendanceSkeleton() {
   document.getElementById('page-content').innerHTML = `<div class="loading-state"><div class="spinner"></div><div>Loading attendance…</div></div>`;
 }
 
-function renderAttendancePage() {
-  const present  = _attStudents.filter(s => _attMap[s.id]?.status === 'present').length;
-  const absent   = _attStudents.filter(s => _attMap[s.id]?.status === 'absent').length;
-  const unmarked = _attStudents.length - present - absent;
-
-  const dateObj  = new Date(_attDate + 'T00:00:00');
-  const today    = new Date().toISOString().slice(0,10);
-  const isToday  = _attDate === today;
-  const dateLabel = dateObj.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-
-  const prevDate = new Date(dateObj); prevDate.setDate(prevDate.getDate()-1);
-  const nextDate = new Date(dateObj); nextDate.setDate(nextDate.getDate()+1);
-  const prevStr  = prevDate.toISOString().slice(0,10);
-  const nextStr  = nextDate.toISOString().slice(0,10);
-  const canNext  = nextStr <= today;
-
+// Returns filtered+searched rows HTML — used by both full render and search-only update
+function buildAttRows() {
   let filtered = _attStudents;
-  if (_attFilter === 'present')  filtered = _attStudents.filter(s => _attMap[s.id]?.status === 'present');
-  if (_attFilter === 'absent')   filtered = _attStudents.filter(s => _attMap[s.id]?.status === 'absent');
-  if (_attFilter === 'unmarked') filtered = _attStudents.filter(s => !_attMap[s.id]);
-
-  const rows = filtered.map(s => {
+  if (_attFilter === 'present')  filtered = filtered.filter(s => _attMap[s.id]?.status === 'present');
+  if (_attFilter === 'absent')   filtered = filtered.filter(s => _attMap[s.id]?.status === 'absent');
+  if (_attFilter === 'unmarked') filtered = filtered.filter(s => !_attMap[s.id]);
+  if (_attSearch) {
+    const q = _attSearch.toLowerCase();
+    filtered = filtered.filter(s => (s.name||'').toLowerCase().includes(q));
+  }
+  if (filtered.length === 0) return `<div class="empty-state" style="padding:40px 0;">No students found</div>`;
+  return filtered.map(s => {
     const rec    = _attMap[s.id];
     const status = rec?.status;
     const isPres = status === 'present';
     const isAbs  = status === 'absent';
+    const timeTxt = rec?.marked_time ? ` · ${rec.marked_time}` : '';
     const statusBadge = isPres
-      ? `<span class="att-badge att-present">✅ Present</span>`
+      ? `<span class="att-badge att-present">✅ Present${timeTxt}</span>`
       : isAbs
-        ? `<span class="att-badge att-absent">❌ Absent</span>`
+        ? `<span class="att-badge att-absent">❌ Absent${timeTxt}</span>`
         : `<span class="att-badge att-unmarked">— Not marked</span>`;
     return `
     <div class="att-row" id="att-row-${s.id}">
@@ -1916,14 +1919,42 @@ function renderAttendancePage() {
       </div>
     </div>`;
   }).join('');
+}
+
+// Updates only the list — called by search without rebuilding the whole page
+function renderAttList() {
+  const el = document.getElementById('att-list');
+  if (el) el.innerHTML = buildAttRows();
+}
+
+function renderAttendancePage() {
+  const present  = _attStudents.filter(s => _attMap[s.id]?.status === 'present').length;
+  const absent   = _attStudents.filter(s => _attMap[s.id]?.status === 'absent').length;
+  const unmarked = _attStudents.length - present - absent;
+
+  const dateObj   = new Date(_attDate + 'T00:00:00');
+  const today     = new Date().toISOString().slice(0,10);
+  const isToday   = _attDate === today;
+  const dateLabel = dateObj.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  const prevDate = new Date(dateObj); prevDate.setDate(prevDate.getDate()-1);
+  const nextDate = new Date(dateObj); nextDate.setDate(nextDate.getDate()+1);
+  const prevStr  = prevDate.toISOString().slice(0,10);
+  const nextStr  = nextDate.toISOString().slice(0,10);
+  const canNext  = nextStr <= today;
 
   document.getElementById('page-content').innerHTML = `
   <div style="max-width:780px;margin:0 auto;padding:0 4px;">
 
-    <!-- Date nav -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+    <!-- Date nav + date picker -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap;">
       <button class="btn btn-ghost" style="padding:6px 12px;" onclick="attGoDate('${prevStr}')">← Prev</button>
-      <div style="flex:1;text-align:center;font-weight:700;font-size:1rem;color:var(--text);">${dateLabel}${isToday?' <span style=\"font-size:0.7rem;background:var(--gold);color:#fff;border-radius:8px;padding:2px 8px;vertical-align:middle;\">Today</span>':''}</div>
+      <div style="flex:1;text-align:center;">
+        <div style="font-weight:700;font-size:0.95rem;color:var(--text);">${dateLabel}${isToday?'&nbsp;<span style="font-size:0.7rem;background:var(--gold);color:#fff;border-radius:8px;padding:2px 8px;">Today</span>':''}</div>
+        <input type="date" value="${_attDate}" max="${today}"
+          onchange="attGoDate(this.value)"
+          style="margin-top:4px;font-size:0.78rem;border:1px solid var(--border);border-radius:6px;padding:3px 8px;background:var(--surface2);color:var(--text);cursor:pointer;">
+      </div>
       <button class="btn btn-ghost" style="padding:6px 12px;" onclick="attGoDate('${nextStr}')" ${canNext?'':'disabled'}>Next →</button>
     </div>
 
@@ -1972,15 +2003,10 @@ function renderAttendancePage() {
       </div>
     </div>
 
-    <!-- Student list -->
-    <div class="att-list">
-      ${filtered.length === 0
-        ? `<div class="empty-state" style="padding:40px 0;">No students in this filter</div>`
-        : rows}
-    </div>
+    <!-- Student list (id for in-place search updates) -->
+    <div class="att-list" id="att-list">${buildAttRows()}</div>
   </div>`;
 
-  // Enable USB scan mode
   scanModeActive = true;
 }
 
@@ -2011,8 +2037,9 @@ async function attMark(studentId, status) {
   document.getElementById('att-result-' + studentId)?.remove();
 
   try {
-    const res = await apiCall({ action: 'crm_mark_attendance', student_id: studentId, date: _attDate, status });
-    _attMap[studentId] = { student_id: studentId, date: _attDate, status };
+    const markedTime = nowTimeIST();
+    const res = await apiCall({ action: 'crm_mark_attendance', student_id: studentId, date: _attDate, status, marked_time: markedTime });
+    _attMap[studentId] = { student_id: studentId, date: _attDate, status, marked_time: markedTime };
 
     // Update the student row in-place (no full re-render)
     if (rowEl) {
@@ -2022,7 +2049,7 @@ async function attMark(studentId, status) {
       const badgeEl = rowEl.querySelector('.att-badge');
       if (badgeEl) {
         badgeEl.className = `att-badge ${isPres ? 'att-present' : isAbs ? 'att-absent' : 'att-unmarked'}`;
-        badgeEl.innerHTML = isPres ? '✅ Present' : isAbs ? '❌ Absent' : '— Not marked';
+        badgeEl.innerHTML = isPres ? `✅ Present · ${markedTime}` : isAbs ? `❌ Absent · ${markedTime}` : '— Not marked';
       }
       const pBtn = rowEl.querySelector('.att-btn-present');
       const aBtn = rowEl.querySelector('.att-btn-absent');
@@ -2216,7 +2243,8 @@ async function processScan(raw) {
   let markRes = null;
   if (!existingRecord) {
     try {
-      markRes = await apiCall({ action:'crm_mark_attendance', student_id:student.id, date:today, status:'present' });
+      const scanTime = nowTimeIST();
+      markRes = await apiCall({ action:'crm_mark_attendance', student_id:student.id, date:today, status:'present', marked_time: scanTime });
       markedNow = true;
     } catch(e) {}
   }
