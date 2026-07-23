@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chords Music Academy — CRM</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 /* ══════════════════════════════════════════════════════════════════
    RESET & ROOT
@@ -730,6 +731,89 @@ tr:hover td { background: rgba(79,70,229,0.04); }
 .inst-card .inst-sub { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
 
 /* ══════════════════════════════════════════════════════════════════
+   QR / SCAN MODE
+══════════════════════════════════════════════════════════════════ */
+.scan-page { max-width: 680px; margin: 0 auto; }
+.scan-ready-zone {
+  background: var(--surface); border: 2px dashed var(--border);
+  border-radius: 20px; padding: 56px 40px; text-align: center;
+  transition: all 0.25s;
+}
+.scan-ready-zone.has-result { border-color: var(--gold); }
+.scan-pulse {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--gold-bg); border: 2px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.2rem; margin: 0 auto 18px;
+  animation: scan-pulse 2s ease-in-out infinite;
+}
+@keyframes scan-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(79,70,229,0.3); }
+  50%      { box-shadow: 0 0 0 18px rgba(79,70,229,0); }
+}
+.scan-result-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden; margin-top: 20px;
+  animation: slide-up 0.28s ease;
+}
+@keyframes slide-up {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.scan-result-header {
+  background: linear-gradient(135deg,#16a34a,#15803d);
+  padding: 18px 22px; display: flex; align-items: center; gap: 16px;
+}
+.scan-result-header.err { background: linear-gradient(135deg,#dc2626,#b91c1c); }
+.scan-result-body { padding: 20px 22px; }
+.scan-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.scan-info-item label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--muted); display:block; margin-bottom:3px; }
+.scan-info-item .sval { font-size:0.9rem; font-weight:600; color:var(--text); }
+.fee-pill {
+  border-radius: 10px; padding: 12px 16px;
+  display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  font-size: 0.88rem;
+}
+.fee-pill.overdue { background:rgba(220,38,38,0.08); border:1px solid rgba(220,38,38,0.2); }
+.fee-pill.due     { background:rgba(217,119,6,0.08);  border:1px solid rgba(217,119,6,0.2);  }
+.fee-pill.ok      { background:rgba(22,163,74,0.08);  border:1px solid rgba(22,163,74,0.2);  }
+
+/* ── ID Card ── */
+.id-card-wrap { display:flex; justify-content:center; padding:8px 0 20px; }
+.id-card {
+  width: 300px; background:#fff; border-radius:16px;
+  box-shadow: 0 6px 40px rgba(0,0,0,0.18); overflow:hidden;
+  font-family:'Segoe UI',sans-serif; color:#1e293b; flex-shrink:0;
+}
+.id-card-top {
+  background: linear-gradient(135deg,#4f46e5,#7c3aed);
+  padding:18px 20px 14px; text-align:center; color:#fff;
+}
+.id-card-top .ico { font-size:1.8rem; line-height:1; margin-bottom:4px; }
+.id-card-top .acad { font-size:0.9rem; font-weight:700; }
+.id-card-top .sub  { font-size:0.6rem; letter-spacing:0.12em; opacity:0.8; margin-top:2px; }
+.id-card-body { padding:18px 20px; text-align:center; }
+.id-card-av {
+  width:70px; height:70px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.7rem; font-weight:700; color:#fff;
+  margin:0 auto 10px; box-shadow:0 2px 12px rgba(0,0,0,0.15);
+}
+.id-card-name { font-size:1.05rem; font-weight:700; color:#0f172a; margin-bottom:3px; }
+.id-card-info { font-size:0.75rem; color:#64748b; margin-bottom:14px; }
+.id-card-qr   { display:flex; justify-content:center; margin-bottom:10px; }
+.id-card-uid  { font-size:0.62rem; color:#94a3b8; font-family:monospace; letter-spacing:0.05em; }
+.id-card-foot { background:#f8fafc; border-top:1px solid #e2e8f0; padding:8px 16px; text-align:center; font-size:0.6rem; color:#94a3b8; }
+
+@media print {
+  body > *:not(#id-card-print-wrap) { display:none !important; }
+  #id-card-print-wrap {
+    display:flex !important; position:fixed; inset:0;
+    align-items:center; justify-content:center; background:#fff;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
    DARK MODE
 ══════════════════════════════════════════════════════════════════ */
 [data-theme="dark"] {
@@ -1090,6 +1174,9 @@ CREATE TABLE IF NOT EXISTS crm_notes (
       </div>
       <div class="nav-item" onclick="navigate('payments')" data-page="payments">
         <span class="nav-icon">💳</span> Payments
+      </div>
+      <div class="nav-item" onclick="navigate('scan')" data-page="scan">
+        <span class="nav-icon">📷</span> Scan Attendance
       </div>
     </div>
     <div class="sidebar-footer">
@@ -1548,6 +1635,8 @@ let attMonth = { year: new Date().getFullYear(), month: new Date().getMonth() };
 let attData = {};
 let confirmCallback = null;
 let panelStudent = null;
+let scanModeActive = false;
+let _scanBuf = '', _scanTimer = null;
 
 /* ══════════════════════════════════════════════════════════════════
    AUTH
@@ -1656,11 +1745,14 @@ function navigate(page) {
     instruments: 'Instruments',
     leads: 'Leads & Registrations',
     payments: 'Payments & Billing',
+    scan: '📷 Scan Attendance',
   };
   document.getElementById('topbar-title').textContent = titles[page] || page;
-  document.getElementById('page-content').innerHTML = renderLoading();
   document.getElementById('sidebar').classList.remove('open');
 
+  if (page === 'scan') { renderScanPage(); return; }
+  scanModeActive = false;
+  document.getElementById('page-content').innerHTML = renderLoading();
   if (page === 'dashboard') loadDashboard();
   else if (page === 'students') loadStudents();
   else if (page === 'schedule') loadSchedule();
@@ -1687,6 +1779,200 @@ function globalSearch(val) {
 ══════════════════════════════════════════════════════════════════ */
 function renderLoading() {
   return `<div class="loading-state"><div class="spinner"></div><div>Loading…</div></div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   QR SCAN MODE
+══════════════════════════════════════════════════════════════════ */
+function renderScanPage() {
+  scanModeActive = true;
+  document.getElementById('page-content').innerHTML = `
+    <div class="scan-page">
+      <div class="scan-ready-zone" id="scan-zone">
+        <div class="scan-pulse">📷</div>
+        <div style="font-size:1.1rem;font-weight:700;margin-bottom:8px;">Ready to Scan</div>
+        <div style="font-size:0.85rem;color:var(--muted);">Hold the student ID card under your 2D scanner</div>
+        <div style="font-size:0.75rem;color:var(--muted2);margin-top:10px;">Attendance is marked automatically · Card info shown below</div>
+      </div>
+      <div id="scan-result"></div>
+    </div>`;
+}
+
+// USB 2D scanner acts as HID keyboard — sends chars very fast then Enter
+document.addEventListener('keydown', function(e) {
+  if (!scanModeActive) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  if (e.key === 'Enter') {
+    if (_scanBuf.length > 4) processScan(_scanBuf.trim());
+    _scanBuf = ''; clearTimeout(_scanTimer); return;
+  }
+  if (e.key.length === 1) {
+    _scanBuf += e.key;
+    clearTimeout(_scanTimer);
+    _scanTimer = setTimeout(() => { _scanBuf = ''; }, 120); // reset if human-speed typing
+  }
+});
+
+async function processScan(raw) {
+  const zone = document.getElementById('scan-zone');
+  const resultEl = document.getElementById('scan-result');
+  if (!zone || !resultEl) return;
+
+  // QR content format: "CMA:STUDENT_UUID"
+  const studentId = raw.startsWith('CMA:') ? raw.slice(4) : raw;
+  const student = allStudents.find(s => s.id === studentId);
+
+  if (!student) {
+    resultEl.innerHTML = `<div class="scan-result-card">
+      <div class="scan-result-header err">
+        <span style="font-size:2rem;">❌</span>
+        <div style="color:#fff;">
+          <div style="font-weight:700;">Unknown QR Code</div>
+          <div style="font-size:0.78rem;opacity:0.75;">${escapeHtml(raw.slice(0,50))}</div>
+        </div>
+      </div>
+    </div>`;
+    setTimeout(() => { resultEl.innerHTML = ''; }, 4000);
+    return;
+  }
+
+  zone.classList.add('has-result');
+
+  // Mark attendance via existing API
+  const today = todayStr();
+  try {
+    await apiCall({ action:'crm_mark_attendance', student_id:student.id, date:today, status:'present' });
+  } catch(e) { /* already marked or network issue — still show card */ }
+
+  // Fee status
+  let feePillHtml = '';
+  const amt = student.amount_due || 0;
+  if (amt > 0 && student.due_date) {
+    const diff = Math.round((new Date(student.due_date) - new Date(today)) / 86400000);
+    if (diff < 0) {
+      feePillHtml = `<div class="fee-pill overdue">
+        <span style="font-size:1.5rem;">⚠️</span>
+        <div><div style="font-weight:700;color:var(--danger);">Fee Overdue by ${Math.abs(diff)} days</div>
+        <div style="color:var(--muted);font-size:0.8rem;">₹${amt.toLocaleString('en-IN')} was due on ${fmtDate(student.due_date)}</div></div>
+      </div>`;
+    } else {
+      feePillHtml = `<div class="fee-pill due">
+        <span style="font-size:1.5rem;">💳</span>
+        <div><div style="font-weight:700;color:var(--warn);">Fee due ${diff===0?'today':diff===1?'tomorrow':'in '+diff+' days'}</div>
+        <div style="color:var(--muted);font-size:0.8rem;">₹${amt.toLocaleString('en-IN')} · ${fmtDate(student.due_date)}</div></div>
+      </div>`;
+    }
+  } else if (amt > 0) {
+    feePillHtml = `<div class="fee-pill due"><span style="font-size:1.5rem;">💳</span>
+      <div><div style="font-weight:700;color:var(--warn);">Fee Pending</div>
+      <div style="color:var(--muted);font-size:0.8rem;">₹${amt.toLocaleString('en-IN')} outstanding</div></div>
+    </div>`;
+  } else {
+    feePillHtml = `<div class="fee-pill ok"><span style="font-size:1.5rem;">✅</span>
+      <div style="font-weight:600;color:var(--success);">All fees paid up</div>
+    </div>`;
+  }
+
+  resultEl.innerHTML = `<div class="scan-result-card">
+    <div class="scan-result-header">
+      <div class="avatar" style="background:${avatarColor(student.name)};color:#fff;width:56px;height:56px;font-size:1.2rem;flex-shrink:0;">${initials(student.name)}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="color:#fff;font-weight:700;font-size:1.1rem;">${escapeHtml(student.name)}</div>
+        <div style="color:rgba(255,255,255,0.75);font-size:0.82rem;margin-top:2px;">${instrumentIcon(student.instrument)} ${student.instrument||'—'} · ${student.teacher||'—'}</div>
+        <div style="color:rgba(255,255,255,0.65);font-size:0.72rem;margin-top:3px;">✅ Attendance marked · ${fmtDate(today)}</div>
+      </div>
+    </div>
+    <div class="scan-result-body">
+      ${feePillHtml}
+      <div class="scan-info-grid">
+        <div class="scan-info-item"><label>Mode</label><div class="sval">${student.mode==='online'?'🌐 Online':'🏫 Offline'}</div></div>
+        <div class="scan-info-item"><label>Status</label><div class="sval">${badge(student.status)}</div></div>
+        <div class="scan-info-item"><label>Class Days</label><div class="sval">${student.class_days||'—'}</div></div>
+        <div class="scan-info-item"><label>Class Time</label><div class="sval">${student.class_time||'—'}</div></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-sm" style="background:rgba(220,38,38,0.1);color:var(--danger);border:1px solid rgba(220,38,38,0.2);"
+          onclick="scanMarkAbsent('${student.id}')">✗ Mark Absent Instead</button>
+        <button class="btn btn-primary btn-sm" onclick="scanOpenProfile('${student.id}')">👤 Full Profile</button>
+        <button class="btn btn-sm btn-ghost" onclick="openIdCardModal(allStudents.find(s=>s.id==='${student.id}'))">🪪 ID Card</button>
+      </div>
+    </div>
+  </div>`;
+
+  // Auto-clear after 10s for next student
+  setTimeout(() => { zone.classList.remove('has-result'); resultEl.innerHTML = ''; }, 10000);
+}
+
+async function scanMarkAbsent(studentId) {
+  try {
+    await apiCall({ action:'crm_mark_attendance', student_id:studentId, date:todayStr(), status:'absent' });
+    toast('Marked absent for today');
+    document.getElementById('scan-result').innerHTML = '';
+    document.getElementById('scan-zone').classList.remove('has-result');
+  } catch(e) { toast('Failed','error'); }
+}
+
+function scanOpenProfile(studentId) {
+  navigate('students');
+  setTimeout(() => viewStudent(studentId), 600);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ID CARD GENERATOR
+══════════════════════════════════════════════════════════════════ */
+function openIdCardModal(s) {
+  if (!s) return;
+  const old = document.getElementById('id-card-modal');
+  if (old) old.remove();
+
+  const m = document.createElement('div');
+  m.id = 'id-card-modal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:910;display:flex;align-items:center;justify-content:center;padding:20px;';
+  m.innerHTML = `
+    <div style="background:var(--surface);border-radius:16px;padding:28px;max-width:400px;width:100%;box-shadow:var(--shadow);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:1rem;">🪪 Student ID Card</div>
+        <button onclick="document.getElementById('id-card-modal').remove()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1;">✕</button>
+      </div>
+      <div id="id-card-print-wrap" class="id-card-wrap">
+        <div class="id-card">
+          <div class="id-card-top">
+            <div class="ico">🎵</div>
+            <div class="acad">Chords Music Academy</div>
+            <div class="sub">STUDENT IDENTITY CARD</div>
+          </div>
+          <div class="id-card-body">
+            <div class="id-card-av" style="background:${avatarColor(s.name)};">${initials(s.name)}</div>
+            <div class="id-card-name">${escapeHtml(s.name)}</div>
+            <div class="id-card-info">${instrumentIcon(s.instrument)} ${s.instrument||'Music'} · ${s.teacher||'Chords Academy'}</div>
+            <div class="id-card-qr" id="modal-qr-box"></div>
+            <div class="id-card-uid">ID: ${s.id.slice(0,8).toUpperCase()}</div>
+          </div>
+          <div class="id-card-foot">Hyderabad · chordsmusicacademy.in · Scan to mark attendance</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="window.print()">🖨️ Print Card</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('id-card-modal').remove()">Close</button>
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+
+  // Render QR code into the box after DOM insert
+  setTimeout(() => {
+    const box = document.getElementById('modal-qr-box');
+    if (!box) return;
+    try {
+      new QRCode(box, {
+        text: 'CMA:' + s.id,
+        width: 148, height: 148,
+        colorDark: '#1e293b', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    } catch(e) {
+      box.innerHTML = `<div style="font-size:0.75rem;color:#94a3b8;padding:16px;">QR: CMA:${s.id.slice(0,8)}</div>`;
+    }
+  }, 60);
 }
 
 function renderEmpty(icon, title, sub, btnLabel, btnFn) {
@@ -2253,6 +2539,7 @@ function renderOverviewTab(s) {
   </div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
     <button class="btn btn-primary btn-sm" onclick="openEditFromPanel()">✏️ Edit Student</button>
+    <button class="btn btn-sm btn-ghost" onclick="openIdCardModal(panelStudent)">🪪 ID Card</button>
     ${s.phone?`<a href="${waLink(s)}" target="_blank" class="btn btn-sm btn-ghost" style="color:var(--success);">💬 WhatsApp</a>`:''}
     ${s.phone && s.amount_due > 0 ? `<button data-remind-btn="${s.id}" class="btn btn-sm btn-ghost"
         style="${getRmdCount(s.id)>0?'':'background:#25d366;color:#fff;border:none;'}"
