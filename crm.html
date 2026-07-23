@@ -11,27 +11,27 @@
 ══════════════════════════════════════════════════════════════════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #0a0a0f;
-  --surface: #13131f;
-  --surface2: #1a1a2e;
-  --border: #1e1e2e;
-  --sidebar: #0d0d1a;
-  --gold: #c9a227;
-  --gold-dim: #a07d1a;
-  --gold-bg: rgba(201,162,39,0.08);
-  --success: #27ae60;
-  --danger: #e74c3c;
-  --info: #3498db;
-  --warn: #f39c12;
-  --text: #e0e0e0;
-  --muted: #888;
-  --muted2: #555;
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --surface2: #f4f6f9;
+  --border: #e2e8f0;
+  --sidebar: #1e293b;
+  --gold: #4f46e5;
+  --gold-dim: #4338ca;
+  --gold-bg: rgba(79,70,229,0.08);
+  --success: #16a34a;
+  --danger: #dc2626;
+  --info: #0284c7;
+  --warn: #d97706;
+  --text: #0f172a;
+  --muted: #64748b;
+  --muted2: #94a3b8;
   --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
   --radius: 10px;
   --radius-sm: 6px;
   --transition: 0.18s ease;
   --sidebar-w: 220px;
-  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
 }
 html { font-size: 15px; }
 body {
@@ -66,7 +66,7 @@ select option { background: var(--surface2); }
 #login-screen {
   position: fixed; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  background: var(--bg);
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 60%, #1e293b 100%);
   z-index: 9999;
 }
 .login-card {
@@ -88,7 +88,7 @@ select option { background: var(--surface2); }
 }
 .btn-login {
   width: 100%; padding: 13px; font-size: 1rem; font-weight: 600;
-  background: var(--gold); color: #000; border: none;
+  background: var(--gold); color: #fff; border: none;
   border-radius: var(--radius); transition: opacity var(--transition);
 }
 .btn-login:hover { opacity: 0.88; }
@@ -118,10 +118,10 @@ select option { background: var(--surface2); }
 .modal-box h2 { font-size: 1.2rem; color: var(--gold); margin-bottom: 8px; }
 .modal-box p { color: var(--muted); font-size: 0.9rem; margin-bottom: 16px; line-height: 1.6; }
 .sql-block {
-  background: #0d0d1a; border: 1px solid var(--border);
+  background: #1e293b; border: 1px solid #334155;
   border-radius: var(--radius-sm); padding: 16px;
   font-size: 0.78rem; font-family: 'Courier New', monospace;
-  color: #98c379; line-height: 1.7;
+  color: #86efac; line-height: 1.7;
   overflow-x: auto; white-space: pre;
   margin-bottom: 20px;
 }
@@ -136,7 +136,7 @@ select option { background: var(--surface2); }
 .sidebar {
   width: var(--sidebar-w);
   background: var(--sidebar);
-  border-right: 1px solid var(--border);
+  border-right: 1px solid rgba(255,255,255,0.06);
   display: flex; flex-direction: column;
   position: fixed; top: 0; left: 0;
   height: 100vh; z-index: 100;
@@ -144,30 +144,30 @@ select option { background: var(--surface2); }
 }
 .sidebar-logo {
   padding: 20px 18px 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 .sidebar-logo .logo-icon { font-size: 1.5rem; }
-.sidebar-logo .logo-name { font-size: 0.95rem; font-weight: 700; color: var(--gold); line-height: 1.2; }
-.sidebar-logo .logo-sub { font-size: 0.7rem; color: var(--muted); }
+.sidebar-logo .logo-name { font-size: 0.95rem; font-weight: 700; color: #a5b4fc; line-height: 1.2; }
+.sidebar-logo .logo-sub { font-size: 0.7rem; color: #64748b; }
 .sidebar-nav { flex: 1; padding: 12px 0; }
 .nav-item {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 18px; font-size: 0.88rem;
-  color: var(--muted); cursor: pointer;
+  color: #94a3b8; cursor: pointer;
   border-left: 3px solid transparent;
   transition: all var(--transition);
   user-select: none;
 }
-.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
-.nav-item.active { color: var(--gold); border-left-color: var(--gold); background: var(--gold-bg); }
+.nav-item:hover { color: #e2e8f0; background: rgba(255,255,255,0.06); }
+.nav-item.active { color: #818cf8; border-left-color: #818cf8; background: rgba(79,70,229,0.18); }
 .nav-item .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
 .sidebar-footer {
   padding: 14px 18px;
-  border-top: 1px solid var(--border);
-  font-size: 0.78rem; color: var(--muted);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.78rem; color: #64748b;
 }
 .logout-btn {
-  background: none; border: none; color: var(--danger);
+  background: none; border: none; color: #f87171;
   font-size: 0.82rem; cursor: pointer; padding: 6px 0;
   display: flex; align-items: center; gap: 6px;
 }
@@ -199,7 +199,7 @@ select option { background: var(--surface2); }
 }
 .topbar-search .search-icon { color: var(--muted); font-size: 0.9rem; }
 .btn-add {
-  background: var(--gold); color: #000;
+  background: var(--gold); color: #fff;
   border: none; border-radius: 8px;
   padding: 9px 18px; font-size: 0.88rem; font-weight: 600;
   display: flex; align-items: center; gap: 6px;
@@ -225,7 +225,7 @@ select option { background: var(--surface2); }
   cursor: pointer;
 }
 .btn:hover { opacity: 0.85; }
-.btn-primary { background: var(--gold); color: #000; font-weight: 600; }
+.btn-primary { background: var(--gold); color: #fff; font-weight: 600; }
 .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
 .btn-ghost:hover { color: var(--text); border-color: var(--muted2); }
 .btn-danger { background: var(--danger); color: #fff; }
@@ -254,7 +254,7 @@ select option { background: var(--surface2); }
   padding: 20px;
   transition: transform var(--transition), box-shadow var(--transition);
 }
-.stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79,70,229,0.12); }
 .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
 .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; }
 .stat-card.gold .stat-value { color: var(--gold); }
@@ -325,7 +325,7 @@ select option { background: var(--surface2); }
   transition: all var(--transition);
 }
 .chip:hover { border-color: var(--gold); color: var(--text); }
-.chip.active { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 600; }
+.chip.active { background: var(--gold); color: #fff; border-color: var(--gold); font-weight: 600; }
 .filter-selects { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
 .filter-selects select {
   padding: 6px 10px; font-size: 0.82rem;
@@ -361,7 +361,7 @@ td {
   border-top: 1px solid var(--border);
   vertical-align: middle;
 }
-tr:hover td { background: rgba(255,255,255,0.015); }
+tr:hover td { background: rgba(79,70,229,0.04); }
 .td-name { font-weight: 600; }
 .td-id { color: var(--muted); font-size: 0.78rem; font-family: monospace; }
 .td-actions { display: flex; gap: 4px; align-items: center; }
@@ -374,14 +374,14 @@ tr:hover td { background: rgba(255,255,255,0.015); }
   padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;
 }
 .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
-.badge-trial { background: rgba(52,152,219,0.15); color: #5dade2; }
-.badge-trial::before { background: #5dade2; }
-.badge-active { background: rgba(39,174,96,0.15); color: #2ecc71; }
-.badge-active::before { background: #2ecc71; }
-.badge-paused { background: rgba(243,156,18,0.15); color: #f39c12; }
-.badge-paused::before { background: #f39c12; }
-.badge-dropped { background: rgba(231,76,60,0.15); color: #e74c3c; }
-.badge-dropped::before { background: #e74c3c; }
+.badge-trial { background: #dbeafe; color: #1d4ed8; }
+.badge-trial::before { background: #1d4ed8; }
+.badge-active { background: #dcfce7; color: #16a34a; }
+.badge-active::before { background: #16a34a; }
+.badge-paused { background: #fef3c7; color: #b45309; }
+.badge-paused::before { background: #b45309; }
+.badge-dropped { background: #fee2e2; color: #dc2626; }
+.badge-dropped::before { background: #dc2626; }
 
 /* ══════════════════════════════════════════════════════════════════
    CARD GRID VIEW
@@ -402,7 +402,7 @@ tr:hover td { background: rgba(255,255,255,0.015); }
 }
 .student-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  box-shadow: 0 8px 24px rgba(79,70,229,0.15);
   border-color: var(--gold);
 }
 .card-header { display: flex; align-items: center; gap: 12px; }
@@ -438,7 +438,7 @@ tr:hover td { background: rgba(255,255,255,0.015); }
   z-index: 600;
   display: flex; flex-direction: column;
   transition: right 0.28s cubic-bezier(0.22,1,0.36,1);
-  box-shadow: -8px 0 40px rgba(0,0,0,0.5);
+  box-shadow: -8px 0 40px rgba(0,0,0,0.15);
 }
 .detail-panel.open { right: 0; }
 .panel-header {
@@ -786,13 +786,14 @@ tr:hover td { background: rgba(255,255,255,0.015); }
   overflow: hidden;
 }
 .qe-header {
-  background: linear-gradient(135deg, #1a1a2e, #2c2c50);
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
   padding: 20px 24px;
   display: flex; align-items: center; justify-content: space-between;
   border-bottom: 1px solid var(--border);
+  border-radius: 14px 14px 0 0;
 }
-.qe-header h2 { font-size: 1.05rem; font-weight: 700; color: var(--gold); }
-.qe-header span { font-size: 0.78rem; color: var(--muted); margin-top: 2px; display: block; }
+.qe-header h2 { font-size: 1.05rem; font-weight: 700; color: #fff; }
+.qe-header span { font-size: 0.78rem; color: rgba(255,255,255,0.7); margin-top: 2px; display: block; }
 .qe-body { padding: 24px; display: flex; flex-direction: column; gap: 14px; }
 .qe-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .qe-group { display: flex; flex-direction: column; gap: 5px; }
@@ -1623,7 +1624,7 @@ function instrumentIcon(inst) {
 }
 
 function avatarColor(name) {
-  const colors = ['#c9a227','#27ae60','#3498db','#9b59b6','#e74c3c','#e67e22','#1abc9c','#e91e63','#16a085','#8e44ad'];
+  const colors = ['#6366f1','#10b981','#3b82f6','#8b5cf6','#ef4444','#f97316','#06b6d4','#ec4899','#14b8a6','#a855f7'];
   let h = 0;
   for (const c of (name || '')) h = c.charCodeAt(0) + ((h << 5) - h);
   return colors[Math.abs(h) % colors.length];
@@ -1827,7 +1828,7 @@ function renderDashboard(data) {
       : `<div class="recent-list">
           ${recent.map(s=>`
           <div class="recent-item" style="cursor:pointer;" onclick="viewStudent('${s.id}')">
-            <div class="avatar" style="background:${avatarColor(s.name)};color:#000;">${initials(s.name)}</div>
+            <div class="avatar" style="background:${avatarColor(s.name)};color:#fff;">${initials(s.name)}</div>
             <div class="recent-info">
               <div class="recent-name">${escapeHtml(s.name)}</div>
               <div class="recent-meta">${s.student_id||''} · ${instrumentIcon(s.instrument)} ${s.instrument||'No instrument'} · ${s.teacher||''}</div>
@@ -1987,7 +1988,7 @@ function renderTable(list) {
           <td class="td-id">${s.student_id||'—'}</td>
           <td>
             <div style="display:flex;align-items:center;gap:10px;">
-              <div class="avatar" style="background:${avatarColor(s.name)};color:#000;width:32px;height:32px;font-size:0.75rem;flex-shrink:0;">${initials(s.name)}</div>
+              <div class="avatar" style="background:${avatarColor(s.name)};color:#fff;width:32px;height:32px;font-size:0.75rem;flex-shrink:0;">${initials(s.name)}</div>
               <div>
                 <div class="td-name">${escapeHtml(s.name)}</div>
                 <div style="font-size:0.72rem;color:var(--muted);">${s.phone||''}</div>
@@ -2019,7 +2020,7 @@ function renderCards(list) {
     ${list.map(s=>`
     <div class="student-card" onclick="viewStudent('${s.id}')">
       <div class="card-header">
-        <div class="card-avatar" style="background:${avatarColor(s.name)};color:#000;">${initials(s.name)}</div>
+        <div class="card-avatar" style="background:${avatarColor(s.name)};color:#fff;">${initials(s.name)}</div>
         <div style="flex:1;min-width:0;">
           <div class="card-name">${escapeHtml(s.name)}</div>
           <div class="card-id">${s.student_id||''}</div>
@@ -2612,7 +2613,7 @@ async function loadSchedule() {
             <div style="text-align:center;min-width:68px;flex-shrink:0;">
               <div style="font-size:1.05rem;font-weight:700;color:var(--gold);">${getTodayTime(s)}</div>
             </div>
-            <div class="avatar" style="background:${avatarColor(s.name)};color:#000;flex-shrink:0;">${initials(s.name)}</div>
+            <div class="avatar" style="background:${avatarColor(s.name)};color:#fff;flex-shrink:0;">${initials(s.name)}</div>
             <div style="flex:1;min-width:0;">
               <div style="font-weight:600;font-size:0.97rem;">${escapeHtml(s.name)}</div>
               <div style="font-size:0.8rem;color:var(--muted);margin-top:3px;">
@@ -2710,7 +2711,7 @@ async function loadLeads() {
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
           <div style="font-size:0.82rem;color:var(--muted);">WhatsApp/Instagram contacts + registrations from your website.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button onclick="openAddLeadModal()" style="padding:9px 18px;background:var(--gold);color:#000;border:none;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;">+ Add Contact</button>
+            <button onclick="openAddLeadModal()" style="padding:9px 18px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;">+ Add Contact</button>
             <button onclick="openBulkModal()" style="padding:9px 18px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;">📥 Bulk Upload Numbers</button>
             <button onclick="openPromoModal()" style="padding:9px 18px;background:#25d366;color:#fff;border:none;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;">📢 Send Promotion</button>
           </div>
@@ -2805,7 +2806,7 @@ async function loadLeads() {
               <div id="promo-timer-display" style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;min-height:20px;"></div>
               <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
                 <button onclick="openCurrentWA()" id="promo-wa-btn" style="padding:12px 24px;background:#25d366;color:#fff;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;">💬 Open WhatsApp</button>
-                <button onclick="nextContact(false)" style="padding:12px 24px;background:var(--gold);color:#000;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;">Next →</button>
+                <button onclick="nextContact(false)" style="padding:12px 24px;background:var(--gold);color:#fff;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;">Next →</button>
                 <button onclick="nextContact(true)" style="padding:12px 20px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:10px;font-size:0.85rem;font-weight:600;cursor:pointer;">Skip</button>
                 <button onclick="stopCampaign()" style="padding:12px 20px;background:var(--surface2);color:#e74c3c;border:1px solid #e74c3c;border-radius:10px;font-size:0.85rem;font-weight:600;cursor:pointer;">Stop</button>
               </div>
@@ -2817,7 +2818,7 @@ async function loadLeads() {
             <div style="font-size:3rem;margin-bottom:12px;">🎉</div>
             <div style="font-size:1.1rem;font-weight:700;margin-bottom:6px;">Campaign Complete!</div>
             <div id="promo-done-stats" style="font-size:0.85rem;color:var(--muted);margin-bottom:20px;"></div>
-            <button onclick="closePromoModal()" style="padding:12px 28px;background:var(--gold);color:#000;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;">Done</button>
+            <button onclick="closePromoModal()" style="padding:12px 28px;background:var(--gold);color:#fff;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;">Done</button>
           </div>
         </div>
       </div>
@@ -2843,7 +2844,7 @@ async function loadLeads() {
               <textarea id="bl-numbers" rows="8" placeholder="7032285288&#10;9966665582&#10;9493490937, 7842257801&#10;..." style="width:100%;padding:10px 12px;font-size:0.85rem;border-radius:8px;resize:vertical;font-family:monospace;"></textarea>
             </div>
             <div id="bl-preview" style="font-size:0.75rem;color:var(--muted);"></div>
-            <button onclick="runBulkUpload()" id="bl-save-btn" style="width:100%;padding:12px;background:var(--gold);color:#000;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;">Upload →</button>
+            <button onclick="runBulkUpload()" id="bl-save-btn" style="width:100%;padding:12px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;">Upload →</button>
             <div id="bl-result" style="font-size:0.82rem;text-align:center;display:none;"></div>
           </div>
         </div>
@@ -2876,7 +2877,7 @@ async function loadLeads() {
               <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px;">Note (optional)</label>
               <input id="al-note" placeholder="e.g. Interested in guitar, saw Instagram ad" style="width:100%;padding:10px 12px;font-size:0.9rem;border-radius:8px;">
             </div>
-            <button onclick="saveAddLead()" id="al-save-btn" style="width:100%;padding:12px;background:var(--gold);color:#000;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;margin-top:4px;">Save Contact</button>
+            <button onclick="saveAddLead()" id="al-save-btn" style="width:100%;padding:12px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;margin-top:4px;">Save Contact</button>
           </div>
         </div>
       </div>`;
@@ -2955,8 +2956,8 @@ function renderLeadStats(leads) {
   const tableRows = dayRows.length ? dayRows.slice().reverse().map(r =>
     `<tr>
       <td style="padding:7px 10px;font-size:0.8rem;color:var(--muted);white-space:nowrap;">${formatDay(r.date)}</td>
-      <td style="padding:7px 10px;text-align:center;font-size:0.85rem;font-weight:700;color:#c39bd3;">${r.studio || '—'}</td>
-      <td style="padding:7px 10px;text-align:center;font-size:0.85rem;font-weight:700;color:#5dade2;">${r.academy || '—'}</td>
+      <td style="padding:7px 10px;text-align:center;font-size:0.85rem;font-weight:700;color:#7e22ce;">${r.studio || '—'}</td>
+      <td style="padding:7px 10px;text-align:center;font-size:0.85rem;font-weight:700;color:#1d4ed8;">${r.academy || '—'}</td>
       <td style="padding:7px 10px;text-align:center;font-size:0.85rem;font-weight:700;color:var(--gold);">${r.total}</td>
     </tr>`).join('')
   : `<tr><td colspan="4" style="padding:14px;text-align:center;color:var(--muted);font-size:0.8rem;">No leads added yet in the last 14 days</td></tr>`;
@@ -2964,8 +2965,8 @@ function renderLeadStats(leads) {
   el.innerHTML = `
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
       ${statCard(leads.length, 'TOTAL LEADS', 'var(--gold)', `${contacted} contacted`)}
-      ${statCard(studio,  '🎙 STUDIO',  '#c39bd3', `${studioToday} today`)}
-      ${statCard(academy, '🎵 ACADEMY', '#5dade2', `${academyToday} today`)}
+      ${statCard(studio,  '🎙 STUDIO',  '#7e22ce', `${studioToday} today`)}
+      ${statCard(academy, '🎵 ACADEMY', '#1d4ed8', `${academyToday} today`)}
       ${statCard(todayLeads.length, "TODAY'S LEADS", '#27ae60', '')}
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
@@ -2977,8 +2978,8 @@ function renderLeadStats(leads) {
         <thead>
           <tr style="background:var(--surface2);">
             <th style="padding:7px 10px;text-align:left;font-size:0.7rem;color:var(--muted);font-weight:700;">DATE</th>
-            <th style="padding:7px 10px;text-align:center;font-size:0.7rem;color:#c39bd3;font-weight:700;">🎙 STUDIO</th>
-            <th style="padding:7px 10px;text-align:center;font-size:0.7rem;color:#5dade2;font-weight:700;">🎵 ACADEMY</th>
+            <th style="padding:7px 10px;text-align:center;font-size:0.7rem;color:#7e22ce;font-weight:700;">🎙 STUDIO</th>
+            <th style="padding:7px 10px;text-align:center;font-size:0.7rem;color:#1d4ed8;font-weight:700;">🎵 ACADEMY</th>
             <th style="padding:7px 10px;text-align:center;font-size:0.7rem;color:var(--gold);font-weight:700;">TOTAL</th>
           </tr>
         </thead>
@@ -3320,8 +3321,8 @@ function renderCampaignStep() {
   document.getElementById('promo-contact-card').innerHTML = `
     <div style="font-size:1.05rem;font-weight:700;margin-bottom:4px;">${name}</div>
     <div style="font-size:0.85rem;color:var(--muted);">+${phone}</div>
-    ${lead.mode === 'studio' ? '<div style="margin-top:6px;font-size:0.72rem;background:#3b1f3b;color:#c39bd3;display:inline-block;padding:2px 9px;border-radius:10px;font-weight:700;">🎙 Recording Studio</div>' : ''}
-    ${lead.mode === 'academy' ? '<div style="margin-top:6px;font-size:0.72rem;background:#1a3a5c;color:#5dade2;display:inline-block;padding:2px 9px;border-radius:10px;font-weight:700;">🎵 Music Academy</div>' : ''}
+    ${lead.mode === 'studio' ? '<div style="margin-top:6px;font-size:0.72rem;background:#f3e8ff;color:#7e22ce;display:inline-block;padding:2px 9px;border-radius:10px;font-weight:700;">🎙 Recording Studio</div>' : ''}
+    ${lead.mode === 'academy' ? '<div style="margin-top:6px;font-size:0.72rem;background:#dbeafe;color:#1d4ed8;display:inline-block;padding:2px 9px;border-radius:10px;font-weight:700;">🎵 Music Academy</div>' : ''}
   `;
 
   // Auto-timer
@@ -3440,7 +3441,7 @@ function renderLeads(leads) {
   el.innerHTML = leads.map(l => `
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:12px;">
       <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;">
-        <div class="avatar" style="background:${avatarColor(l.full_name)};color:#000;flex-shrink:0;">${initials(l.full_name)}</div>
+        <div class="avatar" style="background:${avatarColor(l.full_name)};color:#fff;flex-shrink:0;">${initials(l.full_name)}</div>
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
             <span style="font-weight:700;font-size:0.95rem;">${l.full_name}</span>
@@ -3448,8 +3449,8 @@ function renderLeads(leads) {
             ${l.reg_id ? `<span style="font-size:0.7rem;color:var(--muted);">${l.reg_id}</span>` : ''}
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-            ${l.mode === 'academy' ? `<span style="background:#1a3a5c;color:#5dade2;font-size:0.65rem;font-weight:700;padding:2px 9px;border-radius:10px;">🎵 Music Academy</span>` : ''}
-            ${l.mode === 'studio'  ? `<span style="background:#3b1f3b;color:#c39bd3;font-size:0.65rem;font-weight:700;padding:2px 9px;border-radius:10px;">🎙 Recording Studio</span>` : ''}
+            ${l.mode === 'academy' ? `<span style="background:#dbeafe;color:#1d4ed8;font-size:0.65rem;font-weight:700;padding:2px 9px;border-radius:10px;">🎵 Music Academy</span>` : ''}
+            ${l.mode === 'studio'  ? `<span style="background:#f3e8ff;color:#7e22ce;font-size:0.65rem;font-weight:700;padding:2px 9px;border-radius:10px;">🎙 Recording Studio</span>` : ''}
           </div>
           <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:0.8rem;color:var(--muted);margin-bottom:8px;">
             ${l.phone ? `<span>📞 <a href="tel:${l.phone}" style="color:var(--gold);text-decoration:none;">${l.phone}</a></span>` : ''}
@@ -3466,7 +3467,7 @@ function renderLeads(leads) {
             <select onchange="updateLeadStatus('${l.id}', this.value)" style="padding:5px 8px;font-size:0.78rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);">
               ${Object.entries(LEAD_STATUS_LABELS).map(([v,label])=>`<option value="${v}"${l.status===v?' selected':''}>${label}</option>`).join('')}
             </select>
-            ${l.status !== 'converted' ? `<button onclick="convertLead('${l.id}', ${JSON.stringify(l).replace(/"/g,'&quot;')})" style="padding:6px 12px;font-size:0.78rem;font-weight:700;background:var(--gold);color:#000;border:none;border-radius:8px;cursor:pointer;">✅ Convert to Student</button>` : '<span style="font-size:0.78rem;color:#27ae60;font-weight:600;">✓ Converted</span>'}
+            ${l.status !== 'converted' ? `<button onclick="convertLead('${l.id}', ${JSON.stringify(l).replace(/"/g,'&quot;')})" style="padding:6px 12px;font-size:0.78rem;font-weight:700;background:var(--gold);color:#fff;border:none;border-radius:8px;cursor:pointer;">✅ Convert to Student</button>` : '<span style="font-size:0.78rem;color:#27ae60;font-weight:600;">✓ Converted</span>'}
           </div>
         </div>
       </div>
@@ -3903,7 +3904,7 @@ async function searchReceiptStudent() {
     } else {
       list.innerHTML = students.map(s => `
         <div class="rcpt-match-item" id="rcpt-match-${s.id}" onclick="selectReceiptStudent('${s.id}','${escapeHtml(s.name)}','${s.student_id||''}')">
-          <div class="avatar" style="background:${avatarColor(s.name)};color:#000;width:32px;height:32px;font-size:0.78rem;flex-shrink:0;">${initials(s.name)}</div>
+          <div class="avatar" style="background:${avatarColor(s.name)};color:#fff;width:32px;height:32px;font-size:0.78rem;flex-shrink:0;">${initials(s.name)}</div>
           <div style="flex:1;min-width:0;">
             <div class="match-name">${escapeHtml(s.name)}</div>
             <div class="match-meta">${s.student_id||''} · ${s.instrument||'—'} · ${s.status||''}</div>
@@ -4011,9 +4012,9 @@ function loadPayments() {
   <div style="max-width:680px;margin:0 auto;">
 
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px;">
-      <div style="background:linear-gradient(135deg,#1a1a2e,#2c2c50);padding:20px 28px;border-bottom:1px solid var(--border);">
-        <div style="font-size:1.05rem;font-weight:700;color:var(--gold);">💳 Generate Receipt</div>
-        <div style="font-size:0.8rem;color:var(--muted);margin-top:3px;">Search a student, fill in payment details, download a professional PDF receipt</div>
+      <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:20px 28px;border-bottom:1px solid var(--border);">
+        <div style="font-size:1.05rem;font-weight:700;color:#fff;">💳 Generate Receipt</div>
+        <div style="font-size:0.8rem;color:rgba(255,255,255,0.7);margin-top:3px;">Search a student, fill in payment details, download a professional PDF receipt</div>
       </div>
       <div style="padding:28px;display:flex;flex-direction:column;gap:16px;">
 
@@ -4082,7 +4083,7 @@ function loadPayments() {
         </div>
 
         <button onclick="generateBillPDF()" id="pay-generate-btn"
-          style="background:var(--gold);color:#000;border:none;border-radius:8px;padding:13px 28px;
+          style="background:var(--gold);color:#fff;border:none;border-radius:8px;padding:13px 28px;
           font-size:0.95rem;font-weight:700;cursor:pointer;transition:opacity .15s;font-family:var(--font);align-self:flex-end;">
           ⬇ Download Receipt PDF
         </button>
@@ -4127,7 +4128,7 @@ async function searchPayStudent() {
         style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;
         border-bottom:1px solid var(--border);transition:background .12s;"
         onmouseover="this.style.background='var(--gold-bg)'" onmouseout="this.style.background=''">
-        <div class="avatar" style="background:${avatarColor(s.name)};color:#000;width:30px;height:30px;font-size:0.72rem;flex-shrink:0;">${initials(s.name)}</div>
+        <div class="avatar" style="background:${avatarColor(s.name)};color:#fff;width:30px;height:30px;font-size:0.72rem;flex-shrink:0;">${initials(s.name)}</div>
         <div>
           <div style="font-size:0.88rem;font-weight:600;">${escapeHtml(s.name)}</div>
           <div style="font-size:0.75rem;color:var(--muted);">${s.student_id||''} · ${s.instrument||'—'} · ₹${(s.amount_due||0).toLocaleString('en-IN')}</div>
