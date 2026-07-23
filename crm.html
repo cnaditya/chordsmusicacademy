@@ -2221,29 +2221,77 @@ async function processScan(raw) {
     } catch(e) {}
   }
 
-  // Fee status
+  // Fee status — build alert card with payment link + WhatsApp reminder button
   let feePillHtml = '';
   const amt = student.amount_due || 0;
-  if (amt > 0 && student.due_date) {
-    const diff = Math.round((new Date(student.due_date) - new Date(today)) / 86400000);
-    if (diff < 0) {
-      feePillHtml = `<div class="fee-pill overdue">
-        <span style="font-size:1.5rem;">⚠️</span>
-        <div><div style="font-weight:700;color:var(--danger);">Fee Overdue by ${Math.abs(diff)} days</div>
-        <div style="color:var(--muted);font-size:0.8rem;">₹${amt.toLocaleString('en-IN')} was due on ${fmtDate(student.due_date)}</div></div>
+  const feePhone = (student.parent_phone || student.phone || '').replace(/\D/g,'');
+  const feeIntl  = feePhone ? (feePhone.startsWith('91') ? feePhone : '91' + feePhone.replace(/^0/,'')) : '';
+  const UPI_ID   = '7702031818-3@ybl';
+  const upiLink  = `upi://pay?pa=${UPI_ID}&pn=Chords+Music+Academy&am=${amt}&cu=INR&tn=CMA+Fees`;
+  const payPageLink = `https://chordsmusicacademy.in/pay`;
+
+  if (amt > 0) {
+    const diff = student.due_date
+      ? Math.round((new Date(student.due_date) - new Date(today)) / 86400000)
+      : null;
+    const isOverdue  = diff !== null && diff < 0;
+    const isDueSoon  = diff !== null && diff >= 0 && diff <= 4;
+    const dueTxt     = diff === null   ? 'Fee Pending'
+                     : diff < 0       ? `Overdue by ${Math.abs(diff)} day${Math.abs(diff)===1?'':'s'}`
+                     : diff === 0     ? 'Due TODAY'
+                     : diff === 1     ? 'Due TOMORROW'
+                     :                  `Due in ${diff} days`;
+    const amtTxt   = `₹${amt.toLocaleString('en-IN')}${student.due_date?' · '+fmtDate(student.due_date):''}`;
+    const alertBg  = isOverdue  ? 'linear-gradient(135deg,#fef2f2,#fee2e2)' :
+                     isDueSoon  ? 'linear-gradient(135deg,#fffbeb,#fef3c7)' :
+                                  'linear-gradient(135deg,#f8fafc,#f1f5f9)';
+    const alertBorder = isOverdue ? '#fca5a5' : isDueSoon ? '#fde68a' : '#e2e8f0';
+    const alertIcon   = isOverdue ? '🚨' : isDueSoon ? '⚠️' : '💳';
+    const alertColor  = isOverdue ? '#dc2626' : isDueSoon ? '#d97706' : '#64748b';
+
+    // WhatsApp message with payment link
+    const parentFirst = (student.parent_name || student.name || '').split(' ')[0] || 'there';
+    const waMsgFee = encodeURIComponent(
+      `Hi ${parentFirst}! 🎵\n\n` +
+      `This is a reminder that *${student.name}'s* Chords Music Academy fee is *${dueTxt.toLowerCase()}*.\n\n` +
+      `💰 Amount: ₹${amt.toLocaleString('en-IN')}\n` +
+      (student.due_date ? `📅 Due date: ${fmtDate(student.due_date)}\n\n` : '\n') +
+      `To pay online, use UPI ID: *${UPI_ID}*\n` +
+      `Or visit: ${payPageLink}\n\n` +
+      `Thank you!\n— Chords Music Academy`
+    );
+    const waBtnFee = feeIntl.length >= 10
+      ? `<a href="https://wa.me/${feeIntl}?text=${waMsgFee}" target="_blank"
+           style="display:inline-flex;align-items:center;gap:5px;background:#25d366;color:#fff;border-radius:8px;padding:7px 12px;font-size:0.78rem;font-weight:700;text-decoration:none;white-space:nowrap;">
+           📱 WhatsApp
+         </a>`
+      : '';
+
+    // AiSensy button (sends official template with payment details)
+    const aiBtn = (feePhone && (isOverdue || isDueSoon))
+      ? `<button onclick="scanSendFeeReminder('${student.id}','${escapeHtml(student.name)}','${feePhone}',${amt},'${student.due_date||''}')"
+           style="display:inline-flex;align-items:center;gap:5px;background:#4f46e5;color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+           📨 Send Reminder
+         </button>`
+      : '';
+
+    feePillHtml = `
+      <div style="background:${alertBg};border:1px solid ${alertBorder};border-radius:12px;padding:12px 14px;margin-bottom:12px;">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <span style="font-size:1.6rem;line-height:1;">${alertIcon}</span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:800;font-size:0.9rem;color:${alertColor};">${dueTxt}</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-top:2px;">${amtTxt}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center;">
+              ${aiBtn}
+              ${waBtnFee}
+              <a href="${upiLink}" style="display:inline-flex;align-items:center;gap:5px;background:#5f259f;color:#fff;border-radius:8px;padding:7px 12px;font-size:0.78rem;font-weight:700;text-decoration:none;white-space:nowrap;">
+                💜 Pay via UPI
+              </a>
+            </div>
+          </div>
+        </div>
       </div>`;
-    } else {
-      feePillHtml = `<div class="fee-pill due">
-        <span style="font-size:1.5rem;">💳</span>
-        <div><div style="font-weight:700;color:var(--warn);">Fee due ${diff===0?'today':diff===1?'tomorrow':'in '+diff+' days'}</div>
-        <div style="color:var(--muted);font-size:0.8rem;">₹${amt.toLocaleString('en-IN')} · ${fmtDate(student.due_date)}</div></div>
-      </div>`;
-    }
-  } else if (amt > 0) {
-    feePillHtml = `<div class="fee-pill due"><span style="font-size:1.5rem;">💳</span>
-      <div><div style="font-weight:700;color:var(--warn);">Fee Pending</div>
-      <div style="color:var(--muted);font-size:0.8rem;">₹${amt.toLocaleString('en-IN')} outstanding</div></div>
-    </div>`;
   } else {
     feePillHtml = `<div class="fee-pill ok"><span style="font-size:1.5rem;">✅</span>
       <div style="font-weight:600;color:var(--success);">All fees paid up</div>
@@ -2326,6 +2374,22 @@ async function processScan(raw) {
 
   // Auto-clear after 10s for next student
   setTimeout(() => { zone.classList.remove('has-result'); resultEl.innerHTML = ''; }, 10000);
+}
+
+async function scanSendFeeReminder(id, name, phone, amount, due_date) {
+  let template = 'fee_reminder_advance';
+  if (due_date) {
+    const diff = Math.round((new Date(due_date) - new Date()) / 86400000);
+    if (diff === 1) template = 'fee_reminder_tomorrow';
+    else if (diff < 0) template = 'fee_overdue';
+  }
+  try {
+    await apiCall({ action: 'crm_aisensy_send', phone, name, amount, due_date, template });
+    const count = incRmdCount(id);
+    toast(`Fee reminder ${count} sent to ${name}!`);
+  } catch(e) {
+    toast('Failed to send reminder: ' + e.message, 'error');
+  }
 }
 
 async function scanMarkAbsent(studentId) {
