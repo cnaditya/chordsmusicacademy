@@ -2026,8 +2026,11 @@ function scanOpenProfile(studentId) {
 /* ══════════════════════════════════════════════════════════════════
    ID CARD GENERATOR
 ══════════════════════════════════════════════════════════════════ */
+let _idCardStudent = null;
+
 function openIdCardModal(s) {
   if (!s) return;
+  _idCardStudent = s;
   const old = document.getElementById('id-card-modal');
   if (old) old.remove();
 
@@ -2040,7 +2043,7 @@ function openIdCardModal(s) {
         <div style="font-weight:700;font-size:1rem;">🪪 Student ID Card</div>
         <button onclick="document.getElementById('id-card-modal').remove()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1;">✕</button>
       </div>
-      <div id="id-card-print-wrap" class="id-card-wrap">
+      <div class="id-card-wrap">
         <div class="id-card">
           <div class="id-card-top">
             <div class="ico">🎵</div>
@@ -2050,7 +2053,7 @@ function openIdCardModal(s) {
           <div class="id-card-body">
             <div class="id-card-av" style="background:${avatarColor(s.name)};">${initials(s.name)}</div>
             <div class="id-card-name">${escapeHtml(s.name)}</div>
-            <div class="id-card-info">${instrumentIcon(s.instrument)} ${s.instrument||'Music'} · ${s.teacher||'Chords Academy'}</div>
+            <div class="id-card-info">${s.instrument||'Music'} · ${s.teacher||'Chords Academy'}</div>
             <div class="id-card-qr" id="modal-qr-box"></div>
             <div class="id-card-uid">ID: ${s.id.slice(0,8).toUpperCase()}</div>
           </div>
@@ -2058,38 +2061,112 @@ function openIdCardModal(s) {
         </div>
       </div>
       <div style="display:flex;gap:10px;margin-top:16px;">
-        <button class="btn btn-primary" style="flex:1;" onclick="window.print()">🖨️ Print Card</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="printIdCard()">🖨️ Print Card</button>
         <button class="btn btn-ghost" onclick="document.getElementById('id-card-modal').remove()">Close</button>
       </div>
     </div>`;
   document.body.appendChild(m);
 
-  // Render QR code into the box after DOM insert
+  // Generate QR entirely off-screen, then inject only an <img> — prevents any flash or double-QR
+  const tmpModal = document.createElement('div');
+  tmpModal.style.cssText = 'position:fixed;left:-9999px;top:-9999px;visibility:hidden;';
+  document.body.appendChild(tmpModal);
+  try {
+    new QRCode(tmpModal, {
+      text: 'https://chordsmusicacademy.in/attend?id=' + s.id,
+      width: 200, height: 200,
+      colorDark: '#000000', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M  // M = less dense, much easier for phone cameras to scan
+    });
+  } catch(e) {
+    document.body.removeChild(tmpModal);
+  }
   setTimeout(() => {
+    const cv = tmpModal.querySelector('canvas');
+    const url = cv ? cv.toDataURL('image/png') : null;
+    document.body.removeChild(tmpModal);
     const box = document.getElementById('modal-qr-box');
     if (!box) return;
-    try {
-      new QRCode(box, {
-        text: 'https://chordsmusicacademy.in/attend?id=' + s.id,
-        width: 160, height: 160,
-        colorDark: '#1e293b', colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
-      });
-      // Convert canvas → <img> so it prints correctly (canvas is often skipped by print engines)
-      setTimeout(() => {
-        const cv = box.querySelector('canvas');
-        if (cv) {
-          const img = new Image();
-          img.src = cv.toDataURL('image/png');
-          img.style.cssText = 'width:160px;height:160px;border-radius:8px;display:block;';
-          cv.replaceWith(img);
-          box.querySelectorAll('table').forEach(t => t.remove()); // qrcode.js fallback table
-        }
-      }, 200);
-    } catch(e) {
+    if (url) {
+      box.innerHTML = `<img src="${url}" style="width:200px;height:200px;border-radius:10px;display:block;margin:0 auto;" alt="QR Code">`;
+    } else {
       box.innerHTML = `<div style="font-size:0.75rem;color:#94a3b8;padding:16px;">QR unavailable</div>`;
     }
-  }, 60);
+  }, 150);
+}
+
+function printIdCard() {
+  const s = _idCardStudent;
+  if (!s) return;
+
+  // Render fresh QR into a hidden off-screen div, extract as data URL for print
+  const tmp = document.createElement('div');
+  tmp.style.cssText = 'position:fixed;left:-9999px;top:-9999px;visibility:hidden;';
+  document.body.appendChild(tmp);
+
+  try {
+    new QRCode(tmp, {
+      text: 'https://chordsmusicacademy.in/attend?id=' + s.id,
+      width: 220, height: 220,
+      colorDark: '#000000', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) {
+    document.body.removeChild(tmp);
+    toast('QR library not ready — try again', 'error');
+    return;
+  }
+
+  setTimeout(() => {
+    const cv  = tmp.querySelector('canvas');
+    const qrUrl = cv ? cv.toDataURL('image/png') : '';
+    document.body.removeChild(tmp);
+
+    const av   = avatarColor(s.name);
+    const ini  = initials(s.name);
+    const name = (s.name||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    const inst = (s.instrument||'Music').replace(/&/g,'&amp;');
+    const tch  = (s.teacher||'Chords Academy').replace(/&/g,'&amp;');
+    const uid  = s.id.slice(0,8).toUpperCase();
+
+    const win = window.open('', '_blank', 'width=480,height=680,menubar=0,toolbar=0,scrollbars=0');
+    if (!win) { toast('Allow pop-ups in your browser to print', 'error'); return; }
+
+    win.document.write(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>ID Card — ${name}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f0f2f5;}
+.card{width:300px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 6px 40px rgba(0,0,0,.18);}
+.top{background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:18px 20px 14px;text-align:center;color:#fff;}
+.ico{font-size:1.8rem;line-height:1;margin-bottom:4px;}
+.acad{font-size:.9rem;font-weight:700;}
+.sub{font-size:.6rem;letter-spacing:.12em;opacity:.8;margin-top:2px;}
+.body{padding:18px 20px;text-align:center;}
+.av{width:70px;height:70px;border-radius:50%;background:${av};color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.7rem;font-weight:700;margin:0 auto 10px;}
+.sname{font-size:1.05rem;font-weight:700;color:#0f172a;margin-bottom:3px;}
+.info{font-size:.75rem;color:#64748b;margin-bottom:14px;}
+.qr-img{border-radius:8px;display:block;margin:0 auto;}
+.uid{font-size:.62rem;color:#94a3b8;font-family:monospace;letter-spacing:.05em;margin-top:10px;}
+.foot{background:#f8fafc;border-top:1px solid #e2e8f0;padding:8px 16px;text-align:center;font-size:.6rem;color:#94a3b8;}
+@media print{body{background:#fff;}.card{box-shadow:none;border-radius:0;width:100%;}}
+</style></head>
+<body>
+<div class="card">
+  <div class="top"><div class="ico">🎵</div><div class="acad">Chords Music Academy</div><div class="sub">STUDENT IDENTITY CARD</div></div>
+  <div class="body">
+    <div class="av">${ini}</div>
+    <div class="sname">${name}</div>
+    <div class="info">${inst} · ${tch}</div>
+    ${qrUrl ? `<img class="qr-img" src="${qrUrl}" width="170" height="170">` : '<p style="color:#94a3b8;font-size:.75rem;padding:16px;">QR unavailable</p>'}
+    <div class="uid">ID: ${uid}</div>
+  </div>
+  <div class="foot">Hyderabad · chordsmusicacademy.in · Scan to mark attendance</div>
+</div>
+<script>window.onload=function(){setTimeout(function(){window.print();},400);};window.onafterprint=function(){window.close();};<\/script>
+</body></html>`);
+    win.document.close();
+  }, 500);
 }
 
 function renderEmpty(icon, title, sub, btnLabel, btnFn) {
