@@ -69,6 +69,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-heig
 .input:focus{border-color:#4f46e5;}
 .remember-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:0.85rem;color:#64748b;}
 .err{color:#dc2626;font-size:0.82rem;text-align:center;min-height:20px;margin-top:-6px;margin-bottom:8px;}
+.login-name-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.login-name-btn{padding:12px 8px;border:2px solid #e2e8f0;border-radius:12px;background:#f8fafc;font-size:0.9rem;font-weight:600;color:#334155;cursor:pointer;transition:all 0.15s;}
+.login-name-btn:hover{border-color:#6366f1;background:#eef2ff;color:#4f46e5;}
+.login-name-btn.selected{border-color:#4f46e5;background:#eef2ff;color:#4f46e5;box-shadow:0 0 0 3px rgba(99,102,241,0.15);}
+.login-admin-btn{background:#fdf4ff;border-color:#e9d5ff;color:#7c3aed;}
+.login-admin-btn.selected{border-color:#7c3aed;background:#f3e8ff;color:#6d28d9;box-shadow:0 0 0 3px rgba(124,58,237,0.15);}
 
 /* Spinner */
 .spin-wrap{text-align:center;padding:40px 20px;}
@@ -98,10 +104,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-heig
 <script>
 const API       = '/.netlify/functions/pay-admin-student';
 const TOKEN_KEY = 'cma_attend_token';
+const ROLE_KEY  = 'cma_attend_role';
+const NAME_KEY  = 'cma_attend_name';
 const params    = new URLSearchParams(location.search);
 const SID       = params.get('id');
 
-let token = localStorage.getItem(TOKEN_KEY) || '';
+let token        = localStorage.getItem(TOKEN_KEY) || '';
+let currentRole  = localStorage.getItem(ROLE_KEY)  || '';
+let currentName  = localStorage.getItem(NAME_KEY)  || '';
 
 /* ── helpers ──────────────────────────────────────────────────── */
 function todayStr() { return new Date().toISOString().slice(0,10); }
@@ -128,10 +138,16 @@ async function post(body) {
   return d;
 }
 
+async function postPublic(body) {
+  const r = await fetch(API,{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const d = await r.json();
+  return { ok: r.ok, status: r.status, ...d };
+}
+
 /* ── init ─────────────────────────────────────────────────────── */
 async function init() {
   if (!SID) { return showErr('Invalid QR code. Please scan a valid student ID card.'); }
-  if (!token) { return showLogin(); }
+  if (!token || !currentRole) { return showLogin(); }
   await autoMark();
 }
 
@@ -142,7 +158,7 @@ async function autoMark() {
   try {
     data = await post({ action:'crm_get', id:SID });
   } catch(e) {
-    if (e.auth) { token=''; localStorage.removeItem(TOKEN_KEY); return showLogin(); }
+    if (e.auth) { token=''; currentRole=''; currentName=''; localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(ROLE_KEY); localStorage.removeItem(NAME_KEY); return showLogin(); }
     return showErr(e.message);
   }
 
@@ -165,53 +181,86 @@ async function autoMark() {
     const presentCount = markRes.present_count || (data.attendance||[]).filter(a=>a.status==='present').length + 1;
     showResult(student, 'present', true, presentCount);
   } catch(e) {
-    if (e.auth) { token=''; localStorage.removeItem(TOKEN_KEY); return showLogin(); }
+    if (e.auth) { token=''; currentRole=''; currentName=''; localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(ROLE_KEY); localStorage.removeItem(NAME_KEY); return showLogin(); }
     showErr('Could not mark attendance: '+e.message);
   }
 }
 
-/* ── login screen (shown once, password saved) ────────────────── */
-function showLogin() {
+/* ── login screen ─────────────────────────────────────────────── */
+let _loginSelectedName = null;
+
+async function showLogin() {
+  // Show spinner while fetching teacher list
   document.getElementById('app').innerHTML = `
     <div class="card">
-      <div class="header">
+      <div class="header"><div class="logo">🎵</div><h1>Chords Music Academy</h1></div>
+      <div class="body spin-wrap"><div class="spinner"></div><div class="spin-label">Loading…</div></div>
+    </div>`;
+
+  let teachers = [];
+  try {
+    const d = await postPublic({ action: 'crm_teachers_list' });
+    teachers = d.teachers || [];
+  } catch(e) { /* show login anyway with just Admin */ }
+
+  _loginSelectedName = null;
+
+  const nameBtns = [...teachers.map(t =>
+    `<button class="login-name-btn" id="lname-${t}" onclick="selectLoginName('${t}')">${t}</button>`
+  ), `<button class="login-name-btn login-admin-btn" id="lname-Admin" onclick="selectLoginName('Admin')">🔐 Admin</button>`].join('');
+
+  document.getElementById('app').innerHTML = `
+    <div class="card">
+      <div class="header" style="background:linear-gradient(135deg,#1e1b4b,#312e81);">
         <div class="logo">🎵</div>
         <h1>Chords Music Academy</h1>
-        <div class="date">Enter admin password once to enable attendance marking on this device</div>
+        <div class="date">Select your name to mark attendance</div>
       </div>
       <div class="body">
-        <input class="input" type="password" id="pw" placeholder="Admin password" autocomplete="current-password">
-        <div class="remember-row">
-          <input type="checkbox" id="rem" checked>
-          <label for="rem">Remember on this device</label>
-        </div>
+        <div style="font-size:0.78rem;color:#64748b;margin-bottom:10px;font-weight:600;letter-spacing:0.05em;">WHO ARE YOU?</div>
+        <div class="login-name-grid">${nameBtns}</div>
+        <input class="input" type="password" id="pw" placeholder="Enter your password" autocomplete="current-password" style="margin-top:18px;">
         <div class="err" id="lerr"></div>
-        <button class="btn" style="background:#4f46e5;color:#fff;" onclick="doLogin()">Continue →</button>
+        <button class="btn" style="background:#4f46e5;color:#fff;" onclick="doLogin()">Login →</button>
+        <div style="font-size:0.72rem;color:#94a3b8;text-align:center;margin-top:10px;">
+          Your login is remembered on this device
+        </div>
       </div>
     </div>`;
-  const inp = document.getElementById('pw');
-  inp.focus();
-  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+  document.getElementById('pw').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+}
+
+function selectLoginName(name) {
+  _loginSelectedName = name;
+  document.querySelectorAll('.login-name-btn').forEach(b => b.classList.remove('selected'));
+  const el = document.getElementById('lname-' + name);
+  if (el) el.classList.add('selected');
+  document.getElementById('pw').focus();
 }
 
 async function doLogin() {
   const pw  = document.getElementById('pw').value.trim();
   const err = document.getElementById('lerr');
   const btn = document.querySelector('.btn');
-  if (!pw) { err.textContent='Enter your password'; return; }
+  if (!_loginSelectedName) { err.textContent = 'Please select your name above'; return; }
+  if (!pw) { err.textContent = 'Enter your password'; return; }
   err.textContent = '';
   btn.disabled = true; btn.textContent = 'Checking…';
-  token = pw;
-  try {
-    await autoMark();
-    if (document.getElementById('rem') && document.getElementById('rem').checked) {
-      localStorage.setItem(TOKEN_KEY, pw);
-    }
-  } catch(e) {
-    token = '';
-    err.textContent = 'Wrong password';
-    btn.disabled = false; btn.textContent = 'Continue →';
+  const nameToSend = _loginSelectedName === 'Admin' ? null : _loginSelectedName;
+  const res = await postPublic({ action: 'crm_validate_role', name: nameToSend, password: pw });
+  if (!res.ok || !res.success) {
+    err.textContent = res.error || 'Wrong password';
+    btn.disabled = false; btn.textContent = 'Login →';
+    return;
   }
+  // Store credentials
+  token = res.token;
+  currentRole = res.role;
+  currentName = res.name;
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(ROLE_KEY, currentRole);
+  localStorage.setItem(NAME_KEY, currentName);
+  await autoMark();
 }
 
 /* ── result screen ────────────────────────────────────────────── */
@@ -237,7 +286,8 @@ function showResult(student, status, justMarked, presentCount) {
       </div>`
     : '';
 
-  /* ── WhatsApp attendance notification ── */
+  /* ── WhatsApp attendance notification (admin only) ── */
+  const isAdmin   = currentRole === 'admin';
   const phone     = (student.parent_phone || student.phone || '').replace(/\D/g,'');
   const intlPhone = phone ? (phone.startsWith('91') ? phone : '91'+phone) : '';
   const parentFirst = (student.parent_name || student.name || '').split(' ')[0] || 'there';
@@ -247,7 +297,7 @@ function showResult(student, status, justMarked, presentCount) {
     (total ? `📊 Progress: ${presentCount} of ${total} classes done · ${remaining} remaining.\n\n` : '') +
     `Keep practising! See you next time.\n— Chords Music Academy`
   );
-  const waAttBtn = (present && justMarked && intlPhone.length >= 10)
+  const waAttBtn = (isAdmin && present && justMarked && intlPhone.length >= 10)
     ? `<a class="wa-att-btn" href="https://wa.me/${intlPhone}?text=${waAttMsg}" target="_blank">
         📱 Send Attendance WhatsApp
        </a>`
@@ -280,7 +330,7 @@ function showResult(student, status, justMarked, presentCount) {
       `Please pay here: https://chordsmusicacademy.in/pay\n\n` +
       `Thank you!\n— Chords Music Academy`
     );
-    const waFeeBtn = (present && intlPhone.length >= 10)
+    const waFeeBtn = (isAdmin && present && intlPhone.length >= 10)
       ? `<a class="pay-btn pay-btn-wa" href="https://wa.me/${intlPhone}?text=${waFeeMsg}" target="_blank">
           📱 Send Fee Reminder on WhatsApp
          </a>`
@@ -318,7 +368,10 @@ function showResult(student, status, justMarked, presentCount) {
         <button class="btn btn-change" onclick="changeStatus('${student.id}','${present?'absent':'present'}')">
           Change to ${present ? '✗ Absent' : '✅ Present'}
         </button>
-        <div class="crm-link"><a href="/crm">Open full CRM →</a></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;">
+          <div class="crm-link" style="margin:0;">${isAdmin ? `<a href="/crm">Open full CRM →</a>` : `<span style="font-size:0.72rem;color:#94a3b8;">Marked by ${currentName}</span>`}</div>
+          <button onclick="logoutAttend()" style="background:none;border:none;font-size:0.72rem;color:#94a3b8;cursor:pointer;padding:0;">Switch user</button>
+        </div>
       </div>
     </div>`;
 }
@@ -355,6 +408,12 @@ function showErr(msg) {
         <div class="big-sub">${msg}</div>
       </div>
     </div>`;
+}
+
+function logoutAttend() {
+  token = ''; currentRole = ''; currentName = '';
+  localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(ROLE_KEY); localStorage.removeItem(NAME_KEY);
+  showLogin();
 }
 
 init();

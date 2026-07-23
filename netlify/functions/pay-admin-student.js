@@ -53,6 +53,39 @@ exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
   if (event.httpMethod !== "POST") return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
 
+  // ── Pre-auth public actions (no token needed) ─────────────────────────────
+  try {
+    const preBody = JSON.parse(event.body || "{}");
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
+    const SB_H_PRE = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
+
+    // Return list of unique teacher names for the login screen
+    if (preBody.action === "crm_teachers_list") {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?select=teacher&is_active=eq.true`, { headers: SB_H_PRE });
+      const rows = await r.json();
+      const teachers = [...new Set((Array.isArray(rows) ? rows : []).map(r => r.teacher).filter(Boolean))].sort();
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, teachers }) };
+    }
+
+    // Validate admin or teacher login — returns token + role + name
+    if (preBody.action === "crm_validate_role") {
+      const { name, password } = preBody;
+      if (!password) return { statusCode: 401, headers, body: JSON.stringify({ error: "Password required" }) };
+      // Admin check
+      if (password === process.env.PAYMENT_ADMIN_PASSWORD) {
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, role: "admin", name: "Admin", token: process.env.PAYMENT_ADMIN_PASSWORD }) };
+      }
+      // Teacher check — TEACHER_PASSWORDS env var: {"Brahmani":"1111","OtherTeacher":"2222"}
+      let teacherPasswords = {};
+      try { teacherPasswords = JSON.parse(process.env.TEACHER_PASSWORDS || "{}"); } catch(e) {}
+      if (name && teacherPasswords[name] && teacherPasswords[name] === password) {
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, role: "teacher", name, token: process.env.PAYMENT_ADMIN_PASSWORD }) };
+      }
+      return { statusCode: 401, headers, body: JSON.stringify({ error: "Wrong password" }) };
+    }
+  } catch(e) { /* fall through to normal auth */ }
+
   const adminToken = event.headers["x-admin-token"] || "";
   if (!adminToken || adminToken !== process.env.PAYMENT_ADMIN_PASSWORD) {
     return { statusCode: 401, headers, body: JSON.stringify({ error: "Unauthorized" }) };
