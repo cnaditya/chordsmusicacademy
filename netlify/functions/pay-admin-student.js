@@ -406,11 +406,14 @@ exports.handler = async (event) => {
     }
 
     if (action === "crm_mark_attendance") {
-      const { student_id, date, status: attStatus, note, marked_time } = JSON.parse(event.body);
+      const { student_id, date, status: attStatus, note, marked_time } = JSON.parse(event.body || "{}");
       if (!student_id || !date) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and date required" }) };
       await fetch(`${SUPABASE_URL}/rest/v1/crm_attendance?student_id=eq.${student_id}&date=eq.${date}`, { method:"DELETE", headers:SB_H });
       const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_attendance`, { method:"POST", headers:SB_M, body:JSON.stringify({ student_id, date, status: attStatus||"present", note: note||null, marked_time: marked_time||null }) });
-      if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: "Attendance failed" }) };
+      if (r.status >= 400) {
+        const errBody = await r.json().catch(()=>({}));
+        return { statusCode: r.status, headers, body: JSON.stringify({ error: errBody.message || errBody.error || "Attendance insert failed" }) };
+      }
 
       // Return class progress stats for immediate display
       const [cntR, stuR] = await Promise.all([
