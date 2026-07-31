@@ -436,6 +436,13 @@ exports.handler = async (event) => {
       })};
     }
 
+    if (action === "crm_clear_attendance") {
+      const { student_id, date } = JSON.parse(event.body || "{}");
+      if (!student_id || !date) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and date required" }) };
+      await fetch(`${SUPABASE_URL}/rest/v1/crm_attendance?student_id=eq.${student_id}&date=eq.${date}`, { method: "DELETE", headers: SB_H });
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    }
+
     if (action === "crm_add_note") {
       const { student_id, content } = JSON.parse(event.body);
       if (!student_id || !content) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and content required" }) };

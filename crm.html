@@ -1916,6 +1916,7 @@ function buildAttRows() {
         ${statusBadge}
         <button class="att-btn att-btn-present ${isPres?'att-btn-active-p':''}" onclick="attMark('${s.id}','present')" title="Mark Present">✅</button>
         <button class="att-btn att-btn-absent  ${isAbs?'att-btn-active-a':''}" onclick="attMark('${s.id}','absent')"  title="Mark Absent">❌</button>
+        ${(isPres||isAbs) ? `<button class="att-btn" onclick="attClear('${s.id}')" title="Clear mark" style="color:#94a3b8;font-size:0.75rem;">✕</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -2055,6 +2056,16 @@ async function attMark(studentId, status) {
       const aBtn = rowEl.querySelector('.att-btn-absent');
       if (pBtn) pBtn.classList.toggle('att-btn-active-p', isPres);
       if (aBtn) aBtn.classList.toggle('att-btn-active-a', isAbs);
+      // Show ✕ clear button if not already there
+      if (!rowEl.querySelector('.att-btn-clear')) {
+        const clearBtn = document.createElement('button');
+        clearBtn.className = 'att-btn att-btn-clear';
+        clearBtn.title = 'Clear mark';
+        clearBtn.style.cssText = 'color:#94a3b8;font-size:0.75rem;';
+        clearBtn.textContent = '✕';
+        clearBtn.onclick = () => attClear(studentId);
+        rowEl.querySelector('.att-row-right').appendChild(clearBtn);
+      }
     }
 
     // Update summary pill counts
@@ -2075,6 +2086,38 @@ async function attMark(studentId, status) {
   } catch(e) {
     if (rowEl) rowEl.style.opacity = '1';
     toast('Failed to mark: ' + e.message, 'error');
+  }
+}
+
+async function attClear(studentId) {
+  const rowEl = document.getElementById('att-row-' + studentId);
+  if (rowEl) rowEl.style.opacity = '0.5';
+  document.getElementById('att-result-' + studentId)?.remove();
+  try {
+    await apiCall({ action: 'crm_clear_attendance', student_id: studentId, date: _attDate });
+    delete _attMap[studentId];
+    if (rowEl) {
+      rowEl.style.opacity = '1';
+      const badgeEl = rowEl.querySelector('.att-badge');
+      if (badgeEl) { badgeEl.className = 'att-badge att-unmarked'; badgeEl.textContent = '— Not marked'; }
+      const pBtn = rowEl.querySelector('.att-btn-present');
+      const aBtn = rowEl.querySelector('.att-btn-absent');
+      if (pBtn) pBtn.classList.remove('att-btn-active-p');
+      if (aBtn) aBtn.classList.remove('att-btn-active-a');
+      rowEl.querySelector('.att-btn-clear')?.remove();
+    }
+    const p = _attStudents.filter(s => _attMap[s.id]?.status === 'present').length;
+    const a = _attStudents.filter(s => _attMap[s.id]?.status === 'absent').length;
+    const u = _attStudents.length - p - a;
+    const pEl = document.getElementById('att-count-present');
+    const aEl = document.getElementById('att-count-absent');
+    const uEl = document.getElementById('att-count-unmarked');
+    if (pEl) pEl.textContent = p;
+    if (aEl) aEl.textContent = a;
+    if (uEl) uEl.textContent = u;
+  } catch(e) {
+    if (rowEl) rowEl.style.opacity = '1';
+    toast('Failed to clear: ' + e.message, 'error');
   }
 }
 
