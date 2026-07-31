@@ -436,6 +436,22 @@ exports.handler = async (event) => {
       })};
     }
 
+    if (action === "crm_renewal_due") {
+      // Students whose present count >= total_classes_per_cycle
+      const [studR, attR] = await Promise.all([
+        fetch(`${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&select=id,name,phone,parent_name,parent_phone,total_classes_per_cycle,teacher,instrument`, { headers: SB_H }),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_attendance?status=eq.present&select=student_id`, { headers: SB_H })
+      ]);
+      const students = await studR.json();
+      const attendance = await attR.json();
+      if (!Array.isArray(students)) return { statusCode: 200, headers, body: JSON.stringify({ success: true, due: [] }) };
+      const counts = {};
+      (Array.isArray(attendance) ? attendance : []).forEach(a => { counts[a.student_id] = (counts[a.student_id]||0) + 1; });
+      const due = students.filter(s => s.total_classes_per_cycle > 0 && (counts[s.id]||0) >= s.total_classes_per_cycle)
+        .map(s => ({ ...s, present_count: counts[s.id]||0 }));
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, due }) };
+    }
+
     if (action === "crm_clear_attendance") {
       const { student_id, date } = JSON.parse(event.body || "{}");
       if (!student_id || !date) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and date required" }) };
