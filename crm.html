@@ -1855,7 +1855,8 @@ let _attDate = new Date().toISOString().slice(0,10);
 let _attFilter = 'all';
 let _attSearch = '';
 let _attStudents = [];
-let _attMap = {}; // student_id → {status, marked_time}
+let _attMap    = {}; // student_id → {status, marked_time}
+let _attCounts = {}; // student_id → all-time present count
 
 function nowTimeIST() {
   return new Date().toLocaleTimeString('en-IN', {
@@ -1870,6 +1871,7 @@ async function loadAttendancePage() {
     const data = await apiCall({ action: 'crm_attendance_today', date: _attDate });
     _attStudents = data.students || [];
     _attMap = {};
+    _attCounts = data.present_counts || {};
     (data.attendance || []).forEach(a => { _attMap[a.student_id] = a; });
     renderAttendancePage();
   } catch(e) {
@@ -1910,7 +1912,20 @@ function buildAttRows() {
         <div>
           <div style="font-weight:600;font-size:0.9rem;color:var(--text);">${escapeHtml(s.name)}</div>
           <div style="font-size:0.75rem;color:var(--muted);">${s.instrument||'—'} · ${s.teacher||'—'}</div>
-        </div>
+          ${(() => {
+            const total = s.total_classes_per_cycle || 0;
+            const done  = _attCounts[s.id] || 0;
+            if (!total) return '';
+            const rem = Math.max(0, total - done);
+            const pct = Math.min(100, Math.round(done / total * 100));
+            const color = rem === 0 ? '#7c3aed' : done > total * 0.8 ? '#d97706' : '#16a34a';
+            return `<div class="att-progress" style="margin-top:3px;">
+              <div style="font-size:0.7rem;color:${color};font-weight:700;">${done}/${total} classes · ${rem} remaining</div>
+              <div style="height:3px;background:var(--border);border-radius:2px;margin-top:2px;width:80px;">
+                <div style="height:3px;background:${color};border-radius:2px;width:${pct}%;transition:width 0.4s;"></div>
+              </div>
+            </div>`;
+          })()}</div>
       </div>
       <div class="att-row-right">
         ${statusBadge}
@@ -2041,6 +2056,8 @@ async function attMark(studentId, status) {
     const markedTime = nowTimeIST();
     const res = await apiCall({ action: 'crm_mark_attendance', student_id: studentId, date: _attDate, status, marked_time: markedTime });
     _attMap[studentId] = { student_id: studentId, date: _attDate, status, marked_time: markedTime };
+    if (status === 'present') _attCounts[studentId] = res.present_count || ((_attCounts[studentId]||0) + 1);
+    if (status === 'absent' && _attCounts[studentId] > 0) _attCounts[studentId]--;
 
     // Update the student row in-place (no full re-render)
     if (rowEl) {
@@ -2056,6 +2073,20 @@ async function attMark(studentId, status) {
       const aBtn = rowEl.querySelector('.att-btn-absent');
       if (pBtn) pBtn.classList.toggle('att-btn-active-p', isPres);
       if (aBtn) aBtn.classList.toggle('att-btn-active-a', isAbs);
+      // Refresh progress bar in row
+      const s = _attStudents.find(x => x.id === studentId);
+      const total = s?.total_classes_per_cycle || 0;
+      const done  = _attCounts[studentId] || 0;
+      const progEl = rowEl.querySelector('.att-progress');
+      if (progEl && total) {
+        const rem = Math.max(0, total - done);
+        const pct = Math.min(100, Math.round(done / total * 100));
+        const color = rem === 0 ? '#7c3aed' : done > total * 0.8 ? '#d97706' : '#16a34a';
+        progEl.innerHTML = `<div style="font-size:0.7rem;color:${color};font-weight:700;">${done}/${total} classes · ${rem} remaining</div>
+          <div style="height:3px;background:var(--border);border-radius:2px;margin-top:2px;width:80px;">
+            <div style="height:3px;background:${color};border-radius:2px;width:${pct}%;transition:width 0.4s;"></div>
+          </div>`;
+      }
       // Show ✕ clear button if not already there
       if (!rowEl.querySelector('.att-btn-clear')) {
         const clearBtn = document.createElement('button');

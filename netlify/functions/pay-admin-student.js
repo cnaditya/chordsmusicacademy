@@ -391,16 +391,24 @@ exports.handler = async (event) => {
     if (action === "crm_attendance_today") {
       const { date } = JSON.parse(event.body);
       const d = date || new Date().toISOString().slice(0,10);
-      const [studR, attR] = await Promise.all([
+      const [studR, attR, cntR] = await Promise.all([
         fetch(`${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&order=name.asc`, { headers: SB_H }),
         fetch(`${SUPABASE_URL}/rest/v1/crm_attendance?date=eq.${d}`, { headers: SB_H }),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_attendance?status=eq.present&select=student_id`, { headers: SB_H }),
       ]);
       const students = await studR.json();
       const attendance = await attR.json();
+      const allPresent = await cntR.json();
+      // Build present_counts: { student_id: count }
+      const present_counts = {};
+      (Array.isArray(allPresent) ? allPresent : []).forEach(r => {
+        present_counts[r.student_id] = (present_counts[r.student_id] || 0) + 1;
+      });
       return { statusCode: 200, headers, body: JSON.stringify({
         success: true,
         students: Array.isArray(students) ? students : [],
         attendance: Array.isArray(attendance) ? attendance : [],
+        present_counts,
         date: d
       })};
     }
