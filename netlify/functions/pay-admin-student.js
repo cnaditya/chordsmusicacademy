@@ -444,6 +444,19 @@ exports.handler = async (event) => {
       })};
     }
 
+    if (action === "crm_get_next_receipt_no") {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_notes?content=like.Receipt%20%23*&select=content&order=created_at.desc&limit=100`, { headers: SB_H });
+      const notes = await r.json();
+      let maxNo = 1000;
+      if (Array.isArray(notes)) {
+        notes.forEach(n => {
+          const m = (n.content || '').match(/Receipt #(\d+)/);
+          if (m) { const no = parseInt(m[1]); if (no > maxNo) maxNo = no; }
+        });
+      }
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, next: maxNo + 1 }) };
+    }
+
     if (action === "crm_renewal_due") {
       // Students whose present count >= total_classes_per_cycle
       const [studR, attR] = await Promise.all([

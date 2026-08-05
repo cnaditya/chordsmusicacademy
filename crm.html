@@ -5127,8 +5127,12 @@ function receiptQuickEnroll() {
 let paySelectedStudent = null;
 let paySearchTimer = null;
 
-function loadPayments() {
-  const nextRcpt = parseInt(localStorage.getItem('cma_receipt_no') || '1000') + 1;
+async function loadPayments() {
+  let nextRcpt = parseInt(localStorage.getItem('cma_receipt_no') || '1000') + 1;
+  try {
+    const r = await apiCall({ action: 'crm_get_next_receipt_no' });
+    if (r.next) nextRcpt = r.next;
+  } catch(e) { /* fall back to localStorage */ }
   const today = new Date().toISOString().split('T')[0];
 
   document.getElementById('page-content').innerHTML = `
