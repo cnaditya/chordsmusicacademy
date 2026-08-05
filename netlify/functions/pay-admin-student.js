@@ -319,7 +319,7 @@ exports.handler = async (event) => {
       const todayStudents = all.filter(s => s.class_days && s.class_days.toLowerCase().includes(days[new Date().getDay()]));
       // Dues: overdue or due within 7 days, with a due_date and amount_due set
       const today = new Date(); today.setHours(0,0,0,0);
-      const dueStudents = all.filter(s => s.due_date && s.amount_due > 0).map(s => {
+      const dueStudents = all.filter(s => s.due_date && s.amount_due > 0 && (s.status === 'active' || s.status === 'trial')).map(s => {
         const d = new Date(s.due_date); d.setHours(0,0,0,0);
         return { ...s, days_diff: Math.round((d - today) / 86400000) };
       }).filter(s => s.days_diff <= 7).sort((a,b) => a.days_diff - b.days_diff);
