@@ -29,36 +29,131 @@ function gtag_report_conversion(url) {
 <title>Student Registration — Chords Music Academy</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a2e}
+html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#eceaf5}
+body{background:radial-gradient(ellipse 65% 85% at center,rgba(8,8,18,0.8) 0%,rgba(8,8,18,0.3) 55%,rgba(8,8,18,0.1) 100%),linear-gradient(180deg,rgba(8,8,18,0.3) 0%,rgba(8,8,18,0.5) 100%),url('images/site-bg-music.jpg') center/cover fixed no-repeat;background-color:#0d0d1a}
+
+.bg-particles{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.bg-particles span{position:absolute;bottom:-10%;color:rgba(255,255,255,0.1);font-size:1.8rem;animation:floatNote 16s linear infinite}
+.bg-particles span:nth-child(1){left:8%;animation-delay:0s;font-size:1.5rem}
+.bg-particles span:nth-child(2){left:22%;animation-delay:3s;font-size:2.1rem}
+.bg-particles span:nth-child(3){left:45%;animation-delay:6s;font-size:1.3rem}
+.bg-particles span:nth-child(4){left:65%;animation-delay:9s;font-size:1.9rem}
+.bg-particles span:nth-child(5){left:80%;animation-delay:2s;font-size:1.4rem}
+.bg-particles span:nth-child(6){left:92%;animation-delay:11s;font-size:1.7rem}
+@keyframes floatNote{0%{transform:translateY(0) rotate(0deg);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-115vh) rotate(20deg);opacity:0}}
+@media (prefers-reduced-motion: reduce){.bg-particles{display:none}}
 
 .hdr{background:#1a1a2e;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
-.hdr-icon{width:36px;height:36px;background:#e74c3c;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
-.hdr-title{font-size:0.95rem;font-weight:700;line-height:1.2}
-.hdr-sub{font-size:0.65rem;opacity:0.65}
+.hdr-icon{width:46px;height:46px;background:#e74c3c;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.hdr-title{font-size:1.25rem;font-weight:800;line-height:1.25}
+.hdr-sub{font-size:0.8rem;opacity:0.75}
+.hdr-cta{margin-left:auto;background:#e74c3c;color:#fff;text-decoration:none;font-size:0.72rem;font-weight:800;padding:8px 14px;border-radius:20px;white-space:nowrap;flex-shrink:0}
 
-.hero{background:linear-gradient(135deg,#1a1a2e 0%,#2c3e6b 100%);padding:20px 16px;text-align:center;color:#fff}
-.hero-icon{font-size:2rem;margin-bottom:6px}
-.hero-title{font-size:1.15rem;font-weight:800;margin-bottom:4px}
-.hero-sub{font-size:0.78rem;opacity:0.7;line-height:1.5}
+.page{max-width:600px;margin:0 auto;padding:20px 16px 48px;position:relative;z-index:1}
+.form-wrap{max-width:600px;margin:0 auto;scroll-margin-top:76px}
+.info-grid{display:block}
 
-.page{max-width:600px;margin:0 auto;padding:20px 16px 48px}
+/* Landing intro — open, no box, sits directly on the background */
+.landing-hero{padding:36px 12px 8px;text-align:center;color:#fff}
+.landing-title{font-size:1.9rem;font-weight:800;margin-bottom:10px;line-height:1.25;text-shadow:0 3px 14px rgba(0,0,0,0.65)}
+.landing-tagline{font-size:1.15rem;font-weight:700;background:linear-gradient(90deg,#ff8a5c,#ffd166);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:12px;letter-spacing:0.3px;filter:drop-shadow(0 2px 10px rgba(0,0,0,0.5))}
+.landing-sub{font-size:0.88rem;opacity:0.95;margin-bottom:8px;font-weight:600;text-shadow:0 2px 10px rgba(0,0,0,0.6)}
+.landing-support{font-size:0.84rem;color:rgba(255,255,255,0.85);max-width:460px;margin:0 auto 22px;line-height:1.55;text-shadow:0 2px 10px rgba(0,0,0,0.6)}
+.hero-phones{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:18px}
+.hero-phones a{display:inline-flex;align-items:center;gap:7px;color:#ffd166;background:rgba(255,209,102,0.12);border:1.5px solid rgba(255,209,102,0.5);text-decoration:none;font-size:1.1rem;font-weight:800;padding:10px 20px;border-radius:22px}
+.hero-phones a:hover{background:rgba(255,209,102,0.22)}
+.hero-ctas{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-bottom:22px}
+.hero-cta{display:inline-flex;align-items:center;gap:6px;padding:14px 24px;border-radius:14px;font-size:0.9rem;font-weight:800;text-decoration:none;transition:.2s}
+.hero-cta.primary{background:linear-gradient(135deg,#e74c3c 0%,#f59e0b 100%);color:#fff;box-shadow:0 8px 22px rgba(231,76,60,0.45)}
+.hero-cta.primary:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(231,76,60,0.55)}
+.hero-cta.secondary{background:rgba(255,255,255,0.1);color:#fff;border:1.5px solid rgba(255,255,255,0.35)}
+.hero-cta.secondary:hover{background:rgba(255,255,255,0.18)}
+.hero-cta.whatsapp{background:#25d366;color:#fff;box-shadow:0 8px 22px rgba(37,211,102,0.4)}
+.hero-cta.whatsapp:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(37,211,102,0.5);background:#20bd5a}
+.wa-icon{flex-shrink:0}
+.landing-instruments{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.landing-instruments span{color:#fff;border-radius:20px;padding:7px 14px;font-size:0.74rem;font-weight:700;box-shadow:0 3px 8px rgba(0,0,0,0.28);cursor:pointer;transition:.2s}
+.landing-instruments span:hover{transform:translateY(-2px) scale(1.04)}
+.landing-instruments span:nth-child(1){background:#2563eb}
+.landing-instruments span:nth-child(2){background:#f59e0b}
+.landing-instruments span:nth-child(3){background:#8b5cf6}
+.landing-instruments span:nth-child(4){background:#2563eb}
+.landing-instruments span:nth-child(5){background:#f59e0b}
+.landing-instruments span:nth-child(6){background:#8b5cf6}
+
+.trust-strip{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 22px;padding:6px 8px 26px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:26px}
+.trust-item{font-size:0.76rem;font-weight:700;color:#eceaf5;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,0.6)}
+.trust-item b{color:#4ade80}
+
+.photo-carousel{position:relative;margin-bottom:8px}
+.photo-strip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.photo-strip::-webkit-scrollbar{display:none}
+.photo-strip img{scroll-snap-align:start;flex:0 0 76%;height:220px;object-fit:cover;border-radius:14px;box-shadow:0 8px 20px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1)}
+.photo-overlay-badge{position:absolute;top:12px;left:12px;background:rgba(10,10,20,0.7);backdrop-filter:blur(6px);color:#fff;font-size:0.68rem;font-weight:800;padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);pointer-events:none}
+.pc-arrow{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(10,10,20,0.6);backdrop-filter:blur(6px);color:#fff;border:1px solid rgba(255,255,255,0.2);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pc-prev{left:8px}
+.pc-next{right:8px}
+.photo-dots{display:flex;justify-content:center;gap:6px;margin:10px 0 6px}
+.photo-dots .dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.25);cursor:pointer;transition:.2s}
+.photo-dots .dot.active{background:#e74c3c;width:16px;border-radius:4px}
+.photo-caption{text-align:center;font-size:0.7rem;color:#9a9ab5;font-weight:700;margin:0 0 18px}
+
+.quick-facts{display:flex;justify-content:center;flex-wrap:wrap;gap:0;margin-bottom:36px}
+.qf{padding:0 22px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:9px;border-left:1px solid rgba(255,255,255,0.12)}
+.qf:first-child{border-left:none}
+.qf-icon{width:38px;height:38px;display:flex;align-items:center;justify-content:center}
+.qf-label{font-size:0.7rem;font-weight:800;color:#eceaf5;line-height:1.3;text-shadow:0 1px 6px rgba(0,0,0,0.6)}
+.qf:nth-child(1) .qf-icon{color:#7ab0ff}
+.qf:nth-child(2) .qf-icon{color:#c4b5fd}
+.qf:nth-child(3) .qf-icon{color:#fbbf24}
+.qf:nth-child(4) .qf-icon{color:#7ab0ff}
+
+/* Open content sections (Learn / Included) — no box, sits on the background */
+.content-block{margin-bottom:30px}
+.content-title{font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid rgba(255,255,255,0.14);text-shadow:0 2px 8px rgba(0,0,0,0.5)}
+.content-accent-blue .content-title{border-bottom-color:#2563eb}
+.content-accent-orange .content-title{border-bottom-color:#f59e0b}
+.feature-list{list-style:none}
+.feature-list li{display:flex;align-items:center;gap:12px;font-size:0.87rem;color:#eceaf5;font-weight:600;padding:11px 2px;line-height:1.4;text-shadow:0 1px 6px rgba(0,0,0,0.5)}
+.fi-icon{width:34px;height:34px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.95rem;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1)}
+.content-accent-blue .fi-icon{color:#7ab0ff}
+.content-accent-orange .fi-icon{color:#fbbf24}
+
+.demo-cta{background:linear-gradient(135deg,#e74c3c 0%,#b8342a 100%);border:none;border-radius:18px;padding:28px 20px;text-align:center;margin-bottom:24px;color:#fff;box-shadow:0 10px 24px rgba(231,76,60,0.32),0 0 50px rgba(245,158,11,0.15)}
+.demo-cta-icon{font-size:2.3rem;margin-bottom:8px}
+.demo-cta-title{font-size:1.08rem;font-weight:800;color:#fff;margin-bottom:6px}
+.demo-cta-sub{font-size:0.8rem;color:rgba(255,255,255,0.88);margin-bottom:18px;font-weight:600}
+.demo-cta-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.demo-cta-btn{display:inline-flex;align-items:center;gap:7px;background:#25d366;color:#fff;text-decoration:none;border-radius:12px;padding:13px 26px;font-size:0.88rem;font-weight:800;box-shadow:0 6px 16px rgba(37,211,102,0.35)}
+.demo-cta-btn.secondary{background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.4);box-shadow:none}
+
+.contact-section{text-align:center;margin-bottom:28px;padding-top:6px}
+.contact-title{font-size:1.05rem;font-weight:800;color:#fff;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,0.5)}
+.contact-line{font-size:0.84rem;color:#c8c6dc;margin-bottom:16px;text-shadow:0 1px 6px rgba(0,0,0,0.5)}
+.contact-phones{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:14px}
+.contact-phones a{color:#fff;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);text-decoration:none;font-size:0.82rem;font-weight:700;padding:9px 16px;border-radius:20px}
+.contact-directions{display:inline-block;color:#7ab0ff;font-size:0.78rem;font-weight:700;text-decoration:none}
+
+.reg-divider{display:flex;align-items:center;gap:12px;color:#ff6b5e;font-weight:800;font-size:0.72rem;letter-spacing:0.5px;margin:4px 0 18px}
+.reg-divider::before,.reg-divider::after{content:'';flex:1;height:2px;background:rgba(231,76,60,0.3)}
 
 /* Step indicator */
-.steps{display:flex;gap:0;margin-bottom:24px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07)}
-.step{flex:1;padding:10px 6px;text-align:center;font-size:0.65rem;font-weight:700;color:#aaa;border-bottom:3px solid transparent;transition:.2s;cursor:default}
-.step.active{color:#e74c3c;border-bottom-color:#e74c3c;background:#fff5f5}
-.step.done{color:#2e7d32;border-bottom-color:#2e7d32;background:#f0fff4}
+.steps{display:flex;gap:0;margin-bottom:24px;background:rgba(255,255,255,0.06);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.25)}
+.step{flex:1;padding:10px 6px;text-align:center;font-size:0.65rem;font-weight:700;color:#8888a5;border-bottom:3px solid transparent;transition:.2s;cursor:default}
+.step.active{color:#ff6b5e;border-bottom-color:#e74c3c;background:rgba(231,76,60,0.12)}
+.step.done{color:#4ade80;border-bottom-color:#2e7d32;background:rgba(46,125,50,0.12)}
 .step-num{display:block;font-size:0.85rem;font-weight:800;margin-bottom:2px}
 
-/* Card */
-.card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 8px rgba(0,0,0,0.07);margin-bottom:16px}
-.card-title{font-size:0.8rem;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #f0f2f5}
+/* Card — used by the interactive form steps only */
+.card{background:rgba(255,255,255,0.06);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,0.25);margin-bottom:16px}
+.card-title{font-size:0.98rem;font-weight:800;color:#fff;letter-spacing:0.2px;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid rgba(255,255,255,0.08)}
 
 /* Form fields */
 .field{margin-bottom:14px}
-.field label{display:block;font-size:0.75rem;font-weight:700;color:#555;margin-bottom:5px}
-.field input,.field select,.field textarea{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:11px 13px;font-size:0.88rem;font-family:inherit;color:#1a1a2e;background:#fff;outline:none;transition:.2s;-webkit-appearance:none}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:#e74c3c;box-shadow:0 0 0 3px rgba(231,76,60,0.08)}
+.field label{display:block;font-size:0.75rem;font-weight:700;color:#b8b6cc;margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;border:1.5px solid rgba(255,255,255,0.16);border-radius:10px;padding:11px 13px;font-size:0.88rem;font-family:inherit;color:#fff;background:rgba(255,255,255,0.05);outline:none;transition:.2s;-webkit-appearance:none}
+.field input::placeholder,.field textarea::placeholder{color:rgba(255,255,255,0.35)}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#e74c3c;box-shadow:0 0 0 3px rgba(231,76,60,0.15)}
 .field textarea{resize:none;height:72px;line-height:1.5}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
@@ -66,16 +161,22 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 .opt-grid{display:grid;gap:10px}
 .opt-grid.cols2{grid-template-columns:1fr 1fr}
 .opt-grid.cols3{grid-template-columns:1fr 1fr 1fr}
-.opt-card{border:2px solid #e8e8e8;border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:.2s;background:#fafafa;user-select:none}
-.opt-card:hover{border-color:#e74c3c;background:#fff5f5}
-.opt-card.sel{border-color:#e74c3c;background:#fff0f0}
-.opt-card .oc-icon{font-size:1.5rem;margin-bottom:4px}
-.opt-card .oc-label{font-size:0.72rem;font-weight:700;color:#333;line-height:1.3}
-.opt-card.sel .oc-label{color:#e74c3c}
+.opt-card{border:2px solid rgba(255,255,255,0.12);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:.2s;background:rgba(255,255,255,0.04);user-select:none}
+.opt-card:hover{border-color:#e74c3c;background:rgba(231,76,60,0.1)}
+.opt-card.sel{border-color:#e74c3c;background:rgba(231,76,60,0.18)}
+.opt-card .oc-icon{font-size:1.4rem;margin:0 auto 6px;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center}
+.opt-card .oc-label{font-size:0.72rem;font-weight:700;color:#d8d6e8;line-height:1.3}
+.opt-card.sel .oc-label{color:#ff6b5e}
+#inst-opts .opt-card:nth-child(1) .oc-icon{background:rgba(37,99,235,0.25)}
+#inst-opts .opt-card:nth-child(2) .oc-icon{background:rgba(245,158,11,0.25)}
+#inst-opts .opt-card:nth-child(3) .oc-icon{background:rgba(139,92,246,0.25)}
+#inst-opts .opt-card:nth-child(4) .oc-icon{background:rgba(37,99,235,0.25)}
+#inst-opts .opt-card:nth-child(5) .oc-icon{background:rgba(245,158,11,0.25)}
+#inst-opts .opt-card:nth-child(6) .oc-icon{background:rgba(139,92,246,0.25)}
 
 /* Nav buttons */
 .nav{display:flex;gap:12px;margin-top:6px}
-.btn-back{flex:0 0 auto;background:#f0f2f5;color:#555;border:none;border-radius:12px;padding:13px 20px;font-size:0.88rem;font-weight:700;cursor:pointer}
+.btn-back{flex:0 0 auto;background:rgba(255,255,255,0.08);color:#d8d6e8;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px 20px;font-size:0.88rem;font-weight:700;cursor:pointer}
 .btn-next{flex:1;background:#e74c3c;color:#fff;border:none;border-radius:12px;padding:13px;font-size:0.92rem;font-weight:800;cursor:pointer;transition:.2s}
 .btn-next:disabled{opacity:0.5;cursor:not-allowed}
 .btn-next:not(:disabled):hover{background:#c0392b}
@@ -83,23 +184,71 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
 /* Success */
 .success{display:none;text-align:center;padding:32px 20px}
 .success-icon{font-size:3.5rem;margin-bottom:14px}
-.success-title{font-size:1.3rem;font-weight:800;color:#1a1a2e;margin-bottom:6px}
-.success-sub{font-size:0.82rem;color:#666;line-height:1.6;margin-bottom:6px}
-.reg-id{display:inline-block;background:#1a1a2e;color:#fff;font-size:0.88rem;font-weight:800;padding:8px 18px;border-radius:20px;margin:10px 0 18px;letter-spacing:1px}
+.success-title{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:6px}
+.success-sub{font-size:0.82rem;color:#b8b6cc;line-height:1.6;margin-bottom:6px}
+.reg-id{display:inline-block;background:#e74c3c;color:#fff;font-size:0.88rem;font-weight:800;padding:8px 18px;border-radius:20px;margin:10px 0 18px;letter-spacing:1px}
 .wa-btn{display:block;background:#25d366;color:#fff;text-decoration:none;border-radius:12px;padding:14px;font-size:0.92rem;font-weight:800;margin-bottom:10px}
 
 /* Error */
-.err{font-size:0.72rem;color:#e74c3c;margin-top:4px;display:none}
+.err{font-size:0.72rem;color:#ff6b5e;margin-top:4px;display:none}
 .field.invalid input,.field.invalid select{border-color:#e74c3c}
 .field.invalid .err{display:block}
 
-@media(min-width:768px){
-  .page{padding:28px 24px 60px}
+@media(min-width:900px){
+  .page{max-width:1000px;padding:36px 32px 60px}
+  .landing-hero{padding:36px 40px}
+  .hero-phones a{font-size:1.3rem;padding:12px 24px}
+  .landing-title{font-size:1.7rem}
+  .landing-sub{font-size:0.9rem}
+  .landing-instruments span{font-size:0.8rem;padding:7px 16px}
+  .quick-facts{gap:16px;margin-bottom:20px}
+  .qf{padding:18px 8px}
+  .qf-icon{font-size:1.6rem}
+  .qf-label{font-size:0.72rem}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .photo-strip img{flex:0 0 31%;height:280px}
+  .demo-cta{max-width:600px;margin-left:auto;margin-right:auto}
+  .reg-divider{margin-top:8px}
+  #inst-opts{grid-template-columns:repeat(6,1fr)}
+  .form-wrap{max-width:640px}
+}
+@media(min-width:480px) and (max-width:899px){
   .opt-grid.cols3{grid-template-columns:repeat(4,1fr)}
 }
+
+/* Mascot */
+.mascot{position:fixed;right:14px;bottom:14px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:6px;opacity:0;animation:mascotWalkIn 1.4s cubic-bezier(.45,.05,.55,.95) both;animation-delay:.9s}
+@keyframes mascotWalkIn{
+  0%{transform:translateX(160px) translateY(0) rotate(0deg);opacity:0}
+  12%{opacity:1}
+  22%{transform:translateX(120px) translateY(-14px) rotate(-7deg)}
+  35%{transform:translateX(88px) translateY(0) rotate(5deg)}
+  48%{transform:translateX(58px) translateY(-12px) rotate(-6deg)}
+  61%{transform:translateX(32px) translateY(0) rotate(4deg)}
+  74%{transform:translateX(12px) translateY(-8px) rotate(-3deg)}
+  87%{transform:translateX(0) translateY(0) rotate(2deg)}
+  100%{transform:translateX(0) translateY(0) rotate(0deg);opacity:1}
+}
+.mascot-char{display:block;height:190px;width:auto;cursor:pointer;transform-origin:bottom center;animation:mascotStrum 1.7s ease-in-out infinite;animation-delay:2.3s;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.45))}
+@keyframes mascotStrum{
+  0%,100%{transform:rotate(0deg) translateY(0)}
+  8%{transform:rotate(-5deg) translateY(-2px)}
+  16%{transform:rotate(3deg) translateY(0)}
+  24%{transform:rotate(-4deg) translateY(-2px)}
+  32%{transform:rotate(2deg) translateY(0)}
+  42%{transform:rotate(0deg) translateY(-4px)}
+  70%{transform:rotate(0deg) translateY(0)}
+}
+.mascot-bubble{position:relative;background:#fff;color:#1a1a2e;font-size:0.74rem;font-weight:700;padding:10px 30px 10px 14px;border-radius:14px 14px 4px 14px;box-shadow:0 8px 18px rgba(0,0,0,0.4);max-width:150px;text-align:left;line-height:1.35;cursor:pointer;opacity:0;animation:mascotBubbleIn .4s ease both;animation-delay:1.8s}
+@keyframes mascotBubbleIn{from{opacity:0;transform:scale(.6) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.mascot-close{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:rgba(10,10,20,0.75);color:#fff;border:1.5px solid rgba(255,255,255,0.5);font-size:0.7rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+@media (prefers-reduced-motion: reduce){.mascot{animation:none;opacity:1}.mascot-char{animation:none}.mascot-bubble{animation:none;opacity:1}}
+@media(min-width:900px){.mascot-char{height:260px}.mascot{right:28px;bottom:28px}}
 </style>
 </head>
 <body>
+
+<div class="bg-particles" aria-hidden="true"><span>♪</span><span>♫</span><span>♪</span><span>♬</span><span>♪</span><span>♫</span></div>
 
 <!-- Header -->
 <div class="hdr">
@@ -108,23 +257,143 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
     <div class="hdr-title">Chords Music Academy</div>
     <div class="hdr-sub">Student Registration</div>
   </div>
+  <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hi!%20I%27d%20like%20to%20book%20a%20free%20trial%20class." target="_blank" class="hdr-cta">Book Trial</a>
 </div>
 
-<!-- Hero -->
-<div class="hero">
-  <div class="hero-icon">📝</div>
-  <div class="hero-title">New Student Registration</div>
-  <div class="hero-sub">Fill in your details and we'll get back to you on WhatsApp</div>
+<!-- Mascot -->
+<div class="mascot" id="mascot">
+  <div class="mascot-bubble" onclick="mascotCTA()">
+    <button class="mascot-close" onclick="dismissMascot(event)" aria-label="Dismiss">×</button>
+    Hey! 👋 Want a free trial class?
+  </div>
+  <img class="mascot-char" id="mascotImg" onclick="mascotCTA()" src="images/mascot-wave1.png" alt="Chords Music Academy mascot playing guitar">
 </div>
 
 <div class="page">
 
+  <!-- Landing intro -->
+  <div class="landing-hero">
+    <div class="landing-title">Learn Music with Chords Music Academy</div>
+    <div class="landing-tagline">Learn. Play. Perform.</div>
+    <div class="landing-sub">Manikonda, Hyderabad · Trinity College London Certified</div>
+    <div class="landing-support">Professional music training in Keyboard, Guitar, Drums, Violin, Carnatic &amp; Hindustani Vocal.</div>
+    <div class="hero-phones">
+      <a href="tel:+917981585309">📞 +91-7981585309</a>
+      <a href="tel:+917569348879">📞 +91-7569348879</a>
+    </div>
+    <div class="hero-ctas">
+      <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hi!%20I%27d%20like%20to%20book%20a%20free%20trial%20class." class="hero-cta primary" target="_blank">📅 Book a Free Trial Class</a>
+      <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hi!%20I%27d%20like%20to%20know%20more%20about%20Chords%20Music%20Academy." class="hero-cta whatsapp" target="_blank"><svg class="wa-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 5L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.9 0-2.65-1.03-5.13-2.9-7-1.87-1.88-4.35-2.94-7-2.94zm0 18.1a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.18 8.18 0 0 1-1.26-4.36c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.55-3.7 8.21-8.25 8.21zm4.52-6.16c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31s-.87.85-.87 2.08.89 2.41 1.02 2.58c.12.17 1.75 2.67 4.24 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.1-.23-.17-.48-.29z"/></svg> WhatsApp Us</a>
+    </div>
+    <div class="landing-instruments">
+      <span onclick="jumpToInstrument('Keyboard')">🎹 Keyboard</span>
+      <span onclick="jumpToInstrument('Guitar')">🎸 Guitar</span>
+      <span onclick="jumpToInstrument('Drums')">🥁 Drums</span>
+      <span onclick="jumpToInstrument('Violin')">🎻 Violin</span>
+      <span onclick="jumpToInstrument('Carnatic Vocal')">🎤 Carnatic Vocal</span>
+      <span onclick="jumpToInstrument('Hindustani Vocal')">🎶 Hindustani Vocal</span>
+    </div>
+  </div>
+
+  <!-- Photo gallery -->
+  <div class="photo-carousel">
+    <div class="photo-strip" id="photoStrip">
+      <img src="images/academy-keyboard-1.jpg" alt="Group keyboard class at Chords Music Academy, Manikonda" loading="lazy">
+      <img src="images/academy-guitar-vocal.jpg" alt="Guitar and vocal lesson at Chords Music Academy" loading="lazy">
+      <img src="images/academy-violin.jpg" alt="Violin lesson at Chords Music Academy" loading="lazy" style="object-position:center 65%">
+      <img src="images/academy-vocal-group.jpg" alt="Group vocal class at Chords Music Academy" loading="lazy" style="object-position:center 85%">
+      <img src="images/academy-keyboard-2.jpg" alt="Keyboard class in progress at Chords Music Academy" loading="lazy">
+      <img src="images/academy-drums.jpg" alt="Drums lesson at Chords Music Academy" loading="lazy" style="object-fit:contain;background:rgba(0,0,0,0.25)">
+    </div>
+    <div class="photo-overlay-badge">📍 Real Classes • Manikonda, Hyderabad</div>
+    <button class="pc-arrow pc-prev" onclick="scrollPhotos(-1)" aria-label="Previous photo">‹</button>
+    <button class="pc-arrow pc-next" onclick="scrollPhotos(1)" aria-label="Next photo">›</button>
+  </div>
+  <div class="photo-dots" id="photoDots">
+    <span class="dot active" onclick="scrollToPhoto(0)"></span>
+    <span class="dot" onclick="scrollToPhoto(1)"></span>
+    <span class="dot" onclick="scrollToPhoto(2)"></span>
+    <span class="dot" onclick="scrollToPhoto(3)"></span>
+    <span class="dot" onclick="scrollToPhoto(4)"></span>
+    <span class="dot" onclick="scrollToPhoto(5)"></span>
+  </div>
+  <div class="photo-caption">Swipe or use arrows for more →</div>
+
+  <!-- Trust strip -->
+  <div class="trust-strip">
+    <div class="trust-item"><b>✓</b> Trinity College London Certified Curriculum</div>
+    <div class="trust-item"><b>✓</b> Experienced Music Faculty</div>
+    <div class="trust-item"><b>✓</b> In-Person Classes in Manikonda</div>
+    <div class="trust-item"><b>✓</b> Students of All Ages</div>
+    <div class="trust-item"><b>✓</b> Free Trial Class Available</div>
+  </div>
+
+  <!-- Quick facts -->
+  <div class="quick-facts">
+    <div class="qf"><div class="qf-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div><div class="qf-label">1 Hour Classes</div></div>
+    <div class="qf"><div class="qf-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.3 3.1-6 7-6s7 2.7 7 6"/><circle cx="17" cy="9" r="2.3"/><path d="M15.3 14.2c2.7.5 4.6 2.4 5.1 5"/></svg></div><div class="qf-label">Max 6 Students</div></div>
+    <div class="qf"><div class="qf-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/></svg></div><div class="qf-label">In-Person Classes</div></div>
+    <div class="qf"><div class="qf-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.9 6.8 19l1-5.8L3.6 9.1l5.8-.8L12 3z"/></svg></div><div class="qf-label">Age 5+</div></div>
+  </div>
+
+  <div class="info-grid">
+  <!-- Curriculum -->
+  <div class="content-block content-accent-blue">
+    <div class="content-title">🎓 What You'll Learn</div>
+    <ul class="feature-list">
+      <li><span class="fi-icon">📝</span> Music Theory &amp; Notation</li>
+      <li><span class="fi-icon">🎸</span> Practical Instrument Training</li>
+      <li><span class="fi-icon">🎓</span> Trinity Grade Preparation</li>
+      <li><span class="fi-icon">🎵</span> Ragas &amp; Indian Music Foundations</li>
+      <li><span class="fi-icon">🎤</span> Performance Skills</li>
+      <li><span class="fi-icon">🥁</span> Rhythm &amp; Ear Training</li>
+    </ul>
+  </div>
+
+  <!-- What's included -->
+  <div class="content-block content-accent-orange">
+    <div class="content-title">✅ What's Included</div>
+    <ul class="feature-list">
+      <li><span class="fi-icon">📄</span> Notes handout after every class</li>
+      <li><span class="fi-icon">👥</span> Learn &amp; perform in a group of 6</li>
+      <li><span class="fi-icon">💬</span> WhatsApp support between classes</li>
+      <li><span class="fi-icon">🏫</span> Hands-on in-person instruction</li>
+      <li><span class="fi-icon">📖</span> Regular progress tracking &amp; feedback</li>
+    </ul>
+  </div>
+  </div>
+
+  <!-- Ready to start -->
+  <div class="demo-cta">
+    <div class="demo-cta-icon">🎵</div>
+    <div class="demo-cta-title">Ready to Start Your Musical Journey?</div>
+    <div class="demo-cta-sub">Book your free trial class at Chords Music Academy, Manikonda — no payment needed.</div>
+    <div class="demo-cta-buttons">
+      <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hi!%20I%27d%20like%20to%20book%20a%20free%20trial%20class." class="demo-cta-btn secondary" target="_blank">📅 Book a Free Trial</a>
+      <a href="https://api.whatsapp.com/send?phone=917981585309&text=Hi!%20I%27d%20like%20to%20know%20more%20about%20Chords%20Music%20Academy." class="demo-cta-btn" target="_blank"><svg class="wa-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 5L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.9 0-2.65-1.03-5.13-2.9-7-1.87-1.88-4.35-2.94-7-2.94zm0 18.1a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.18 8.18 0 0 1-1.26-4.36c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.55-3.7 8.21-8.25 8.21zm4.52-6.16c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31s-.87.85-.87 2.08.89 2.41 1.02 2.58c.12.17 1.75 2.67 4.24 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.1-.23-.17-.48-.29z"/></svg> WhatsApp Us</a>
+    </div>
+  </div>
+
+  <!-- Contact -->
+  <div class="contact-section">
+    <div class="contact-title">Chords Music Academy</div>
+    <div class="contact-line">📍 Manikonda, Hyderabad</div>
+    <div class="contact-phones">
+      <a href="tel:+917981585309">📞 +91-7981585309</a>
+      <a href="tel:+917569348879">📞 +91-7569348879</a>
+    </div>
+    <a class="contact-directions" href="https://www.google.com/maps/search/?api=1&query=Chords+Music+Academy+Manikonda+Hyderabad" target="_blank">📍 Get Directions on Google Maps</a>
+  </div>
+
+  <div class="reg-divider"><span>OR REGISTER DIRECTLY BELOW ↓</span></div>
+
+  <div class="form-wrap">
   <!-- Step indicator -->
   <div class="steps">
     <div class="step active" id="s1"><span class="step-num">1</span>Personal</div>
     <div class="step" id="s2"><span class="step-num">2</span>Contact</div>
     <div class="step" id="s3"><span class="step-num">3</span>Instrument</div>
-    <div class="step" id="s4"><span class="step-num">4</span>Preference</div>
+    <div class="step" id="s4"><span class="step-num">4</span>Notes</div>
   </div>
 
   <!-- STEP 1: Personal Details -->
@@ -188,17 +457,23 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
     <div class="card">
       <div class="card-title">🎵 Which Instrument?</div>
       <div class="opt-grid cols3" id="inst-opts">
-        <div class="opt-card" data-val="Piano & Keyboard" onclick="pick(this,'inst-opts')">
-          <div class="oc-icon">🎹</div><div class="oc-label">Piano &amp; Keyboard</div>
-        </div>
-        <div class="opt-card" data-val="Carnatic Vocals" onclick="pick(this,'inst-opts')">
-          <div class="oc-icon">🎤</div><div class="oc-label">Carnatic Vocals</div>
+        <div class="opt-card" data-val="Keyboard" onclick="pick(this,'inst-opts')">
+          <div class="oc-icon">🎹</div><div class="oc-label">Keyboard</div>
         </div>
         <div class="opt-card" data-val="Guitar" onclick="pick(this,'inst-opts')">
           <div class="oc-icon">🎸</div><div class="oc-label">Guitar</div>
         </div>
         <div class="opt-card" data-val="Drums" onclick="pick(this,'inst-opts')">
           <div class="oc-icon">🥁</div><div class="oc-label">Drums</div>
+        </div>
+        <div class="opt-card" data-val="Violin" onclick="pick(this,'inst-opts')">
+          <div class="oc-icon">🎻</div><div class="oc-label">Violin</div>
+        </div>
+        <div class="opt-card" data-val="Carnatic Vocal" onclick="pick(this,'inst-opts')">
+          <div class="oc-icon">🎤</div><div class="oc-label">Carnatic Vocal</div>
+        </div>
+        <div class="opt-card" data-val="Hindustani Vocal" onclick="pick(this,'inst-opts')">
+          <div class="oc-icon">🎶</div><div class="oc-label">Hindustani Vocal</div>
         </div>
       </div>
     </div>
@@ -227,26 +502,8 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
     </div>
   </div>
 
-  <!-- STEP 4: Class Preference -->
+  <!-- STEP 4: Notes -->
   <div id="step4" style="display:none">
-    <div class="card">
-      <div class="card-title">🖥 How Would You Like to Learn?</div>
-      <div class="opt-grid" id="mode-opts">
-        <div class="opt-card" data-val="Online Live Classes" onclick="pick(this,'mode-opts')">
-          <div class="oc-icon">💻</div>
-          <div class="oc-label">Online Live Classes<br><span style="font-weight:400;font-size:0.65rem;color:#888">Google Meet · 1-on-1</span></div>
-        </div>
-        <div class="opt-card" data-val="Offline Classes (In-person)" onclick="pick(this,'mode-opts')">
-          <div class="oc-icon">🏫</div>
-          <div class="oc-label">Offline Classes<br><span style="font-weight:400;font-size:0.65rem;color:#888">In-person · Manikonda, Hyd</span></div>
-        </div>
-        <div class="opt-card" data-val="Recorded Tutorial Packages" onclick="pick(this,'mode-opts')">
-          <div class="oc-icon">🎬</div>
-          <div class="oc-label">Recorded Tutorials<br><span style="font-weight:400;font-size:0.65rem;color:#888">Self-paced · Anytime access</span></div>
-        </div>
-      </div>
-    </div>
-
     <div class="card">
       <div class="card-title">💬 Anything Else?</div>
       <div class="field">
@@ -255,8 +512,8 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
       </div>
     </div>
 
-    <div id="submit-err" style="background:#fff5f5;border:1.5px solid #e74c3c;border-radius:10px;padding:10px 14px;font-size:0.78rem;color:#c0392b;margin-bottom:12px;display:none">
-      ⚠️ Please select an instrument, experience level, and class preference before submitting.
+    <div id="submit-err" style="background:rgba(231,76,60,0.15);border:1.5px solid rgba(231,76,60,0.5);border-radius:10px;padding:10px 14px;font-size:0.78rem;color:#ff8a80;margin-bottom:12px;display:none">
+      ⚠️ Please select an instrument and experience level before submitting.
     </div>
 
     <div class="nav">
@@ -275,12 +532,46 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
     <a href="#" id="waConfirmBtn" class="wa-btn" target="_blank">💬 Confirm on WhatsApp</a>
     <div style="font-size:0.72rem;color:#aaa">📞 +91-79815 85309</div>
   </div>
+  </div>
 
 </div>
 
 <script>
 // Set max date for DOB (today)
 document.getElementById('dob').max = new Date().toISOString().split('T')[0];
+
+// Mascot — hide immediately if previously dismissed, before any animation runs
+if (localStorage.getItem('cma_mascot_dismissed')) {
+  var mascotEl = document.getElementById('mascot');
+  if (mascotEl) mascotEl.remove();
+}
+function mascotCTA() {
+  window.open('https://api.whatsapp.com/send?phone=917981585309&text=Hi!%20I%27d%20like%20to%20book%20a%20free%20trial%20class.', '_blank');
+}
+function dismissMascot(e) {
+  e.stopPropagation();
+  localStorage.setItem('cma_mascot_dismissed', '1');
+  document.getElementById('mascot').remove();
+  if (mascotFrameTimer) clearInterval(mascotFrameTimer);
+}
+
+// Cycle through real pose frames (wave / strum / wave) for genuine animation,
+// not just CSS transforms on one static image
+var mascotFrameTimer = null;
+var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (!reduceMotion && document.getElementById('mascot')) {
+  var mascotFrames = ['images/mascot-wave1.png', 'images/mascot-strum.png', 'images/mascot-wave2.png', 'images/mascot-strum.png'];
+  mascotFrames.forEach(function(src){ var im = new Image(); im.src = src; }); // preload
+  var mascotFrameIdx = 0;
+  setTimeout(function(){
+    mascotFrameTimer = setInterval(function(){
+      var img = document.getElementById('mascotImg');
+      if (!img) { clearInterval(mascotFrameTimer); return; }
+      mascotFrameIdx = (mascotFrameIdx + 1) % mascotFrames.length;
+      img.src = mascotFrames[mascotFrameIdx];
+    }, 480);
+  }, 2300);
+}
 
 function goStep(n) {
   // Validate current step before advancing
@@ -295,7 +586,7 @@ function goStep(n) {
     if (i === n) si.classList.add('active');
     else if (i < n) si.classList.add('done');
   }
-  window.scrollTo({top:0,behavior:'smooth'});
+  document.querySelector('.form-wrap').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function getCurrentStep() {
@@ -343,6 +634,52 @@ function pick(el, groupId) {
   el.classList.add('sel');
 }
 
+function jumpToInstrument(name) {
+  var card = document.querySelector('#inst-opts .opt-card[data-val="' + name + '"]');
+  if (card) pick(card, 'inst-opts');
+
+  for (var i = 1; i <= 4; i++) {
+    var el = document.getElementById('step' + i);
+    if (el) el.style.display = (i === 1) ? 'block' : 'none';
+  }
+  document.querySelectorAll('.step').forEach(function(s){ s.classList.remove('active','done'); });
+  document.getElementById('s1').classList.add('active');
+  document.querySelector('.form-wrap').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function scrollPhotos(dir) {
+  var strip = document.getElementById('photoStrip');
+  var img = strip.querySelector('img');
+  var w = img.getBoundingClientRect().width + 10;
+  strip.scrollBy({left: dir * w, behavior: 'smooth'});
+}
+
+function scrollToPhoto(idx) {
+  var strip = document.getElementById('photoStrip');
+  var imgs = strip.querySelectorAll('img');
+  if (imgs[idx]) imgs[idx].scrollIntoView({behavior:'smooth', inline:'start', block:'nearest'});
+}
+
+(function(){
+  var strip = document.getElementById('photoStrip');
+  if (!strip) return;
+  var dots = document.querySelectorAll('#photoDots .dot');
+  var imgs = strip.querySelectorAll('img');
+  var t;
+  strip.addEventListener('scroll', function(){
+    clearTimeout(t);
+    t = setTimeout(function(){
+      var stripLeft = strip.getBoundingClientRect().left;
+      var closest = 0, minDist = Infinity;
+      imgs.forEach(function(img, i){
+        var dist = Math.abs(img.getBoundingClientRect().left - stripLeft);
+        if (dist < minDist) { minDist = dist; closest = i; }
+      });
+      dots.forEach(function(d,i){ d.classList.toggle('active', i===closest); });
+    }, 100);
+  });
+})();
+
 function getSelected(groupId) {
   var sel = document.querySelector('#' + groupId + ' .opt-card.sel');
   return sel ? sel.getAttribute('data-val') : '';
@@ -360,10 +697,10 @@ function genRegId() {
 function submitReg() {
   var inst = getSelected('inst-opts');
   var level = getSelected('level-opts');
-  var mode = getSelected('mode-opts');
+  var mode = 'Offline Group Class (In-person)';
 
   document.getElementById('submit-err').style.display = 'none';
-  if (!inst || !level || !mode) {
+  if (!inst || !level) {
     document.getElementById('submit-err').style.display = 'block';
     return;
   }
@@ -479,7 +816,7 @@ function showSuccess(regId, name, dob, address, phone, email, guardian, inst, le
 
   var box = document.getElementById('successBox');
   box.style.display = 'block';
-  window.scrollTo({top:0,behavior:'smooth'});
+  document.querySelector('.form-wrap').scrollIntoView({behavior:'smooth', block:'start'});
 }
 </script>
 
