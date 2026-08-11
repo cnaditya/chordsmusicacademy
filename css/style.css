@@ -822,8 +822,8 @@ body {
 }
 
 .youtube-logo {
-    width: 150px;
-    height: 150px;
+    width: 220px;
+    height: 220px;
     object-fit: cover;
     border-radius: 50%;
     display: block;
@@ -2978,8 +2978,8 @@ body {
     }
 
     .youtube-logo {
-        width: 120px;
-        height: 120px;
+        width: 170px;
+        height: 170px;
     }
 
     .youtube-follow-pill {
@@ -3167,8 +3167,8 @@ body {
     }
     
     .youtube-logo {
-        width: 100px;
-        height: 100px;
+        width: 140px;
+        height: 140px;
     }
 
     .courses h2,
