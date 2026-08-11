@@ -838,9 +838,11 @@ body {
 }
 
 .youtube-logo {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 
 .youtube-text {
