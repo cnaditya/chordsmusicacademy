@@ -815,54 +815,40 @@ body {
 }
 
 .youtube-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    background: #ffffff;
-    color: #333;
-    padding: 0.8rem 1.8rem;
-    border-radius: 30px;
-    text-decoration: none;
+    position: relative;
+    display: inline-block;
     margin: 1.5rem auto 2rem auto;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-    border: 2px solid #ff0000;
-    max-width: 420px;
-    white-space: nowrap;
-}
-
-.youtube-badge:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(255,0,0,0.25);
+    text-decoration: none;
 }
 
 .youtube-logo {
-    width: 64px;
-    height: 64px;
+    width: 150px;
+    height: 150px;
     object-fit: cover;
     border-radius: 50%;
-    flex-shrink: 0;
+    display: block;
+    border: 4px solid #fff;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    transition: all 0.3s ease;
 }
 
-.youtube-text {
-    display: flex;
-    flex-direction: column;
-    text-align: left;
+.youtube-badge:hover .youtube-logo {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(255,0,0,0.35);
 }
 
-.channel-name {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 0.2rem;
-}
-
-.subscriber-count {
-    font-size: 1rem;
+.youtube-follow-pill {
+    position: absolute;
+    bottom: 4px;
+    right: -8px;
+    background: #ff0000;
+    color: #fff;
+    font-size: 0.85rem;
     font-weight: 800;
-    color: #ff0000;
-    text-shadow: none;
+    padding: 6px 16px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(255,0,0,0.45);
+    border: 2px solid #fff;
     white-space: nowrap;
 }
 
@@ -2988,25 +2974,19 @@ body {
     }
     
     .youtube-badge {
-        flex-direction: column;
-        gap: 0.5rem;
-        padding: 1rem;
         margin: 1rem auto;
-        max-width: 280px;
     }
-    
-    .youtube-text {
-        text-align: center;
+
+    .youtube-logo {
+        width: 120px;
+        height: 120px;
     }
-    
-    .channel-name {
-        font-size: 0.9rem;
+
+    .youtube-follow-pill {
+        font-size: 0.75rem;
+        padding: 5px 13px;
     }
-    
-    .subscriber-count {
-        font-size: 1rem;
-    }
-    
+
     /* Section spacing adjustments */
     .courses,
     .about,
@@ -3186,11 +3166,11 @@ body {
         font-size: 1rem;
     }
     
-    .youtube-badge {
-        padding: 0.8rem;
-        max-width: 250px;
+    .youtube-logo {
+        width: 100px;
+        height: 100px;
     }
-    
+
     .courses h2,
     .about h2,
     .contact h2 {
