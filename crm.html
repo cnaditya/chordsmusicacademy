@@ -1617,7 +1617,11 @@ CREATE TABLE IF NOT EXISTS crm_notes (
         </div>
         <div class="form-group">
           <label>Classes Already Completed <span style="font-weight:400;color:var(--muted);font-size:0.75rem;">(before tracking started)</span></label>
-          <input type="number" id="f-classes-offset" placeholder="0" min="0" max="500">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="number" id="f-classes-offset" placeholder="0" min="0" max="500" style="flex:1;">
+            <button type="button" onclick="autoCalcClassesOffset()" class="btn btn-ghost" style="white-space:nowrap;padding:8px 12px;font-size:0.8rem;" title="Count scheduled class days from enrollment date to today">📅 Auto-fill</button>
+          </div>
+          <div style="font-size:0.71rem;color:var(--muted);margin-top:3px;">Auto-fill counts all scheduled days since enrollment — adjust manually for holidays/absences.</div>
         </div>
       </div>
 
@@ -3593,6 +3597,37 @@ function buildScheduleWidget(existingDays, existingTime) {
   }
 
   renderTimePickers();
+}
+
+function autoCalcClassesOffset() {
+  const enrollDate = document.getElementById('f-enrollment-date')?.value;
+  const sched = readSchedule();
+  if (!enrollDate) { toast('Set enrollment date first', 'error'); return; }
+  if (!sched.days) { toast('Select class days first', 'error'); return; }
+
+  // Map abbreviated day names → JS getDay() numbers (Sun=0 … Sat=6)
+  const dayMap = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+  const scheduledDays = sched.days.split(',').map(d => dayMap[d.trim()]).filter(d => d !== undefined);
+  if (!scheduledDays.length) { toast('Could not read class days', 'error'); return; }
+
+  const start = new Date(enrollDate + 'T00:00:00');
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  if (start >= today) {
+    document.getElementById('f-classes-offset').value = 0;
+    toast('Enrollment is today or future — set to 0', 'info');
+    return;
+  }
+
+  let count = 0;
+  const cur = new Date(start);
+  while (cur < today) {
+    if (scheduledDays.includes(cur.getDay())) count++;
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  document.getElementById('f-classes-offset').value = count;
+  toast(`Auto-filled: ${count} scheduled classes since ${enrollDate}`);
 }
 
 function readSchedule() {
