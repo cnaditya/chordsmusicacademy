@@ -3650,7 +3650,7 @@ function readSchedule() {
 function clearForm() {
   ['f-name','f-phone','f-email','f-age','f-parent-name','f-parent-phone',
    'f-address','f-instrument','f-teacher','f-enrollment-date','f-due-date',
-   'f-amount-due','f-total-classes','f-notes'].forEach(id=>{
+   'f-amount-due','f-total-classes','f-classes-offset','f-leaves-taken','f-notes'].forEach(id=>{
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
