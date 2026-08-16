@@ -1617,11 +1617,15 @@ CREATE TABLE IF NOT EXISTS crm_notes (
         </div>
         <div class="form-group">
           <label>Classes Already Completed <span style="font-weight:400;color:var(--muted);font-size:0.75rem;">(before tracking started)</span></label>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input type="number" id="f-classes-offset" placeholder="0" min="0" max="500" style="flex:1;">
-            <button type="button" onclick="autoCalcClassesOffset()" class="btn btn-ghost" style="white-space:nowrap;padding:8px 12px;font-size:0.8rem;" title="Count scheduled class days from enrollment date to today">📅 Auto-fill</button>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:160px;">
+              <span style="font-size:0.75rem;color:var(--muted);white-space:nowrap;">Leaves taken:</span>
+              <input type="number" id="f-leaves-taken" placeholder="0" min="0" max="200" style="width:70px;">
+            </div>
+            <button type="button" onclick="autoCalcClassesOffset()" class="btn btn-ghost" style="white-space:nowrap;padding:8px 12px;font-size:0.8rem;">📅 Auto-fill</button>
+            <input type="number" id="f-classes-offset" placeholder="0" min="0" max="500" style="flex:1;min-width:80px;">
           </div>
-          <div style="font-size:0.71rem;color:var(--muted);margin-top:3px;">Auto-fill counts all scheduled days since enrollment — adjust manually for holidays/absences.</div>
+          <div style="font-size:0.71rem;color:var(--muted);margin-top:3px;">Auto-fill = scheduled days since enrollment − leaves taken. Edit the result if needed.</div>
         </div>
       </div>
 
@@ -3626,8 +3630,10 @@ function autoCalcClassesOffset() {
     cur.setDate(cur.getDate() + 1);
   }
 
-  document.getElementById('f-classes-offset').value = count;
-  toast(`Auto-filled: ${count} scheduled classes since ${enrollDate}`);
+  const leaves = parseInt(document.getElementById('f-leaves-taken')?.value) || 0;
+  const result = Math.max(0, count - leaves);
+  document.getElementById('f-classes-offset').value = result;
+  toast(`Auto-filled: ${count} scheduled − ${leaves} leaves = ${result} classes completed`);
 }
 
 function readSchedule() {
