@@ -1615,6 +1615,10 @@ CREATE TABLE IF NOT EXISTS crm_notes (
           <label>Total Classes / Cycle</label>
           <input type="number" id="f-total-classes" placeholder="8" min="1" max="60">
         </div>
+        <div class="form-group">
+          <label>Classes Already Completed <span style="font-weight:400;color:var(--muted);font-size:0.75rem;">(before tracking started)</span></label>
+          <input type="number" id="f-classes-offset" placeholder="0" min="0" max="500">
+        </div>
       </div>
 
       <div class="form-section-title">Notes</div>
@@ -1914,7 +1918,7 @@ function buildAttRows() {
           <div style="font-size:0.75rem;color:var(--muted);">${s.instrument||'—'} · ${s.teacher||'—'}</div>
           ${(() => {
             const total = s.total_classes_per_cycle || 0;
-            const done  = _attCounts[s.id] || 0;
+            const done  = (_attCounts[s.id] || 0) + (s.classes_offset || 0);
             if (!total) return '';
             const rem = Math.max(0, total - done);
             const pct = Math.min(100, Math.round(done / total * 100));
@@ -2076,7 +2080,7 @@ async function attMark(studentId, status) {
       // Refresh progress bar in row
       const s = _attStudents.find(x => x.id === studentId);
       const total = s?.total_classes_per_cycle || 0;
-      const done  = _attCounts[studentId] || 0;
+      const done  = (_attCounts[studentId] || 0) + (s?.classes_offset || 0);
       const progEl = rowEl.querySelector('.att-progress');
       if (progEl && total) {
         const rem = Math.max(0, total - done);
@@ -2153,7 +2157,7 @@ async function attClear(studentId) {
 }
 
 function showAttMarkResult(rowEl, studentId, student, status, res) {
-  const presentCount = res.present_count || 0;
+  const presentCount = (res.present_count || 0) + (student?.classes_offset || 0);
   const total        = res.total_classes || student?.total_classes_per_cycle || 0;
   const remaining    = total ? Math.max(0, total - presentCount) : null;
   const cycleComplete = total > 0 && remaining === 0;
@@ -3637,6 +3641,7 @@ function populateForm(s) {
   set('f-amount-due', s.amount_due);
   set('f-due-date', s.due_date);
   set('f-total-classes', s.total_classes_per_cycle);
+  set('f-classes-offset', s.classes_offset || 0);
   set('f-notes', s.notes);
 
   document.querySelectorAll('input[name="f-mode"]').forEach(r=>r.checked = r.value===(s.mode||'online'));
@@ -3669,6 +3674,7 @@ function getFormData() {
     amount_due: parseInt(get('f-amount-due'))||0,
     due_date: get('f-due-date') || null,
     total_classes_per_cycle: parseInt(get('f-total-classes'))||8,
+    classes_offset: parseInt(get('f-classes-offset'))||0,
     notes: get('f-notes'),
   };
 }

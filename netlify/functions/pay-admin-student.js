@@ -428,7 +428,7 @@ exports.handler = async (event) => {
         fetch(`${SUPABASE_URL}/rest/v1/crm_attendance?student_id=eq.${student_id}&status=eq.present`, {
           headers: { ...SB_H, "Prefer": "count=exact", "Range": "0-0" }
         }),
-        fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${student_id}&select=name,phone,parent_name,parent_phone,total_classes_per_cycle`, { headers: SB_H })
+        fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${student_id}&select=name,phone,parent_name,parent_phone,total_classes_per_cycle,classes_offset`, { headers: SB_H })
       ]);
       const cRange = cntR.headers.get("content-range") || "";
       const presentCount = parseInt(cRange.split("/")[1] || "0") || 0;
@@ -468,8 +468,8 @@ exports.handler = async (event) => {
       if (!Array.isArray(students)) return { statusCode: 200, headers, body: JSON.stringify({ success: true, due: [] }) };
       const counts = {};
       (Array.isArray(attendance) ? attendance : []).forEach(a => { counts[a.student_id] = (counts[a.student_id]||0) + 1; });
-      const due = students.filter(s => s.total_classes_per_cycle > 0 && (counts[s.id]||0) >= s.total_classes_per_cycle)
-        .map(s => ({ ...s, present_count: counts[s.id]||0 }));
+      const due = students.filter(s => s.total_classes_per_cycle > 0 && ((counts[s.id]||0) + (s.classes_offset||0)) >= s.total_classes_per_cycle)
+        .map(s => ({ ...s, present_count: (counts[s.id]||0) + (s.classes_offset||0) }));
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, due }) };
     }
 
