@@ -1790,6 +1790,9 @@ async function apiCall(body, endpoint) {
     document.getElementById('sql-modal').style.display = 'flex';
     throw new Error('table_not_found');
   }
+  if (!res.ok) {
+    throw new Error(data.error || data.message || `Request failed (${res.status})`);
+  }
   return data;
 }
 
