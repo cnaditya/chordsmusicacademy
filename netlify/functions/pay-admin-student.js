@@ -380,6 +380,24 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: Array.isArray(data)?data[0]:data }) };
     }
 
+    if (action === "crm_upload_photo") {
+      const { student_id, file_base64 } = JSON.parse(event.body);
+      if (!student_id || !file_base64) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and file_base64 required" }) };
+      const buffer = Buffer.from(file_base64, 'base64');
+      const path = `${student_id}.jpg`;
+      const r = await fetch(`${SUPABASE_URL}/storage/v1/object/student-photos/${path}`, {
+        method: 'PUT',
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
+        body: buffer,
+      });
+      if (r.status >= 400) {
+        const err = await r.json().catch(() => ({}));
+        return { statusCode: r.status, headers, body: JSON.stringify({ error: err.message || 'Photo upload failed' }) };
+      }
+      const photo_url = `${SUPABASE_URL}/storage/v1/object/public/student-photos/${path}?t=${Date.now()}`;
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, photo_url }) };
+    }
+
     if (action === "crm_delete") {
       const { id } = JSON.parse(event.body);
       if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: "id required" }) };
