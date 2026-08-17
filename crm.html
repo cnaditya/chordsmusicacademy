@@ -5899,7 +5899,7 @@ function updateCropDisplay() {
   _cropOffY = Math.max(-maxY, Math.min(maxY, _cropOffY));
   const left = (CROP_SIZE - w) / 2 + _cropOffX;
   const top  = (CROP_SIZE - h) / 2 + _cropOffY;
-  img.style.cssText = `position:absolute;width:${w}px;height:${h}px;left:${left}px;top:${top}px;cursor:grab;user-select:none;-webkit-user-drag:none;`;
+  img.style.cssText = `position:absolute;width:${w}px;height:${h}px;left:${left}px;top:${top}px;pointer-events:none;user-select:none;-webkit-user-drag:none;`;
 }
 
 function updateCropZoom(val) {
