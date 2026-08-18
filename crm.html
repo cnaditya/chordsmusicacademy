@@ -5871,20 +5871,44 @@ let _cropNatW = 0, _cropNatH = 0;
 let _cropDragging = false, _cropLastX = 0, _cropLastY = 0;
 const CROP_SIZE = 240;
 
+// Global drag handlers so mouse/touch moving outside container still works
+document.addEventListener('mousemove', e => {
+  if (!_cropDragging) return;
+  e.preventDefault();
+  _cropOffX += e.clientX - _cropLastX;
+  _cropOffY += e.clientY - _cropLastY;
+  _cropLastX = e.clientX; _cropLastY = e.clientY;
+  updateCropDisplay();
+}, { passive: false });
+document.addEventListener('mouseup', () => { _cropDragging = false; });
+document.addEventListener('touchmove', e => {
+  if (!_cropDragging) return;
+  e.preventDefault();
+  const t = e.touches[0];
+  _cropOffX += t.clientX - _cropLastX;
+  _cropOffY += t.clientY - _cropLastY;
+  _cropLastX = t.clientX; _cropLastY = t.clientY;
+  updateCropDisplay();
+}, { passive: false });
+document.addEventListener('touchend', () => { _cropDragging = false; });
+
 function openCropModal(file) {
   const reader = new FileReader();
   reader.onload = e => {
-    const img = document.getElementById('crop-img');
-    img.onload = () => {
-      _cropNatW = img.naturalWidth;
-      _cropNatH = img.naturalHeight;
+    const src = e.target.result;
+    const preload = new Image();
+    preload.onload = () => {
+      _cropNatW = preload.naturalWidth;
+      _cropNatH = preload.naturalHeight;
       _cropMinScale = CROP_SIZE / Math.min(_cropNatW, _cropNatH);
-      _cropScale = _cropMinScale;
+      // Start at 1.3× min so there's room to drag immediately
+      _cropScale = _cropMinScale * 1.3;
       _cropOffX = 0; _cropOffY = 0;
-      document.getElementById('crop-zoom').value = 0;
+      document.getElementById('crop-img').src = src;
+      document.getElementById('crop-zoom').value = 0.3;
       updateCropDisplay();
     };
-    img.src = e.target.result;
+    preload.src = src;
   };
   reader.readAsDataURL(file);
   document.getElementById('photo-crop-modal').style.display = 'flex';
@@ -5893,18 +5917,24 @@ function openCropModal(file) {
 function updateCropDisplay() {
   const img = document.getElementById('crop-img');
   const w = _cropNatW * _cropScale, h = _cropNatH * _cropScale;
-  // Clamp offsets so image never shows gap inside circle
-  const maxX = (w - CROP_SIZE) / 2, maxY = (h - CROP_SIZE) / 2;
+  const maxX = Math.max(0, (w - CROP_SIZE) / 2);
+  const maxY = Math.max(0, (h - CROP_SIZE) / 2);
   _cropOffX = Math.max(-maxX, Math.min(maxX, _cropOffX));
   _cropOffY = Math.max(-maxY, Math.min(maxY, _cropOffY));
   const left = (CROP_SIZE - w) / 2 + _cropOffX;
   const top  = (CROP_SIZE - h) / 2 + _cropOffY;
-  img.style.cssText = `position:absolute;width:${w}px;height:${h}px;left:${left}px;top:${top}px;pointer-events:none;user-select:none;-webkit-user-drag:none;`;
+  img.style.position = 'absolute';
+  img.style.width  = w + 'px';
+  img.style.height = h + 'px';
+  img.style.left   = left + 'px';
+  img.style.top    = top  + 'px';
+  img.style.pointerEvents = 'none';
+  img.style.userSelect    = 'none';
 }
 
 function updateCropZoom(val) {
-  const extra = parseFloat(val); // 0..2 mapped to 1x..3x multiplier
-  _cropScale = _cropMinScale * (1 + extra);
+  // slider 0..2 → scale multiplier 1..3 on top of minScale
+  _cropScale = _cropMinScale * (1 + parseFloat(val));
   updateCropDisplay();
 }
 
@@ -5914,16 +5944,6 @@ function cropPointerDown(e) {
   _cropLastX = pt.clientX; _cropLastY = pt.clientY;
   e.preventDefault();
 }
-function cropPointerMove(e) {
-  if (!_cropDragging) return;
-  const pt = e.touches ? e.touches[0] : e;
-  _cropOffX += pt.clientX - _cropLastX;
-  _cropOffY += pt.clientY - _cropLastY;
-  _cropLastX = pt.clientX; _cropLastY = pt.clientY;
-  updateCropDisplay();
-  e.preventDefault();
-}
-function cropPointerUp() { _cropDragging = false; }
 
 function confirmCrop() {
   const img = document.getElementById('crop-img');
@@ -5931,18 +5951,15 @@ function confirmCrop() {
   const canvas = document.createElement('canvas');
   canvas.width = OUTPUT; canvas.height = OUTPUT;
   const ctx = canvas.getContext('2d');
-  // Clip to circle
   ctx.beginPath(); ctx.arc(OUTPUT/2, OUTPUT/2, OUTPUT/2, 0, 2*Math.PI); ctx.clip();
-  // Scale factor: OUTPUT px maps to CROP_SIZE px of display
   const factor = OUTPUT / CROP_SIZE;
-  const w = _cropNatW * _cropScale * factor;
-  const h = _cropNatH * _cropScale * factor;
+  const w    = _cropNatW * _cropScale * factor;
+  const h    = _cropNatH * _cropScale * factor;
   const left = ((CROP_SIZE - _cropNatW * _cropScale) / 2 + _cropOffX) * factor;
   const top  = ((CROP_SIZE - _cropNatH * _cropScale) / 2 + _cropOffY) * factor;
   ctx.drawImage(img, left, top, w, h);
   const b64 = canvas.toDataURL('image/jpeg', 0.88).split(',')[1];
   _pendingPhotoBase64 = b64;
-  // Show in form preview
   const prev = document.getElementById('f-photo-img');
   prev.src = 'data:image/jpeg;base64,' + b64;
   prev.style.display = 'block';
@@ -5966,12 +5983,7 @@ function cancelCrop() {
     <div id="crop-container"
       style="width:240px;height:240px;border-radius:50%;overflow:hidden;position:relative;margin:0 auto 16px;background:#e2e8f0;cursor:grab;touch-action:none;"
       onmousedown="cropPointerDown(event)"
-      onmousemove="cropPointerMove(event)"
-      onmouseup="cropPointerUp()"
-      onmouseleave="cropPointerUp()"
-      ontouchstart="cropPointerDown(event)"
-      ontouchmove="cropPointerMove(event)"
-      ontouchend="cropPointerUp()">
+      ontouchstart="cropPointerDown(event)">
       <img id="crop-img" alt="" draggable="false">
     </div>
     <!-- Zoom slider -->
