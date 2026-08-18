@@ -2862,6 +2862,65 @@ async function loadDashboard() {
   }
 }
 
+let _dashTodayStudents = [];
+let _todayExpanded = false;
+let _todayModeFilter = 'all';
+let _todayInstFilter = 'all';
+
+function toggleTodaySection() {
+  _todayExpanded = !_todayExpanded;
+  const body = document.getElementById('today-body');
+  const chev = document.getElementById('today-chevron');
+  if (body) body.style.display = _todayExpanded ? 'block' : 'none';
+  if (chev) chev.textContent = _todayExpanded ? '▲' : '▼';
+}
+
+function setTodayMode(m) {
+  _todayModeFilter = m;
+  _renderTodayChips();
+  _renderTodayList();
+}
+
+function setTodayInst(i) {
+  _todayInstFilter = i;
+  _renderTodayChips();
+  _renderTodayList();
+}
+
+function _renderTodayChips() {
+  const modeEl = document.getElementById('today-mode-chips');
+  const instEl = document.getElementById('today-inst-chips');
+  if (!modeEl || !instEl) return;
+  const modes = ['all','online','offline'];
+  modeEl.innerHTML = modes.map(m =>
+    `<button class="chip${_todayModeFilter===m?' active':''}" onclick="setTodayMode('${m}')">${m==='all'?'All modes':cap(m)}</button>`
+  ).join('');
+  const insts = ['all', ...[...new Set(_dashTodayStudents.map(s=>s.instrument).filter(Boolean))].sort()];
+  instEl.innerHTML = insts.map(i =>
+    `<button class="chip${_todayInstFilter===i?' active':''}" onclick="setTodayInst('${i}')">${i==='all'?'All instruments':instrumentIcon(i)+' '+i}</button>`
+  ).join('');
+}
+
+function _renderTodayList() {
+  const el = document.getElementById('today-list');
+  if (!el) return;
+  let list = _dashTodayStudents;
+  if (_todayModeFilter !== 'all') list = list.filter(s => s.mode === _todayModeFilter);
+  if (_todayInstFilter !== 'all') list = list.filter(s => s.instrument === _todayInstFilter);
+  list = [...list].sort((a,b) => (a.class_time||'').localeCompare(b.class_time||''));
+  el.innerHTML = list.length === 0
+    ? `<div style="color:var(--muted);font-size:0.88rem;padding:8px 0;">No students match selected filters.</div>`
+    : list.map(s => `
+      <div class="schedule-item" onclick="viewStudent('${s.id}')">
+        <div class="schedule-time">${s.class_time||'—'}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="schedule-name">${escapeHtml(s.name)}</div>
+          <div class="schedule-meta">${instrumentIcon(s.instrument)} ${s.instrument||''} · ${cap(s.mode||'')} · ${s.teacher||''}</div>
+        </div>
+        ${badge(s.status)}
+      </div>`).join('');
+}
+
 function renderDashboard(data, renewalDue = []) {
   const { stats, instruments, recent, todayStudents, dueStudents = [] } = data;
   const instEntries = Object.entries(instruments).sort((a,b)=>b[1]-a[1]);
@@ -2903,21 +2962,17 @@ function renderDashboard(data, renewalDue = []) {
 
   <div class="dash-row">
     <div class="dash-card">
-      <div class="dash-card-title">📅 Today — ${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}</div>
-      ${todayStudents.length === 0
-        ? `<div style="color:var(--muted);font-size:0.88rem;padding:16px 0;">No classes scheduled for today.</div>`
-        : `<div class="schedule-list">
-            ${todayStudents.sort((a,b)=>(a.class_time||'').localeCompare(b.class_time||'')).map(s=>`
-            <div class="schedule-item" onclick="viewStudent('${s.id}')">
-              <div class="schedule-time">${s.class_time || '—'}</div>
-              <div style="flex:1;min-width:0;">
-                <div class="schedule-name">${s.name}</div>
-                <div class="schedule-meta">${instrumentIcon(s.instrument)} ${s.instrument||''} · ${cap(s.mode||'')} · ${s.teacher||''}</div>
-              </div>
-              ${badge(s.status)}
-            </div>`).join('')}
-          </div>`
-      }
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onclick="toggleTodaySection()">
+        <div class="dash-card-title" style="margin-bottom:0;">📅 Today — ${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}
+          <span style="font-size:0.78rem;font-weight:400;color:var(--muted);margin-left:8px;">${todayStudents.length} student${todayStudents.length!==1?'s':''}</span>
+        </div>
+        <span id="today-chevron" style="color:var(--muted);font-size:0.85rem;margin-left:8px;">▼</span>
+      </div>
+      <div id="today-body" style="display:none;margin-top:12px;">
+        <div id="today-mode-chips" class="filter-chips" style="margin-bottom:8px;"></div>
+        <div id="today-inst-chips" class="filter-chips" style="margin-bottom:12px;"></div>
+        <div id="today-list" class="schedule-list"></div>
+      </div>
     </div>
 
     <div class="dash-card">
@@ -3022,6 +3077,14 @@ function renderDashboard(data, renewalDue = []) {
     <button class="btn btn-ghost" onclick="navigate('students')">View All Students →</button>
     <button class="btn btn-ghost" onclick="navigate('schedule')">Today's Schedule →</button>
   </div>`;
+
+  // Wire up today's classes interactive section
+  _dashTodayStudents = todayStudents;
+  _todayExpanded = false;
+  _todayModeFilter = 'all';
+  _todayInstFilter = 'all';
+  _renderTodayChips();
+  _renderTodayList();
 }
 
 /* ══════════════════════════════════════════════════════════════════
