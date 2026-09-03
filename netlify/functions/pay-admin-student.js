@@ -65,7 +65,8 @@ exports.handler = async (event) => {
       let teacherPasswords = {};
       try { teacherPasswords = JSON.parse(process.env.TEACHER_PASSWORDS || "{}"); } catch(e) {}
       const teachers = Object.keys(teacherPasswords);
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, teachers }) };
+      const adminPhone = process.env.ADMIN_PHONE || '';
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, teachers, adminPhone }) };
     }
 
     // Validate admin or teacher login — returns token + role + name
@@ -449,10 +450,11 @@ exports.handler = async (event) => {
         fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${student_id}&select=name,phone,parent_name,parent_phone,total_classes_per_cycle,classes_offset`, { headers: SB_H })
       ]);
       const cRange = cntR.headers.get("content-range") || "";
-      const presentCount = parseInt(cRange.split("/")[1] || "0") || 0;
+      const rawCount = parseInt(cRange.split("/")[1] || "0") || 0;
       const stuArr = await stuR.json();
       const stu = Array.isArray(stuArr) ? stuArr[0] : {};
       const total = stu.total_classes_per_cycle || 0;
+      const presentCount = rawCount + (stu.classes_offset || 0); // include pre-tracking classes
       return { statusCode: 200, headers, body: JSON.stringify({
         success: true,
         present_count: presentCount,

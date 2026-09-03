@@ -109,9 +109,11 @@ const NAME_KEY  = 'cma_attend_name';
 const params    = new URLSearchParams(location.search);
 const SID       = params.get('id');
 
-let token        = localStorage.getItem(TOKEN_KEY) || '';
-let currentRole  = localStorage.getItem(ROLE_KEY)  || '';
-let currentName  = localStorage.getItem(NAME_KEY)  || '';
+const ADMIN_PHONE_KEY = 'cma_admin_phone';
+let token        = localStorage.getItem(TOKEN_KEY)       || '';
+let currentRole  = localStorage.getItem(ROLE_KEY)        || '';
+let currentName  = localStorage.getItem(NAME_KEY)        || '';
+let adminPhone   = localStorage.getItem(ADMIN_PHONE_KEY) || '';
 
 /* ── helpers ──────────────────────────────────────────────────── */
 function todayStr() { return new Date().toISOString().slice(0,10); }
@@ -169,17 +171,19 @@ async function autoMark() {
   const existing = (data.attendance||[]).find(a=>a.date===today);
 
   if (existing) {
-    // Already marked — count from 60-day history
-    const presentCount = (data.attendance||[]).filter(a=>a.status==='present').length;
-    return showResult(student, existing.status, false, presentCount);
+    const presentCount = markRes && markRes.present_count != null
+      ? markRes.present_count
+      : (data.attendance||[]).filter(a=>a.status==='present').length;
+    return showResult(student, existing.status, false, presentCount, existing.marked_time || '');
   }
 
   // Not yet marked — auto-mark present now
   showSpinner('Marking present…');
   try {
-    const markRes = await post({ action:'crm_mark_attendance', student_id:student.id, date:today, status:'present', marked_time: nowTimeIST() });
-    const presentCount = markRes.present_count || (data.attendance||[]).filter(a=>a.status==='present').length + 1;
-    showResult(student, 'present', true, presentCount);
+    const scanTime = nowTimeIST();
+    const markRes = await post({ action:'crm_mark_attendance', student_id:student.id, date:today, status:'present', marked_time: scanTime });
+    const presentCount = markRes.present_count != null ? markRes.present_count : (data.attendance||[]).filter(a=>a.status==='present').length + 1;
+    showResult(student, 'present', true, presentCount, scanTime);
   } catch(e) {
     if (e.auth) { token=''; currentRole=''; currentName=''; localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(ROLE_KEY); localStorage.removeItem(NAME_KEY); return showLogin(); }
     showErr('Could not mark attendance: '+e.message);
@@ -201,6 +205,7 @@ async function showLogin() {
   try {
     const d = await postPublic({ action: 'crm_teachers_list' });
     teachers = d.teachers || [];
+    if (d.adminPhone) { adminPhone = d.adminPhone; localStorage.setItem(ADMIN_PHONE_KEY, adminPhone); }
   } catch(e) { /* show login anyway with just Admin */ }
 
   _loginSelectedName = null;
@@ -264,7 +269,7 @@ async function doLogin() {
 }
 
 /* ── result screen ────────────────────────────────────────────── */
-function showResult(student, status, justMarked, presentCount) {
+function showResult(student, status, justMarked, presentCount, markedTime) {
   const present = status === 'present';
   const today   = todayStr();
   const icon    = present ? '✅' : '❌';
@@ -276,7 +281,8 @@ function showResult(student, status, justMarked, presentCount) {
   /* ── Class progress ── */
   const total     = student.total_classes_per_cycle || 0;
   const remaining = total ? Math.max(0, total - (presentCount||0)) : null;
-  const progressHtml = (present && justMarked && (presentCount||0) > 0)
+  const timeDisplay = markedTime || nowTimeIST();
+  const progressHtml = (present && (presentCount||0) > 0)
     ? `<div class="progress-box">
         <div class="prog-num">${presentCount}</div>
         <div class="prog-info">
@@ -286,20 +292,49 @@ function showResult(student, status, justMarked, presentCount) {
       </div>`
     : '';
 
-  /* ── WhatsApp attendance notification (admin only) ── */
+  /* ── Scan time display + edit ── */
+  const timeHtml = present ? `
+    <div style="display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;margin-bottom:12px;">
+      <span style="font-size:1rem;">🕐</span>
+      <div style="flex:1;">
+        <div style="font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:2px;">SCAN TIME</div>
+        <div id="time-display" style="font-size:0.92rem;font-weight:700;color:#0f172a;">${timeDisplay}</div>
+        <input id="time-edit-input" type="time" style="display:none;width:100%;margin-top:4px;padding:4px 8px;border:1px solid #c7d2fe;border-radius:6px;font-size:0.9rem;" value="${to24h(timeDisplay)}">
+      </div>
+      <button id="time-edit-btn" onclick="toggleTimeEdit('${student.id}')" style="background:none;border:none;color:#6366f1;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;">Edit</button>
+    </div>` : '';
+
+  /* ── WhatsApp buttons ── */
   const isAdmin   = currentRole === 'admin';
   const phone     = (student.parent_phone || student.phone || '').replace(/\D/g,'');
   const intlPhone = phone ? (phone.startsWith('91') ? phone : '91'+phone) : '';
   const parentFirst = (student.parent_name || student.name || '').split(' ')[0] || 'there';
-  const waAttMsg  = encodeURIComponent(
+  const attText =
     `Hi ${parentFirst}! 🎵\n\n` +
-    `${student.name} attended their Chords Music Academy class today (${fmtDate(today)}).\n\n` +
+    `${student.name} attended their Chords Music Academy class today (${fmtDate(today)}) at ${timeDisplay}.\n\n` +
     (total ? `📊 Progress: ${presentCount} of ${total} classes done · ${remaining} remaining.\n\n` : '') +
-    `Keep practising! See you next time.\n— Chords Music Academy`
-  );
-  const waAttBtn = (isAdmin && present && justMarked && intlPhone.length >= 10)
+    `Keep practising! See you next time.\n— Chords Music Academy`;
+  const waAttMsg  = encodeURIComponent(attText);
+
+  // Admin: send directly to parent/student
+  const waAttBtn = (isAdmin && present && intlPhone.length >= 10)
     ? `<a class="wa-att-btn" href="https://wa.me/${intlPhone}?text=${waAttMsg}" target="_blank">
         📱 Send Attendance WhatsApp
+       </a>`
+    : '';
+
+  // Teacher: notify admin who will forward to student
+  const adminIntl = adminPhone ? (adminPhone.replace(/\D/g,'').startsWith('91') ? adminPhone.replace(/\D/g,'') : '91'+adminPhone.replace(/\D/g,'')) : '';
+  const teacherNotifyMsg = encodeURIComponent(
+    `Hi Admin 👋\n\n` +
+    `*${student.name}* attended class today (${fmtDate(today)}) at ${timeDisplay}.\n` +
+    `Marked by: ${currentName}\n\n` +
+    (total ? `📊 Progress: ${presentCount}/${total} classes · ${remaining} remaining.\n\n` : '') +
+    `Please forward attendance message to parent:\n\n${attText}`
+  );
+  const waTeacherBtn = (!isAdmin && present && adminIntl.length >= 10)
+    ? `<a class="wa-att-btn" style="background:#4f46e5;" href="https://wa.me/${adminIntl}?text=${teacherNotifyMsg}" target="_blank">
+        📱 Notify Admin (forward to student)
        </a>`
     : '';
 
@@ -363,7 +398,9 @@ function showResult(student, status, justMarked, presentCount) {
           </div>
         </div>
         ${progressHtml}
+        ${timeHtml}
         ${waAttBtn}
+        ${waTeacherBtn}
         ${feeHtml}
         <button class="btn btn-change" onclick="changeStatus('${student.id}','${present?'absent':'present'}')">
           Change to ${present ? '✗ Absent' : '✅ Present'}
@@ -379,12 +416,56 @@ function showResult(student, status, justMarked, presentCount) {
 async function changeStatus(id, newStatus) {
   showSpinner(newStatus==='present'?'Marking present…':'Marking absent…');
   try {
-    const markRes = await post({ action:'crm_mark_attendance', student_id:id, date:todayStr(), status:newStatus, marked_time: nowTimeIST() });
+    const scanTime = nowTimeIST();
+    const markRes = await post({ action:'crm_mark_attendance', student_id:id, date:todayStr(), status:newStatus, marked_time: scanTime });
     const data    = await post({ action:'crm_get', id });
-    const presentCount = markRes.present_count || (data.attendance||[]).filter(a=>a.status==='present').length;
-    showResult(data.student, newStatus, true, presentCount);
+    const presentCount = markRes.present_count != null ? markRes.present_count : (data.attendance||[]).filter(a=>a.status==='present').length;
+    showResult(data.student, newStatus, true, presentCount, scanTime);
   } catch(e) {
     showErr('Failed: '+e.message);
+  }
+}
+
+function to24h(timeStr) {
+  if (!timeStr) return '';
+  const m = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (!m) return '';
+  let h = parseInt(m[1]), min = m[2], ap = m[3].toUpperCase();
+  if (ap === 'AM' && h === 12) h = 0;
+  if (ap === 'PM' && h !== 12) h += 12;
+  return `${String(h).padStart(2,'0')}:${min}`;
+}
+
+function to12h(val) {
+  const [h, m] = val.split(':').map(Number);
+  const ap = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${String(h12).padStart(2,'0')}:${String(m).padStart(2,'0')} ${ap}`;
+}
+
+async function toggleTimeEdit(studentId) {
+  const display = document.getElementById('time-display');
+  const input   = document.getElementById('time-edit-input');
+  const btn     = document.getElementById('time-edit-btn');
+  if (!display || !input || !btn) return;
+
+  if (input.style.display === 'none') {
+    input.style.display = 'block';
+    display.style.display = 'none';
+    btn.textContent = 'Save';
+    input.focus();
+  } else {
+    const newTime12 = to12h(input.value);
+    btn.textContent = 'Saving…';
+    btn.disabled = true;
+    try {
+      await post({ action:'crm_mark_attendance', student_id:studentId, date:todayStr(), status:'present', marked_time: newTime12 });
+      display.textContent = newTime12;
+    } catch(e) { /* keep old time */ }
+    input.style.display = 'none';
+    display.style.display = 'block';
+    btn.textContent = 'Edit';
+    btn.disabled = false;
   }
 }
 
