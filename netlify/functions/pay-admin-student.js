@@ -328,20 +328,21 @@ exports.handler = async (event) => {
         const stu = studentMap[n.student_id] || {};
         return { name: stu.name||'Unknown', student_id: stu.student_id||'', amount: parseAmt(n.content), date: (n.created_at||'').slice(0,10), note: n.content||'' };
       }).filter(x=>x.amount>0);
-      const offlineDueThisMonth = activeStudents.filter(s => s.mode==="offline" && s.due_date && s.due_date.slice(0,7) === thisMonth);
-      const onlineDueThisMonth  = activeStudents.filter(s => s.mode==="online"  && s.due_date && s.due_date.slice(0,7) === thisMonth);
+      // All active offline/online students — full month forecast regardless of specific due_date
+      const allActiveOffline = activeStudents.filter(s => s.mode==="offline");
+      const allActiveOnline  = activeStudents.filter(s => s.mode==="online");
       const stats = {
         total: all.length,
         active: activeStudents.length,
         trial: all.filter(s=>s.status==="trial").length,
         paused: all.filter(s=>s.status==="paused").length,
         dropped: all.filter(s=>s.status==="dropped").length,
-        online: activeStudents.filter(s=>s.mode==="online").length,
-        offline: activeStudents.filter(s=>s.mode==="offline").length,
+        online: allActiveOnline.length,
+        offline: allActiveOffline.length,
         revenue_this_month: activeStudents.reduce((sum,s)=>sum+(s.amount_due||0),0),
-        revenue_online: onlineDueThisMonth.reduce((sum,s)=>sum+(s.amount_due||0),0),
-        revenue_offline: offlineDueThisMonth.reduce((sum,s)=>sum+(s.amount_due||0),0),
-        revenue_offline_count: offlineDueThisMonth.length,
+        revenue_online: allActiveOnline.reduce((sum,s)=>sum+(s.amount_due||0),0),
+        revenue_offline: allActiveOffline.reduce((sum,s)=>sum+(s.amount_due||0),0),
+        revenue_offline_count: allActiveOffline.length,
         revenue_online_count: onlineDueThisMonth.length,
         collected_offline,
         collected_breakdown,
