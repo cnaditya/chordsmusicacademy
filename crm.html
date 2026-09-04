@@ -2996,15 +2996,22 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
     <div class="stat-card">
       <div class="stat-label">🌐 Online</div>
       <div class="stat-value" style="color:var(--info);">${stats.online}</div>
-      <div class="stat-sub">${stats.revenue_online_count||0} due this month${stats.revenue_online ? ' · ₹'+(stats.revenue_online).toLocaleString('en-IN') : ''}</div>
+      <div class="stat-sub">Active remote students</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">🏫 Offline</div>
       <div class="stat-value" style="color:#9b59b6;">${stats.offline}</div>
-      <div class="stat-sub">
-        ${stats.collected_offline ? `✅ Collected ₹${(stats.collected_offline).toLocaleString('en-IN')}` : '✅ ₹0 collected'}
-        ${stats.revenue_offline ? ` · 🔜 ₹${(stats.revenue_offline).toLocaleString('en-IN')} due` : ''}
-      </div>
+      <div class="stat-sub">Active in-person students</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">✅ Collected This Month</div>
+      <div class="stat-value" style="font-size:1.3rem;color:var(--success);">₹${(stats.collected_offline||0).toLocaleString('en-IN')}</div>
+      <div class="stat-sub">From offline payment notes</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">🔜 Estimated This Month</div>
+      <div class="stat-value" style="font-size:1.3rem;color:var(--info);">₹${(stats.revenue_offline||0).toLocaleString('en-IN')}</div>
+      <div class="stat-sub">${stats.revenue_offline_count||0} offline students due</div>
     </div>
   </div>
 
