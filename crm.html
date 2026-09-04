@@ -3001,7 +3001,10 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
     <div class="stat-card">
       <div class="stat-label">🏫 Offline</div>
       <div class="stat-value" style="color:#9b59b6;">${stats.offline}</div>
-      <div class="stat-sub">${stats.revenue_offline_count||0} due this month${stats.revenue_offline ? ' · ₹'+(stats.revenue_offline).toLocaleString('en-IN') : ''}</div>
+      <div class="stat-sub">
+        ${stats.collected_offline ? `✅ Collected ₹${(stats.collected_offline).toLocaleString('en-IN')}` : '✅ ₹0 collected'}
+        ${stats.revenue_offline ? ` · 🔜 ₹${(stats.revenue_offline).toLocaleString('en-IN')} due` : ''}
+      </div>
     </div>
   </div>
 

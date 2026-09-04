@@ -306,15 +306,22 @@ exports.handler = async (event) => {
     const SB_M = { ...SB_H, "Content-Type": "application/json", Prefer: "return=representation" };
 
     if (action === "crm_dashboard") {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&select=id,status,mode,instrument,amount_due,due_date,enrollment_date,name,student_id,teacher,class_days,class_time,level,phone`, { headers: SB_H });
+      const thisMonth = new Date().toISOString().slice(0,7); // "2026-09"
+      const [r, notesR] = await Promise.all([
+        fetch(`${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&select=id,status,mode,instrument,amount_due,due_date,enrollment_date,name,student_id,teacher,class_days,class_time,level,phone`, { headers: SB_H }),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_notes?content=like.*%E2%82%B9*&created_at=gte.${thisMonth}-01&select=student_id,content&limit=500`, { headers: SB_H }),
+      ]);
       const all = await r.json();
       if (!Array.isArray(all)) {
         if (r.status === 404 || (all && all.code === "42P01")) return { statusCode: 404, headers, body: JSON.stringify({ error: "table_not_found" }) };
         return { statusCode: 500, headers, body: JSON.stringify({ error: "Unexpected response", raw: JSON.stringify(all) }) };
       }
+      const notes = await notesR.json();
       const recent = [...all].sort((a, b) => new Date(b.enrollment_date || 0) - new Date(a.enrollment_date || 0)).slice(0, 5);
       const activeStudents = all.filter(s=>s.status==="active");
-      const thisMonth = new Date().toISOString().slice(0,7); // "2026-09"
+      const offlineIds = new Set(all.filter(s=>s.mode==="offline").map(s=>s.id));
+      const parseAmt = c => { const m = (c||'').match(/₹([\d,]+)/); return m ? parseInt(m[1].replace(/,/g,'')) : 0; };
+      const collected_offline = (Array.isArray(notes)?notes:[]).filter(n=>offlineIds.has(n.student_id)).reduce((sum,n)=>sum+parseAmt(n.content),0);
       const offlineDueThisMonth = activeStudents.filter(s => s.mode==="offline" && s.due_date && s.due_date.slice(0,7) === thisMonth);
       const onlineDueThisMonth  = activeStudents.filter(s => s.mode==="online"  && s.due_date && s.due_date.slice(0,7) === thisMonth);
       const stats = {
@@ -330,6 +337,7 @@ exports.handler = async (event) => {
         revenue_offline: offlineDueThisMonth.reduce((sum,s)=>sum+(s.amount_due||0),0),
         revenue_offline_count: offlineDueThisMonth.length,
         revenue_online_count: onlineDueThisMonth.length,
+        collected_offline,
       };
       const instruments = {};
       all.forEach(s => { if (s.instrument) instruments[s.instrument] = (instruments[s.instrument]||0)+1; });
