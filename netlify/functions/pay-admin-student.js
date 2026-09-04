@@ -465,6 +465,31 @@ exports.handler = async (event) => {
       })};
     }
 
+    if (action === "crm_revenue_trend") {
+      const [offR, notesR] = await Promise.all([
+        fetch(`${SUPABASE_URL}/rest/v1/crm_students?mode=eq.offline&select=id`, { headers: SB_H }),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_notes?content=like.*%E2%82%B9*&select=student_id,content,created_at&order=created_at.desc&limit=2000`, { headers: SB_H }),
+      ]);
+      const offlineStudents = await offR.json();
+      const notes = await notesR.json();
+      const offlineIds = new Set((Array.isArray(offlineStudents) ? offlineStudents : []).map(s => s.id));
+      const parseAmt = c => { const m = c.match(/₹([\d,]+)/); return m ? parseInt(m[1].replace(/,/g,'')) : 0; };
+      const monthly = {};
+      (Array.isArray(notes) ? notes : []).filter(n => offlineIds.has(n.student_id)).forEach(n => {
+        const month = (n.created_at||'').slice(0,7);
+        if (month) monthly[month] = (monthly[month]||0) + parseAmt(n.content||'');
+      });
+      const now = new Date();
+      const result = [];
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        const label = d.toLocaleDateString('en-IN',{month:'short'}) + " '" + String(d.getFullYear()).slice(2);
+        result.push({ month: key, label, revenue: monthly[key]||0 });
+      }
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, months: result }) };
+    }
+
     if (action === "crm_get_next_receipt_no") {
       const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_notes?content=like.Receipt%20%23*&select=content&order=created_at.desc&limit=100`, { headers: SB_H });
       const notes = await r.json();

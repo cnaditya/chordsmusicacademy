@@ -2849,17 +2849,55 @@ function isDueOverdue(due_date) {
 ══════════════════════════════════════════════════════════════════ */
 async function loadDashboard() {
   try {
-    const [data, renewalData] = await Promise.all([
+    const [data, renewalData, trendData] = await Promise.all([
       apiCall({ action: 'crm_dashboard' }),
-      apiCall({ action: 'crm_renewal_due' }).catch(() => ({ due: [] }))
+      apiCall({ action: 'crm_renewal_due' }).catch(() => ({ due: [] })),
+      apiCall({ action: 'crm_revenue_trend' }).catch(() => ({ months: [] }))
     ]);
-    renderDashboard(data, renewalData.due || []);
+    renderDashboard(data, renewalData.due || [], trendData.months || []);
   } catch(e) {
     if (e.message !== 'table_not_found') {
       document.getElementById('page-content').innerHTML =
         renderEmpty('⚠️','Failed to load','Check your connection and try again.','Retry','loadDashboard()');
     }
   }
+}
+
+let _revMonths = [];
+let _revPeriod = 6; // default 6-month view
+
+function renderRevenueChart(period) {
+  _revPeriod = period;
+  const el = document.getElementById('rev-chart-area');
+  const btns = document.querySelectorAll('.rev-period-btn');
+  btns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.p) === period));
+  if (!el) return;
+  const slice = _revMonths.slice(-period);
+  if (!slice.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:20px 0;text-align:center;">No payment data yet.</div>'; return; }
+  const maxVal = Math.max(...slice.map(m => m.revenue), 1);
+  const W = 340, H = 140, pad = 32, barGap = 4;
+  const barW = Math.floor((W - pad) / slice.length) - barGap;
+  const bars = slice.map((m, i) => {
+    const bh = Math.max(m.revenue > 0 ? 4 : 0, Math.round((m.revenue / maxVal) * (H - 28)));
+    const x = pad + i * (barW + barGap);
+    const y = H - 18 - bh;
+    const isCurrentMonth = m.month === new Date().toISOString().slice(0,7);
+    const fill = isCurrentMonth ? '#4f46e5' : '#a5b4fc';
+    const amtLabel = m.revenue >= 1000 ? '₹' + (m.revenue/1000).toFixed(1) + 'k' : m.revenue > 0 ? '₹'+m.revenue : '';
+    return `
+      <rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="3" fill="${fill}" opacity="0.9"/>
+      ${m.revenue > 0 ? `<text x="${x+barW/2}" y="${y-4}" text-anchor="middle" font-size="8" fill="var(--muted)">${amtLabel}</text>` : ''}
+      <text x="${x+barW/2}" y="${H-4}" text-anchor="middle" font-size="8" fill="var(--muted)">${m.label}</text>`;
+  }).join('');
+  // Y axis gridlines
+  const gridLines = [0.25,0.5,0.75,1].map(frac => {
+    const gv = Math.round(maxVal * frac);
+    const gy = H - 18 - Math.round(frac * (H - 28));
+    const lbl = gv >= 1000 ? '₹'+(gv/1000).toFixed(0)+'k' : '₹'+gv;
+    return `<line x1="${pad}" y1="${gy}" x2="${W}" y2="${gy}" stroke="var(--border)" stroke-width="0.5"/>
+            <text x="${pad-2}" y="${gy+3}" text-anchor="end" font-size="7" fill="var(--muted)">${lbl}</text>`;
+  }).join('');
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible;">${gridLines}${bars}</svg>`;
 }
 
 let _dashTodayStudents = [];
@@ -2921,7 +2959,7 @@ function _renderTodayList() {
       </div>`).join('');
 }
 
-function renderDashboard(data, renewalDue = []) {
+function renderDashboard(data, renewalDue = [], trendMonths = []) {
   const { stats, instruments, recent, todayStudents, dueStudents = [] } = data;
   const instEntries = Object.entries(instruments).sort((a,b)=>b[1]-a[1]);
   const instMax = Math.max(...Object.values(instruments), 1);
@@ -2963,6 +3001,16 @@ function renderDashboard(data, renewalDue = []) {
       <div class="stat-value" style="font-size:1.3rem;color:#9b59b6;">₹${(stats.revenue_offline||0).toLocaleString('en-IN')}</div>
       <div class="stat-sub">Active offline students</div>
     </div>
+  </div>
+
+  <div class="dash-card" style="margin-bottom:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <div class="dash-card-title" style="margin:0;">🏫 Offline Revenue Trend</div>
+      <div style="display:flex;gap:6px;">
+        ${[3,6,12].map(p=>`<button class="chip rev-period-btn${p===6?' active':''}" data-p="${p}" onclick="renderRevenueChart(${p})">${p===12?'1Y':p+'M'}</button>`).join('')}
+      </div>
+    </div>
+    <div id="rev-chart-area" style="width:100%;min-height:80px;"></div>
   </div>
 
   <div class="dash-row">
@@ -3090,6 +3138,10 @@ function renderDashboard(data, renewalDue = []) {
   _todayInstFilter = 'all';
   _renderTodayChips();
   _renderTodayList();
+
+  // Wire up revenue trend chart
+  _revMonths = trendMonths;
+  renderRevenueChart(_revPeriod);
 }
 
 /* ══════════════════════════════════════════════════════════════════
