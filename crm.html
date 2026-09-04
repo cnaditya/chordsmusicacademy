@@ -2994,24 +2994,14 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
       <div class="stat-sub">In trial period</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Online</div>
+      <div class="stat-label">🌐 Online</div>
       <div class="stat-value" style="color:var(--info);">${stats.online}</div>
-      <div class="stat-sub">Remote students</div>
+      <div class="stat-sub">₹${(stats.revenue_online||0).toLocaleString('en-IN')}/mo expected</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Offline</div>
+      <div class="stat-label">🏫 Offline</div>
       <div class="stat-value" style="color:#9b59b6;">${stats.offline}</div>
-      <div class="stat-sub">In-person</div>
-    </div>
-    <div class="stat-card gold">
-      <div class="stat-label">🌐 Online Revenue</div>
-      <div class="stat-value" style="font-size:1.3rem;color:var(--info);">₹${(stats.revenue_online||0).toLocaleString('en-IN')}</div>
-      <div class="stat-sub">Active online students</div>
-    </div>
-    <div class="stat-card gold">
-      <div class="stat-label">🏫 Offline Revenue</div>
-      <div class="stat-value" style="font-size:1.3rem;color:#9b59b6;">₹${(stats.revenue_offline||0).toLocaleString('en-IN')}</div>
-      <div class="stat-sub">Active offline students</div>
+      <div class="stat-sub">₹${(stats.revenue_offline||0).toLocaleString('en-IN')}/mo expected</div>
     </div>
   </div>
 
