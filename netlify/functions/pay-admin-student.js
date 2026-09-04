@@ -343,7 +343,7 @@ exports.handler = async (event) => {
         revenue_online: allActiveOnline.reduce((sum,s)=>sum+(s.amount_due||0),0),
         revenue_offline: allActiveOffline.reduce((sum,s)=>sum+(s.amount_due||0),0),
         revenue_offline_count: allActiveOffline.length,
-        revenue_online_count: onlineDueThisMonth.length,
+        revenue_online_count: allActiveOnline.length,
         collected_offline,
         collected_breakdown,
       };
