@@ -2958,16 +2958,44 @@ const PAY_PER_PAGE = 10;
 
 let _estList = [];
 let _estPage = 0;
+let _estPeriod = 'month';
+let _estMode = 'all';
+let _estInst = 'all';
+
+function setEstFilter(type, val) {
+  if (type === 'period') {
+    _estPeriod = val;
+    ['month','overdue','all'].forEach(v => document.getElementById('est-period-'+v)?.classList.toggle('active', v===val));
+  } else if (type === 'mode') {
+    _estMode = val;
+    ['all','online','offline'].forEach(v => document.getElementById('est-mode-'+v)?.classList.toggle('active', v===val));
+  } else {
+    _estInst = val;
+    document.getElementById('est-inst-all')?.classList.toggle('active', val==='all');
+    document.querySelectorAll('.est-inst-chip').forEach(b => b.classList.toggle('active', b.dataset.inst===val));
+  }
+  _estPage = 0;
+  renderEstimatedTable();
+}
 
 function renderEstimatedTable() {
   const wrap = document.getElementById('estimated-table-wrap');
   if (!wrap) return;
-  const total = _estList.length;
-  if (!total) { wrap.innerHTML = '<div style="color:var(--muted);font-size:0.83rem;padding:8px 0;">No active offline students.</div>'; return; }
+  const thisMonth = new Date().toISOString().slice(0,7);
+  const today = new Date().toISOString().slice(0,10);
+
+  let rows = _estList;
+  if (_estPeriod === 'month')   rows = rows.filter(s => s.due_date && s.due_date.slice(0,7) === thisMonth);
+  if (_estPeriod === 'overdue') rows = rows.filter(s => s.due_date && s.due_date < today && s.due_date.slice(0,7) !== thisMonth);
+  if (_estMode !== 'all')       rows = rows.filter(s => s.mode === _estMode);
+  if (_estInst !== 'all')       rows = rows.filter(s => (s.instrument||'') === _estInst);
+
+  const total = rows.length;
+  if (!total) { wrap.innerHTML = '<div style="color:var(--muted);font-size:0.83rem;padding:8px 0;">No students match this filter.</div>'; return; }
   const pages = Math.ceil(total / PAY_PER_PAGE);
   const start = _estPage * PAY_PER_PAGE;
-  const pageRows = _estList.slice(start, start + PAY_PER_PAGE);
-  const grandTotal = _estList.reduce((s,p)=>s+(p.amount_due||0),0);
+  const pageRows = rows.slice(start, start + PAY_PER_PAGE);
+  const grandTotal = rows.reduce((s,p)=>s+(p.amount_due||0),0);
   wrap.innerHTML = `
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:0.83rem;">
@@ -2990,7 +3018,7 @@ function renderEstimatedTable() {
             <td style="padding:7px 8px;color:var(--muted);">${s.student_id||'—'}</td>
             <td style="padding:7px 8px;">${instrumentIcon(s.instrument)} ${s.instrument||'—'}</td>
             <td style="padding:7px 8px;color:var(--muted);">${s.teacher||'—'}</td>
-            <td style="padding:7px 8px;color:var(--muted);white-space:nowrap;">${s.due_date ? new Date(s.due_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : '—'}</td>
+            <td style="padding:7px 8px;color:var(--muted);white-space:nowrap;">${s.due_date ? new Date(s.due_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
             <td style="padding:7px 8px;font-weight:700;color:var(--info);text-align:right;">₹${(s.amount_due||0).toLocaleString('en-IN')}</td>
           </tr>`).join('')}
           <tr style="border-top:2px solid var(--border);background:var(--surface);">
@@ -3211,6 +3239,18 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
 
   <div class="dash-card" style="margin-bottom:20px;">
     <div class="dash-card-title">🔜 Expected to Pay This Month</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+      <button class="chip active" id="est-period-month" onclick="setEstFilter('period','month')">This Month</button>
+      <button class="chip"        id="est-period-overdue" onclick="setEstFilter('period','overdue')">Overdue</button>
+      <button class="chip"        id="est-period-all"    onclick="setEstFilter('period','all')">All</button>
+      <span style="width:1px;background:var(--border);margin:0 2px;"></span>
+      <button class="chip active" id="est-mode-all"    onclick="setEstFilter('mode','all')">All</button>
+      <button class="chip"        id="est-mode-online"  onclick="setEstFilter('mode','online')">🌐 Online</button>
+      <button class="chip"        id="est-mode-offline" onclick="setEstFilter('mode','offline')">🏫 Offline</button>
+      <span style="width:1px;background:var(--border);margin:0 2px;"></span>
+      <button class="chip active" id="est-inst-all" onclick="setEstFilter('inst','all')">All Instruments</button>
+      <div id="est-inst-chips" style="display:contents;"></div>
+    </div>
     <div id="estimated-table-wrap"></div>
   </div>
 
@@ -3369,8 +3409,13 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
   renderPaymentsTable();
 
   // Estimated due table
-  _estList = (stats.estimated_due_list || []).sort((a,b)=>new Date(a.due_date||0)-new Date(b.due_date||0));
-  _estPage = 0;
+  _estList = (stats.estimated_due_list || []).sort((a,b)=>new Date(a.due_date||'9999')-new Date(b.due_date||'9999'));
+  _estPage = 0; _estPeriod = 'month'; _estMode = 'all'; _estInst = 'all';
+  const estInsts = [...new Set(_estList.map(s=>s.instrument).filter(Boolean))].sort();
+  const estInstWrap = document.getElementById('est-inst-chips');
+  if (estInstWrap) estInstWrap.innerHTML = estInsts.map(inst =>
+    `<button class="chip est-inst-chip" data-inst="${inst}" onclick="setEstFilter('inst','${inst}')">${instrumentIcon(inst)} ${inst}</button>`
+  ).join('');
   renderEstimatedTable();
 
   // Init enrollment date range to current month and load
