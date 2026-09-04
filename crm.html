@@ -2885,26 +2885,27 @@ function renderRevenueChart(period) {
   const slice = _revMonths.slice(-period);
   if (!slice.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:20px 0;text-align:center;">No payment data yet.</div>'; return; }
   const maxVal = Math.max(...slice.map(m => m.revenue), 1);
-  const W = 340, H = 110, pad = 28, barGap = 3;
+  const W = 300, H = 90, pad = 26, barGap = 2;
   const barW = Math.floor((W - pad) / slice.length) - barGap;
   const bars = slice.map((m, i) => {
-    const bh = Math.max(m.revenue > 0 ? 4 : 0, Math.round((m.revenue / maxVal) * (H - 28)));
+    const bh = Math.max(m.revenue > 0 ? 3 : 0, Math.round((m.revenue / maxVal) * (H - 22)));
     const x = pad + i * (barW + barGap);
-    const y = H - 18 - bh;
+    const y = H - 14 - bh;
     const isCurrentMonth = m.month === new Date().toISOString().slice(0,7);
     const fill = isCurrentMonth ? '#4f46e5' : '#a5b4fc';
     const amtLabel = m.revenue >= 1000 ? '₹' + (m.revenue/1000).toFixed(1) + 'k' : m.revenue > 0 ? '₹'+m.revenue : '';
+    const xLbl = period === 12 ? m.label.slice(0,3) : m.label;
     return `
-      <rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="3" fill="${fill}" opacity="0.9"/>
-      ${m.revenue > 0 ? `<text x="${x+barW/2}" y="${y-4}" text-anchor="middle" font-size="8" fill="var(--muted)">${amtLabel}</text>` : ''}
-      <text x="${x+barW/2}" y="${H-4}" text-anchor="middle" font-size="8" fill="var(--muted)">${m.label}</text>`;
+      <rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="2" fill="${fill}" opacity="0.9"/>
+      ${m.revenue > 0 ? `<text x="${x+barW/2}" y="${y-3}" text-anchor="middle" font-size="6" fill="var(--muted)">${amtLabel}</text>` : ''}
+      <text x="${x+barW/2}" y="${H-2}" text-anchor="middle" font-size="6" fill="var(--muted)">${xLbl}</text>`;
   }).join('');
-  const gridLines = [0.25,0.5,0.75,1].map(frac => {
+  const gridLines = [0.5,1].map(frac => {
     const gv = Math.round(maxVal * frac);
-    const gy = H - 18 - Math.round(frac * (H - 28));
+    const gy = H - 14 - Math.round(frac * (H - 22));
     const lbl = gv >= 1000 ? '₹'+(gv/1000).toFixed(0)+'k' : '₹'+gv;
     return `<line x1="${pad}" y1="${gy}" x2="${W}" y2="${gy}" stroke="var(--border)" stroke-width="0.5"/>
-            <text x="${pad-2}" y="${gy+3}" text-anchor="end" font-size="7" fill="var(--muted)">${lbl}</text>`;
+            <text x="${pad-2}" y="${gy+3}" text-anchor="end" font-size="6" fill="var(--muted)">${lbl}</text>`;
   }).join('');
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible;">${gridLines}${bars}</svg>`;
 }
@@ -3021,7 +3022,7 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
       <div style="display:flex;gap:6px;margin-bottom:10px;">
         ${[3,6,12].map(p=>`<button class="chip rev-period-btn${p===6?' active':''}" data-p="${p}" onclick="event.stopPropagation();renderRevenueChart(${p})">${p===12?'1Y':p+'M'}</button>`).join('')}
       </div>
-      <div id="rev-chart-area" style="width:100%;"></div>
+      <div id="rev-chart-area" style="width:100%;max-width:300px;"></div>
     </div>
   </div>
 
