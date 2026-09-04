@@ -2952,6 +2952,58 @@ let _revMonths = [];
 let _revPeriod = 6;
 let _revExpanded = false;
 
+let _payBreakdown = [];
+let _payPage = 0;
+const PAY_PER_PAGE = 10;
+
+function renderPaymentsTable() {
+  const wrap = document.getElementById('payments-table-wrap');
+  if (!wrap) return;
+  const total = _payBreakdown.length;
+  if (!total) {
+    wrap.innerHTML = '<div style="color:var(--muted);font-size:0.83rem;padding:8px 0;">No payments logged this month yet.</div>';
+    return;
+  }
+  const pages = Math.ceil(total / PAY_PER_PAGE);
+  const start = _payPage * PAY_PER_PAGE;
+  const pageRows = _payBreakdown.slice(start, start + PAY_PER_PAGE);
+  const grandTotal = _payBreakdown.reduce((s,p)=>s+p.amount,0);
+  wrap.innerHTML = `
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.83rem;">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border);text-align:left;">
+            <th style="padding:7px 8px;color:var(--muted);font-weight:600;">#</th>
+            <th style="padding:7px 8px;color:var(--muted);font-weight:600;">Student</th>
+            <th style="padding:7px 8px;color:var(--muted);font-weight:600;">ID</th>
+            <th style="padding:7px 8px;color:var(--muted);font-weight:600;">Date</th>
+            <th style="padding:7px 8px;color:var(--muted);font-weight:600;text-align:right;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pageRows.map((p,i)=>`
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:7px 8px;color:var(--muted);">${start+i+1}</td>
+            <td style="padding:7px 8px;font-weight:600;">${escapeHtml(p.name)}</td>
+            <td style="padding:7px 8px;color:var(--muted);">${p.student_id||'—'}</td>
+            <td style="padding:7px 8px;color:var(--muted);white-space:nowrap;">${new Date(p.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
+            <td style="padding:7px 8px;font-weight:700;color:var(--success);text-align:right;">₹${p.amount.toLocaleString('en-IN')}</td>
+          </tr>`).join('')}
+          <tr style="border-top:2px solid var(--border);background:var(--surface);">
+            <td colspan="4" style="padding:8px;font-weight:700;text-align:right;color:var(--muted);">Grand Total (${total} payments)</td>
+            <td style="padding:8px;font-weight:700;color:var(--success);text-align:right;">₹${grandTotal.toLocaleString('en-IN')}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    ${pages > 1 ? `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:0.83rem;">
+      <button class="btn-sm" onclick="_payPage=Math.max(0,_payPage-1);renderPaymentsTable()" ${_payPage===0?'disabled':''}>← Prev</button>
+      <span style="color:var(--muted);">Page ${_payPage+1} of ${pages}</span>
+      <button class="btn-sm" onclick="_payPage=Math.min(${pages-1},_payPage+1);renderPaymentsTable()" ${_payPage===pages-1?'disabled':''}>Next →</button>
+    </div>` : ''}`;
+}
+
 function toggleRevChart() {
   _revExpanded = !_revExpanded;
   const body = document.getElementById('rev-chart-body');
@@ -3102,36 +3154,7 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
 
   <div class="dash-card" style="margin-bottom:20px;">
     <div class="dash-card-title">💰 Payments Received This Month</div>
-    ${!(stats.collected_breakdown||[]).length
-      ? '<div style="color:var(--muted);font-size:0.83rem;padding:8px 0;">No payments logged this month yet.</div>'
-      : `<div style="overflow-x:auto;">
-          <table style="width:100%;border-collapse:collapse;font-size:0.83rem;">
-            <thead>
-              <tr style="border-bottom:2px solid var(--border);text-align:left;">
-                <th style="padding:7px 8px;color:var(--muted);font-weight:600;">#</th>
-                <th style="padding:7px 8px;color:var(--muted);font-weight:600;">Student</th>
-                <th style="padding:7px 8px;color:var(--muted);font-weight:600;">ID</th>
-                <th style="padding:7px 8px;color:var(--muted);font-weight:600;">Date</th>
-                <th style="padding:7px 8px;color:var(--muted);font-weight:600;text-align:right;">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${(stats.collected_breakdown||[]).map((p,i)=>`
-              <tr style="border-bottom:1px solid var(--border);">
-                <td style="padding:7px 8px;color:var(--muted);">${i+1}</td>
-                <td style="padding:7px 8px;font-weight:600;">${escapeHtml(p.name)}</td>
-                <td style="padding:7px 8px;color:var(--muted);">${p.student_id||'—'}</td>
-                <td style="padding:7px 8px;color:var(--muted);white-space:nowrap;">${new Date(p.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
-                <td style="padding:7px 8px;font-weight:700;color:var(--success);text-align:right;">₹${p.amount.toLocaleString('en-IN')}</td>
-              </tr>`).join('')}
-              <tr style="border-top:2px solid var(--border);">
-                <td colspan="4" style="padding:8px 8px;font-weight:700;text-align:right;">Total</td>
-                <td style="padding:8px 8px;font-weight:700;color:var(--success);text-align:right;">₹${(stats.collected_offline||0).toLocaleString('en-IN')}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>`
-    }
+    <div id="payments-table-wrap"></div>
   </div>
 
   <div class="dash-card" style="margin-bottom:20px;">
@@ -3282,6 +3305,11 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
   // Store trend data; chart renders on expand
   _revMonths = trendMonths;
   _revExpanded = false;
+
+  // Payments table with pagination
+  _payBreakdown = stats.collected_breakdown || [];
+  _payPage = 0;
+  renderPaymentsTable();
 
   // Init enrollment date range to current month and load
   const now = new Date();
