@@ -2883,32 +2883,30 @@ function renderRevenueChart(period) {
   btns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.p) === period));
   if (!el) return;
   const slice = _revMonths.slice(-period);
-  if (!slice.length) {
-    el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;padding:12px 0;text-align:center;">No payment data yet.</div>';
-    return;
-  }
+  if (!slice.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:20px 0;text-align:center;">No payment data yet.</div>'; return; }
   const maxVal = Math.max(...slice.map(m => m.revenue), 1);
-  const fmt = v => v >= 1000 ? '₹' + (v / 1000).toFixed(1) + 'k' : '₹' + v;
-  // 3M → "Oct '25", 6M/1Y → "Oct"
-  const lbl = m => period === 3 ? m.label : m.label.slice(0, 3);
-
-  const bars = slice.map(m => {
-    const pct = Math.max(m.revenue > 0 ? 4 : 0, Math.round((m.revenue / maxVal) * 100));
-    const isCur = m.month === new Date().toISOString().slice(0, 7);
-    const bg = isCur ? '#4f46e5' : '#a5b4fc';
-    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0;">
-      <div style="font-size:9px;color:var(--muted);white-space:nowrap;margin-bottom:2px;overflow:hidden;max-width:100%;text-overflow:ellipsis;">${m.revenue > 0 ? fmt(m.revenue) : ''}</div>
-      <div style="width:70%;background:${bg};height:${pct}%;border-radius:3px 3px 0 0;min-height:${m.revenue > 0 ? 4 : 0}px;"></div>
-    </div>`;
+  const W = 340, H = 110, pad = 28, barGap = 3;
+  const barW = Math.floor((W - pad) / slice.length) - barGap;
+  const bars = slice.map((m, i) => {
+    const bh = Math.max(m.revenue > 0 ? 4 : 0, Math.round((m.revenue / maxVal) * (H - 28)));
+    const x = pad + i * (barW + barGap);
+    const y = H - 18 - bh;
+    const isCurrentMonth = m.month === new Date().toISOString().slice(0,7);
+    const fill = isCurrentMonth ? '#4f46e5' : '#a5b4fc';
+    const amtLabel = m.revenue >= 1000 ? '₹' + (m.revenue/1000).toFixed(1) + 'k' : m.revenue > 0 ? '₹'+m.revenue : '';
+    return `
+      <rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="3" fill="${fill}" opacity="0.9"/>
+      ${m.revenue > 0 ? `<text x="${x+barW/2}" y="${y-4}" text-anchor="middle" font-size="8" fill="var(--muted)">${amtLabel}</text>` : ''}
+      <text x="${x+barW/2}" y="${H-4}" text-anchor="middle" font-size="8" fill="var(--muted)">${m.label}</text>`;
   }).join('');
-
-  const labels = slice.map(m =>
-    `<div style="flex:1;text-align:center;font-size:10px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${lbl(m)}</div>`
-  ).join('');
-
-  el.innerHTML = `
-    <div style="display:flex;align-items:flex-end;height:90px;gap:2px;border-bottom:1px solid var(--border);padding-bottom:0;">${bars}</div>
-    <div style="display:flex;gap:2px;margin-top:4px;">${labels}</div>`;
+  const gridLines = [0.25,0.5,0.75,1].map(frac => {
+    const gv = Math.round(maxVal * frac);
+    const gy = H - 18 - Math.round(frac * (H - 28));
+    const lbl = gv >= 1000 ? '₹'+(gv/1000).toFixed(0)+'k' : '₹'+gv;
+    return `<line x1="${pad}" y1="${gy}" x2="${W}" y2="${gy}" stroke="var(--border)" stroke-width="0.5"/>
+            <text x="${pad-2}" y="${gy+3}" text-anchor="end" font-size="7" fill="var(--muted)">${lbl}</text>`;
+  }).join('');
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible;">${gridLines}${bars}</svg>`;
 }
 
 let _dashTodayStudents = [];
