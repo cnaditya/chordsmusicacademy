@@ -313,14 +313,15 @@ exports.handler = async (event) => {
         return { statusCode: 500, headers, body: JSON.stringify({ error: "Unexpected response", raw: JSON.stringify(all) }) };
       }
       const recent = [...all].sort((a, b) => new Date(b.enrollment_date || 0) - new Date(a.enrollment_date || 0)).slice(0, 5);
-      const stats = { total: all.length, active: all.filter(s=>s.status==="active").length, trial: all.filter(s=>s.status==="trial").length, paused: all.filter(s=>s.status==="paused").length, dropped: all.filter(s=>s.status==="dropped").length, online: all.filter(s=>s.mode==="online").length, offline: all.filter(s=>s.mode==="offline").length, revenue_this_month: all.filter(s=>s.status==="active").reduce((sum,s)=>sum+(s.amount_due||0),0) };
+      const activeStudents = all.filter(s=>s.status==="active");
+      const stats = { total: all.length, active: activeStudents.length, trial: all.filter(s=>s.status==="trial").length, paused: all.filter(s=>s.status==="paused").length, dropped: all.filter(s=>s.status==="dropped").length, online: all.filter(s=>s.mode==="online").length, offline: all.filter(s=>s.mode==="offline").length, revenue_this_month: activeStudents.reduce((sum,s)=>sum+(s.amount_due||0),0), revenue_online: activeStudents.filter(s=>s.mode==="online").reduce((sum,s)=>sum+(s.amount_due||0),0), revenue_offline: activeStudents.filter(s=>s.mode==="offline").reduce((sum,s)=>sum+(s.amount_due||0),0) };
       const instruments = {};
       all.forEach(s => { if (s.instrument) instruments[s.instrument] = (instruments[s.instrument]||0)+1; });
       const days = ["sun","mon","tue","wed","thu","fri","sat"];
       const todayStudents = all.filter(s => s.class_days && s.class_days.toLowerCase().includes(days[new Date().getDay()]));
       // Dues: overdue or due within 7 days, with a due_date and amount_due set
       const today = new Date(); today.setHours(0,0,0,0);
-      const dueStudents = all.filter(s => s.due_date && s.amount_due > 0 && (s.status === 'active' || s.status === 'trial')).map(s => {
+      const dueStudents = all.filter(s => s.due_date && s.amount_due > 0 && s.mode === 'offline' && (s.status === 'active' || s.status === 'trial')).map(s => {
         const d = new Date(s.due_date); d.setHours(0,0,0,0);
         return { ...s, days_diff: Math.round((d - today) / 86400000) };
       }).filter(s => s.days_diff <= 7).sort((a,b) => a.days_diff - b.days_diff);

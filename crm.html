@@ -2954,9 +2954,14 @@ function renderDashboard(data, renewalDue = []) {
       <div class="stat-sub">In-person</div>
     </div>
     <div class="stat-card gold">
-      <div class="stat-label">Est. Revenue</div>
-      <div class="stat-value" style="font-size:1.4rem;">₹${stats.revenue_this_month.toLocaleString('en-IN')}</div>
-      <div class="stat-sub">Pending (active)</div>
+      <div class="stat-label">🌐 Online Revenue</div>
+      <div class="stat-value" style="font-size:1.3rem;color:var(--info);">₹${(stats.revenue_online||0).toLocaleString('en-IN')}</div>
+      <div class="stat-sub">Active online students</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-label">🏫 Offline Revenue</div>
+      <div class="stat-value" style="font-size:1.3rem;color:#9b59b6;">₹${(stats.revenue_offline||0).toLocaleString('en-IN')}</div>
+      <div class="stat-sub">Active offline students</div>
     </div>
   </div>
 
