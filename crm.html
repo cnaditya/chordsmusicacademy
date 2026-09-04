@@ -2864,7 +2864,17 @@ async function loadDashboard() {
 }
 
 let _revMonths = [];
-let _revPeriod = 6; // default 6-month view
+let _revPeriod = 6;
+let _revExpanded = false;
+
+function toggleRevChart() {
+  _revExpanded = !_revExpanded;
+  const body = document.getElementById('rev-chart-body');
+  const chev = document.getElementById('rev-chevron');
+  if (body) body.style.display = _revExpanded ? 'block' : 'none';
+  if (chev) chev.textContent = _revExpanded ? '▲' : '▼';
+  if (_revExpanded) renderRevenueChart(_revPeriod);
+}
 
 function renderRevenueChart(period) {
   _revPeriod = period;
@@ -2875,7 +2885,7 @@ function renderRevenueChart(period) {
   const slice = _revMonths.slice(-period);
   if (!slice.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:20px 0;text-align:center;">No payment data yet.</div>'; return; }
   const maxVal = Math.max(...slice.map(m => m.revenue), 1);
-  const W = 340, H = 140, pad = 32, barGap = 4;
+  const W = 340, H = 110, pad = 28, barGap = 3;
   const barW = Math.floor((W - pad) / slice.length) - barGap;
   const bars = slice.map((m, i) => {
     const bh = Math.max(m.revenue > 0 ? 4 : 0, Math.round((m.revenue / maxVal) * (H - 28)));
@@ -3004,13 +3014,16 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
   </div>
 
   <div class="dash-card" style="margin-bottom:20px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onclick="toggleRevChart()">
       <div class="dash-card-title" style="margin:0;">🏫 Offline Revenue Trend</div>
-      <div style="display:flex;gap:6px;">
-        ${[3,6,12].map(p=>`<button class="chip rev-period-btn${p===6?' active':''}" data-p="${p}" onclick="renderRevenueChart(${p})">${p===12?'1Y':p+'M'}</button>`).join('')}
-      </div>
+      <span id="rev-chevron" style="color:var(--muted);font-size:0.85rem;">▼</span>
     </div>
-    <div id="rev-chart-area" style="width:100%;min-height:80px;"></div>
+    <div id="rev-chart-body" style="display:none;margin-top:12px;">
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        ${[3,6,12].map(p=>`<button class="chip rev-period-btn${p===6?' active':''}" data-p="${p}" onclick="event.stopPropagation();renderRevenueChart(${p})">${p===12?'1Y':p+'M'}</button>`).join('')}
+      </div>
+      <div id="rev-chart-area" style="width:100%;"></div>
+    </div>
   </div>
 
   <div class="dash-row">
@@ -3139,9 +3152,9 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
   _renderTodayChips();
   _renderTodayList();
 
-  // Wire up revenue trend chart
+  // Store trend data; chart renders on expand
   _revMonths = trendMonths;
-  renderRevenueChart(_revPeriod);
+  _revExpanded = false;
 }
 
 /* ══════════════════════════════════════════════════════════════════
