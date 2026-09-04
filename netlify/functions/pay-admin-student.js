@@ -346,6 +346,7 @@ exports.handler = async (event) => {
         revenue_online_count: allActiveOnline.length,
         collected_offline,
         collected_breakdown,
+        estimated_due_list: allActiveOffline.map(s=>({ id:s.id, name:s.name, student_id:s.student_id, instrument:s.instrument, teacher:s.teacher, due_date:s.due_date, amount_due:s.amount_due, mode:s.mode })),
       };
       const instruments = {};
       all.forEach(s => { if (s.instrument) instruments[s.instrument] = (instruments[s.instrument]||0)+1; });

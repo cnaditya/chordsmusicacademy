@@ -2956,6 +2956,58 @@ let _payBreakdown = [];
 let _payPage = 0;
 const PAY_PER_PAGE = 10;
 
+let _estList = [];
+let _estPage = 0;
+
+function renderEstimatedTable() {
+  const wrap = document.getElementById('estimated-table-wrap');
+  if (!wrap) return;
+  const total = _estList.length;
+  if (!total) { wrap.innerHTML = '<div style="color:var(--muted);font-size:0.83rem;padding:8px 0;">No active offline students.</div>'; return; }
+  const pages = Math.ceil(total / PAY_PER_PAGE);
+  const start = _estPage * PAY_PER_PAGE;
+  const pageRows = _estList.slice(start, start + PAY_PER_PAGE);
+  const grandTotal = _estList.reduce((s,p)=>s+(p.amount_due||0),0);
+  wrap.innerHTML = `
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.83rem;">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border);text-align:left;">
+            <th style="padding:7px 8px;color:var(--muted);font-weight:600;">#</th>
+            <th style="padding:7px 8px;color:var(--muted);font-weight:600;">Student</th>
+            <th style="padding:7px 8px;color:var(--muted);font-weight:600;">ID</th>
+            <th style="padding:7px 8px;color:var(--muted);font-weight:600;">Instrument</th>
+            <th style="padding:7px 8px;color:var(--muted);font-weight:600;">Teacher</th>
+            <th style="padding:7px 8px;color:var(--muted);font-weight:600;">Due Date</th>
+            <th style="padding:7px 8px;color:var(--muted);font-weight:600;text-align:right;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pageRows.map((s,i)=>`
+          <tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="viewStudent('${s.id}')">
+            <td style="padding:7px 8px;color:var(--muted);">${start+i+1}</td>
+            <td style="padding:7px 8px;font-weight:600;">${escapeHtml(s.name)}</td>
+            <td style="padding:7px 8px;color:var(--muted);">${s.student_id||'—'}</td>
+            <td style="padding:7px 8px;">${instrumentIcon(s.instrument)} ${s.instrument||'—'}</td>
+            <td style="padding:7px 8px;color:var(--muted);">${s.teacher||'—'}</td>
+            <td style="padding:7px 8px;color:var(--muted);white-space:nowrap;">${s.due_date ? new Date(s.due_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : '—'}</td>
+            <td style="padding:7px 8px;font-weight:700;color:var(--info);text-align:right;">₹${(s.amount_due||0).toLocaleString('en-IN')}</td>
+          </tr>`).join('')}
+          <tr style="border-top:2px solid var(--border);background:var(--surface);">
+            <td colspan="6" style="padding:8px;font-weight:700;text-align:right;color:var(--muted);">Total (${total} students)</td>
+            <td style="padding:8px;font-weight:700;color:var(--info);text-align:right;">₹${grandTotal.toLocaleString('en-IN')}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    ${pages > 1 ? `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:0.83rem;">
+      <button class="btn-sm" onclick="_estPage=Math.max(0,_estPage-1);renderEstimatedTable()" ${_estPage===0?'disabled':''}>← Prev</button>
+      <span style="color:var(--muted);">Page ${_estPage+1} of ${pages}</span>
+      <button class="btn-sm" onclick="_estPage=Math.min(${pages-1},_estPage+1);renderEstimatedTable()" ${_estPage===pages-1?'disabled':''}>Next →</button>
+    </div>` : ''}`;
+}
+
 function renderPaymentsTable() {
   const wrap = document.getElementById('payments-table-wrap');
   if (!wrap) return;
@@ -3158,6 +3210,11 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
   </div>
 
   <div class="dash-card" style="margin-bottom:20px;">
+    <div class="dash-card-title">🔜 Expected to Pay This Month</div>
+    <div id="estimated-table-wrap"></div>
+  </div>
+
+  <div class="dash-card" style="margin-bottom:20px;">
     <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onclick="toggleRevChart()">
       <div class="dash-card-title" style="margin:0;">🏫 Offline Revenue Trend</div>
       <span id="rev-chevron" style="color:var(--muted);font-size:0.85rem;">▼</span>
@@ -3310,6 +3367,11 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
   _payBreakdown = stats.collected_breakdown || [];
   _payPage = 0;
   renderPaymentsTable();
+
+  // Estimated due table
+  _estList = (stats.estimated_due_list || []).sort((a,b)=>new Date(a.due_date||0)-new Date(b.due_date||0));
+  _estPage = 0;
+  renderEstimatedTable();
 
   // Init enrollment date range to current month and load
   const now = new Date();
