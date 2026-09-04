@@ -314,7 +314,23 @@ exports.handler = async (event) => {
       }
       const recent = [...all].sort((a, b) => new Date(b.enrollment_date || 0) - new Date(a.enrollment_date || 0)).slice(0, 5);
       const activeStudents = all.filter(s=>s.status==="active");
-      const stats = { total: all.length, active: activeStudents.length, trial: all.filter(s=>s.status==="trial").length, paused: all.filter(s=>s.status==="paused").length, dropped: all.filter(s=>s.status==="dropped").length, online: all.filter(s=>s.mode==="online").length, offline: all.filter(s=>s.mode==="offline").length, revenue_this_month: activeStudents.reduce((sum,s)=>sum+(s.amount_due||0),0), revenue_online: activeStudents.filter(s=>s.mode==="online").reduce((sum,s)=>sum+(s.amount_due||0),0), revenue_offline: activeStudents.filter(s=>s.mode==="offline").reduce((sum,s)=>sum+(s.amount_due||0),0) };
+      const thisMonth = new Date().toISOString().slice(0,7); // "2026-09"
+      const offlineDueThisMonth = activeStudents.filter(s => s.mode==="offline" && s.due_date && s.due_date.slice(0,7) === thisMonth);
+      const onlineDueThisMonth  = activeStudents.filter(s => s.mode==="online"  && s.due_date && s.due_date.slice(0,7) === thisMonth);
+      const stats = {
+        total: all.length,
+        active: activeStudents.length,
+        trial: all.filter(s=>s.status==="trial").length,
+        paused: all.filter(s=>s.status==="paused").length,
+        dropped: all.filter(s=>s.status==="dropped").length,
+        online: activeStudents.filter(s=>s.mode==="online").length,
+        offline: activeStudents.filter(s=>s.mode==="offline").length,
+        revenue_this_month: activeStudents.reduce((sum,s)=>sum+(s.amount_due||0),0),
+        revenue_online: onlineDueThisMonth.reduce((sum,s)=>sum+(s.amount_due||0),0),
+        revenue_offline: offlineDueThisMonth.reduce((sum,s)=>sum+(s.amount_due||0),0),
+        revenue_offline_count: offlineDueThisMonth.length,
+        revenue_online_count: onlineDueThisMonth.length,
+      };
       const instruments = {};
       all.forEach(s => { if (s.instrument) instruments[s.instrument] = (instruments[s.instrument]||0)+1; });
       const days = ["sun","mon","tue","wed","thu","fri","sat"];
