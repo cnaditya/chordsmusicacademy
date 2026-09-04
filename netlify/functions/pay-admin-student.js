@@ -489,6 +489,15 @@ exports.handler = async (event) => {
       })};
     }
 
+    if (action === "crm_enrollments") {
+      const from = params.get('from') || new Date().toISOString().slice(0,7) + '-01';
+      const to   = params.get('to')   || new Date().toISOString().slice(0,10);
+      const url = `${SUPABASE_URL}/rest/v1/crm_students?enrollment_date=gte.${from}&enrollment_date=lte.${to}&order=enrollment_date.desc&select=id,name,student_id,instrument,teacher,mode,status,enrollment_date,amount_due`;
+      const r = await fetch(url, { headers: SB_H });
+      const rows = await r.json();
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, rows: Array.isArray(rows) ? rows : [] }) };
+    }
+
     if (action === "crm_revenue_trend") {
       const [offR, notesR] = await Promise.all([
         fetch(`${SUPABASE_URL}/rest/v1/crm_students?mode=eq.offline&select=id`, { headers: SB_H }),

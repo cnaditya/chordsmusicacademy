@@ -2863,6 +2863,51 @@ async function loadDashboard() {
   }
 }
 
+async function loadEnrollments() {
+  const from = document.getElementById('enroll-from')?.value;
+  const to   = document.getElementById('enroll-to')?.value;
+  const wrap = document.getElementById('enroll-table-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = '<div style="color:var(--muted);font-size:0.83rem;">Loading...</div>';
+  try {
+    const data = await apiCall({ action: 'crm_enrollments', from, to });
+    const rows = data.rows || [];
+    if (!rows.length) {
+      wrap.innerHTML = '<div style="color:var(--muted);font-size:0.83rem;padding:12px 0;">No enrollments in this period.</div>';
+      return;
+    }
+    wrap.innerHTML = `
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px;">${rows.length} student${rows.length!==1?'s':''}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border);text-align:left;">
+            <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Name</th>
+            <th style="padding:6px 8px;color:var(--muted);font-weight:600;">ID</th>
+            <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Instrument</th>
+            <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Teacher</th>
+            <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Date</th>
+            <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Mode</th>
+            <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(s => `
+          <tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="viewStudent('${s.id}')">
+            <td style="padding:7px 8px;font-weight:600;">${escapeHtml(s.name)}</td>
+            <td style="padding:7px 8px;color:var(--muted);">${s.student_id||'—'}</td>
+            <td style="padding:7px 8px;">${instrumentIcon(s.instrument)} ${s.instrument||'—'}</td>
+            <td style="padding:7px 8px;color:var(--muted);">${s.teacher||'—'}</td>
+            <td style="padding:7px 8px;color:var(--muted);white-space:nowrap;">${s.enrollment_date ? new Date(s.enrollment_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
+            <td style="padding:7px 8px;">${s.mode==='online'?'🌐 Online':'🏫 Offline'}</td>
+            <td style="padding:7px 8px;">${badge(s.status)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) {
+    wrap.innerHTML = '<div style="color:var(--danger);font-size:0.83rem;">Failed to load enrollments.</div>';
+  }
+}
+
 let _revMonths = [];
 let _revPeriod = 6;
 let _revExpanded = false;
@@ -3060,21 +3105,19 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
   </div>
 
   <div class="dash-card" style="margin-bottom:24px;">
-    <div class="dash-card-title">🆕 Recent Enrollments</div>
-    ${recent.length === 0
-      ? renderEmpty('👥','No students yet','Add your first student to get started.','+ Add Student','openAddStudent()')
-      : `<div class="recent-list">
-          ${recent.map(s=>`
-          <div class="recent-item" style="cursor:pointer;" onclick="viewStudent('${s.id}')">
-            <div class="avatar" style="background:${avatarColor(s.name)};color:#fff;">${initials(s.name)}</div>
-            <div class="recent-info">
-              <div class="recent-name">${escapeHtml(s.name)}</div>
-              <div class="recent-meta">${s.student_id||''} · ${instrumentIcon(s.instrument)} ${s.instrument||'No instrument'} · ${s.teacher||''}</div>
-            </div>
-            ${badge(s.status)}
-          </div>`).join('')}
-        </div>`
-    }
+    <div class="dash-card-title">🆕 Enrollments</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:4px;font-size:0.82rem;color:var(--muted);">From
+        <input type="date" id="enroll-from" style="padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;background:var(--surface);color:var(--text);">
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;font-size:0.82rem;color:var(--muted);">To
+        <input type="date" id="enroll-to" style="padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;background:var(--surface);color:var(--text);">
+      </div>
+      <button class="btn-sm" onclick="loadEnrollments()">Search</button>
+    </div>
+    <div id="enroll-table-wrap" style="overflow-x:auto;">
+      <div style="color:var(--muted);font-size:0.83rem;">Loading...</div>
+    </div>
   </div>
 
   ${renewalDue.length > 0 ? `
@@ -3157,6 +3200,16 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
   // Store trend data; chart renders on expand
   _revMonths = trendMonths;
   _revExpanded = false;
+
+  // Init enrollment date range to current month and load
+  const now = new Date();
+  const monthStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+  const today = now.toISOString().slice(0,10);
+  const ef = document.getElementById('enroll-from');
+  const et = document.getElementById('enroll-to');
+  if (ef) ef.value = monthStart;
+  if (et) et.value = today;
+  loadEnrollments();
 }
 
 /* ══════════════════════════════════════════════════════════════════
