@@ -2952,6 +2952,15 @@ let _revMonths = [];
 let _revPeriod = 6;
 let _revExpanded = false;
 
+function toggleCollectedBreakdown() {
+  const el = document.getElementById('collected-breakdown');
+  const chev = document.getElementById('collected-chev');
+  if (!el) return;
+  const open = el.style.display === 'none';
+  el.style.display = open ? 'block' : 'none';
+  if (chev) chev.textContent = open ? '▲' : '▼';
+}
+
 function toggleRevChart() {
   _revExpanded = !_revExpanded;
   const body = document.getElementById('rev-chart-body');
@@ -3088,10 +3097,23 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
       <div class="stat-value" style="color:#9b59b6;">${stats.offline}</div>
       <div class="stat-sub">Active in-person students</div>
     </div>
-    <div class="stat-card green">
-      <div class="stat-label">✅ Collected This Month</div>
+    <div class="stat-card green" style="cursor:pointer;" onclick="toggleCollectedBreakdown()">
+      <div class="stat-label">✅ Collected This Month <span style="font-size:0.75rem;float:right;" id="collected-chev">▼</span></div>
       <div class="stat-value" style="font-size:1.3rem;color:var(--success);">₹${(stats.collected_offline||0).toLocaleString('en-IN')}</div>
-      <div class="stat-sub">From offline payment notes</div>
+      <div class="stat-sub">${(stats.collected_breakdown||[]).length} payment${(stats.collected_breakdown||[]).length!==1?'s':''} · tap to see who paid</div>
+      <div id="collected-breakdown" style="display:none;margin-top:10px;border-top:1px solid var(--border);padding-top:8px;">
+        ${(stats.collected_breakdown||[]).length === 0
+          ? '<div style="color:var(--muted);font-size:0.82rem;">No payments logged yet.</div>'
+          : (stats.collected_breakdown||[]).map(p=>`
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:0.82rem;" onclick="event.stopPropagation();">
+              <div>
+                <div style="font-weight:600;">${escapeHtml(p.name)}</div>
+                <div style="color:var(--muted);font-size:0.75rem;">${p.student_id||''} · ${new Date(p.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}</div>
+              </div>
+              <div style="font-weight:700;color:var(--success);">₹${p.amount.toLocaleString('en-IN')}</div>
+            </div>`).join('')
+        }
+      </div>
     </div>
     <div class="stat-card blue">
       <div class="stat-label">🔜 Estimated This Month</div>
