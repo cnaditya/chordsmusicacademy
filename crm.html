@@ -2863,6 +2863,61 @@ async function loadDashboard() {
   }
 }
 
+let _enrollRows = [];
+let _enrollModeFilter = 'all';
+let _enrollInstFilter = 'all';
+
+function setEnrollFilter(type, val) {
+  if (type === 'mode') {
+    _enrollModeFilter = val;
+    ['all','online','offline'].forEach(v => document.getElementById('ef-mode-'+v)?.classList.toggle('active', v === val));
+  } else {
+    _enrollInstFilter = val;
+    document.getElementById('ef-inst-all')?.classList.toggle('active', val === 'all');
+    document.querySelectorAll('.ef-inst-chip').forEach(b => b.classList.toggle('active', b.dataset.inst === val));
+  }
+  _renderEnrollTable();
+}
+
+function _renderEnrollTable() {
+  const wrap = document.getElementById('enroll-table-wrap');
+  if (!wrap) return;
+  let rows = _enrollRows;
+  if (_enrollModeFilter !== 'all') rows = rows.filter(s => s.mode === _enrollModeFilter);
+  if (_enrollInstFilter !== 'all') rows = rows.filter(s => (s.instrument||'') === _enrollInstFilter);
+  if (!rows.length) {
+    wrap.innerHTML = '<div style="color:var(--muted);font-size:0.83rem;padding:12px 0;">No enrollments match this filter.</div>';
+    return;
+  }
+  wrap.innerHTML = `
+    <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px;">${rows.length} student${rows.length!==1?'s':''}</div>
+    <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border);text-align:left;">
+          <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Name</th>
+          <th style="padding:6px 8px;color:var(--muted);font-weight:600;">ID</th>
+          <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Instrument</th>
+          <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Teacher</th>
+          <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Date</th>
+          <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Mode</th>
+          <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(s => `
+        <tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="viewStudent('${s.id}')">
+          <td style="padding:7px 8px;font-weight:600;">${escapeHtml(s.name)}</td>
+          <td style="padding:7px 8px;color:var(--muted);">${s.student_id||'—'}</td>
+          <td style="padding:7px 8px;">${instrumentIcon(s.instrument)} ${s.instrument||'—'}</td>
+          <td style="padding:7px 8px;color:var(--muted);">${s.teacher||'—'}</td>
+          <td style="padding:7px 8px;color:var(--muted);white-space:nowrap;">${s.enrollment_date ? new Date(s.enrollment_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
+          <td style="padding:7px 8px;">${s.mode==='online'?'🌐 Online':'🏫 Offline'}</td>
+          <td style="padding:7px 8px;">${badge(s.status)}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
 async function loadEnrollments() {
   const from = document.getElementById('enroll-from')?.value;
   const to   = document.getElementById('enroll-to')?.value;
@@ -2871,38 +2926,23 @@ async function loadEnrollments() {
   wrap.innerHTML = '<div style="color:var(--muted);font-size:0.83rem;">Loading...</div>';
   try {
     const data = await apiCall({ action: 'crm_enrollments', from, to });
-    const rows = data.rows || [];
-    if (!rows.length) {
+    _enrollRows = data.rows || [];
+    _enrollModeFilter = 'all';
+    _enrollInstFilter = 'all';
+    // Reset mode chips
+    ['all','online','offline'].forEach(v => document.getElementById('ef-mode-'+v)?.classList.toggle('active', v === 'all'));
+    // Build instrument chips from results
+    const insts = [...new Set(_enrollRows.map(s => s.instrument).filter(Boolean))].sort();
+    const instWrap = document.getElementById('ef-inst-chips');
+    if (instWrap) instWrap.innerHTML = insts.map(inst =>
+      `<button class="chip ef-inst-chip" data-inst="${inst}" onclick="setEnrollFilter('inst','${inst}')">${instrumentIcon(inst)} ${inst}</button>`
+    ).join('');
+    document.getElementById('ef-inst-all')?.classList.add('active');
+    if (!_enrollRows.length) {
       wrap.innerHTML = '<div style="color:var(--muted);font-size:0.83rem;padding:12px 0;">No enrollments in this period.</div>';
       return;
     }
-    wrap.innerHTML = `
-      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px;">${rows.length} student${rows.length!==1?'s':''}</div>
-      <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
-        <thead>
-          <tr style="border-bottom:2px solid var(--border);text-align:left;">
-            <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Name</th>
-            <th style="padding:6px 8px;color:var(--muted);font-weight:600;">ID</th>
-            <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Instrument</th>
-            <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Teacher</th>
-            <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Date</th>
-            <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Mode</th>
-            <th style="padding:6px 8px;color:var(--muted);font-weight:600;">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map(s => `
-          <tr style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="viewStudent('${s.id}')">
-            <td style="padding:7px 8px;font-weight:600;">${escapeHtml(s.name)}</td>
-            <td style="padding:7px 8px;color:var(--muted);">${s.student_id||'—'}</td>
-            <td style="padding:7px 8px;">${instrumentIcon(s.instrument)} ${s.instrument||'—'}</td>
-            <td style="padding:7px 8px;color:var(--muted);">${s.teacher||'—'}</td>
-            <td style="padding:7px 8px;color:var(--muted);white-space:nowrap;">${s.enrollment_date ? new Date(s.enrollment_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
-            <td style="padding:7px 8px;">${s.mode==='online'?'🌐 Online':'🏫 Offline'}</td>
-            <td style="padding:7px 8px;">${badge(s.status)}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>`;
+    _renderEnrollTable();
   } catch(e) {
     wrap.innerHTML = '<div style="color:var(--danger);font-size:0.83rem;">Failed to load enrollments.</div>';
   }
@@ -3106,7 +3146,7 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
 
   <div class="dash-card" style="margin-bottom:24px;">
     <div class="dash-card-title">🆕 Enrollments</div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
       <div style="display:flex;align-items:center;gap:4px;font-size:0.82rem;color:var(--muted);">From
         <input type="date" id="enroll-from" style="padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;background:var(--surface);color:var(--text);">
       </div>
@@ -3114,6 +3154,14 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
         <input type="date" id="enroll-to" style="padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;background:var(--surface);color:var(--text);">
       </div>
       <button class="btn-sm" onclick="loadEnrollments()">Search</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+      <button class="chip active" id="ef-mode-all"    onclick="setEnrollFilter('mode','all')">All</button>
+      <button class="chip"        id="ef-mode-online"  onclick="setEnrollFilter('mode','online')">🌐 Online</button>
+      <button class="chip"        id="ef-mode-offline" onclick="setEnrollFilter('mode','offline')">🏫 Offline</button>
+      <span style="width:1px;background:var(--border);margin:0 2px;"></span>
+      <button class="chip active" id="ef-inst-all"    onclick="setEnrollFilter('inst','all')">All Instruments</button>
+      <div id="ef-inst-chips" style="display:contents;"></div>
     </div>
     <div id="enroll-table-wrap" style="overflow-x:auto;">
       <div style="color:var(--muted);font-size:0.83rem;">Loading...</div>
