@@ -490,8 +490,9 @@ exports.handler = async (event) => {
     }
 
     if (action === "crm_enrollments") {
-      const from = params.get('from') || new Date().toISOString().slice(0,7) + '-01';
-      const to   = params.get('to')   || new Date().toISOString().slice(0,10);
+      const { from: fromRaw, to: toRaw } = JSON.parse(event.body || "{}");
+      const from = fromRaw || new Date().toISOString().slice(0,7) + '-01';
+      const to   = toRaw   || new Date().toISOString().slice(0,10);
       const url = `${SUPABASE_URL}/rest/v1/crm_students?enrollment_date=gte.${from}&enrollment_date=lte.${to}&order=enrollment_date.desc&select=id,name,student_id,instrument,teacher,mode,status,enrollment_date,amount_due`;
       const r = await fetch(url, { headers: SB_H });
       const rows = await r.json();
