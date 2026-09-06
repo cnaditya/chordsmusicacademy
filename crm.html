@@ -1136,6 +1136,70 @@ tr:hover td { background: rgba(79,70,229,0.04); }
 </div>
 
 <!-- SQL SETUP MODAL -->
+<!-- Broadcast Modal -->
+<div class="modal-overlay" id="broadcast-modal" style="display:none;z-index:1100;" onclick="if(event.target===this&&_bcStep==='setup')closeBroadcast()">
+  <div class="modal-box" style="max-width:480px;width:95%;">
+    <!-- SETUP STEP -->
+    <div id="bc-setup">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="margin:0;">📢 Broadcast Message</h3>
+        <button onclick="closeBroadcast()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted);">✕</button>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:0.82rem;color:var(--muted);margin-bottom:6px;font-weight:600;">Filter Students</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+          <button class="chip active" id="bc-mode-all"    onclick="setBcFilter('mode','all')">All</button>
+          <button class="chip"        id="bc-mode-online"  onclick="setBcFilter('mode','online')">🌐 Online</button>
+          <button class="chip"        id="bc-mode-offline" onclick="setBcFilter('mode','offline')">🏫 Offline</button>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="bc-inst-chips"></div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:0.82rem;color:var(--muted);margin-bottom:6px;font-weight:600;">Message</div>
+        <textarea id="bc-message" rows="5" placeholder="Type your message here…
+e.g. Dear Student, today's class timing changed to 3PM–5PM. Please be on time. – Chords Music Academy"
+          style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;background:var(--surface);color:var(--text);resize:vertical;"></textarea>
+      </div>
+      <div id="bc-preview" style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button class="btn" onclick="closeBroadcast()">Cancel</button>
+        <button class="btn btn-primary" onclick="startBroadcast()">Start Sending →</button>
+      </div>
+    </div>
+    <!-- SEND STEP -->
+    <div id="bc-send" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="margin:0;">📢 Sending</h3>
+        <span id="bc-progress-label" style="font-size:0.83rem;color:var(--muted);"></span>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:4px;">Current student</div>
+        <div id="bc-cur-name" style="font-size:1.1rem;font-weight:700;"></div>
+        <div id="bc-cur-meta" style="font-size:0.82rem;color:var(--muted);margin-top:2px;"></div>
+        <div id="bc-cur-phone" style="font-size:0.85rem;margin-top:6px;"></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:16px;font-size:0.83rem;color:var(--muted);max-height:80px;overflow:auto;" id="bc-msg-preview"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+        <button class="btn" onclick="bcSkip()">Skip</button>
+        <button class="btn btn-primary" id="bc-open-btn" onclick="bcOpenWhatsApp()">📱 Open WhatsApp</button>
+        <button class="btn" id="bc-next-btn" onclick="bcNext()" style="display:none;background:#22c55e;color:#fff;border:none;">✅ Next →</button>
+      </div>
+      <div style="margin-top:12px;">
+        <div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden;">
+          <div id="bc-progress-bar" style="height:100%;background:var(--primary);transition:width 0.3s;width:0%;"></div>
+        </div>
+      </div>
+    </div>
+    <!-- DONE STEP -->
+    <div id="bc-done" style="display:none;text-align:center;padding:24px 0;">
+      <div style="font-size:2.5rem;margin-bottom:8px;">🎉</div>
+      <div style="font-weight:700;font-size:1.1rem;margin-bottom:6px;">Broadcast Complete!</div>
+      <div id="bc-done-summary" style="font-size:0.85rem;color:var(--muted);margin-bottom:20px;"></div>
+      <button class="btn btn-primary" onclick="closeBroadcast()">Done</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="sql-modal" style="display:none;">
   <div class="modal-box">
     <h2>⚙️ One-time Database Setup Required</h2>
@@ -3503,7 +3567,10 @@ function renderStudentsList() {
 
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
     <div style="font-size:0.85rem;color:var(--muted);">${list.length} student${list.length!==1?'s':''}</div>
-    <button class="btn btn-primary btn-sm" onclick="openAddStudent()">+ Add Student</button>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-sm" style="background:var(--surface);border:1px solid var(--border);" onclick="openBroadcast()">📢 Broadcast</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddStudent()">+ Add Student</button>
+    </div>
   </div>
 
   ${list.length === 0
@@ -3926,6 +3993,138 @@ async function deleteNote(noteId) {
     if (el) el.remove();
     toast('Note deleted.');
   } catch(e) { toast('Failed to delete note.','error'); }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   BROADCAST
+══════════════════════════════════════════════════════════════════ */
+let _bcAllStudents = [];
+let _bcFiltered = [];
+let _bcMode = 'all';
+let _bcInst = 'all';
+let _bcStep = 'setup';
+let _bcIndex = 0;
+let _bcSent = 0;
+
+function openBroadcast() {
+  // Use currently loaded students from the students list
+  _bcAllStudents = allStudents.filter(s => s.phone);
+  _bcMode = 'all'; _bcInst = 'all';
+  document.getElementById('bc-setup').style.display = '';
+  document.getElementById('bc-send').style.display = 'none';
+  document.getElementById('bc-done').style.display = 'none';
+  document.getElementById('bc-message').value = '';
+  _bcStep = 'setup';
+  // Build instrument chips
+  const insts = [...new Set(_bcAllStudents.map(s=>s.instrument).filter(Boolean))].sort();
+  document.getElementById('bc-inst-chips').innerHTML =
+    `<button class="chip active" id="bc-inst-all" onclick="setBcFilter('inst','all')">All Instruments</button>` +
+    insts.map(i=>`<button class="chip bc-inst-chip" data-inst="${i}" onclick="setBcFilter('inst','${i}')">${instrumentIcon(i)} ${i}</button>`).join('');
+  _bcUpdatePreview();
+  document.getElementById('broadcast-modal').style.display = 'flex';
+}
+
+function closeBroadcast() {
+  document.getElementById('broadcast-modal').style.display = 'none';
+}
+
+function setBcFilter(type, val) {
+  if (type === 'mode') {
+    _bcMode = val;
+    ['all','online','offline'].forEach(v => document.getElementById('bc-mode-'+v)?.classList.toggle('active', v===val));
+  } else {
+    _bcInst = val;
+    document.getElementById('bc-inst-all')?.classList.toggle('active', val==='all');
+    document.querySelectorAll('.bc-inst-chip').forEach(b => b.classList.toggle('active', b.dataset.inst===val));
+  }
+  _bcUpdatePreview();
+}
+
+function _bcGetFiltered() {
+  return _bcAllStudents.filter(s => {
+    if (_bcMode !== 'all' && s.mode !== _bcMode) return false;
+    if (_bcInst !== 'all' && (s.instrument||'') !== _bcInst) return false;
+    return true;
+  });
+}
+
+function _bcUpdatePreview() {
+  const f = _bcGetFiltered();
+  document.getElementById('bc-preview').textContent = `${f.length} student${f.length!==1?'s':''} will receive this message`;
+}
+
+function _bcPhone(s) {
+  let p = (s.phone||'').replace(/\D/g,'');
+  if (p.length === 10) p = '91' + p;
+  return p;
+}
+
+function startBroadcast() {
+  const msg = document.getElementById('bc-message').value.trim();
+  if (!msg) { alert('Please type a message first.'); return; }
+  _bcFiltered = _bcGetFiltered();
+  if (!_bcFiltered.length) { alert('No students with phone numbers match this filter.'); return; }
+  _bcIndex = 0; _bcSent = 0; _bcStep = 'send';
+  document.getElementById('bc-setup').style.display = 'none';
+  document.getElementById('bc-send').style.display = '';
+  _bcShowCurrent();
+}
+
+function _bcShowCurrent() {
+  const total = _bcFiltered.length;
+  if (_bcIndex >= total) { _bcFinish(); return; }
+  const s = _bcFiltered[_bcIndex];
+  const phone = _bcPhone(s);
+  document.getElementById('bc-progress-label').textContent = `${_bcIndex+1} of ${total}`;
+  document.getElementById('bc-cur-name').textContent = s.name;
+  document.getElementById('bc-cur-meta').textContent = `${s.student_id||''} · ${s.instrument||''} · ${s.mode==='online'?'🌐 Online':'🏫 Offline'}`;
+  document.getElementById('bc-cur-phone').innerHTML = phone ? `📞 ${s.phone}` : `<span style="color:var(--danger);">No phone number</span>`;
+  document.getElementById('bc-msg-preview').textContent = document.getElementById('bc-message').value.trim();
+  document.getElementById('bc-progress-bar').style.width = `${(_bcIndex/total)*100}%`;
+  document.getElementById('bc-open-btn').style.display = phone ? '' : 'none';
+  document.getElementById('bc-next-btn').style.display = 'none';
+}
+
+function bcOpenWhatsApp() {
+  const s = _bcFiltered[_bcIndex];
+  const phone = _bcPhone(s);
+  const msg = encodeURIComponent(document.getElementById('bc-message').value.trim());
+  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+  // Show Next button after opening WhatsApp
+  document.getElementById('bc-open-btn').style.display = 'none';
+  document.getElementById('bc-next-btn').style.display = '';
+}
+
+function bcNext() {
+  _bcSent++;
+  _bcIndex++;
+  const s = _bcFiltered[_bcIndex];
+  if (s) {
+    _bcShowCurrent();
+    // Auto-open WhatsApp for next student
+    const phone = _bcPhone(s);
+    if (phone) {
+      const msg = encodeURIComponent(document.getElementById('bc-message').value.trim());
+      window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+      document.getElementById('bc-open-btn').style.display = 'none';
+      document.getElementById('bc-next-btn').style.display = '';
+    }
+  } else {
+    _bcFinish();
+  }
+}
+
+function bcSkip() {
+  _bcIndex++;
+  if (_bcIndex >= _bcFiltered.length) { _bcFinish(); return; }
+  _bcShowCurrent();
+}
+
+function _bcFinish() {
+  document.getElementById('bc-send').style.display = 'none';
+  document.getElementById('bc-done').style.display = '';
+  document.getElementById('bc-done-summary').textContent = `Sent to ${_bcSent} of ${_bcFiltered.length} students`;
+  document.getElementById('bc-progress-bar').style.width = '100%';
 }
 
 /* ══════════════════════════════════════════════════════════════════
