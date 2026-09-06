@@ -1157,8 +1157,9 @@ tr:hover td { background: rgba(79,70,229,0.04); }
       <div style="margin-bottom:12px;">
         <div style="font-size:0.82rem;color:var(--muted);margin-bottom:6px;font-weight:600;">Message</div>
         <textarea id="bc-message" rows="5" placeholder="Type your message here…
-e.g. Dear Student, today's class timing changed to 3PM–5PM. Please be on time. – Chords Music Academy"
+e.g. Dear {name}, today's class timing changed to 3PM–5PM. Please be on time. – Chords Music Academy"
           style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;background:var(--surface);color:var(--text);resize:vertical;"></textarea>
+        <div style="font-size:0.76rem;color:var(--muted);margin-top:4px;">💡 Use <strong>{name}</strong> to insert each student's name automatically</div>
       </div>
       <div id="bc-preview" style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;"></div>
       <div style="display:flex;gap:8px;justify-content:flex-end;">
@@ -4079,18 +4080,23 @@ function _bcShowCurrent() {
   document.getElementById('bc-cur-name').textContent = s.name;
   document.getElementById('bc-cur-meta').textContent = `${s.student_id||''} · ${s.instrument||''} · ${s.mode==='online'?'🌐 Online':'🏫 Offline'}`;
   document.getElementById('bc-cur-phone').innerHTML = phone ? `📞 ${s.phone}` : `<span style="color:var(--danger);">No phone number</span>`;
-  document.getElementById('bc-msg-preview').textContent = document.getElementById('bc-message').value.trim();
+  document.getElementById('bc-msg-preview').textContent = _bcPersonalise(document.getElementById('bc-message').value.trim(), s);
   document.getElementById('bc-progress-bar').style.width = `${(_bcIndex/total)*100}%`;
   document.getElementById('bc-open-btn').style.display = phone ? '' : 'none';
   document.getElementById('bc-next-btn').style.display = 'none';
 }
 
+function _bcPersonalise(template, student) {
+  const firstName = (student.name || '').split(' ')[0];
+  return template.replace(/\{name\}/gi, firstName);
+}
+
 function bcOpenWhatsApp() {
   const s = _bcFiltered[_bcIndex];
   const phone = _bcPhone(s);
-  const msg = encodeURIComponent(document.getElementById('bc-message').value.trim());
+  const raw = document.getElementById('bc-message').value.trim();
+  const msg = encodeURIComponent(_bcPersonalise(raw, s));
   window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
-  // Show Next button after opening WhatsApp
   document.getElementById('bc-open-btn').style.display = 'none';
   document.getElementById('bc-next-btn').style.display = '';
 }
@@ -4101,10 +4107,10 @@ function bcNext() {
   const s = _bcFiltered[_bcIndex];
   if (s) {
     _bcShowCurrent();
-    // Auto-open WhatsApp for next student
     const phone = _bcPhone(s);
     if (phone) {
-      const msg = encodeURIComponent(document.getElementById('bc-message').value.trim());
+      const raw = document.getElementById('bc-message').value.trim();
+      const msg = encodeURIComponent(_bcPersonalise(raw, s));
       window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
       document.getElementById('bc-open-btn').style.display = 'none';
       document.getElementById('bc-next-btn').style.display = '';
