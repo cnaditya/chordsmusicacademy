@@ -85,6 +85,30 @@ exports.handler = async (event) => {
       }
       return { statusCode: 401, headers, body: JSON.stringify({ error: "Wrong password" }) };
     }
+    // Public: look up student by student_id for leave portal
+    if (preBody.action === "crm_lookup_student") {
+      const { student_id } = preBody;
+      if (!student_id) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id required" }) };
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?student_id=eq.${encodeURIComponent(student_id)}&is_active=eq.true&select=id,name,student_id,instrument,mode,teacher`, { headers: SB_H_PRE });
+      const rows = await r.json();
+      if (!Array.isArray(rows) || !rows.length) return { statusCode: 404, headers, body: JSON.stringify({ error: "Student not found" }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: rows[0] }) };
+    }
+
+    // Public: student submits leave request
+    if (preBody.action === "crm_submit_leave") {
+      const { student_db_id, student_id, student_name, date_from, date_to, reason } = preBody;
+      if (!student_db_id || !date_from || !date_to) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_db_id, date_from, date_to required" }) };
+      const payload = { student_db_id, student_id: student_id||'', student_name: student_name||'', date_from, date_to, reason: reason||'', status: 'pending' };
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_leaves`, {
+        method: 'POST', headers: { ...SB_H_PRE, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+        body: JSON.stringify(payload)
+      });
+      const result = await r.json();
+      if (!r.ok) return { statusCode: 400, headers, body: JSON.stringify({ error: result.message || 'Failed to submit leave' }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    }
+
   } catch(e) { /* fall through to normal auth */ }
 
   const adminToken = event.headers["x-admin-token"] || "";
@@ -531,6 +555,26 @@ exports.handler = async (event) => {
         result.push({ month: key, label, revenue: monthly[key]||0 });
       }
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, months: result }) };
+    }
+
+    if (action === "crm_get_leaves") {
+      const { student_db_id, status } = JSON.parse(event.body || "{}");
+      let url = `${SUPABASE_URL}/rest/v1/crm_leaves?order=date_from.desc&limit=200&select=*`;
+      if (student_db_id) url += `&student_db_id=eq.${student_db_id}`;
+      if (status && status !== 'all') url += `&status=eq.${status}`;
+      const r = await fetch(url, { headers: SB_H });
+      const rows = await r.json();
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, leaves: Array.isArray(rows) ? rows : [] }) };
+    }
+
+    if (action === "crm_update_leave") {
+      const { id, status: st, admin_note } = JSON.parse(event.body || "{}");
+      if (!id || !st) return { statusCode: 400, headers, body: JSON.stringify({ error: "id and status required" }) };
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_leaves?id=eq.${id}`, {
+        method: 'PATCH', headers: { ...SB_H, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: st, admin_note: admin_note||'' })
+      });
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
     }
 
     if (action === "crm_get_next_receipt_no") {

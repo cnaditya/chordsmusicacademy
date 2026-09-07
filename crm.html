@@ -1551,12 +1551,14 @@ CREATE TABLE IF NOT EXISTS crm_notes (
     <div class="panel-tab" onclick="switchTab('attendance')" data-tab="attendance">Attendance</div>
     <div class="panel-tab" onclick="switchTab('payments')" data-tab="payments">Payments</div>
     <div class="panel-tab" onclick="switchTab('notes')" data-tab="notes">Notes</div>
+    <div class="panel-tab" onclick="switchTab('leaves')" data-tab="leaves">Leaves</div>
   </div>
   <div class="panel-body" id="panel-body">
     <div id="tab-overview" class="tab-pane active"></div>
     <div id="tab-attendance" class="tab-pane"></div>
     <div id="tab-payments" class="tab-pane"></div>
     <div id="tab-notes" class="tab-pane"></div>
+    <div id="tab-leaves" class="tab-pane"></div>
   </div>
 </div>
 
@@ -3718,6 +3720,9 @@ async function viewStudent(id) {
     renderAttendanceTab(s, data.attendance||[]);
     document.getElementById('tab-payments').innerHTML = renderPaymentsTab(s);
     renderNotesTab(s, data.notes||[]);
+    renderLeavesTab(s, []);
+    // Load leaves async
+    apiCall({ action: 'crm_get_leaves', student_db_id: s.id }).then(d => renderLeavesTab(s, d.leaves||[])).catch(()=>{});
 
   } catch(e) {
     if (e.message !== 'table_not_found') toast('Failed to load student data.','error');
@@ -3959,6 +3964,49 @@ function renderNotesTab(s, notes) {
       : notes.map(n=>renderNoteItem(n)).join('')
     }
   </div>`;
+}
+
+function renderLeavesTab(s, leaves) {
+  const statusColor = { pending:'#f59e0b', approved:'#22c55e', rejected:'#ef4444' };
+  const statusLabel = { pending:'⏳ Pending', approved:'✅ Approved', rejected:'❌ Rejected' };
+  document.getElementById('tab-leaves').innerHTML = `
+  <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-size:0.83rem;color:var(--muted);">${leaves.length} leave request${leaves.length!==1?'s':''}</div>
+  </div>
+  ${leaves.length===0
+    ? `<div style="text-align:center;padding:30px;color:var(--muted);font-size:0.88rem;">No leave requests yet.</div>`
+    : leaves.map(l=>`
+      <div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+          <div>
+            <div style="font-weight:600;font-size:0.9rem;">
+              ${new Date(l.date_from).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}
+              ${l.date_to!==l.date_from?' → '+new Date(l.date_to).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):''}
+            </div>
+            ${l.reason?`<div style="font-size:0.82rem;color:var(--muted);margin-top:3px;">${escapeHtml(l.reason)}</div>`:''}
+            <div style="font-size:0.76rem;color:var(--muted);margin-top:4px;">Submitted ${new Date(l.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <span style="font-size:0.78rem;font-weight:600;color:${statusColor[l.status]||'#64748b'};">${statusLabel[l.status]||l.status}</span>
+            ${l.status==='pending'?`
+            <div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end;">
+              <button style="padding:4px 10px;border:none;border-radius:6px;background:#22c55e;color:#fff;font-size:0.75rem;font-weight:600;cursor:pointer;" onclick="updateLeave('${l.id}','approved')">Approve</button>
+              <button style="padding:4px 10px;border:none;border-radius:6px;background:#ef4444;color:#fff;font-size:0.75rem;font-weight:600;cursor:pointer;" onclick="updateLeave('${l.id}','rejected')">Reject</button>
+            </div>`:''}
+          </div>
+        </div>
+      </div>`).join('')
+  }`;
+}
+
+async function updateLeave(leaveId, status) {
+  try {
+    await apiCall({ action: 'crm_update_leave', id: leaveId, status });
+    const s = panelStudent;
+    const d = await apiCall({ action: 'crm_get_leaves', student_db_id: s.id });
+    renderLeavesTab(s, d.leaves||[]);
+    toast(status==='approved'?'Leave approved':'Leave rejected', status==='approved'?'success':'error');
+  } catch(e) { toast('Failed to update leave','error'); }
 }
 
 function renderNoteItem(n) {
