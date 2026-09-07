@@ -3980,8 +3980,15 @@ function renderLeavesTab(s, leaves) {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
           <div>
             <div style="font-weight:600;font-size:0.9rem;">
-              ${new Date(l.date_from).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}
-              ${l.date_to!==l.date_from?' → '+new Date(l.date_to).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):''}
+              ${(()=>{
+                if (l.selected_dates) {
+                  const dates = l.selected_dates.split(',').filter(Boolean).sort();
+                  const chips = dates.map(d=>new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short'})).join(' · ');
+                  return `<span style="font-size:0.83rem;">${chips}</span> <span style="font-size:0.78rem;color:var(--muted);">(${dates.length} day${dates.length!==1?'s':''})</span>`;
+                }
+                return new Date(l.date_from).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})
+                  + (l.date_to!==l.date_from?' → '+new Date(l.date_to).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'');
+              })()}
             </div>
             ${l.reason?`<div style="font-size:0.82rem;color:var(--muted);margin-top:3px;">${escapeHtml(l.reason)}</div>`:''}
             <div style="font-size:0.76rem;color:var(--muted);margin-top:4px;">Submitted ${new Date(l.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}</div>

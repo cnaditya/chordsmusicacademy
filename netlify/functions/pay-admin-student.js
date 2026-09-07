@@ -98,9 +98,9 @@ exports.handler = async (event) => {
 
     // Public: student submits leave request
     if (preBody.action === "crm_submit_leave") {
-      const { student_db_id, student_id, student_name, date_from, date_to, reason } = preBody;
+      const { student_db_id, student_id, student_name, date_from, date_to, selected_dates, reason } = preBody;
       if (!student_db_id || !date_from || !date_to) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_db_id, date_from, date_to required" }) };
-      const payload = { student_db_id, student_id: student_id||'', student_name: student_name||'', date_from, date_to, reason: reason||'', status: 'pending' };
+      const payload = { student_db_id, student_id: student_id||'', student_name: student_name||'', date_from, date_to, selected_dates: selected_dates||'', reason: reason||'', status: 'pending' };
       const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_leaves`, {
         method: 'POST', headers: { ...SB_H_PRE, 'Content-Type': 'application/json', Prefer: 'return=representation' },
         body: JSON.stringify(payload)
@@ -575,7 +575,7 @@ exports.handler = async (event) => {
       let newLeavesTaken = null;
       if (st === 'approved') {
         // Fetch the leave record to get dates and student
-        const leaveR = await fetch(`${SUPABASE_URL}/rest/v1/crm_leaves?id=eq.${id}&select=date_from,date_to,student_db_id,status`, { headers: SB_H });
+        const leaveR = await fetch(`${SUPABASE_URL}/rest/v1/crm_leaves?id=eq.${id}&select=date_from,date_to,student_db_id,status,selected_dates`, { headers: SB_H });
         const leaveRows = await leaveR.json();
         const leave = Array.isArray(leaveRows) ? leaveRows[0] : null;
         if (leave && leave.status === 'pending' && leave.student_db_id) {
@@ -584,16 +584,22 @@ exports.handler = async (event) => {
           const stuRows = await stuR.json();
           const stu = Array.isArray(stuRows) ? stuRows[0] : null;
           const current = stu ? (stu.leaves_taken || 0) : 0;
-          // Count only days that fall on the student's scheduled class days
           const scheduledDays = (stu && stu.class_days)
             ? stu.class_days.split(',').map(d => parseInt(d.trim())).filter(n => !isNaN(n))
             : [];
           let classDaysCount = 0;
-          const cur = new Date(leave.date_from + 'T00:00:00');
-          const end = new Date(leave.date_to + 'T00:00:00');
-          while (cur <= end) {
-            if (scheduledDays.length === 0 || scheduledDays.includes(cur.getDay())) classDaysCount++;
-            cur.setDate(cur.getDate() + 1);
+          if (leave.selected_dates) {
+            // Count specific selected dates that fall on class days
+            const dates = leave.selected_dates.split(',').filter(Boolean);
+            classDaysCount = dates.filter(d => scheduledDays.length === 0 || scheduledDays.includes(new Date(d + 'T00:00:00').getDay())).length;
+          } else {
+            // Fallback: iterate the date range
+            const cur = new Date(leave.date_from + 'T00:00:00');
+            const end = new Date(leave.date_to + 'T00:00:00');
+            while (cur <= end) {
+              if (scheduledDays.length === 0 || scheduledDays.includes(cur.getDay())) classDaysCount++;
+              cur.setDate(cur.getDate() + 1);
+            }
           }
           newLeavesTaken = current + classDaysCount;
           await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${leave.student_db_id}`, {
