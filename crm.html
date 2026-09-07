@@ -1297,6 +1297,9 @@ CREATE TABLE IF NOT EXISTS crm_notes (
       <div class="nav-item" onclick="navigate('payments')" data-page="payments">
         <span class="nav-icon">💳</span> Payments
       </div>
+      <div class="nav-item" onclick="navigate('bills')" data-page="bills">
+        <span class="nav-icon">🧾</span> Bills
+      </div>
       <div class="nav-item" onclick="navigate('attendance')" data-page="attendance">
         <span class="nav-icon">🗓️</span> Attendance
       </div>
@@ -1923,6 +1926,7 @@ function navigate(page) {
   else if (page === 'leads') loadLeads();
   else if (page === 'payments') loadPayments();
   else if (page === 'attendance') loadAttendancePage();
+  else if (page === 'bills') loadBills();
 }
 
 function toggleSidebar() {
@@ -3773,6 +3777,7 @@ function renderOverviewTab(s) {
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
     <button class="btn btn-primary btn-sm" onclick="openEditFromPanel()">✏️ Edit Student</button>
     <button class="btn btn-sm btn-ghost" onclick="openIdCardModal(panelStudent)">🪪 ID Card</button>
+    <button class="btn btn-sm btn-ghost" onclick="openBillModal(panelStudent)">🧾 New Bill</button>
     ${s.phone?`<a href="${waLink(s)}" target="_blank" class="btn btn-sm btn-ghost" style="color:var(--success);">💬 WhatsApp</a>`:''}
     ${s.phone && s.amount_due > 0 ? `<button data-remind-btn="${s.id}" class="btn btn-sm btn-ghost"
         style="${getRmdCount(s.id)>0?'':'background:#25d366;color:#fff;border:none;'}"
@@ -6655,7 +6660,372 @@ function confirmCrop() {
 function cancelCrop() {
   document.getElementById('photo-crop-modal').style.display = 'none';
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   BILLS PAGE — Instrument Sale Bills
+══════════════════════════════════════════════════════════════════ */
+let _billRows = [], _billPage = 0;
+const BILL_PER_PAGE = 15;
+
+async function loadBills() {
+  document.getElementById('page-content').innerHTML = renderLoading();
+  try {
+    const d = await apiCall({ action: 'crm_bills_list' });
+    _billRows = d.bills || [];
+    _billPage = 0;
+    renderBillsPage();
+  } catch(e) {
+    document.getElementById('page-content').innerHTML = `<div style="color:var(--danger);padding:20px;">${e.message}</div>`;
+  }
+}
+
+function renderBillsPage() {
+  const total = _billRows.length;
+  const pages = Math.ceil(total / BILL_PER_PAGE);
+  const slice = _billRows.slice(_billPage * BILL_PER_PAGE, (_billPage + 1) * BILL_PER_PAGE);
+
+  document.getElementById('page-content').innerHTML = `
+  <div style="max-width:800px;margin:0 auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div style="font-size:1.15rem;font-weight:700;">🧾 Instrument Sale Bills</div>
+        <div style="font-size:0.82rem;color:var(--muted);margin-top:2px;">${total} bill${total!==1?'s':''} total</div>
+      </div>
+      <button class="btn btn-primary" onclick="openBillModal(null)">+ New Bill</button>
+    </div>
+
+    ${total === 0 ? `<div style="text-align:center;padding:60px 20px;color:var(--muted);">
+      <div style="font-size:2.5rem;margin-bottom:12px;">🧾</div>
+      <div style="font-weight:600;margin-bottom:6px;">No bills yet</div>
+      <div style="font-size:0.85rem;">Create your first instrument sale bill</div>
+    </div>` : `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="background:var(--surface2);font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">
+          <th style="padding:10px 14px;text-align:left;font-weight:600;">Bill No</th>
+          <th style="padding:10px 14px;text-align:left;font-weight:600;">Date</th>
+          <th style="padding:10px 14px;text-align:left;font-weight:600;">Customer</th>
+          <th style="padding:10px 14px;text-align:left;font-weight:600;">Items</th>
+          <th style="padding:10px 14px;text-align:right;font-weight:600;">Total</th>
+          <th style="padding:10px 14px;text-align:center;font-weight:600;">Action</th>
+        </tr></thead>
+        <tbody>
+        ${slice.map(b => {
+          const items = Array.isArray(b.items) ? b.items : [];
+          const summary = items.map(i=>i.name).join(', ') || '—';
+          return `<tr style="border-top:1px solid var(--border);">
+            <td style="padding:10px 14px;font-weight:600;color:var(--primary);font-size:0.88rem;">${b.bill_no}</td>
+            <td style="padding:10px 14px;font-size:0.85rem;">${new Date(b.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
+            <td style="padding:10px 14px;">
+              <div style="font-weight:600;font-size:0.88rem;">${escapeHtml(b.customer_name)}</div>
+              ${b.customer_phone?`<div style="font-size:0.78rem;color:var(--muted);">${b.customer_phone}</div>`:''}
+            </td>
+            <td style="padding:10px 14px;font-size:0.82rem;color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(summary)}">${escapeHtml(summary)}</td>
+            <td style="padding:10px 14px;text-align:right;font-weight:700;color:var(--success);">₹${Number(b.total||0).toLocaleString('en-IN')}</td>
+            <td style="padding:10px 14px;text-align:center;">
+              <button style="padding:5px 12px;border:none;border-radius:6px;background:var(--primary);color:#fff;font-size:0.78rem;font-weight:600;cursor:pointer;" onclick='printBill(${JSON.stringify(b).replace(/'/g,"&#39;")})'>🖨 Print</button>
+            </td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table>
+    </div>
+    ${pages > 1 ? `<div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
+      <button class="btn btn-sm btn-ghost" ${_billPage===0?'disabled':''} onclick="_billPage--;renderBillsPage()">← Prev</button>
+      <span style="line-height:2;font-size:0.85rem;color:var(--muted);">Page ${_billPage+1} / ${pages}</span>
+      <button class="btn btn-sm btn-ghost" ${_billPage>=pages-1?'disabled':''} onclick="_billPage++;renderBillsPage()">Next →</button>
+    </div>` : ''}
+    `}
+  </div>`;
+}
+
+/* ── Bill Modal ── */
+let _billStudent = null; // pre-filled student if opened from panel
+
+function openBillModal(student) {
+  _billStudent = student || null;
+  const today = new Date().toISOString().slice(0,10);
+  const name = student ? student.name : '';
+  const phone = student ? (student.phone||'') : '';
+  document.getElementById('bill-modal').style.display = 'flex';
+  document.getElementById('bill-cust-name').value = name;
+  document.getElementById('bill-cust-phone').value = phone;
+  document.getElementById('bill-date').value = today;
+  document.getElementById('bill-payment').value = 'cash';
+  document.getElementById('bill-notes').value = '';
+  // Reset items to one row
+  _billItemCount = 0;
+  document.getElementById('bill-items-body').innerHTML = '';
+  addBillItem();
+  calcBillTotal();
+  document.getElementById('bill-gst').value = '0';
+}
+
+function closeBillModal() {
+  document.getElementById('bill-modal').style.display = 'none';
+}
+
+let _billItemCount = 0;
+
+function addBillItem() {
+  _billItemCount++;
+  const idx = _billItemCount;
+  const row = document.createElement('tr');
+  row.id = `bill-item-${idx}`;
+  row.innerHTML = `
+    <td style="padding:6px 4px;"><input type="text" placeholder="e.g. Casio CT-S300 Keyboard" oninput="calcBillTotal()"
+      style="width:100%;padding:7px 8px;font-size:0.85rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);" data-field="name"></td>
+    <td style="padding:6px 4px;width:60px;"><input type="number" value="1" min="1" oninput="calcBillTotal()"
+      style="width:100%;padding:7px 6px;font-size:0.85rem;border:1px solid var(--border);border-radius:6px;text-align:center;background:var(--bg);color:var(--text);" data-field="qty"></td>
+    <td style="padding:6px 4px;width:90px;"><input type="number" value="" min="0" placeholder="0" oninput="calcBillTotal()"
+      style="width:100%;padding:7px 6px;font-size:0.85rem;border:1px solid var(--border);border-radius:6px;text-align:right;background:var(--bg);color:var(--text);" data-field="rate"></td>
+    <td style="padding:6px 4px;width:80px;text-align:right;font-weight:600;font-size:0.85rem;" id="bill-item-amt-${idx}">₹0</td>
+    <td style="padding:6px 4px;width:30px;text-align:center;">
+      <button onclick="removeBillItem(${idx})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;line-height:1;">✕</button>
+    </td>`;
+  document.getElementById('bill-items-body').appendChild(row);
+}
+
+function removeBillItem(idx) {
+  const row = document.getElementById(`bill-item-${idx}`);
+  if (row) row.remove();
+  calcBillTotal();
+}
+
+function getBillItems() {
+  return [...document.querySelectorAll('#bill-items-body tr')].map(row => {
+    const name = row.querySelector('[data-field="name"]').value.trim();
+    const qty  = parseInt(row.querySelector('[data-field="qty"]').value) || 1;
+    const rate = parseInt(row.querySelector('[data-field="rate"]').value) || 0;
+    return { name, qty, rate, amount: qty * rate };
+  }).filter(i => i.name || i.rate);
+}
+
+function calcBillTotal() {
+  [...document.querySelectorAll('#bill-items-body tr')].forEach(row => {
+    const idx  = row.id.replace('bill-item-','');
+    const qty  = parseInt(row.querySelector('[data-field="qty"]').value) || 1;
+    const rate = parseInt(row.querySelector('[data-field="rate"]').value) || 0;
+    const amtEl = document.getElementById(`bill-item-amt-${idx}`);
+    if (amtEl) amtEl.textContent = '₹' + (qty * rate).toLocaleString('en-IN');
+  });
+  const items = getBillItems();
+  const subtotal = items.reduce((s,i) => s + i.amount, 0);
+  const gstPct = parseInt(document.getElementById('bill-gst').value) || 0;
+  const gstAmt = Math.round(subtotal * gstPct / 100);
+  const total  = subtotal + gstAmt;
+  document.getElementById('bill-subtotal').textContent = '₹' + subtotal.toLocaleString('en-IN');
+  document.getElementById('bill-gst-amt').textContent  = gstPct > 0 ? `₹${gstAmt.toLocaleString('en-IN')} (${gstPct}%)` : '₹0';
+  document.getElementById('bill-total-display').textContent = '₹' + total.toLocaleString('en-IN');
+}
+
+async function saveBill() {
+  const name  = document.getElementById('bill-cust-name').value.trim();
+  const phone = document.getElementById('bill-cust-phone').value.trim();
+  const date  = document.getElementById('bill-date').value;
+  const gstPct= parseInt(document.getElementById('bill-gst').value) || 0;
+  const payment = document.getElementById('bill-payment').value;
+  const notes   = document.getElementById('bill-notes').value.trim();
+  const items   = getBillItems();
+  if (!name) { toast('Customer name required','error'); return; }
+  if (items.length === 0) { toast('Add at least one item','error'); return; }
+  const subtotal = items.reduce((s,i) => s + i.amount, 0);
+  const gstAmt   = Math.round(subtotal * gstPct / 100);
+  const total    = subtotal + gstAmt;
+  const btn = document.getElementById('bill-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const res = await apiCall({ action: 'crm_bill_create', bill: {
+      customer_name: name, customer_phone: phone,
+      bill_date: date,
+      items, subtotal, gst_percent: gstPct, gst_amount: gstAmt, total,
+      payment_mode: payment, notes,
+      student_id: _billStudent ? _billStudent.id : null,
+    }});
+    closeBillModal();
+    toast('Bill saved!');
+    printBill(res.bill);
+    if (currentPage === 'bills') loadBills();
+  } catch(e) { toast(e.message || 'Failed to save bill','error'); }
+  btn.disabled = false; btn.textContent = '🖨 Save & Print';
+}
+
+function printBill(b) {
+  const items = Array.isArray(b.items) ? b.items : [];
+  const dateStr = new Date(b.bill_date || b.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+  const payLabel = {cash:'Cash',upi:'UPI',card:'Card / Swipe',cheque:'Cheque'}[b.payment_mode] || b.payment_mode || 'Cash';
+  const rows = items.map(i=>`
+    <tr>
+      <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;">${escapeHtml(i.name)}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;text-align:center;">${i.qty}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;text-align:right;">₹${Number(i.rate).toLocaleString('en-IN')}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;text-align:right;font-weight:600;">₹${Number(i.amount).toLocaleString('en-IN')}</td>
+    </tr>`).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Bill ${b.bill_no} — Chords Music Academy</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; margin: 0; padding: 32px; color: #1e293b; background: #fff; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 3px solid #4f46e5; }
+    .academy { color: #4f46e5; font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
+    .academy-sub { font-size: 0.82rem; color: #64748b; }
+    .bill-meta { text-align: right; }
+    .bill-no { font-size: 1.3rem; font-weight: 800; color: #4f46e5; }
+    .bill-date { font-size: 0.85rem; color: #64748b; margin-top: 3px; }
+    .section { margin-bottom: 20px; }
+    .section-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 5px; }
+    .customer-name { font-size: 1rem; font-weight: 700; }
+    .customer-phone { font-size: 0.85rem; color: #64748b; margin-top: 2px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    thead tr { background: #4f46e5; color: #fff; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    thead th { padding: 10px 12px; font-weight: 600; }
+    tbody tr:last-child td { border-bottom: none; }
+    .totals { display: flex; justify-content: flex-end; }
+    .totals table { width: 260px; }
+    .totals td { padding: 5px 12px; font-size: 0.88rem; }
+    .totals .grand { font-size: 1.05rem; font-weight: 800; color: #4f46e5; border-top: 2px solid #4f46e5; }
+    .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 0.78rem; color: #94a3b8; text-align: center; }
+    .payment-badge { display: inline-block; background: #dcfce7; color: #15803d; padding: 3px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; margin-top: 8px; }
+    @media print { body { padding: 20px; } button { display: none; } }
+  </style>
+  </head><body>
+  <div class="header">
+    <div>
+      <div class="academy">🎵 Chords Music Academy</div>
+      <div class="academy-sub">Musical Instrument Dealer · Hyderabad</div>
+    </div>
+    <div class="bill-meta">
+      <div class="bill-no">${b.bill_no}</div>
+      <div class="bill-date">${dateStr}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Billed To</div>
+    <div class="customer-name">${escapeHtml(b.customer_name)}</div>
+    ${b.customer_phone?`<div class="customer-phone">📞 ${b.customer_phone}</div>`:''}
+  </div>
+
+  <table>
+    <thead><tr>
+      <th style="text-align:left;padding:10px 12px;">Item / Instrument</th>
+      <th style="text-align:center;padding:10px 12px;width:60px;">Qty</th>
+      <th style="text-align:right;padding:10px 12px;width:100px;">Rate</th>
+      <th style="text-align:right;padding:10px 12px;width:110px;">Amount</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+
+  <div class="totals"><table>
+    <tr><td style="color:#64748b;">Subtotal</td><td style="text-align:right;">₹${Number(b.subtotal||0).toLocaleString('en-IN')}</td></tr>
+    ${(b.gst_percent||0)>0?`<tr><td style="color:#64748b;">GST (${b.gst_percent}%)</td><td style="text-align:right;">₹${Number(b.gst_amount||0).toLocaleString('en-IN')}</td></tr>`:''}
+    <tr class="grand"><td>Total</td><td style="text-align:right;">₹${Number(b.total||0).toLocaleString('en-IN')}</td></tr>
+  </table></div>
+
+  <div style="margin-top:16px;">
+    <div class="payment-badge">Payment: ${payLabel}</div>
+    ${b.notes?`<div style="margin-top:10px;font-size:0.83rem;color:#64748b;">Note: ${escapeHtml(b.notes)}</div>`:''}
+  </div>
+
+  <div class="footer">Thank you for your purchase! · Chords Music Academy · chordsmusicacademy.in</div>
+
+  <div style="text-align:center;margin-top:24px;">
+    <button onclick="window.print()" style="padding:10px 28px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:0.95rem;font-weight:600;cursor:pointer;">🖨 Print Bill</button>
+  </div>
+  </body></html>`;
+  const w = window.open('', '_blank', 'width=780,height=900');
+  w.document.write(html);
+  w.document.close();
+}
 </script>
+
+<!-- Bill Modal -->
+<div id="bill-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.75);z-index:1000;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
+  <div style="background:var(--surface);border-radius:16px;width:100%;max-width:620px;box-shadow:var(--shadow);margin:auto;">
+    <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:18px 22px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between;">
+      <div style="color:#fff;font-weight:700;font-size:1rem;">🧾 New Instrument Sale Bill</div>
+      <button onclick="closeBillModal()" style="background:none;border:none;color:rgba(255,255,255,0.8);font-size:1.3rem;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <div style="padding:22px 22px 0;">
+      <!-- Customer + date row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+        <div>
+          <label style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px;">Customer Name *</label>
+          <input id="bill-cust-name" type="text" placeholder="Full name"
+            style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;background:var(--bg);color:var(--text);">
+        </div>
+        <div>
+          <label style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px;">Phone</label>
+          <input id="bill-cust-phone" type="tel" placeholder="Mobile number"
+            style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;background:var(--bg);color:var(--text);">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;">
+        <div>
+          <label style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px;">Date</label>
+          <input id="bill-date" type="date"
+            style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;background:var(--bg);color:var(--text);">
+        </div>
+        <div>
+          <label style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px;">GST %</label>
+          <select id="bill-gst" oninput="calcBillTotal()"
+            style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;background:var(--bg);color:var(--text);">
+            <option value="0">No GST</option>
+            <option value="5">5%</option>
+            <option value="12">12%</option>
+            <option value="18">18%</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px;">Payment</label>
+          <select id="bill-payment"
+            style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;background:var(--bg);color:var(--text);">
+            <option value="cash">Cash</option>
+            <option value="upi">UPI</option>
+            <option value="card">Card / Swipe</option>
+            <option value="cheque">Cheque</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Items table -->
+      <div style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Items</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="background:var(--surface2);font-size:0.72rem;color:var(--muted);text-transform:uppercase;">
+            <th style="padding:7px 4px 7px 0;text-align:left;font-weight:600;">Instrument / Item</th>
+            <th style="padding:7px 4px;text-align:center;font-weight:600;width:60px;">Qty</th>
+            <th style="padding:7px 4px;text-align:right;font-weight:600;width:90px;">Rate (₹)</th>
+            <th style="padding:7px 4px;text-align:right;font-weight:600;width:80px;">Amount</th>
+            <th style="width:30px;"></th>
+          </tr></thead>
+          <tbody id="bill-items-body"></tbody>
+        </table>
+      </div>
+      <button onclick="addBillItem()" style="margin-top:8px;background:none;border:1px dashed var(--border);border-radius:8px;padding:6px 16px;font-size:0.83rem;color:var(--muted);cursor:pointer;width:100%;">+ Add Item</button>
+
+      <!-- Totals -->
+      <div style="display:flex;justify-content:flex-end;margin-top:14px;">
+        <table style="width:220px;">
+          <tr><td style="padding:4px 8px;font-size:0.85rem;color:var(--muted);">Subtotal</td><td id="bill-subtotal" style="padding:4px 8px;text-align:right;font-size:0.85rem;font-weight:600;">₹0</td></tr>
+          <tr><td style="padding:4px 8px;font-size:0.85rem;color:var(--muted);">GST</td><td id="bill-gst-amt" style="padding:4px 8px;text-align:right;font-size:0.85rem;">₹0</td></tr>
+          <tr style="border-top:2px solid var(--primary);"><td style="padding:6px 8px;font-weight:700;color:var(--primary);">Total</td><td id="bill-total-display" style="padding:6px 8px;text-align:right;font-weight:800;font-size:1.05rem;color:var(--primary);">₹0</td></tr>
+        </table>
+      </div>
+
+      <!-- Notes -->
+      <div style="margin-top:14px;margin-bottom:18px;">
+        <label style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px;">Notes (optional)</label>
+        <input id="bill-notes" type="text" placeholder="e.g. Warranty 1 year, includes bag"
+          style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;background:var(--bg);color:var(--text);">
+      </div>
+    </div>
+
+    <div style="padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeBillModal()" class="btn btn-ghost">Cancel</button>
+      <button id="bill-save-btn" onclick="saveBill()" class="btn btn-primary">🖨 Save & Print</button>
+    </div>
+  </div>
+</div>
 
 <!-- Photo Crop Modal -->
 <div id="photo-crop-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.75);z-index:1100;align-items:center;justify-content:center;padding:20px;">

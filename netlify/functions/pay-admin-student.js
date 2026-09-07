@@ -616,6 +616,31 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, leaves_taken: newLeavesTaken }) };
     }
 
+    if (action === "crm_bills_list") {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_bills?order=created_at.desc&limit=500`, { headers: SB_H });
+      const bills = await r.json();
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, bills: Array.isArray(bills) ? bills : [] }) };
+    }
+
+    if (action === "crm_bill_create") {
+      const { bill } = JSON.parse(event.body || "{}");
+      if (!bill || !bill.customer_name) return { statusCode: 400, headers, body: JSON.stringify({ error: "customer_name required" }) };
+      // Auto-generate bill number: INV-YYYY-NNN
+      const year = new Date().getFullYear();
+      const cntR = await fetch(`${SUPABASE_URL}/rest/v1/crm_bills?bill_no=like.INV-${year}-*&select=bill_no`, { headers: SB_H });
+      const existing = await cntR.json();
+      const nextNo = String((Array.isArray(existing) ? existing.length : 0) + 1).padStart(3, '0');
+      bill.bill_no = `INV-${year}-${nextNo}`;
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_bills`, {
+        method: 'POST', headers: { ...SB_H, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+        body: JSON.stringify(bill)
+      });
+      const result = await r.json();
+      if (!r.ok) return { statusCode: 400, headers, body: JSON.stringify({ error: (Array.isArray(result)?result[0]:result)?.message || 'Failed to create bill' }) };
+      const created = Array.isArray(result) ? result[0] : result;
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, bill: created }) };
+    }
+
     if (action === "crm_get_next_receipt_no") {
       const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_notes?content=like.Receipt%20%23*&select=content&order=created_at.desc&limit=100`, { headers: SB_H });
       const notes = await r.json();
