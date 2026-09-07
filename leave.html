@@ -50,11 +50,11 @@
     <p>Student Leave Request</p>
   </div>
 
-  <!-- STEP 1: Enter Student ID -->
+  <!-- STEP 1: Enter Phone -->
   <div class="step active" id="step1">
     <div class="field">
-      <label>Your Student ID</label>
-      <input type="text" id="s-id-input" placeholder="e.g. CMA-2026-012" autocomplete="off" oninput="this.value=this.value.toUpperCase()">
+      <label>Your Registered Mobile Number</label>
+      <input type="tel" id="s-id-input" placeholder="e.g. 9876543210" autocomplete="tel" maxlength="15">
     </div>
     <div id="lookup-error" class="alert alert-error" style="display:none;"></div>
     <button class="btn" id="lookup-btn" onclick="lookupStudent()">Find My Account →</button>
@@ -117,7 +117,7 @@ async function lookupStudent() {
   const btn = document.getElementById('lookup-btn');
   btn.disabled = true; btn.textContent = 'Looking up…';
   try {
-    const d = await post({ action: 'crm_lookup_student', student_id: sid });
+    const d = await post({ action: 'crm_lookup_student', phone: sid });
     _student = d.student;
     document.getElementById('stu-info').innerHTML = `
       <div class="stu-name">${_student.name}</div>
@@ -128,7 +128,7 @@ async function lookupStudent() {
     document.getElementById('l-to').value = today;
     show('step2');
   } catch(e) {
-    errEl.textContent = e.message === 'Student not found' ? 'Student ID not found. Please check and try again.' : e.message;
+    errEl.textContent = e.message === 'Student not found' ? 'Mobile number not found. Please use the number registered with us.' : e.message;
     errEl.style.display = '';
   }
   btn.disabled = false; btn.textContent = 'Find My Account →';

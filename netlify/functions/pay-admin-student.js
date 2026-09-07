@@ -85,11 +85,12 @@ exports.handler = async (event) => {
       }
       return { statusCode: 401, headers, body: JSON.stringify({ error: "Wrong password" }) };
     }
-    // Public: look up student by student_id for leave portal
+    // Public: look up student by phone for leave portal
     if (preBody.action === "crm_lookup_student") {
-      const { student_id } = preBody;
-      if (!student_id) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id required" }) };
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?student_id=eq.${encodeURIComponent(student_id)}&is_active=eq.true&select=id,name,student_id,instrument,mode,teacher`, { headers: SB_H_PRE });
+      const { phone } = preBody;
+      if (!phone) return { statusCode: 400, headers, body: JSON.stringify({ error: "phone required" }) };
+      const digits = phone.replace(/\D/g,'').slice(-10);
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?phone=like.*${digits}&is_active=eq.true&select=id,name,student_id,instrument,mode,teacher`, { headers: SB_H_PRE });
       const rows = await r.json();
       if (!Array.isArray(rows) || !rows.length) return { statusCode: 404, headers, body: JSON.stringify({ error: "Student not found" }) };
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: rows[0] }) };
