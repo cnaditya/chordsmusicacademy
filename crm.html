@@ -4001,8 +4001,15 @@ function renderLeavesTab(s, leaves) {
 
 async function updateLeave(leaveId, status) {
   try {
-    await apiCall({ action: 'crm_update_leave', id: leaveId, status });
+    const res = await apiCall({ action: 'crm_update_leave', id: leaveId, status });
     const s = panelStudent;
+    // Update panelStudent.leaves_taken so edit form gets fresh value
+    if (status === 'approved' && res.leaves_taken != null) {
+      s.leaves_taken = res.leaves_taken;
+      // If edit form is open for this student, update the field live
+      const ltEl = document.getElementById('f-leaves-taken');
+      if (ltEl && editingStudentId === s.id) ltEl.value = res.leaves_taken;
+    }
     const d = await apiCall({ action: 'crm_get_leaves', student_db_id: s.id });
     renderLeavesTab(s, d.leaves||[]);
     toast(status==='approved'?'Leave approved':'Leave rejected', status==='approved'?'success':'error');
@@ -4420,6 +4427,7 @@ function populateForm(s) {
   set('f-due-date', s.due_date);
   set('f-total-classes', s.total_classes_per_cycle);
   set('f-classes-offset', s.classes_offset || 0);
+  set('f-leaves-taken', s.leaves_taken || 0);
   set('f-notes', s.notes);
 
   document.querySelectorAll('input[name="f-mode"]').forEach(r=>r.checked = r.value===(s.mode||'online'));
@@ -4457,6 +4465,7 @@ function getFormData() {
     due_date: get('f-due-date') || null,
     total_classes_per_cycle: parseInt(get('f-total-classes'))||8,
     classes_offset: parseInt(get('f-classes-offset'))||0,
+    leaves_taken: parseInt(get('f-leaves-taken'))||0,
     notes: get('f-notes'),
   };
 }

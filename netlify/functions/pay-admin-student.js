@@ -571,11 +571,32 @@ exports.handler = async (event) => {
     if (action === "crm_update_leave") {
       const { id, status: st, admin_note } = JSON.parse(event.body || "{}");
       if (!id || !st) return { statusCode: 400, headers, body: JSON.stringify({ error: "id and status required" }) };
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_leaves?id=eq.${id}`, {
+
+      let newLeavesTaken = null;
+      if (st === 'approved') {
+        // Fetch the leave record to get dates and student
+        const leaveR = await fetch(`${SUPABASE_URL}/rest/v1/crm_leaves?id=eq.${id}&select=date_from,date_to,student_db_id,status`, { headers: SB_H });
+        const leaveRows = await leaveR.json();
+        const leave = Array.isArray(leaveRows) ? leaveRows[0] : null;
+        if (leave && leave.status === 'pending' && leave.student_db_id) {
+          const days = Math.round((new Date(leave.date_to) - new Date(leave.date_from)) / (1000 * 60 * 60 * 24)) + 1;
+          // Fetch current leaves_taken for this student
+          const stuR = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${leave.student_db_id}&select=leaves_taken`, { headers: SB_H });
+          const stuRows = await stuR.json();
+          const current = (Array.isArray(stuRows) && stuRows[0]) ? (stuRows[0].leaves_taken || 0) : 0;
+          newLeavesTaken = current + days;
+          await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${leave.student_db_id}`, {
+            method: 'PATCH', headers: { ...SB_H, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+            body: JSON.stringify({ leaves_taken: newLeavesTaken })
+          });
+        }
+      }
+
+      await fetch(`${SUPABASE_URL}/rest/v1/crm_leaves?id=eq.${id}`, {
         method: 'PATCH', headers: { ...SB_H, 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: st, admin_note: admin_note||'' })
       });
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, leaves_taken: newLeavesTaken }) };
     }
 
     if (action === "crm_get_next_receipt_no") {
