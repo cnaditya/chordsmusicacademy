@@ -5996,10 +5996,10 @@ async function loadPayments() {
             <input type="date" id="pay-date" value="${today}" style="padding:10px 12px;font-size:0.9rem;border-radius:var(--radius-sm);">
           </div>
           <div class="form-group">
-            <label style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Amount (₹) <span style="color:var(--gold);">*</span></label>
+            <label style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Amount Paid (₹) <span style="color:var(--gold);">*</span></label>
             <input type="number" id="pay-amount" placeholder="0" min="0"
               style="padding:10px 12px;font-size:0.9rem;border-radius:var(--radius-sm);"
-              oninput="updatePayWords()">
+              oninput="updatePayWords();calcBalance()">
           </div>
           <div class="form-group">
             <label style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Payment Method</label>
@@ -6024,6 +6024,37 @@ async function loadPayments() {
             <label style="font-size:0.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Next Due Date</label>
             <input type="date" id="pay-next-due" style="padding:10px 12px;font-size:0.9rem;border-radius:var(--radius-sm);">
           </div>
+
+          <!-- Partial payment toggle -->
+          <div class="form-group full" style="margin-top:4px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88rem;font-weight:600;color:var(--text);">
+              <input type="checkbox" id="pay-partial-check" onchange="togglePartialPayment()" style="width:16px;height:16px;accent-color:#f59e0b;cursor:pointer;">
+              This is a partial payment (student will pay balance later)
+            </label>
+          </div>
+        </div>
+
+        <!-- Partial payment details (shown when checkbox ticked) -->
+        <div id="pay-partial-row" style="display:none;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:16px;">
+          <div style="font-size:0.78rem;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;">⚠️ Partial Payment Details</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+            <div>
+              <label style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px;">Total Fee Due (₹)</label>
+              <input type="number" id="pay-total-fee" placeholder="0" min="0" oninput="calcBalance()"
+                style="width:100%;padding:9px 10px;border:1px solid rgba(245,158,11,0.4);border-radius:8px;font-size:0.9rem;background:var(--bg);color:var(--text);">
+            </div>
+            <div>
+              <label style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px;">Balance Remaining (₹)</label>
+              <input type="number" id="pay-balance" readonly
+                style="width:100%;padding:9px 10px;border:1px solid rgba(245,158,11,0.4);border-radius:8px;font-size:0.9rem;font-weight:700;color:#b45309;background:rgba(245,158,11,0.05);cursor:not-allowed;">
+            </div>
+            <div>
+              <label style="font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px;">Balance Promise Date</label>
+              <input type="date" id="pay-promise-date"
+                style="width:100%;padding:9px 10px;border:1px solid rgba(245,158,11,0.4);border-radius:8px;font-size:0.9rem;background:var(--bg);color:var(--text);">
+            </div>
+          </div>
+          <div style="font-size:0.78rem;color:#92400e;margin-top:10px;">After generating the receipt, the student's outstanding balance will be updated automatically.</div>
         </div>
 
         <!-- Amount in words preview -->
@@ -6096,13 +6127,17 @@ function selectPayStudent(s) {
   document.getElementById('pay-dropdown').style.display = 'none';
 
   // Pre-fill fields
-  if (s.amount_due) document.getElementById('pay-amount').value = s.amount_due;
+  if (s.amount_due) {
+    document.getElementById('pay-amount').value = s.amount_due;
+    document.getElementById('pay-total-fee').value = s.amount_due;
+  }
   const pkg = s.payment_type ? cap(s.payment_type) : '';
   const inst = s.instrument || '';
   const mode = s.mode ? (s.mode === 'offline' ? 'Offline Group' : 'Online') : '';
   document.getElementById('pay-towards').value = [pkg, inst, mode].filter(Boolean).join(' · ');
   if (s.due_date) document.getElementById('pay-next-due').value = s.due_date;
   updatePayWords();
+  calcBalance();
 
   const info = document.getElementById('pay-student-info');
   info.style.display = 'block';
@@ -6143,6 +6178,21 @@ function numberToWords(num) {
   return (convert(intPart) || 'Zero') + ' Rupees Only';
 }
 
+function togglePartialPayment() {
+  const on = document.getElementById('pay-partial-check').checked;
+  document.getElementById('pay-partial-row').style.display = on ? '' : 'none';
+  calcBalance();
+}
+
+function calcBalance() {
+  const on = document.getElementById('pay-partial-check')?.checked;
+  if (!on) return;
+  const total = parseInt(document.getElementById('pay-total-fee').value) || 0;
+  const paid  = parseInt(document.getElementById('pay-amount').value) || 0;
+  const bal   = Math.max(0, total - paid);
+  document.getElementById('pay-balance').value = bal;
+}
+
 async function generateBillPDF() {
   const name = paySelectedStudent ? paySelectedStudent.name : document.getElementById('pay-student-search').value.trim();
   const studentId = paySelectedStudent ? (paySelectedStudent.student_id || '') : '';
@@ -6154,6 +6204,12 @@ async function generateBillPDF() {
   const chequeNo = document.getElementById('pay-cheque-no')?.value.trim() || '';
   const nextDueVal = document.getElementById('pay-next-due').value;
   const nextDueStr = nextDueVal ? new Date(nextDueVal + 'T12:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
+  // Partial payment
+  const isPartial = document.getElementById('pay-partial-check')?.checked || false;
+  const totalFee = parseInt(document.getElementById('pay-total-fee')?.value) || 0;
+  const balance  = Math.max(0, totalFee - amount);
+  const promiseDateVal = document.getElementById('pay-promise-date')?.value || '';
+  const promiseDateStr = promiseDateVal ? new Date(promiseDateVal + 'T12:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
 
   if (!name) { toast('Select a student first', 'error'); return; }
   if (!amount) { toast('Enter the amount', 'error'); return; }
@@ -6263,14 +6319,46 @@ async function generateBillPDF() {
 
     // ── TOTAL BAND ────────────────────────────────────────
     y += 14;
-    doc.setFillColor(201, 162, 39);
-    doc.rect(mx, y, W - mx*2, 12, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.setTextColor(10, 10, 26);
-    doc.text('TOTAL PAID', mx + 4, y + 8);
-    doc.setFontSize(12);
-    doc.text(`Rs. ${amount.toLocaleString('en-IN')}`, W - mx - 4, y + 8, { align: 'right' });
+    if (isPartial && totalFee > 0) {
+      // Show: Total Fee | Paid Now | Balance rows
+      // Total fee row (grey)
+      doc.setFillColor(230, 230, 235);
+      doc.rect(mx, y, W - mx*2, 9, 'F');
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(80, 80, 90);
+      doc.text('Total Fee Due', mx + 4, y + 6);
+      doc.text(`Rs. ${totalFee.toLocaleString('en-IN')}`, W - mx - 4, y + 6, { align: 'right' });
+      y += 9;
+      // Paid now row (gold)
+      doc.setFillColor(201, 162, 39);
+      doc.rect(mx, y, W - mx*2, 12, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(10, 10, 26);
+      doc.text('PAID NOW', mx + 4, y + 8);
+      doc.setFontSize(12);
+      doc.text(`Rs. ${amount.toLocaleString('en-IN')}`, W - mx - 4, y + 8, { align: 'right' });
+      y += 12;
+      // Balance row (red-ish)
+      doc.setFillColor(254, 226, 226);
+      doc.rect(mx, y, W - mx*2, 12, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(180, 40, 40);
+      doc.text('BALANCE DUE', mx + 4, y + 8);
+      doc.setFontSize(12);
+      doc.text(`Rs. ${balance.toLocaleString('en-IN')}`, W - mx - 4, y + 8, { align: 'right' });
+    } else {
+      doc.setFillColor(201, 162, 39);
+      doc.rect(mx, y, W - mx*2, 12, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(10, 10, 26);
+      doc.text('TOTAL PAID', mx + 4, y + 8);
+      doc.setFontSize(12);
+      doc.text(`Rs. ${amount.toLocaleString('en-IN')}`, W - mx - 4, y + 8, { align: 'right' });
+    }
 
     // ── PAYMENT DETAILS ───────────────────────────────────
     y += 22;
@@ -6282,7 +6370,7 @@ async function generateBillPDF() {
     y += 7;
     doc.setDrawColor(220, 215, 200);
     doc.setLineWidth(0.3);
-    const extraRows = (chequeNo ? 1 : 0) + (nextDueStr ? 1 : 0);
+    const extraRows = (chequeNo ? 1 : 0) + (nextDueStr ? 1 : 0) + (isPartial && promiseDateStr ? 1 : 0);
     const boxH = 16 + extraRows * 8;
     doc.setFillColor(252, 251, 247);
     doc.rect(mx, y, W - mx*2, boxH, 'F');
@@ -6304,6 +6392,15 @@ async function generateBillPDF() {
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(10, 10, 26);
       doc.text(chequeNo, W - mx - 4, rowY, { align: 'right' });
+      rowY += 8;
+    }
+    if (isPartial && promiseDateStr) {
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 90);
+      doc.text('Balance Payment Promised By', mx + 4, rowY);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(180, 40, 40);
+      doc.text(promiseDateStr, W - mx - 4, rowY, { align: 'right' });
       rowY += 8;
     }
     if (nextDueStr) {
@@ -6394,11 +6491,19 @@ async function generateBillPDF() {
     localStorage.setItem('cma_receipt_no', receiptNo);
 
     if (paySelectedStudent) {
-      await apiCall({
-        action: 'crm_add_note',
-        student_id: paySelectedStudent.id,
-        content: `Receipt #${receiptNo} issued — ₹${amount.toLocaleString('en-IN')} · ${towards} · ${cap(method)} · ${dateStr}`,
-      });
+      let noteContent;
+      if (isPartial && totalFee > 0) {
+        const promisePart = promiseDateStr ? ` · Balance ₹${balance.toLocaleString('en-IN')} promised by ${promiseDateStr}` : ` · Balance ₹${balance.toLocaleString('en-IN')} pending`;
+        noteContent = `Receipt #${receiptNo} issued — ₹${amount.toLocaleString('en-IN')} of ₹${totalFee.toLocaleString('en-IN')}${promisePart} · ${towards} · ${cap(method)} · ${dateStr}`;
+        // Update student's amount_due to remaining balance, due_date to promise date
+        const update = { amount_due: balance };
+        if (promiseDateVal) update.due_date = promiseDateVal;
+        await apiCall({ action: 'crm_update', id: paySelectedStudent.id, student: update });
+        paySelectedStudent.amount_due = balance;
+      } else {
+        noteContent = `Receipt #${receiptNo} issued — ₹${amount.toLocaleString('en-IN')} · ${towards} · ${cap(method)} · ${dateStr}`;
+      }
+      await apiCall({ action: 'crm_add_note', student_id: paySelectedStudent.id, content: noteContent });
     }
 
     // Auto-increment receipt number for next time
