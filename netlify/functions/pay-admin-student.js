@@ -579,12 +579,23 @@ exports.handler = async (event) => {
         const leaveRows = await leaveR.json();
         const leave = Array.isArray(leaveRows) ? leaveRows[0] : null;
         if (leave && leave.status === 'pending' && leave.student_db_id) {
-          const days = Math.round((new Date(leave.date_to) - new Date(leave.date_from)) / (1000 * 60 * 60 * 24)) + 1;
-          // Fetch current leaves_taken for this student
-          const stuR = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${leave.student_db_id}&select=leaves_taken`, { headers: SB_H });
+          // Fetch student's leaves_taken and class_days
+          const stuR = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${leave.student_db_id}&select=leaves_taken,class_days`, { headers: SB_H });
           const stuRows = await stuR.json();
-          const current = (Array.isArray(stuRows) && stuRows[0]) ? (stuRows[0].leaves_taken || 0) : 0;
-          newLeavesTaken = current + days;
+          const stu = Array.isArray(stuRows) ? stuRows[0] : null;
+          const current = stu ? (stu.leaves_taken || 0) : 0;
+          // Count only days that fall on the student's scheduled class days
+          const scheduledDays = (stu && stu.class_days)
+            ? stu.class_days.split(',').map(d => parseInt(d.trim())).filter(n => !isNaN(n))
+            : [];
+          let classDaysCount = 0;
+          const cur = new Date(leave.date_from + 'T00:00:00');
+          const end = new Date(leave.date_to + 'T00:00:00');
+          while (cur <= end) {
+            if (scheduledDays.length === 0 || scheduledDays.includes(cur.getDay())) classDaysCount++;
+            cur.setDate(cur.getDate() + 1);
+          }
+          newLeavesTaken = current + classDaysCount;
           await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${leave.student_db_id}`, {
             method: 'PATCH', headers: { ...SB_H, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
             body: JSON.stringify({ leaves_taken: newLeavesTaken })
