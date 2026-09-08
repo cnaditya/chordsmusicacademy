@@ -4161,30 +4161,44 @@ function _bcPersonalise(template, student) {
   return template.replace(/\{name\}/gi, firstName);
 }
 
-function bcOpenWhatsApp() {
-  const s = _bcFiltered[_bcIndex];
+let _bcWinPoll = null;
+
+function _bcOpenWa(s) {
   const phone = _bcPhone(s);
   const raw = document.getElementById('bc-message').value.trim();
   const msg = encodeURIComponent(_bcPersonalise(raw, s));
-  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+  const w = window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
   document.getElementById('bc-open-btn').style.display = 'none';
   document.getElementById('bc-next-btn').style.display = '';
+  // Auto-advance when the tab is closed (works with or without Tampermonkey)
+  clearInterval(_bcWinPoll);
+  if (w) {
+    _bcWinPoll = setInterval(() => {
+      if (w.closed) {
+        clearInterval(_bcWinPoll);
+        _bcWinPoll = null;
+        // Only auto-next if Next button is still showing (not already clicked)
+        if (document.getElementById('bc-next-btn')?.style.display !== 'none') {
+          bcNext();
+        }
+      }
+    }, 600);
+  }
+}
+
+function bcOpenWhatsApp() {
+  _bcOpenWa(_bcFiltered[_bcIndex]);
 }
 
 function bcNext() {
   _bcSent++;
   _bcIndex++;
+  clearInterval(_bcWinPoll);
+  _bcWinPoll = null;
   const s = _bcFiltered[_bcIndex];
   if (s) {
     _bcShowCurrent();
-    const phone = _bcPhone(s);
-    if (phone) {
-      const raw = document.getElementById('bc-message').value.trim();
-      const msg = encodeURIComponent(_bcPersonalise(raw, s));
-      window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
-      document.getElementById('bc-open-btn').style.display = 'none';
-      document.getElementById('bc-next-btn').style.display = '';
-    }
+    if (_bcPhone(s)) _bcOpenWa(s);
   } else {
     _bcFinish();
   }
