@@ -7067,12 +7067,18 @@ function loadAIInsights() {
     <!-- API Key Settings -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;">
       <div style="font-size:0.78rem;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Groq API Key (Free)</div>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
         <input type="password" id="ai-api-key" value="${key}" placeholder="Paste your Groq API key here…"
           style="flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;background:var(--bg);color:var(--text);">
         <button class="btn btn-primary" style="white-space:nowrap;" onclick="aiSaveKey()">Save Key</button>
       </div>
-      <div style="font-size:0.74rem;color:var(--muted);margin-top:6px;">Key stored only in this browser. Get a free key at <b>console.groq.com</b> → API Keys → Create API Key.</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <label style="font-size:0.74rem;color:var(--muted);white-space:nowrap;">Model:</label>
+        <input type="text" id="ai-model" value="${localStorage.getItem('cma_groq_model')||''}" placeholder="auto-detect (or type model name)"
+          style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:0.78rem;background:var(--bg);color:var(--text);">
+        <button class="btn btn-sm btn-ghost" onclick="aiDetectModel()" style="white-space:nowrap;font-size:0.75rem;">🔍 Detect</button>
+      </div>
+      <div style="font-size:0.74rem;color:var(--muted);">Key stored only in this browser. Free key: <b>console.groq.com</b> → API Keys → Create API Key.</div>
     </div>
 
     <!-- Quick Analysis Buttons -->
@@ -7120,9 +7126,38 @@ function aiSaveKey() {
   const k = document.getElementById('ai-api-key').value.trim();
   if (!k) { alert('Please paste your API key first.'); return; }
   localStorage.setItem(AI_KEY_LS, k);
+  const m = document.getElementById('ai-model').value.trim();
+  if (m) localStorage.setItem('cma_groq_model', m);
   const btn = event.target;
   btn.textContent = '✓ Saved';
   setTimeout(() => btn.textContent = 'Save Key', 1500);
+}
+
+async function aiDetectModel() {
+  const key = localStorage.getItem(AI_KEY_LS);
+  if (!key) { alert('Save your API key first.'); return; }
+  const modelEl = document.getElementById('ai-model');
+  modelEl.value = 'detecting…';
+  try {
+    const mr = await fetch('https://api.groq.com/openai/v1/models', {
+      headers: { 'Authorization': `Bearer ${key}` }
+    });
+    if (!mr.ok) throw new Error('Failed to list models');
+    const md = await mr.json();
+    const prefer = ['llama-3.3','llama-3.1-70b','llama-3.1-8b','llama3-70b','llama3-8b','gemma2','gemma','mixtral'];
+    const ids = (md.data || []).map(m => m.id);
+    let picked = ids[0] || '';
+    for (const p of prefer) {
+      const found = ids.find(id => id.toLowerCase().includes(p));
+      if (found) { picked = found; break; }
+    }
+    modelEl.value = picked;
+    localStorage.setItem('cma_groq_model', picked);
+    alert(`Model detected: ${picked}`);
+  } catch(e) {
+    modelEl.value = '';
+    alert('Could not detect models: ' + e.message + '\n\nCheck your API key and try again.');
+  }
 }
 
 function aiAskCustom() {
@@ -7185,22 +7220,11 @@ QUESTION: ${userPrompt}
   wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   try {
-    // Auto-pick best available Groq model
-    let model = 'llama-3.1-8b-instant';
-    try {
-      const mr = await fetch('https://api.groq.com/openai/v1/models', {
-        headers: { 'Authorization': `Bearer ${key}` }
-      });
-      if (mr.ok) {
-        const md = await mr.json();
-        const prefer = ['llama-3.3-70b','llama-3.1-70b','llama3-70b','llama-3.1-8b','llama3-8b','gemma2','gemma','mixtral'];
-        const ids = (md.data || []).map(m => m.id);
-        for (const p of prefer) {
-          const found = ids.find(id => id.includes(p));
-          if (found) { model = found; break; }
-        }
-      }
-    } catch(_) {}
+    const model = localStorage.getItem('cma_groq_model') || 'llama-3.1-8b-instant';
+    if (!localStorage.getItem('cma_groq_model')) {
+      body.innerHTML = '<span style="color:var(--muted);">No model selected — click 🔍 Detect above first, then try again.</span>';
+      return;
+    }
 
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
