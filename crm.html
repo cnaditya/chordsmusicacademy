@@ -7174,14 +7174,25 @@ async function aiAsk(userPrompt) {
   const key = localStorage.getItem(AI_KEY_LS);
   if (!key) { alert('Please save your Groq API key first (top of this page).'); return; }
 
-  // Ensure student data is loaded
+  const model = localStorage.getItem('cma_groq_model');
+  if (!model) { alert('No model selected — click the 🔍 Detect button first.'); return; }
+
+  // Show loading immediately so user sees feedback
+  const wrap = document.getElementById('ai-response-wrap');
+  const body = document.getElementById('ai-response-body');
+  wrap.style.display = '';
+  body.innerHTML = '<span style="color:var(--muted);">✨ Loading student data…</span>';
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Fetch students if not loaded
   if (!allStudents || allStudents.length === 0) {
-    body.innerHTML = '<span style="color:var(--muted);">✨ Loading student data…</span>';
     try {
       const d = await apiCall({ action: 'crm_list' });
       allStudents = d.students || [];
-    } catch(e) { /* use whatever is loaded */ }
+    } catch(e) { /* proceed with empty */ }
   }
+  body.innerHTML = '<span style="color:var(--muted);">✨ Thinking…</span>';
+
   const students = allStudents || [];
   const active = students.filter(s => s.status === 'active');
   const inactive = students.filter(s => s.status !== 'active');
@@ -7223,19 +7234,7 @@ Now answer the following question in practical, actionable terms relevant to an 
 QUESTION: ${userPrompt}
   `.trim();
 
-  // Show loading state
-  const wrap = document.getElementById('ai-response-wrap');
-  const body = document.getElementById('ai-response-body');
-  wrap.style.display = '';
-  body.innerHTML = '<span style="color:var(--muted);">✨ Thinking…</span>';
-  wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
   try {
-    const model = localStorage.getItem('cma_groq_model') || 'llama-3.1-8b-instant';
-    if (!localStorage.getItem('cma_groq_model')) {
-      body.innerHTML = '<span style="color:var(--muted);">No model selected — click 🔍 Detect above first, then try again.</span>';
-      return;
-    }
 
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
