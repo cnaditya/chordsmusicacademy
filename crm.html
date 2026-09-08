@@ -6502,6 +6502,11 @@ async function generateBillPDF() {
         paySelectedStudent.amount_due = balance;
       } else {
         noteContent = `Receipt #${receiptNo} issued — ₹${amount.toLocaleString('en-IN')} · ${towards} · ${cap(method)} · ${dateStr}`;
+        // Full payment — clear outstanding balance, set next due date
+        const update = { amount_due: 0 };
+        if (nextDueVal) update.due_date = nextDueVal;
+        await apiCall({ action: 'crm_update', id: paySelectedStudent.id, student: update });
+        paySelectedStudent.amount_due = 0;
       }
       await apiCall({ action: 'crm_add_note', student_id: paySelectedStudent.id, content: noteContent });
     }
