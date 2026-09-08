@@ -2441,9 +2441,10 @@ async function processScan(raw) {
 
   // Check if already marked today before writing
   let existingRecord = null;
+  let attData = null;
   try {
-    const data = await apiCall({ action:'crm_get', id:student.id });
-    existingRecord = (data.attendance || []).find(a => a.date === today) || null;
+    attData = await apiCall({ action:'crm_get', id:student.id });
+    existingRecord = (attData.attendance || []).find(a => a.date === today) || null;
   } catch(e) {}
 
   let markedNow = false;
@@ -2533,7 +2534,7 @@ async function processScan(raw) {
   // Class progress (use mark response if freshly marked, else count from crm_get data)
   const presentCount = markedNow
     ? (markRes?.present_count || 0)
-    : (data?.attendance || []).filter(a => a.status === 'present').length;
+    : (attData?.attendance || []).filter(a => a.status === 'present').length;
   const total     = student.total_classes_per_cycle || 0;
   const remaining = total ? Math.max(0, total - presentCount) : null;
 
