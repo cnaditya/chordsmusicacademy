@@ -1180,10 +1180,13 @@ e.g. Dear {name}, today's class timing changed to 3PM–5PM. Please be on time. 
         <div id="bc-cur-phone" style="font-size:0.85rem;margin-top:6px;"></div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:16px;font-size:0.83rem;color:var(--muted);max-height:80px;overflow:auto;" id="bc-msg-preview"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
-        <button class="btn" onclick="bcSkip()">Skip</button>
-        <button class="btn btn-primary" id="bc-open-btn" onclick="bcOpenWhatsApp()">📱 Open WhatsApp</button>
-        <button class="btn" id="bc-next-btn" onclick="bcNext()" style="display:none;background:#22c55e;color:#fff;border:none;">✅ Next →</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center;">
+        <button class="btn" style="color:var(--danger);border-color:var(--danger);" onclick="bcStop()">⏹ Stop</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" onclick="bcSkip()">Skip</button>
+          <button class="btn btn-primary" id="bc-open-btn" onclick="bcOpenWhatsApp()">📱 Open WhatsApp</button>
+          <button class="btn" id="bc-next-btn" onclick="bcNext()" style="display:none;background:#22c55e;color:#fff;border:none;">✅ Next →</button>
+        </div>
       </div>
       <div style="margin-top:12px;">
         <div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden;">
@@ -4198,6 +4201,13 @@ function _bcFinish() {
   document.getElementById('bc-done').style.display = '';
   document.getElementById('bc-done-summary').textContent = `Sent to ${_bcSent} of ${_bcFiltered.length} students`;
   document.getElementById('bc-progress-bar').style.width = '100%';
+}
+
+function bcStop() {
+  document.getElementById('bc-send').style.display = 'none';
+  document.getElementById('bc-done').style.display = '';
+  document.getElementById('bc-done-summary').textContent = `Stopped early — sent to ${_bcSent} of ${_bcFiltered.length} students`;
+  document.getElementById('bc-progress-bar').style.width = `${(_bcSent/_bcFiltered.length)*100}%`;
 }
 
 /* ══════════════════════════════════════════════════════════════════
