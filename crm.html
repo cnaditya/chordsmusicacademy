@@ -7174,8 +7174,15 @@ async function aiAsk(userPrompt) {
   const key = localStorage.getItem(AI_KEY_LS);
   if (!key) { alert('Please save your Groq API key first (top of this page).'); return; }
 
-  // Build academy data summary from loaded students
-  const students = (typeof allStudents !== 'undefined' ? allStudents : []);
+  // Ensure student data is loaded
+  if (!allStudents || allStudents.length === 0) {
+    body.innerHTML = '<span style="color:var(--muted);">✨ Loading student data…</span>';
+    try {
+      const d = await apiCall({ action: 'crm_list' });
+      allStudents = d.students || [];
+    } catch(e) { /* use whatever is loaded */ }
+  }
+  const students = allStudents || [];
   const active = students.filter(s => s.status === 'active');
   const inactive = students.filter(s => s.status !== 'active');
   const totalFee = active.reduce((sum, s) => sum + (parseFloat(s.monthly_fee) || 0), 0);
