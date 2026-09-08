@@ -7078,12 +7078,12 @@ function loadAIInsights() {
     <!-- Quick Analysis Buttons -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:20px;">
       ${[
-        ['📊','Business Health','Give me a full health check of my music academy — students, revenue, retention, and what's working.'],
-        ['💰','Revenue Gaps','Where am I losing money? Analyse fee collection, pending dues, and suggest how to recover or improve.'],
-        ['⚠️','Retention Risk','Which types of students are most likely to drop out? What patterns suggest low engagement?'],
-        ['🚀','Growth Ideas','Give me 5 actionable strategies to grow student enrolment and increase monthly revenue.'],
-        ['📅','Batch Optimisation','How should I structure my batches and timings for maximum revenue and minimum idle time?'],
-        ['🎁','Upsell Opportunities','Based on current students, what instruments or add-on services can I upsell to increase income?'],
+        ['📊','Business Health',"Give me a full health check of my music academy - students, revenue, retention, and what is working well and what is not."],
+        ['💰','Revenue Gaps',"Where am I losing money? Analyse fee collection, pending dues, and suggest how to recover or improve income."],
+        ['⚠️','Retention Risk',"Which types of students are most likely to drop out? What patterns suggest low engagement or churn risk?"],
+        ['🚀','Growth Ideas',"Give me 5 actionable strategies to grow student enrolment and increase monthly revenue at my music academy."],
+        ['📅','Batch Optimisation',"How should I structure my batches and timings for maximum revenue and minimum idle time?"],
+        ['🎁','Upsell Opportunities',"Based on current students, what instruments or add-on services can I upsell to increase income per student?"],
       ].map(([icon, label, prompt]) => `
         <button onclick="aiAsk(${JSON.stringify(prompt)})"
           style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 12px;text-align:left;cursor:pointer;transition:border-color .15s;font-family:inherit;"
