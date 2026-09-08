@@ -7184,20 +7184,20 @@ async function aiAsk(userPrompt) {
   body.innerHTML = '<span style="color:var(--muted);">✨ Loading student data…</span>';
   wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-  // Fetch students if not loaded
+  // Fetch students + actual payment revenue in parallel
+  const fetches = [];
   if (!allStudents || allStudents.length === 0) {
-    try {
-      const d = await apiCall({ action: 'crm_list' });
-      allStudents = d.students || [];
-    } catch(e) { /* proceed with empty */ }
+    fetches.push(apiCall({ action: 'crm_list' }).then(d => { allStudents = d.students || []; }).catch(()=>{}));
   }
+  let revenueMonths = [];
+  fetches.push(apiCall({ action: 'crm_revenue_trend' }).then(d => { revenueMonths = d.months || []; }).catch(()=>{}));
+  await Promise.all(fetches);
+
   body.innerHTML = '<span style="color:var(--muted);">✨ Thinking…</span>';
 
   const students = allStudents || [];
   const active = students.filter(s => s.status === 'active');
   const inactive = students.filter(s => s.status !== 'active');
-  const totalFee = active.reduce((sum, s) => sum + (parseFloat(s.monthly_fee) || 0), 0);
-  const totalDue = students.reduce((sum, s) => sum + (parseFloat(s.amount_due) || 0), 0);
   const instruments = {};
   const modes = { online: 0, offline: 0 };
   const batches = {};
@@ -7211,9 +7211,16 @@ async function aiAsk(userPrompt) {
   const instList = Object.entries(instruments).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}: ${v}`).join(', ');
   const batchList = Object.entries(batches).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>`${k}: ${v}`).join(', ');
 
+  // Real revenue from actual payment notes
+  const last3Months = revenueMonths.slice(-3);
+  const last12Total = revenueMonths.reduce((s, m) => s + m.revenue, 0);
+  const avgMonthly = revenueMonths.filter(m => m.revenue > 0).length > 0
+    ? Math.round(last12Total / revenueMonths.filter(m => m.revenue > 0).length) : 0;
+  const revTrend = revenueMonths.slice(-6).map(m => `${m.label}: ₹${m.revenue.toLocaleString('en-IN')}`).join(', ');
+
   const context = `
 You are a business consultant for a music academy in Hyderabad, India called "Chords Music Academy".
-Here is the current data snapshot:
+Here is the current verified data snapshot:
 
 STUDENTS:
 - Total students: ${students.length}
@@ -7222,9 +7229,10 @@ STUDENTS:
 - Instrument breakdown (active): ${instList || 'N/A'}
 - Mode: ${modes.online} online, ${modes.offline} offline
 
-FINANCES:
-- Monthly fee income (active students): ₹${totalFee.toLocaleString('en-IN')}
-- Total pending dues: ₹${totalDue.toLocaleString('en-IN')}
+ACTUAL REVENUE COLLECTED (from payment records, last 6 months):
+${revTrend || 'No payment records found'}
+- Total collected last 12 months: ₹${last12Total.toLocaleString('en-IN')}
+- Average monthly collection: ₹${avgMonthly.toLocaleString('en-IN')}
 
 BATCHES (popular timings):
 ${batchList || 'N/A'}
