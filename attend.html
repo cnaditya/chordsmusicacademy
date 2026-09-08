@@ -171,9 +171,7 @@ async function autoMark() {
   const existing = (data.attendance||[]).find(a=>a.date===today);
 
   if (existing) {
-    const presentCount = markRes && markRes.present_count != null
-      ? markRes.present_count
-      : (data.attendance||[]).filter(a=>a.status==='present').length;
+    const presentCount = (data.attendance||[]).filter(a=>a.status==='present').length;
     return showResult(student, existing.status, false, presentCount, existing.marked_time || '');
   }
 
