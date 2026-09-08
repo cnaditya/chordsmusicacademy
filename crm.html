@@ -1169,24 +1169,23 @@ e.g. Dear {name}, today's class timing changed to 3PM–5PM. Please be on time. 
     </div>
     <!-- SEND STEP -->
     <div id="bc-send" style="display:none;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
         <h3 style="margin:0;">📢 Sending</h3>
         <span id="bc-progress-label" style="font-size:0.83rem;color:var(--muted);"></span>
       </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;">
-        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:4px;">Current student</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:4px;">Now sending to</div>
         <div id="bc-cur-name" style="font-size:1.1rem;font-weight:700;"></div>
         <div id="bc-cur-meta" style="font-size:0.82rem;color:var(--muted);margin-top:2px;"></div>
-        <div id="bc-cur-phone" style="font-size:0.85rem;margin-top:6px;"></div>
+        <div id="bc-cur-phone" style="font-size:0.85rem;margin-top:4px;"></div>
       </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:16px;font-size:0.83rem;color:var(--muted);max-height:80px;overflow:auto;" id="bc-msg-preview"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center;">
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button class="btn btn-primary" id="bc-open-btn" style="flex:1;" onclick="bcOpenWhatsApp()">💬 Open WhatsApp</button>
         <button class="btn" style="color:var(--danger);border-color:var(--danger);" onclick="bcStop()">⏹ Stop</button>
-        <div style="display:flex;gap:8px;">
-          <button class="btn" onclick="bcSkip()">Skip</button>
-          <button class="btn btn-primary" id="bc-open-btn" onclick="bcOpenWhatsApp()">📱 Open WhatsApp</button>
-          <button class="btn" id="bc-next-btn" onclick="bcNext()" style="display:none;background:#22c55e;color:#fff;border:none;">✅ Next →</button>
-        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" onclick="bcSkip()" style="flex:1;">⏭ Skip</button>
+        <button class="btn btn-primary" id="bc-next-btn" style="flex:1;display:none;" onclick="bcNext()">✅ Sent — Next →</button>
       </div>
       <div style="margin-top:12px;">
         <div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden;">
@@ -1305,6 +1304,9 @@ CREATE TABLE IF NOT EXISTS crm_notes (
       </div>
       <div class="nav-item" onclick="navigate('attendance')" data-page="attendance">
         <span class="nav-icon">🗓️</span> Attendance
+      </div>
+      <div class="nav-item" onclick="navigate('ai')" data-page="ai">
+        <span class="nav-icon">✨</span> AI Insights
       </div>
     </div>
     <div class="sidebar-footer">
@@ -1930,6 +1932,7 @@ function navigate(page) {
   else if (page === 'payments') loadPayments();
   else if (page === 'attendance') loadAttendancePage();
   else if (page === 'bills') loadBills();
+  else if (page === 'ai') loadAIInsights();
 }
 
 function toggleSidebar() {
@@ -4146,12 +4149,11 @@ function _bcShowCurrent() {
   if (_bcIndex >= total) { _bcFinish(); return; }
   const s = _bcFiltered[_bcIndex];
   const phone = _bcPhone(s);
-  document.getElementById('bc-progress-label').textContent = `${_bcIndex+1} of ${total}`;
+  document.getElementById('bc-progress-label').textContent = `${_bcIndex + 1} of ${total}`;
   document.getElementById('bc-cur-name').textContent = s.name;
   document.getElementById('bc-cur-meta').textContent = `${s.student_id||''} · ${s.instrument||''} · ${s.mode==='online'?'🌐 Online':'🏫 Offline'}`;
   document.getElementById('bc-cur-phone').innerHTML = phone ? `📞 ${s.phone}` : `<span style="color:var(--danger);">No phone number</span>`;
-  document.getElementById('bc-msg-preview').textContent = _bcPersonalise(document.getElementById('bc-message').value.trim(), s);
-  document.getElementById('bc-progress-bar').style.width = `${(_bcIndex/total)*100}%`;
+  document.getElementById('bc-progress-bar').style.width = `${(_bcIndex / total) * 100}%`;
   document.getElementById('bc-open-btn').style.display = phone ? '' : 'none';
   document.getElementById('bc-next-btn').style.display = 'none';
 }
@@ -4161,53 +4163,30 @@ function _bcPersonalise(template, student) {
   return template.replace(/\{name\}/gi, firstName);
 }
 
-let _bcWinPoll = null;
-
-function _bcOpenWa(s) {
+function bcOpenWhatsApp() {
+  const s = _bcFiltered[_bcIndex];
   const phone = _bcPhone(s);
-  const raw = document.getElementById('bc-message').value.trim();
-  const msg = encodeURIComponent(_bcPersonalise(raw, s));
-  const w = window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+  const msg = encodeURIComponent(_bcPersonalise(document.getElementById('bc-message').value.trim(), s));
+  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
   document.getElementById('bc-open-btn').style.display = 'none';
   document.getElementById('bc-next-btn').style.display = '';
-  // Auto-advance when the tab is closed (works with or without Tampermonkey)
-  clearInterval(_bcWinPoll);
-  if (w) {
-    _bcWinPoll = setInterval(() => {
-      if (w.closed) {
-        clearInterval(_bcWinPoll);
-        _bcWinPoll = null;
-        // Only auto-next if Next button is still showing (not already clicked)
-        if (document.getElementById('bc-next-btn')?.style.display !== 'none') {
-          bcNext();
-        }
-      }
-    }, 600);
-  }
-}
-
-function bcOpenWhatsApp() {
-  _bcOpenWa(_bcFiltered[_bcIndex]);
 }
 
 function bcNext() {
   _bcSent++;
   _bcIndex++;
-  clearInterval(_bcWinPoll);
-  _bcWinPoll = null;
-  const s = _bcFiltered[_bcIndex];
-  if (s) {
-    _bcShowCurrent();
-    if (_bcPhone(s)) _bcOpenWa(s);
-  } else {
-    _bcFinish();
-  }
+  _bcShowCurrent();
 }
 
 function bcSkip() {
   _bcIndex++;
-  if (_bcIndex >= _bcFiltered.length) { _bcFinish(); return; }
   _bcShowCurrent();
+}
+
+function bcStop() {
+  document.getElementById('bc-send').style.display = 'none';
+  document.getElementById('bc-done').style.display = '';
+  document.getElementById('bc-done-summary').textContent = `Stopped early — sent to ${_bcSent} of ${_bcFiltered.length} students`;
 }
 
 function _bcFinish() {
@@ -4215,13 +4194,6 @@ function _bcFinish() {
   document.getElementById('bc-done').style.display = '';
   document.getElementById('bc-done-summary').textContent = `Sent to ${_bcSent} of ${_bcFiltered.length} students`;
   document.getElementById('bc-progress-bar').style.width = '100%';
-}
-
-function bcStop() {
-  document.getElementById('bc-send').style.display = 'none';
-  document.getElementById('bc-done').style.display = '';
-  document.getElementById('bc-done-summary').textContent = `Stopped early — sent to ${_bcSent} of ${_bcFiltered.length} students`;
-  document.getElementById('bc-progress-bar').style.width = `${(_bcSent/_bcFiltered.length)*100}%`;
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -7071,6 +7043,174 @@ function printBill(b) {
   const w = window.open('', '_blank', 'width=780,height=900');
   w.document.write(html);
   w.document.close();
+}
+</script>
+
+<script>
+/* ═══════════════════════════════════════
+   AI INSIGHTS  (Gemini 1.5 Flash)
+═══════════════════════════════════════ */
+const AI_KEY_LS = 'cma_gemini_key';
+
+function loadAIInsights() {
+  const key = localStorage.getItem(AI_KEY_LS) || '';
+  document.getElementById('page-content').innerHTML = `
+  <div style="max-width:780px;margin:0 auto;padding-bottom:40px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+      <div style="font-size:2rem;">✨</div>
+      <div>
+        <div style="font-size:1.15rem;font-weight:700;">AI Business Insights</div>
+        <div style="font-size:0.82rem;color:var(--muted);">Powered by Google Gemini · analyses your student &amp; revenue data</div>
+      </div>
+    </div>
+
+    <!-- API Key Settings -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Gemini API Key</div>
+      <div style="display:flex;gap:8px;">
+        <input type="password" id="ai-api-key" value="${key}" placeholder="Paste your Gemini API key here…"
+          style="flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;background:var(--bg);color:var(--text);">
+        <button class="btn btn-primary" style="white-space:nowrap;" onclick="aiSaveKey()">Save Key</button>
+      </div>
+      <div style="font-size:0.74rem;color:var(--muted);margin-top:6px;">Key is stored only in this browser. Get a free key at <b>aistudio.google.com</b> → API Keys.</div>
+    </div>
+
+    <!-- Quick Analysis Buttons -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:20px;">
+      ${[
+        ['📊','Business Health','Give me a full health check of my music academy — students, revenue, retention, and what's working.'],
+        ['💰','Revenue Gaps','Where am I losing money? Analyse fee collection, pending dues, and suggest how to recover or improve.'],
+        ['⚠️','Retention Risk','Which types of students are most likely to drop out? What patterns suggest low engagement?'],
+        ['🚀','Growth Ideas','Give me 5 actionable strategies to grow student enrolment and increase monthly revenue.'],
+        ['📅','Batch Optimisation','How should I structure my batches and timings for maximum revenue and minimum idle time?'],
+        ['🎁','Upsell Opportunities','Based on current students, what instruments or add-on services can I upsell to increase income?'],
+      ].map(([icon, label, prompt]) => `
+        <button onclick="aiAsk(${JSON.stringify(prompt)})"
+          style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 12px;text-align:left;cursor:pointer;transition:border-color .15s;font-family:inherit;"
+          onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-size:1.4rem;margin-bottom:6px;">${icon}</div>
+          <div style="font-size:0.88rem;font-weight:700;color:var(--text);">${label}</div>
+        </button>`).join('')}
+    </div>
+
+    <!-- Custom Question -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Ask anything</div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="ai-custom-q" placeholder="e.g. Which instrument has the most students? How can I reduce leaves?"
+          style="flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;background:var(--bg);color:var(--text);"
+          onkeydown="if(event.key==='Enter') aiAskCustom()">
+        <button class="btn btn-primary" onclick="aiAskCustom()">Ask →</button>
+      </div>
+    </div>
+
+    <!-- Response Area -->
+    <div id="ai-response-wrap" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">AI Response</div>
+        <button onclick="document.getElementById('ai-response-wrap').style.display='none'"
+          style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem;">✕</button>
+      </div>
+      <div id="ai-response-body" style="font-size:0.9rem;line-height:1.7;color:var(--text);white-space:pre-wrap;"></div>
+    </div>
+  </div>`;
+}
+
+function aiSaveKey() {
+  const k = document.getElementById('ai-api-key').value.trim();
+  if (!k) { alert('Please paste your API key first.'); return; }
+  localStorage.setItem(AI_KEY_LS, k);
+  const btn = event.target;
+  btn.textContent = '✓ Saved';
+  setTimeout(() => btn.textContent = 'Save Key', 1500);
+}
+
+function aiAskCustom() {
+  const q = document.getElementById('ai-custom-q').value.trim();
+  if (!q) return;
+  aiAsk(q);
+}
+
+async function aiAsk(userPrompt) {
+  const key = localStorage.getItem(AI_KEY_LS);
+  if (!key) { alert('Please save your Gemini API key first (top of this page).'); return; }
+
+  // Build academy data summary from loaded students
+  const students = (typeof allStudents !== 'undefined' ? allStudents : []);
+  const active = students.filter(s => s.status === 'active');
+  const inactive = students.filter(s => s.status !== 'active');
+  const totalFee = active.reduce((sum, s) => sum + (parseFloat(s.monthly_fee) || 0), 0);
+  const totalDue = students.reduce((sum, s) => sum + (parseFloat(s.amount_due) || 0), 0);
+  const instruments = {};
+  const modes = { online: 0, offline: 0 };
+  const batches = {};
+  for (const s of active) {
+    const inst = s.instrument || 'Unknown';
+    instruments[inst] = (instruments[inst] || 0) + 1;
+    if (s.mode === 'online') modes.online++; else modes.offline++;
+    const b = s.batch_timing || 'Unknown';
+    batches[b] = (batches[b] || 0) + 1;
+  }
+  const instList = Object.entries(instruments).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}: ${v}`).join(', ');
+  const batchList = Object.entries(batches).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>`${k}: ${v}`).join(', ');
+
+  const context = `
+You are a business consultant for a music academy in Hyderabad, India called "Chords Music Academy".
+Here is the current data snapshot:
+
+STUDENTS:
+- Total students: ${students.length}
+- Active: ${active.length}
+- Inactive/left: ${inactive.length}
+- Instrument breakdown (active): ${instList || 'N/A'}
+- Mode: ${modes.online} online, ${modes.offline} offline
+
+FINANCES:
+- Monthly fee income (active students): ₹${totalFee.toLocaleString('en-IN')}
+- Total pending dues: ₹${totalDue.toLocaleString('en-IN')}
+
+BATCHES (popular timings):
+${batchList || 'N/A'}
+
+Now answer the following question in practical, actionable terms relevant to an Indian music academy. Be specific and concise. Use bullet points where helpful.
+
+QUESTION: ${userPrompt}
+  `.trim();
+
+  // Show loading state
+  const wrap = document.getElementById('ai-response-wrap');
+  const body = document.getElementById('ai-response-body');
+  wrap.style.display = '';
+  body.innerHTML = '<span style="color:var(--muted);">✨ Thinking…</span>';
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: context }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
+        })
+      }
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      const msg = data?.error?.message || 'API error';
+      body.innerHTML = `<span style="color:var(--danger);">Error: ${msg}</span>`;
+      return;
+    }
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received.';
+    // Render basic markdown: **bold**, bullet points
+    body.innerHTML = text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^#{1,3}\s+(.+)$/gm, '<strong style="font-size:0.95rem;">$1</strong>')
+      .replace(/\n/g, '<br>');
+  } catch(e) {
+    body.innerHTML = `<span style="color:var(--danger);">Network error: ${e.message}</span>`;
+  }
 }
 </script>
 
