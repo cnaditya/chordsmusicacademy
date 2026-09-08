@@ -7048,9 +7048,9 @@ function printBill(b) {
 
 <script>
 /* ═══════════════════════════════════════
-   AI INSIGHTS  (Gemini 1.5 Flash)
+   AI INSIGHTS  (Groq — free)
 ═══════════════════════════════════════ */
-const AI_KEY_LS = 'cma_gemini_key';
+const AI_KEY_LS = 'cma_groq_key';
 
 function loadAIInsights() {
   const key = localStorage.getItem(AI_KEY_LS) || '';
@@ -7060,19 +7060,19 @@ function loadAIInsights() {
       <div style="font-size:2rem;">✨</div>
       <div>
         <div style="font-size:1.15rem;font-weight:700;">AI Business Insights</div>
-        <div style="font-size:0.82rem;color:var(--muted);">Powered by Google Gemini · analyses your student &amp; revenue data</div>
+        <div style="font-size:0.82rem;color:var(--muted);">Powered by Groq (free) · analyses your student &amp; revenue data</div>
       </div>
     </div>
 
     <!-- API Key Settings -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;">
-      <div style="font-size:0.78rem;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Gemini API Key</div>
+      <div style="font-size:0.78rem;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Groq API Key (Free)</div>
       <div style="display:flex;gap:8px;">
-        <input type="password" id="ai-api-key" value="${key}" placeholder="Paste your Gemini API key here…"
+        <input type="password" id="ai-api-key" value="${key}" placeholder="Paste your Groq API key here…"
           style="flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;background:var(--bg);color:var(--text);">
         <button class="btn btn-primary" style="white-space:nowrap;" onclick="aiSaveKey()">Save Key</button>
       </div>
-      <div style="font-size:0.74rem;color:var(--muted);margin-top:6px;">Key is stored only in this browser. Get a free key at <b>aistudio.google.com</b> → API Keys.</div>
+      <div style="font-size:0.74rem;color:var(--muted);margin-top:6px;">Key stored only in this browser. Get a free key at <b>console.groq.com</b> → API Keys → Create API Key.</div>
     </div>
 
     <!-- Quick Analysis Buttons -->
@@ -7133,7 +7133,7 @@ function aiAskCustom() {
 
 async function aiAsk(userPrompt) {
   const key = localStorage.getItem(AI_KEY_LS);
-  if (!key) { alert('Please save your Gemini API key first (top of this page).'); return; }
+  if (!key) { alert('Please save your Groq API key first (top of this page).'); return; }
 
   // Build academy data summary from loaded students
   const students = (typeof allStudents !== 'undefined' ? allStudents : []);
@@ -7185,24 +7185,26 @@ QUESTION: ${userPrompt}
   wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: context }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
-        })
-      }
-    );
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: context }],
+        temperature: 0.7,
+        max_tokens: 1024
+      })
+    });
     const data = await res.json();
     if (!res.ok) {
       const msg = data?.error?.message || 'API error';
       body.innerHTML = `<span style="color:var(--danger);">Error: ${msg}</span>`;
       return;
     }
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received.';
+    const text = data?.choices?.[0]?.message?.content || 'No response received.';
     // Render basic markdown: **bold**, bullet points
     body.innerHTML = text
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
