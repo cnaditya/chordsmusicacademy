@@ -2168,7 +2168,9 @@ async function attMark(studentId, status) {
     const markedTime = nowTimeIST();
     const res = await apiCall({ action: 'crm_mark_attendance', student_id: studentId, date: _attDate, status, marked_time: markedTime });
     _attMap[studentId] = { student_id: studentId, date: _attDate, status, marked_time: markedTime };
-    if (status === 'present') _attCounts[studentId] = res.present_count || ((_attCounts[studentId]||0) + 1);
+    // Store RAW count (without offset) so attendance row formula stays correct
+    const _sOff = (_attStudents.find(x => x.id === studentId)?.classes_offset || 0);
+    if (status === 'present') _attCounts[studentId] = Math.max(0, (res.present_count || ((_attCounts[studentId]||0) + 1)) - _sOff);
     if (status === 'absent' && _attCounts[studentId] > 0) _attCounts[studentId]--;
 
     // Update the student row in-place (no full re-render)
@@ -2265,7 +2267,7 @@ async function attClear(studentId) {
 }
 
 function showAttMarkResult(rowEl, studentId, student, status, res) {
-  const presentCount = (res.present_count || 0) + (student?.classes_offset || 0);
+  const presentCount = res.present_count || 0; // backend already adds classes_offset
   const total        = res.total_classes || student?.total_classes_per_cycle || 0;
   const remaining    = total ? Math.max(0, total - presentCount) : null;
   const cycleComplete = total > 0 && remaining === 0;
@@ -2531,10 +2533,10 @@ async function processScan(raw) {
       ? `⚠️ Already marked <strong>Absent</strong> on ${fmtDate(today)}`
       : `⚠️ Already scanned today · marked Present on ${fmtDate(today)}`;
 
-  // Class progress (use mark response if freshly marked, else count from crm_get data)
+  // Class progress — backend present_count already includes classes_offset
   const presentCount = markedNow
     ? (markRes?.present_count || 0)
-    : (attData?.attendance || []).filter(a => a.status === 'present').length;
+    : (attData?.attendance || []).filter(a => a.status === 'present').length + (student.classes_offset || 0);
   const total     = student.total_classes_per_cycle || 0;
   const remaining = total ? Math.max(0, total - presentCount) : null;
 
