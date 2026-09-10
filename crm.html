@@ -1327,6 +1327,7 @@ CREATE TABLE IF NOT EXISTS crm_notes (
       <button class="btn-add" onclick="document.getElementById('rcpt-file-input').click()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);margin-right:6px;" title="Scan a receipt to record payment or enroll student">📷 Scan Bill</button>
       <button class="btn-add" onclick="openQuickEnroll()" style="margin-right:6px;">⚡ Quick Enroll</button>
       <button class="btn-add" onclick="exportStudents()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);margin-right:6px;" title="Download all students as Excel/CSV">⬇ Export</button>
+      <button class="btn-add" onclick="openBulkAutoFill()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);margin-right:6px;" title="Auto-calculate classes completed for all students">📅 Bulk Fill</button>
       <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle-btn" title="Toggle dark / light mode">🌙</button>
       <button class="btn-add" onclick="openAddStudent()">+ Add Student</button>
     </header>
@@ -7278,6 +7279,94 @@ QUESTION: ${userPrompt}
 }
 </script>
 
+<script>
+/* ═══════════════════════════════════════
+   BULK AUTO-FILL CLASSES OFFSET
+═══════════════════════════════════════ */
+function openBulkAutoFill() {
+  // Reset body to initial state
+  document.getElementById('bulk-autofill-body').innerHTML = `
+    <div style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:0.82rem;line-height:1.6;">
+      <div>✅ Only sets offset where it would be <strong>higher</strong> than what's already saved</div>
+      <div>✅ Skips students with no enrollment date or class days set</div>
+      <div>⚠️ Do this only once — don't use after CRM attendance tracking has started</div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeBulkAutoFill()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="runBulkAutoFill()">▶ Run for All Students</button>
+    </div>`;
+  const modal = document.getElementById('bulk-autofill-modal');
+  modal.style.display = 'flex';
+}
+
+function closeBulkAutoFill() {
+  document.getElementById('bulk-autofill-modal').style.display = 'none';
+}
+
+async function runBulkAutoFill() {
+  const bodyEl = document.getElementById('bulk-autofill-body');
+  bodyEl.innerHTML = `<div style="text-align:center;padding:20px 0;"><div class="spinner" style="margin:0 auto 12px;"></div><div id="bulk-fill-status" style="font-size:0.85rem;color:var(--muted);">Loading students…</div></div>`;
+
+  const dayMap = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // Fetch all students if not loaded
+  if (!allStudents || allStudents.length === 0) {
+    try { const d = await apiCall({ action: 'crm_list' }); allStudents = d.students || []; } catch(e) {}
+  }
+
+  const students = (allStudents || []).filter(s => s.status === 'active');
+  let updated = 0, skipped = 0, errors = 0;
+  const statusEl = () => document.getElementById('bulk-fill-status');
+
+  for (let i = 0; i < students.length; i++) {
+    const s = students[i];
+    if (statusEl()) statusEl().textContent = `Processing ${i+1} of ${students.length}: ${s.name}…`;
+
+    if (!s.enrollment_date || !s.class_days) { skipped++; continue; }
+
+    const scheduledDays = s.class_days.split(',').map(d => dayMap[d.trim()]).filter(d => d !== undefined);
+    if (!scheduledDays.length) { skipped++; continue; }
+
+    const start = new Date(s.enrollment_date + 'T00:00:00');
+    if (start >= today) { skipped++; continue; }
+
+    // Count scheduled days from enrollment up to (not including) today
+    let count = 0;
+    const cur = new Date(start);
+    while (cur < today) {
+      if (scheduledDays.includes(cur.getDay())) count++;
+      cur.setDate(cur.getDate() + 1);
+    }
+    const leaves = parseInt(s.leaves_taken) || 0;
+    const newOffset = Math.max(0, count - leaves);
+
+    // Only update if new value is higher than existing
+    if (newOffset <= (s.classes_offset || 0)) { skipped++; continue; }
+
+    try {
+      await apiCall({ action: 'crm_update', id: s.id, student: { classes_offset: newOffset } });
+      s.classes_offset = newOffset; // update local cache
+      updated++;
+    } catch(e) {
+      errors++;
+    }
+  }
+
+  bodyEl.innerHTML = `
+    <div style="text-align:center;padding:12px 0 20px;">
+      <div style="font-size:2.5rem;margin-bottom:10px;">${errors === 0 ? '✅' : '⚠️'}</div>
+      <div style="font-weight:700;font-size:1rem;margin-bottom:6px;">Done!</div>
+      <div style="font-size:0.85rem;color:var(--muted);line-height:1.7;">
+        <div>✅ Updated: <strong>${updated}</strong> students</div>
+        <div>⏭ Skipped: <strong>${skipped}</strong> (no change needed or missing data)</div>
+        ${errors ? `<div style="color:var(--danger);">❌ Errors: <strong>${errors}</strong></div>` : ''}
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;" onclick="closeBulkAutoFill()">Done</button>`;
+}
+</script>
+
 <!-- Bill Modal -->
 <div id="bill-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.75);z-index:1000;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
   <div style="background:var(--surface);border-radius:16px;width:100%;max-width:620px;box-shadow:var(--shadow);margin:auto;">
@@ -7363,6 +7452,25 @@ QUESTION: ${userPrompt}
     <div style="padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;">
       <button onclick="closeBillModal()" class="btn btn-ghost">Cancel</button>
       <button id="bill-save-btn" onclick="saveBill()" class="btn btn-primary">🖨 Save & Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Auto-Fill Modal -->
+<div id="bulk-autofill-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.75);z-index:1000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--surface);border-radius:16px;width:100%;max-width:480px;box-shadow:var(--shadow);padding:24px;">
+    <div style="font-size:1.05rem;font-weight:700;margin-bottom:6px;">📅 Bulk Auto-Fill Classes</div>
+    <div style="font-size:0.83rem;color:var(--muted);margin-bottom:16px;">Calculates scheduled class days from each student's enrollment date to yesterday, minus leaves taken, and saves it as their "Classes Completed" offset.</div>
+    <div id="bulk-autofill-body">
+      <div style="background:var(--bg);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:0.82rem;line-height:1.6;">
+        <div>✅ Only sets offset where it would be <strong>higher</strong> than what's already saved</div>
+        <div>✅ Skips students with no enrollment date or class days set</div>
+        <div>⚠️ Do this only once — don't use after CRM attendance tracking has started</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" style="flex:1;" onclick="closeBulkAutoFill()">Cancel</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="runBulkAutoFill()">▶ Run for All Students</button>
+      </div>
     </div>
   </div>
 </div>
