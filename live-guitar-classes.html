@@ -18,6 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Dancing+Script:wght@600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
 html,body{font-family:'Poppins',-apple-system,sans-serif;background:#141210;color:#fff;height:100%}
 img{display:block;max-width:100%}
 a{text-decoration:none;color:inherit}
@@ -67,6 +68,18 @@ a{text-decoration:none;color:inherit}
 .hero-caption{position:absolute;z-index:2;bottom:14px;left:0;right:0;text-align:center;font-size:0.6rem;letter-spacing:2px;color:rgba(255,255,255,0.75);display:flex;align-items:center;justify-content:center;gap:10px}
 .hero-caption .ln{height:1px;width:30px;background:rgba(255,255,255,0.4)}
 
+/* Contact */
+.contact{background:#1c1914;text-align:center;padding:40px 20px;border-top:1px solid rgba(255,255,255,0.08)}
+.contact-title{font-family:'Playfair Display',serif;font-weight:800;font-size:1.4rem;color:#f0b94d;margin-bottom:12px}
+.contact-address{font-size:0.85rem;line-height:1.7;color:rgba(255,255,255,0.75);margin-bottom:10px}
+.contact-phone{font-size:0.85rem;font-weight:600;color:#fdf6e6;margin-bottom:18px}
+.contact-map-link{display:inline-block;background:#f0b94d;color:#1a1608;font-weight:800;font-size:0.8rem;padding:12px 22px;border-radius:24px}
+
+/* Floating WhatsApp */
+.whatsapp-float{position:fixed;bottom:20px;right:20px;z-index:1000;transition:transform .3s ease}
+.whatsapp-float:hover{transform:scale(1.1)}
+.whatsapp-float img{width:56px;height:56px;display:block;filter:drop-shadow(0 4px 14px rgba(0,0,0,0.35))}
+
 /* Desktop */
 @media(min-width:900px){
   .nav{padding:12px 48px}
@@ -94,7 +107,7 @@ a{text-decoration:none;color:inherit}
     <li><a href="/">HOME</a></li>
     <li><a href="/register">COURSES</a></li>
     <li><a href="/guitar-classes" class="active">GUITAR</a></li>
-    <li><a href="https://www.google.com/maps/search/?api=1&query=No602+Abhinandana+Jewel+Lanco+Hills+Road+Manikonda+Hyderabad+Telangana+500089" target="_blank">CONTACT</a></li>
+    <li><a href="#contact">CONTACT</a></li>
   </ul>
   <a class="nav-cta" href="#" onclick="bookDemo();return false;">ENQUIRE NOW</a>
 </div>
@@ -132,6 +145,19 @@ a{text-decoration:none;color:inherit}
 
   <div class="hero-caption"><span class="ln"></span>ADITYA'S CHORDS MUSIC ACADEMY<span class="ln"></span></div>
 </div>
+
+<!-- Contact -->
+<div class="contact" id="contact">
+  <div class="contact-title">Visit Us</div>
+  <div class="contact-address">No602, Abhinandana Jewel, Lanco Hills Rd,<br>Opp Harivillu Apartments, Manikonda, Hyderabad, Telangana 500089</div>
+  <div class="contact-phone">📞 7981585309 · 7569348879</div>
+  <a class="contact-map-link" href="https://www.google.com/maps/search/?api=1&query=No602+Abhinandana+Jewel+Lanco+Hills+Road+Manikonda+Hyderabad+Telangana+500089" target="_blank">📍 View on Google Maps</a>
+</div>
+
+<!-- Floating WhatsApp -->
+<a href="https://api.whatsapp.com/send?phone=917981585309&text=Hi!%20I'd%20like%20to%20book%20a%20Free%20Trial%20Class%20for%20Guitar.%20Please%20let%20me%20know%20the%20available%20slots.%20%F0%9F%8E%B8" target="_blank" class="whatsapp-float">
+  <img src="images/whatsapp.svg" alt="Chat on WhatsApp" loading="lazy">
+</a>
 
 <script>
 function bookDemo() {
