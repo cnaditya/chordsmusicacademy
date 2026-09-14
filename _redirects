@@ -8,6 +8,8 @@
 /pricing           /pricing.html              200
 /live-classes      /pricing.html              200
 /live-classes-global /live-classes-global.html 200
+/live-guitar-classes /live-guitar-classes.html 200
+/guitar-classes      /live-guitar-classes.html 200
 /register            /registration.html          200
 /admin               /admin.html                 200
 /crm                 /crm.html                   200
