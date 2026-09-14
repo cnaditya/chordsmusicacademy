@@ -173,63 +173,6 @@ html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;bac
     <div style="color:rgba(255,255,255,0.4);font-size:0.72rem">We'll confirm your slot within minutes on WhatsApp</div>
   </div>
 
-  <!-- Plans -->
-  <div class="section-title">Fee Structure</div>
-  <div class="plans">
-
-    <div class="plan">
-      <div class="plan-left">
-        <div class="plan-period">Monthly</div>
-        <div class="plan-classes">8 classes</div>
-      </div>
-      <div class="plan-right">
-        <div class="plan-price">₹5,999</div>
-        <button class="plan-btn" onclick="bookClass('Monthly Plan', '₹5,999')">💬 Book Now</button>
-      </div>
-    </div>
-
-    <div class="plan pop">
-      <div class="plan-badge">⭐ Best Value</div>
-      <div class="plan-left">
-        <div class="plan-period">3 Months</div>
-        <div class="plan-classes">24 classes</div>
-        <span class="plan-saving">Save ₹2,998 · 17% off</span>
-      </div>
-      <div class="plan-right">
-        <div class="plan-price">₹14,999</div>
-        <div class="plan-orig">₹17,997</div>
-        <button class="plan-btn" onclick="bookClass('3-Month Plan', '₹14,999')">💬 Book Now</button>
-      </div>
-    </div>
-
-    <div class="plan">
-      <div class="plan-left">
-        <div class="plan-period">6 Months</div>
-        <div class="plan-classes">48 classes</div>
-        <span class="plan-saving">Save ₹6,995 · 19% off</span>
-      </div>
-      <div class="plan-right">
-        <div class="plan-price">₹28,999</div>
-        <div class="plan-orig">₹35,994</div>
-        <button class="plan-btn" onclick="bookClass('6-Month Plan', '₹28,999')">💬 Book Now</button>
-      </div>
-    </div>
-
-    <div class="plan">
-      <div class="plan-left">
-        <div class="plan-period">1 Year</div>
-        <div class="plan-classes">96 classes</div>
-        <span class="plan-saving">Save ₹21,989 · 31% off</span>
-      </div>
-      <div class="plan-right">
-        <div class="plan-price">₹49,999</div>
-        <div class="plan-orig">₹71,988</div>
-        <button class="plan-btn" onclick="bookClass('1-Year Plan', '₹49,999')">💬 Book Now</button>
-      </div>
-    </div>
-
-  </div>
-
   <!-- Curriculum -->
   <div class="section-title">Curriculum</div>
   <div id="curriculumBox" style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 8px rgba(0,0,0,0.07);margin-bottom:20px"></div>
@@ -324,12 +267,6 @@ function setInst(key) {
 function bookDemo() {
   var name = INSTRUMENTS[_inst].name;
   var msg = encodeURIComponent('Hi! I\'d like to book a *Free Demo Class* for ' + name + '.\n\nPlease let me know the available slots. ' + INSTRUMENTS[_inst].icon);
-  window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
-}
-
-function bookClass(plan, price) {
-  var name = INSTRUMENTS[_inst].name;
-  var msg = encodeURIComponent('Hi! I want to enrol in the *' + plan + '* (' + price + ') for Live Online ' + name + ' Classes.\n\nPlease share payment and schedule details. ' + INSTRUMENTS[_inst].icon);
   window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + msg, '_blank');
 }
 
