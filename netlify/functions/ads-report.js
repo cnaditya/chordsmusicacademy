@@ -54,6 +54,15 @@ function isoDate(d) {
 }
 
 exports.handler = async function (event) {
+  const token = event.headers["x-ads-token"] || "";
+  if (!token || token !== process.env.ADS_DASHBOARD_PASSWORD) {
+    return {
+      statusCode: 401,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: "Unauthorized" }),
+    };
+  }
+
   try {
     const requestedDays = parseInt((event.queryStringParameters || {}).days, 10);
     const DAYS = ALLOWED_DAYS.includes(requestedDays) ? requestedDays : DEFAULT_DAYS;

@@ -83,13 +83,30 @@
   .flag-icon.info{background:color-mix(in oklab, var(--series-piano) 18%, transparent); color:var(--series-piano)}
   footer{font-size:0.72rem; color:var(--ink-muted); text-align:center; padding-top:8px; line-height:1.6}
   .state-msg{text-align:center; padding:60px 20px; color:var(--ink-secondary); font-size:0.9rem}
+  .login-gate{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px}
+  .login-card{background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px 28px; max-width:340px; width:100%; text-align:center}
+  .login-card h1{font-size:1.1rem; font-weight:800; margin:0 0 6px}
+  .login-card p{font-size:0.8rem; color:var(--ink-secondary); margin:0 0 18px}
+  .login-card input{width:100%; padding:11px 14px; border-radius:10px; border:1px solid var(--border); background:var(--page-bg); color:var(--ink-primary); font-size:0.9rem; margin-bottom:10px; box-sizing:border-box}
+  .login-error{color:var(--status-critical); font-size:0.78rem; margin-top:10px}
   .toast{position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--ink-primary); color:var(--page-bg); font-size:0.8rem; padding:10px 16px; border-radius:20px; opacity:0; transition:opacity .2s; pointer-events:none}
   .toast.show{opacity:1}
 </style>
 </head>
 <body>
 
-<div class="wrap">
+<div class="login-gate" id="loginGate">
+  <div class="login-card">
+    <div class="brand-dot" style="margin:0 auto 14px">🎵</div>
+    <h1>Chords Ads Dashboard</h1>
+    <p>Enter the password to view live Google Ads performance.</p>
+    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+    <button class="btn" id="loginBtn" style="width:100%">Unlock</button>
+    <div class="login-error" id="loginError" hidden>Incorrect password</div>
+  </div>
+</div>
+
+<div class="wrap" id="mainWrap" hidden>
   <header class="top">
     <div class="top-inner">
       <div class="brand">
@@ -297,13 +314,19 @@ document.getElementById("copyBtn").addEventListener("click", () => {
 function loadRange(days){
   document.getElementById("content").innerHTML = `<div class="state-msg">Loading live data from Google Ads…</div>`;
   document.getElementById("rangeLabel").textContent = `Last ${days} days`;
-  fetch(`/.netlify/functions/ads-report?days=${days}`)
-    .then(r => r.json())
+  fetch(`/.netlify/functions/ads-report?days=${days}`, {
+    headers: { "x-ads-token": sessionStorage.getItem("adsToken") || "" }
+  })
+    .then(r => {
+      if (r.status === 401) { showLogin(true); throw new Error("unauthorized"); }
+      return r.json();
+    })
     .then(data => {
       if (data.error) throw new Error(data.error);
       render(data);
     })
     .catch(err => {
+      if (err.message === "unauthorized") return;
       document.getElementById("content").innerHTML = `<div class="state-msg">Couldn't load live data: ${err.message}<br><br>Try refreshing the page.</div>`;
     });
 }
@@ -316,7 +339,39 @@ document.getElementById("rangeToggle").addEventListener("click", (e) => {
   loadRange(btn.dataset.days);
 });
 
-loadRange(30);
+function showLogin(wrongPassword){
+  sessionStorage.removeItem("adsToken");
+  document.getElementById("loginGate").style.display = "flex";
+  document.getElementById("mainWrap").hidden = true;
+  document.getElementById("loginError").hidden = !wrongPassword;
+}
+
+function tryUnlock(){
+  const pw = document.getElementById("loginPassword").value;
+  if (!pw) return;
+  sessionStorage.setItem("adsToken", pw);
+  fetch("/.netlify/functions/ads-report?days=30", { headers: { "x-ads-token": pw } })
+    .then(r => {
+      if (r.status === 401) { showLogin(true); return; }
+      document.getElementById("loginGate").style.display = "none";
+      document.getElementById("mainWrap").hidden = false;
+      return r.json();
+    })
+    .then(data => { if (data && !data.error) render(data); });
+}
+
+document.getElementById("loginBtn").addEventListener("click", tryUnlock);
+document.getElementById("loginPassword").addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
+
+// If a token from a previous unlock this session already works, skip straight to the dashboard
+const savedToken = sessionStorage.getItem("adsToken");
+if (savedToken) {
+  document.getElementById("loginGate").style.display = "none";
+  document.getElementById("mainWrap").hidden = false;
+  loadRange(30);
+} else {
+  document.getElementById("loginGate").style.display = "flex";
+}
 </script>
 </body>
 </html>
