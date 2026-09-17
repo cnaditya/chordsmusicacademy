@@ -29,7 +29,7 @@ async function runQuery(accessToken, customerId, query) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "developer-token": "",
+        "developer-token": "ignored-post-sunset",
         "login-customer-id": customerId,
         Authorization: `Bearer ${accessToken}`,
       },
