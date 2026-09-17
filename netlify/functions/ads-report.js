@@ -3,7 +3,7 @@
 // Response shape verified against a real call to v25 googleAds:searchStream on 2026-09-18.
 
 const API_VERSION = "v25";
-const CAMPAIGN_NAME = "Chords Music Academy";
+const CAMPAIGN_NAMES = ["Chords Music Academy", "Guitar", "Vocal", "Violin", "Drums"];
 const ALLOWED_DAYS = [7, 30, 90];
 const DEFAULT_DAYS = 30;
 
@@ -76,6 +76,8 @@ exports.handler = async function (event) {
     const startStr = isoDate(start);
     const endStr = isoDate(end);
 
+    const nameList = CAMPAIGN_NAMES.map((n) => `'${n}'`).join(",");
+
     const [adGroupRows, allAdGroups, campaignRows] = await Promise.all([
       runQuery(
         accessToken,
@@ -83,13 +85,13 @@ exports.handler = async function (event) {
         `SELECT segments.date, ad_group.name, metrics.impressions, metrics.clicks, metrics.cost_micros, metrics.conversions
          FROM ad_group
          WHERE segments.date BETWEEN '${startStr}' AND '${endStr}'
-           AND campaign.name = '${CAMPAIGN_NAME}'
+           AND campaign.name IN (${nameList})
          ORDER BY segments.date ASC`
       ),
       runQuery(
         accessToken,
         customerId,
-        `SELECT ad_group.name FROM ad_group WHERE campaign.name = '${CAMPAIGN_NAME}' AND ad_group.status = 'ENABLED'`
+        `SELECT ad_group.name FROM ad_group WHERE campaign.name IN (${nameList}) AND ad_group.status = 'ENABLED'`
       ),
       runQuery(
         accessToken,
@@ -98,7 +100,7 @@ exports.handler = async function (event) {
                 metrics.impressions, metrics.clicks, metrics.cost_micros, metrics.conversions
          FROM campaign
          WHERE segments.date BETWEEN '${startStr}' AND '${endStr}'
-           AND campaign.name = '${CAMPAIGN_NAME}'`
+           AND campaign.name IN (${nameList})`
       ),
     ]);
 
@@ -142,21 +144,40 @@ exports.handler = async function (event) {
       );
     }
 
-    const camp = campaignRows[0] || {};
+    // Aggregate across all 5 campaigns (each now has its own budget since the trial split on 2026-09-18)
+    let totalBudget = 0, totalImpr = 0, totalClicks = 0, totalCost = 0, totalConv = 0, weightedLostIS = 0;
+    const perCampaign = [];
+    for (const row of campaignRows) {
+      const budget = (row.campaignBudget && row.campaignBudget.amountMicros ? parseInt(row.campaignBudget.amountMicros, 10) : 0) / 1_000_000;
+      const impr = parseInt((row.metrics && row.metrics.impressions) || "0", 10);
+      const clicks = parseInt((row.metrics && row.metrics.clicks) || "0", 10);
+      const cost = parseInt((row.metrics && row.metrics.costMicros) || "0", 10) / 1_000_000;
+      const conv = (row.metrics && row.metrics.conversions) || 0;
+      const lostIS = (row.metrics && row.metrics.searchBudgetLostImpressionShare) || 0;
+      totalBudget += budget;
+      totalImpr += impr;
+      totalClicks += clicks;
+      totalCost += cost;
+      totalConv += conv;
+      weightedLostIS += lostIS * cost;
+      perCampaign.push({ name: row.campaign.name, daily_budget: Math.round(budget), impressions: impr, clicks, cost: Math.round(cost * 100) / 100, conversions: Math.round(conv * 100) / 100, lost_is_budget_pct: Math.round(lostIS * 1000) / 10 });
+    }
+
     const campaign = {
-      name: CAMPAIGN_NAME,
-      daily_budget: Math.round(((camp.campaignBudget && camp.campaignBudget.amountMicros) || 0) / 1_000_000),
-      lost_is_budget_pct: Math.round(((camp.metrics && camp.metrics.searchBudgetLostImpressionShare) || 0) * 1000) / 10,
-      impressions_30d: parseInt((camp.metrics && camp.metrics.impressions) || "0", 10),
-      clicks_30d: parseInt((camp.metrics && camp.metrics.clicks) || "0", 10),
-      cost_30d: Math.round((parseInt((camp.metrics && camp.metrics.costMicros) || "0", 10) / 1_000_000) * 100) / 100,
-      conversions_30d: Math.round(((camp.metrics && camp.metrics.conversions) || 0) * 100) / 100,
+      name: "All campaigns (Piano + Guitar + Vocal + Violin + Drums)",
+      daily_budget: Math.round(totalBudget),
+      lost_is_budget_pct: totalCost > 0 ? Math.round((weightedLostIS / totalCost) * 1000) / 10 : 0,
+      impressions_30d: totalImpr,
+      clicks_30d: totalClicks,
+      cost_30d: Math.round(totalCost * 100) / 100,
+      conversions_30d: Math.round(totalConv * 100) / 100,
     };
 
     const output = {
       generated_at: endStr,
       days: DAYS,
       campaign,
+      campaigns: perCampaign,
       totals,
       series,
     };
