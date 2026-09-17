@@ -4,7 +4,8 @@
 
 const API_VERSION = "v25";
 const CAMPAIGN_NAME = "Chords Music Academy";
-const DAYS = 30;
+const ALLOWED_DAYS = [7, 30, 90];
+const DEFAULT_DAYS = 30;
 
 async function getAccessToken() {
   const res = await fetch("https://oauth2.googleapis.com/token", {
@@ -52,8 +53,11 @@ function isoDate(d) {
   return d.toISOString().slice(0, 10);
 }
 
-exports.handler = async function () {
+exports.handler = async function (event) {
   try {
+    const requestedDays = parseInt((event.queryStringParameters || {}).days, 10);
+    const DAYS = ALLOWED_DAYS.includes(requestedDays) ? requestedDays : DEFAULT_DAYS;
+
     const accessToken = await getAccessToken();
     const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID;
 
