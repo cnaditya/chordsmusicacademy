@@ -128,6 +128,10 @@
                     <img src="images/telugu-piano-teacher-logo.png" alt="Telugu Piano Teacher YouTube channel logo" class="youtube-logo">
                     <span class="youtube-follow-pill">▶ Follow us</span>
                 </a>
+                <div id="yt-sub-count" style="margin-top:8px;display:inline-flex;align-items:center;gap:6px;background:rgba(255,0,0,0.15);border:1.5px solid rgba(255,80,80,0.4);border-radius:20px;padding:5px 14px;font-size:0.8rem;font-weight:700;color:#fff;letter-spacing:0.02em;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#ff4444"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 0 0 .5 6.19C0 8.04 0 12 0 12s0 3.96.5 5.81a3.02 3.02 0 0 0 2.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14C24 15.96 24 12 24 12s0-3.96-.5-5.81zM9.75 15.5v-7l6.25 3.5-6.25 3.5z"/></svg>
+                  <span id="yt-sub-text">1 Lakh+</span> Subscribers
+                </div>
                 <div class="hero-btns">
                     <button class="cta-btn" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">Enroll Now</button>
                     <a class="trial-btn" href="https://wa.me/917981585309?text=Hi!%20I'd%20like%20to%20book%20a%20free%20trial%20class%20at%20Chords%20Music%20Academy%20%F0%9F%8E%B5" target="_blank" onclick="trackWhatsApp()">🎵 Book Free Trial Class</a>
@@ -157,6 +161,10 @@
                 <div class="stat-item">
                     <span class="stat-number">100%</span>
                     <span class="stat-label">Exam Pass Rate</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="yt-stat-count">1L+</span>
+                    <span class="stat-label">YouTube Subscribers</span>
                 </div>
             </div>
         </section>
@@ -809,6 +817,54 @@
     </a>
 
     <script src="js/script.js"></script>
+
+<script>
+// ── Live YouTube Subscriber Count ──────────────────────────────
+// Replace the value below with your YouTube Data API v3 key
+// (restricted to chordsmusicacademy.in in Google Cloud Console)
+const YT_API_KEY = '';
+const YT_CHANNEL_HANDLE = 'TeluguPianoTeacher';
+const YT_CACHE_KEY = 'yt_sub_cache';
+const YT_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+function formatSubs(n) {
+  if (n >= 10000000) return (n / 10000000).toFixed(1).replace('.0','') + ' Cr+';
+  if (n >= 100000)   return (n / 100000).toFixed(2).replace(/\.?0+$/,'') + ' Lakh+';
+  if (n >= 1000)     return (n / 1000).toFixed(1).replace('.0','') + 'K+';
+  return n.toLocaleString('en-IN');
+}
+
+async function fetchYTSubs() {
+  if (!YT_API_KEY) return; // no key yet — show default text
+
+  // Check cache
+  try {
+    const cached = JSON.parse(localStorage.getItem(YT_CACHE_KEY) || '{}');
+    if (cached.count && Date.now() - cached.ts < YT_CACHE_TTL) {
+      const fmt = formatSubs(cached.count);
+      document.getElementById('yt-sub-text').textContent = fmt;
+      document.getElementById('yt-stat-count').textContent = fmt;
+      return;
+    }
+  } catch(e) {}
+
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/channels?part=statistics&forHandle=${YT_CHANNEL_HANDLE}&key=${YT_API_KEY}`
+    );
+    const data = await res.json();
+    const count = parseInt(data?.items?.[0]?.statistics?.subscriberCount || 0);
+    if (count > 0) {
+      const fmt = formatSubs(count);
+      document.getElementById('yt-sub-text').textContent = fmt;
+      document.getElementById('yt-stat-count').textContent = fmt;
+      try { localStorage.setItem(YT_CACHE_KEY, JSON.stringify({ count, ts: Date.now() })); } catch(e) {}
+    }
+  } catch(e) {}
+}
+
+fetchYTSubs();
+</script>
 
 </body>
 </html>
