@@ -817,7 +817,7 @@ body {
 .youtube-badge {
     position: relative;
     display: inline-block;
-    margin: 0;
+    margin: 1.5rem auto 2rem auto;
     text-decoration: none;
 }
 
@@ -841,6 +841,9 @@ body {
     position: absolute;
     bottom: 4px;
     right: -8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     background: #ff0000;
     color: #fff;
     font-size: 0.85rem;
@@ -850,34 +853,6 @@ body {
     box-shadow: 0 4px 12px rgba(255,0,0,0.45);
     border: 2px solid #fff;
     white-space: nowrap;
-}
-.yt-badge-wrap {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    margin: 1.5rem auto 2rem auto;
-}
-.yt-badge-wrap .youtube-badge {
-    margin: 0;
-}
-.yt-sub-pill {
-    position: absolute;
-    bottom: 4px;
-    left: -8px;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: rgba(20,20,20,0.82);
-    color: #fff;
-    font-size: 0.78rem;
-    font-weight: 800;
-    padding: 5px 12px;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    border: 2px solid #fff;
-    white-space: nowrap;
-    backdrop-filter: blur(4px);
 }
 
 @keyframes bounce {
@@ -3015,17 +2990,6 @@ body {
         padding: 5px 13px;
     }
 
-    .yt-sub-pill {
-        position: static;
-        margin-top: 10px;
-        font-size: 0.75rem;
-        padding: 5px 14px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.35);
-    }
-    .yt-badge-wrap {
-        margin: 1rem auto 1.2rem auto;
-    }
-
     /* Section spacing adjustments */
     .courses,
     .about,
@@ -3210,14 +3174,10 @@ body {
         height: 140px;
     }
 
-    .yt-sub-pill {
-        font-size: 0.72rem;
-        padding: 4px 12px;
-    }
-
     .youtube-follow-pill {
         font-size: 0.68rem;
         padding: 4px 10px;
+        gap: 4px;
     }
 
     .courses h2,
