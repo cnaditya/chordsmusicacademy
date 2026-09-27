@@ -817,7 +817,7 @@ body {
 .youtube-badge {
     position: relative;
     display: inline-block;
-    margin: 1.5rem auto 2rem auto;
+    margin: 0;
     text-decoration: none;
 }
 
@@ -850,6 +850,16 @@ body {
     box-shadow: 0 4px 12px rgba(255,0,0,0.45);
     border: 2px solid #fff;
     white-space: nowrap;
+}
+.yt-badge-wrap {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    margin: 1.5rem auto 2rem auto;
+}
+.yt-badge-wrap .youtube-badge {
+    margin: 0;
 }
 .yt-sub-pill {
     position: absolute;
@@ -3006,11 +3016,14 @@ body {
     }
 
     .yt-sub-pill {
-        bottom: auto;
-        top: 4px;
-        left: -8px;
-        font-size: 0.7rem;
-        padding: 4px 10px;
+        position: static;
+        margin-top: 10px;
+        font-size: 0.75rem;
+        padding: 5px 14px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    }
+    .yt-badge-wrap {
+        margin: 1rem auto 1.2rem auto;
     }
 
     /* Section spacing adjustments */
@@ -3198,9 +3211,8 @@ body {
     }
 
     .yt-sub-pill {
-        font-size: 0.65rem;
-        padding: 3px 8px;
-        gap: 3px;
+        font-size: 0.72rem;
+        padding: 4px 12px;
     }
 
     .youtube-follow-pill {
