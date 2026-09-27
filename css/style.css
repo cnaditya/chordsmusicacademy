@@ -3005,6 +3005,14 @@ body {
         padding: 5px 13px;
     }
 
+    .yt-sub-pill {
+        bottom: auto;
+        top: 4px;
+        left: -8px;
+        font-size: 0.7rem;
+        padding: 4px 10px;
+    }
+
     /* Section spacing adjustments */
     .courses,
     .about,
@@ -3187,6 +3195,17 @@ body {
     .youtube-logo {
         width: 140px;
         height: 140px;
+    }
+
+    .yt-sub-pill {
+        font-size: 0.65rem;
+        padding: 3px 8px;
+        gap: 3px;
+    }
+
+    .youtube-follow-pill {
+        font-size: 0.68rem;
+        padding: 4px 10px;
     }
 
     .courses h2,
