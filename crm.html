@@ -932,6 +932,10 @@ tr:hover td { background: rgba(79,70,229,0.04); }
   .menu-toggle { display: block; }
   .topbar { padding: 12px 16px; }
   .topbar-search { display: none; }
+  /* Scan Bill / Quick Enroll / Export / Bulk Fill are desktop power-user
+     actions — on mobile they overflowed the topbar and pushed "Add Student"
+     off-screen. Use the bottom nav's Add button instead; these stay desktop-only. */
+  .topbar-action-secondary { display: none; }
   .page-content { padding: 16px; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .dash-row { grid-template-columns: 1fr; }
@@ -1324,10 +1328,10 @@ CREATE TABLE IF NOT EXISTS crm_notes (
         <input type="text" id="global-search" placeholder="Search students…" oninput="globalSearch(this.value)">
       </div>
       <input type="file" id="rcpt-file-input" accept="image/*" multiple style="display:none" onchange="handleReceiptUpload(event)">
-      <button class="btn-add" onclick="document.getElementById('rcpt-file-input').click()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);margin-right:6px;" title="Scan a receipt to record payment or enroll student">📷 Scan Bill</button>
-      <button class="btn-add" onclick="openQuickEnroll()" style="margin-right:6px;">⚡ Quick Enroll</button>
-      <button class="btn-add" onclick="exportStudents()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);margin-right:6px;" title="Download all students as Excel/CSV">⬇ Export</button>
-      <button class="btn-add" onclick="openBulkAutoFill()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);margin-right:6px;" title="Auto-calculate classes completed for all students">📅 Bulk Fill</button>
+      <button class="btn-add topbar-action-secondary" onclick="document.getElementById('rcpt-file-input').click()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);margin-right:6px;" title="Scan a receipt to record payment or enroll student">📷 Scan Bill</button>
+      <button class="btn-add topbar-action-secondary" onclick="openQuickEnroll()" style="margin-right:6px;">⚡ Quick Enroll</button>
+      <button class="btn-add topbar-action-secondary" onclick="exportStudents()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);margin-right:6px;" title="Download all students as Excel/CSV">⬇ Export</button>
+      <button class="btn-add topbar-action-secondary" onclick="openBulkAutoFill()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);margin-right:6px;" title="Auto-calculate classes completed for all students">📅 Bulk Fill</button>
       <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle-btn" title="Toggle dark / light mode">🌙</button>
       <button class="btn-add" onclick="openAddStudent()">+ Add Student</button>
     </header>
