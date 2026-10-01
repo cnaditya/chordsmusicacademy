@@ -1,4 +1,6 @@
 // Handles: seed all students, add single student, update student
+const { resolveRole } = require("./_shared/auth");
+
 const STUDENTS = [
   { name:'Gayatri',    phone:'919178619761',  plan:'monthly_5000', payment_type:'monthly', amount:5000, billing_day:1,  class_days:'Mon, Thu', class_time:'6:30am',  teacher:'Aditya' },
   { name:'Pratham',    phone:'6422462803',    plan:'monthly_5000', payment_type:'monthly', amount:5000, billing_day:1,  class_days:'Mon',      class_time:'6:30am',  teacher:'Aditya' },
@@ -78,10 +80,12 @@ exports.handler = async (event) => {
         return { statusCode: 200, headers, body: JSON.stringify({ success: true, role: "admin", name: "Admin", token: process.env.PAYMENT_ADMIN_PASSWORD }) };
       }
       // Teacher check — TEACHER_PASSWORDS env var: {"Brahmani":"1111","OtherTeacher":"2222"}
+      // Teachers get their OWN password back as their token, never the admin
+      // password — their access is scoped down below (crm_get + crm_mark_attendance only).
       let teacherPasswords = {};
       try { teacherPasswords = JSON.parse(process.env.TEACHER_PASSWORDS || "{}"); } catch(e) {}
       if (name && teacherPasswords[name] && teacherPasswords[name] === password) {
-        return { statusCode: 200, headers, body: JSON.stringify({ success: true, role: "teacher", name, token: process.env.PAYMENT_ADMIN_PASSWORD }) };
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, role: "teacher", name, token: password }) };
       }
       return { statusCode: 401, headers, body: JSON.stringify({ error: "Wrong password" }) };
     }
@@ -112,8 +116,24 @@ exports.handler = async (event) => {
 
   } catch(e) { /* fall through to normal auth */ }
 
+  // Teachers get a scoped-down token (their own password, see crm_validate_role
+  // above) that only works for the two actions attend.html actually uses —
+  // marking attendance and looking up a student. Everything else (payments,
+  // deletes, revenue, bills, leads, other teachers' data) requires full admin.
+  const TEACHER_ALLOWED_ACTIONS = new Set(["crm_get", "crm_mark_attendance"]);
   const adminToken = event.headers["x-admin-token"] || "";
-  if (!adminToken || adminToken !== process.env.PAYMENT_ADMIN_PASSWORD) {
+  const { role } = resolveRole(adminToken);
+
+  let gateAction = "";
+  try { gateAction = JSON.parse(event.body || "{}").action || ""; } catch (e) {}
+
+  if (role === "admin") {
+    // full access
+  } else if (role === "teacher" && TEACHER_ALLOWED_ACTIONS.has(gateAction)) {
+    // scoped access
+  } else if (role === "teacher") {
+    return { statusCode: 403, headers, body: JSON.stringify({ error: "Teachers can only mark attendance" }) };
+  } else {
     return { statusCode: 401, headers, body: JSON.stringify({ error: "Unauthorized" }) };
   }
 
