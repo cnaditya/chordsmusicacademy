@@ -1,2 +1,2 @@
-[functions."aisensy-reminders"]
+[functions."fee-reminders"]
   schedule = "30 3 * * *"
