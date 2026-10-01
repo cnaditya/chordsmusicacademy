@@ -14,6 +14,9 @@
 //
 // 3. fee_overdue (UTILITY)
 //    "Hi {{1}}, your Chords Music Academy fee of {{2}} was due on {{3}}. Kindly clear your dues at chordsmusicacademy.in/pay"
+//
+// 4. fee_due_today (UTILITY)
+//    "Hi {{1}}, your Chords Music Academy fee of {{2}} is due today ({{3}}). Please pay at chordsmusicacademy.in/pay"
 
 const API_VERSION = "v23.0";
 
@@ -100,6 +103,8 @@ exports.handler = async (event) => {
         template = { name: "fee_reminder_advance", params: [s.name, amount, dueStr] };
       } else if (diff === 1) {
         template = { name: "fee_reminder_tomorrow", params: [s.name, amount, dueStr] };
+      } else if (diff === 0) {
+        template = { name: "fee_due_today", params: [s.name, amount, dueStr] };
       } else if (diff === -1 || diff === -3 || diff === -7) {
         template = { name: "fee_overdue", params: [s.name, amount, dueStr] };
       } else if (diff <= -14 && Math.abs(diff) % 7 === 0) {
