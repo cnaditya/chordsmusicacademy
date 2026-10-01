@@ -19,15 +19,14 @@
 //    "Hi {{1}}, your Chords Music Academy fee of {{2}} is due today ({{3}}). Please pay at chordsmusicacademy.in/pay"
 
 const API_VERSION = "v23.0";
+const { normalizePhone } = require("./_shared/normalizePhone");
 
 async function sendWhatsAppTemplate(phone, templateName, params, studentName) {
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
 
-  let p = String(phone || "").replace(/\D/g, "");
-  if (!p || p.length < 7) return null;
-  if (p.length === 10) p = "91" + p;
-  else if (p.startsWith("0") && p.length === 11) p = "91" + p.slice(1);
+  const p = normalizePhone(phone);
+  if (!p) return null;
 
   try {
     const res = await fetch(`https://graph.facebook.com/${API_VERSION}/${phoneNumberId}/messages`, {

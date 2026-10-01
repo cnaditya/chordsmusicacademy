@@ -185,13 +185,16 @@ exports.handler = async (event) => {
 
     // ── ADD NOTE ──────────────────────────────────────────────────────────────
     if (action === "add_note") {
-      const { student_id, content } = body;
+      const { student_id, content, created_at } = body;
       if (!student_id || !content) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and content required" }) };
+
+      const notePayload = { student_id, content };
+      if (created_at) notePayload.created_at = created_at; // optional backdating, e.g. logging a late receipt
 
       const res = await fetch(`${SUPABASE_URL}/rest/v1/crm_notes`, {
         method: "POST",
         headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" },
-        body: JSON.stringify({ student_id, content }),
+        body: JSON.stringify(notePayload),
       });
       const data = await res.json();
       if (res.status >= 400) return { statusCode: res.status, headers, body: JSON.stringify({ error: (data && data.message) || "Note insert failed" }) };

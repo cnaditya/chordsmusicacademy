@@ -249,15 +249,21 @@ exports.handler = async (event) => {
     }
 
     // --- Update existing student ---
-    // --- Delete a student ---
+    // --- Delete a student (soft delete, matches crm_students — recoverable) ---
     if (action === "delete") {
       const { id } = JSON.parse(event.body || "{}");
       if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: "id required" }) };
       const delRes = await fetch(
         `${SUPABASE_URL}/rest/v1/payment_students?id=eq.${encodeURIComponent(id)}`,
         {
-          method: "DELETE",
-          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Prefer: "return=minimal" },
+          method: "PATCH",
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": "application/json",
+            Prefer: "return=minimal",
+          },
+          body: JSON.stringify({ is_active: false }),
         }
       );
       if (!delRes.ok) {
@@ -678,9 +684,11 @@ exports.handler = async (event) => {
     }
 
     if (action === "crm_add_note") {
-      const { student_id, content } = JSON.parse(event.body);
+      const { student_id, content, created_at } = JSON.parse(event.body);
       if (!student_id || !content) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and content required" }) };
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_notes`, { method:"POST", headers:SB_M, body:JSON.stringify({ student_id, content }) });
+      const payload = { student_id, content };
+      if (created_at) payload.created_at = created_at; // optional backdating, e.g. logging a late receipt
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_notes`, { method:"POST", headers:SB_M, body:JSON.stringify(payload) });
       const data = await r.json();
       if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: (data&&data.message)||"Note failed" }) };
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, note: Array.isArray(data)?data[0]:data }) };
@@ -775,113 +783,9 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: Array.isArray(sdata)?sdata[0]:sdata }) };
     }
 
-    // ── AISENSY SYNC ──────────────────────────────────────────────────────────
-    if (action === "crm_aisensy_sync") {
-      const AISENSY_KEY = process.env.AISENSY_API_KEY;
-      if (!AISENSY_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: "AISENSY_API_KEY not configured" }) };
-
-      function normPhone(phone) {
-        let p = String(phone || "").replace(/\D/g, "");
-        if (!p || p.length < 7) return null;
-        if (p.length === 10) p = "91" + p;
-        else if (p.startsWith("0") && p.length === 11) p = "91" + p.slice(1);
-        return p;
-      }
-
-      async function addContact(phone, name, tags) {
-        const p = normPhone(phone);
-        if (!p) return null;
-        const res = await fetch("https://backend.aisensy.com/campaign/t1/api/v2", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            apiKey: AISENSY_KEY,
-            campaignName: "contact_sync",
-            destination: p,
-            userName: name || "Contact",
-            templateParams: [name || "there"],
-            source: "cma-crm-sync",
-            media: {},
-            buttons: [],
-            carouselCards: [],
-            location: {},
-          }),
-        });
-        return { phone: p, name, status: res.status };
-      }
-
-      // Fetch all active CRM students
-      const sr = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&select=name,phone`, { headers: SB_H });
-      const students = await sr.json();
-
-      // Fetch all leads
-      const lr = await fetch(`${SUPABASE_URL}/rest/v1/crm_leads?select=full_name,phone`, { headers: SB_H });
-      const leads = await lr.json();
-
-      const results = [];
-      const contacts = [
-        ...(Array.isArray(students) ? students.map(s => ({ name: s.name, phone: s.phone, type: "student" })) : []),
-        ...(Array.isArray(leads) ? leads.map(l => ({ name: l.full_name, phone: l.phone, type: "lead" })) : []),
-      ];
-
-      for (const c of contacts) {
-        if (!c.phone) continue;
-        const r = await addContact(c.phone, c.name, [c.type]);
-        if (r) results.push(r);
-      }
-
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, synced: results.length, results }) };
-    }
-
-    // ── AISENSY SEND FROM CRM ────────────────────────────────────────────────
-    if (action === "crm_aisensy_send") {
-      const { phone, name, amount, due_date, template } = JSON.parse(event.body);
-      const AISENSY_KEY = process.env.AISENSY_API_KEY;
-      if (!AISENSY_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: "AISENSY_API_KEY not configured" }) };
-      let p = String(phone || "").replace(/\D/g, "");
-      if (p.length === 10) p = "91" + p;
-      else if (p.startsWith("0") && p.length === 11) p = "91" + p.slice(1);
-      const dueStr = due_date ? new Date(due_date).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" }) : "soon";
-      const res = await fetch("https://backend.aisensy.com/campaign/t1/api/v2", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          apiKey: AISENSY_KEY,
-          campaignName: template || "fee_reminder_advance",
-          destination: p,
-          userName: name,
-          templateParams: [name, `Rs.${amount}`, dueStr],
-          source: "cma-crm",
-          media: {}, buttons: [], carouselCards: [], location: {},
-        }),
-      });
-      const text = await res.text();
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, wa_status: res.status, wa_response: text }) };
-    }
-
-    // ── AISENSY SEND TEST ─────────────────────────────────────────────────────
-    if (action === "crm_aisensy_test") {
-      const { phone, name } = JSON.parse(event.body);
-      const AISENSY_KEY = process.env.AISENSY_API_KEY;
-      if (!AISENSY_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: "AISENSY_API_KEY not configured" }) };
-      let p = String(phone || "").replace(/\D/g, "");
-      if (p.length === 10) p = "91" + p;
-      const res = await fetch("https://backend.aisensy.com/campaign/t1/api/v2", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          apiKey: AISENSY_KEY,
-          campaignName: "fee_reminder_advance",
-          destination: p,
-          userName: name || "Test",
-          templateParams: [name || "Student", "Rs.5000", "30 Apr 2026"],
-          source: "cma-test",
-          media: {}, buttons: [], carouselCards: [], location: {},
-        }),
-      });
-      const text = await res.text();
-      return { statusCode: 200, headers, body: JSON.stringify({ status: res.status, response: text }) };
-    }
+    // AiSensy-based actions (crm_aisensy_sync/send/test) removed 2026-10-01 —
+    // AiSensy membership lapsed; WhatsApp now goes through the direct Meta
+    // Cloud API (see netlify/functions/send-whatsapp-alert.js and fee-reminders.js).
 
     return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid action" }) };
   } catch (err) {
