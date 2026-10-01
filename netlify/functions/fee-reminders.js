@@ -115,12 +115,42 @@ exports.handler = async (event) => {
     }
 
     console.log(`Fee reminders: ${sent.length} sent, ${skipped.length} skipped`);
+
+    // Always notify Aaditya after the run, even if nothing was sent — he asked
+    // to be informed every time, not asked for approval beforehand.
+    await notifyAaditya(sent);
+
     return {
       statusCode: 200,
       body: JSON.stringify({ sent: sent.length, skipped: skipped.length, results: sent }),
     };
   } catch (err) {
     console.error("fee-reminders error:", err);
+    await notifyAaditya(null, err.message);
     return { statusCode: 500, body: err.message };
   }
 };
+
+async function notifyAaditya(sent, errorMessage) {
+  let message;
+  if (errorMessage) {
+    message = `Fee reminders run failed today: ${errorMessage}`;
+  } else if (!sent || sent.length === 0) {
+    message = "Fee reminders ran today — no students were due a reminder.";
+  } else {
+    const lines = sent.map((s) => `${s.name} (${s.template.replace("fee_", "").replace(/_/g, " ")})`);
+    message = `Fee reminders sent today to ${sent.length} student(s): ${lines.join(", ")}`;
+  }
+
+  try {
+    const res = await fetch("https://chordsmusicacademy.in/.netlify/functions/send-whatsapp-alert", {
+      method: "POST",
+      headers: { "x-ads-token": process.env.ADS_DASHBOARD_PASSWORD, "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    });
+    const text = await res.text();
+    console.log(`Notify Aaditya: ${res.status} ${text}`);
+  } catch (err) {
+    console.error("Failed to notify Aaditya:", err.message);
+  }
+}
