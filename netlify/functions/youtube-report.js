@@ -42,24 +42,30 @@ exports.handler = async function (event) {
     const channel = channelData.items[0];
     const uploadsPlaylist = channel.contentDetails.relatedPlaylists.uploads;
 
+    // Fetch extra and filter to public videos only — the uploads playlist
+    // includes private/unlisted drafts when queried as the channel owner,
+    // which would otherwise show up as if they were live uploads.
     const playlistData = await get(
-      `https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=${uploadsPlaylist}&maxResults=${maxResults}`,
+      `https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=${uploadsPlaylist}&maxResults=${Math.min(maxResults + 10, 50)}`,
       accessToken
     );
     const videoIds = playlistData.items.map((item) => item.contentDetails.videoId).join(",");
 
     const videosData = await get(
-      `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoIds}`,
+      `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,status&id=${videoIds}`,
       accessToken
     );
 
-    const videos = videosData.items.map((v) => ({
-      title: v.snippet.title,
-      published: v.snippet.publishedAt.slice(0, 10),
-      views: parseInt(v.statistics.viewCount || "0"),
-      likes: parseInt(v.statistics.likeCount || "0"),
-      comments: parseInt(v.statistics.commentCount || "0"),
-    }));
+    const videos = videosData.items
+      .filter((v) => v.status.privacyStatus === "public")
+      .slice(0, maxResults)
+      .map((v) => ({
+        title: v.snippet.title,
+        published: v.snippet.publishedAt.slice(0, 10),
+        views: parseInt(v.statistics.viewCount || "0"),
+        likes: parseInt(v.statistics.likeCount || "0"),
+        comments: parseInt(v.statistics.commentCount || "0"),
+      }));
 
     return {
       statusCode: 200,
