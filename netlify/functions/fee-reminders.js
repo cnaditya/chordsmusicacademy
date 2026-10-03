@@ -17,6 +17,16 @@
 //
 // 4. fee_due_today (UTILITY)
 //    "Hi {{1}}, your Chords Music Academy fee of {{2}} is due today ({{3}}). Please pay at chordsmusicacademy.in/pay"
+//
+// 5. winback_offer (MARKETING) — for students 60+ days overdue, replaces fee_overdue
+//    "Hi {{1}}, we haven't seen you at Chords Music Academy in a while! Come back and
+//    continue learning - we have great offers waiting for you. WhatsApp us to restart
+//    your classes!"
+//
+// TEMPORARY (added 2026-10-03, per Aaditya): only offline students get automated
+// reminders right now — online students are excluded. Also, students 60+ days overdue
+// stop getting fee_overdue nagging; instead they're auto-paused and sent a weekly
+// winback_offer message instead. Tell Aaditya if he wants either of these reverted.
 
 const API_VERSION = "v23.0";
 const { normalizePhone } = require("./_shared/normalizePhone");
@@ -72,7 +82,7 @@ exports.handler = async (event) => {
     const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
 
     const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&amount_due=gt.0&due_date=not.is.null&select=id,name,phone,amount_due,due_date`,
+      `${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&mode=eq.offline&amount_due=gt.0&due_date=not.is.null&select=id,name,phone,amount_due,due_date,status`,
       { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
     );
     const students = await r.json();
@@ -98,7 +108,23 @@ exports.handler = async (event) => {
       const dueStr = formatDate(s.due_date);
       let template = null;
 
-      if (diff === 3) {
+      if (diff <= -60) {
+        // 60+ days overdue: stop fee nagging, auto-pause, switch to a weekly
+        // friendly winback message instead.
+        if (s.status !== "paused") {
+          await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${s.id}`, {
+            method: "PATCH",
+            headers: {
+              apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
+              "Content-Type": "application/json", Prefer: "return=minimal",
+            },
+            body: JSON.stringify({ status: "paused" }),
+          });
+        }
+        if (Math.abs(diff) % 7 === 0) {
+          template = { name: "winback_offer", params: [s.name] };
+        }
+      } else if (diff === 3) {
         template = { name: "fee_reminder_advance", params: [s.name, amount, dueStr] };
       } else if (diff === 1) {
         template = { name: "fee_reminder_tomorrow", params: [s.name, amount, dueStr] };
