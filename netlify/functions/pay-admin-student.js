@@ -466,6 +466,53 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: Array.isArray(data)?data[0]:data }) };
     }
 
+    if (action === "crm_mark_paid") {
+      // Marks a student paid and auto-advances due_date by their billing
+      // cycle length (parsed from payment_type), so staff don't have to
+      // manually compute the next due date each time.
+      const { id, amount } = JSON.parse(event.body || "{}");
+      if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: "id required" }) };
+
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${id}`, { headers: SB_H });
+      const rows = await r.json();
+      const student = Array.isArray(rows) ? rows[0] : null;
+      if (!student) return { statusCode: 404, headers, body: JSON.stringify({ error: "Student not found" }) };
+
+      const pt = (student.payment_type || "").toLowerCase();
+      let months = 3; // default: quarterly, the most common package
+      const explicit = pt.match(/(\d+)\s*month/);
+      if (explicit) months = parseInt(explicit[1]);
+      else if (pt.includes("month")) months = 1; // "monthly"
+      else if (pt.includes("quarter")) months = 3;
+      else if (pt.includes("half")) months = 6;
+      else if (pt.includes("annual") || pt.includes("year")) months = 12;
+
+      const base = student.due_date ? new Date(student.due_date + "T00:00:00") : new Date();
+      base.setMonth(base.getMonth() + months);
+      const newDueDate = base.toISOString().slice(0, 10);
+
+      const paidAmount = amount !== undefined ? amount : student.amount_due;
+
+      const upd = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${id}`, {
+        method: "PATCH", headers: SB_M,
+        body: JSON.stringify({ amount_due: 0, due_date: newDueDate }),
+      });
+      if (upd.status >= 400) {
+        const err = await upd.json();
+        return { statusCode: upd.status, headers, body: JSON.stringify({ error: err.message || "Update failed" }) };
+      }
+
+      await fetch(`${SUPABASE_URL}/rest/v1/crm_notes`, {
+        method: "POST", headers: SB_M,
+        body: JSON.stringify({
+          student_id: id,
+          content: `Rs.${paidAmount} received - marked paid. Due date advanced to ${newDueDate} (${months}-month cycle).`,
+        }),
+      });
+
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, new_due_date: newDueDate, months_advanced: months }) };
+    }
+
     if (action === "crm_upload_photo") {
       const { student_id, file_base64 } = JSON.parse(event.body);
       if (!student_id || !file_base64) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and file_base64 required" }) };
