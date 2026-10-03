@@ -3936,7 +3936,7 @@ function renderPaymentsTab(s) {
     </div>
     <div style="display:flex;gap:8px;">
       <button class="btn btn-primary" onclick="updatePayment()">Update</button>
-      <button class="btn btn-success" onclick="markPaid()">✓ Mark Paid (₹0)</button>
+      <button class="btn btn-success" onclick="markPaid()">✓ Mark Paid &amp; Advance Due Date</button>
     </div>
   </div>
 
@@ -3958,10 +3958,11 @@ async function updatePayment() {
 
 async function markPaid() {
   if (!currentStudentId) return;
-  showConfirm('Mark as Paid','Set amount due to ₹0?','Mark Paid', async () => {
+  const amount = parseInt(document.getElementById('pay-amount').value) || 0;
+  showConfirm('Mark as Paid', 'Mark paid and auto-advance the due date to the next billing cycle (based on their payment type)?', 'Mark Paid', async () => {
     try {
-      await apiCall({ action: 'crm_update', id: currentStudentId, student: { amount_due: 0, due_date: null } });
-      toast('Marked as paid!');
+      const res = await apiCall({ action: 'crm_mark_paid', id: currentStudentId, amount });
+      toast(`Marked paid! Next due: ${fmtDate(res.new_due_date)}`);
       viewStudent(currentStudentId);
     } catch(e) { toast('Failed.','error'); }
   });
