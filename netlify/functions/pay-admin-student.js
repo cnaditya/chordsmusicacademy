@@ -2,6 +2,8 @@
 const { resolveRole } = require("./_shared/auth");
 const { sign } = require("./_shared/leaveSign");
 const { countClassDaysInRange } = require("./_shared/schedule");
+const { decideLeave } = require("./_shared/leaveApply");
+const { computeCycle } = require("./_shared/leaves");
 
 const STUDENTS = [
   { name:'Gayatri',    phone:'919178619761',  plan:'monthly_5000', payment_type:'monthly', amount:5000, billing_day:1,  class_days:'Mon, Thu', class_time:'6:30am',  teacher:'Aditya' },
@@ -191,6 +193,7 @@ exports.handler = async (event) => {
         payment_type: `${months} Months`,
         total_classes_per_cycle: months * 8,
         enrollment_date: startStr,
+        cycle_start: startStr,
         leaves_taken: 0,
         due_date: dueDate,
       };
@@ -601,15 +604,17 @@ exports.handler = async (event) => {
         cs.setMonth(cs.getMonth() - cycleMonths);
         cycleStart = cs.toISOString().slice(0, 10);
       }
-      const scheduled = cycleStart ? countClassDaysInRange(stu.class_days, cycleStart, todayIso) : 0;
-      const usedAuto = Math.max(0, scheduled - (stu.leaves_taken || 0));
-      const total = stu.total_classes_per_cycle || 0;
+      const lvR = await fetch(`${SUPABASE_URL}/rest/v1/crm_leaves?student_db_id=eq.${id}&status=eq.approved&select=*`, { headers: SB_H });
+      const lvRows = await lvR.json().catch(() => []);
+      const approvedLeaves = Array.isArray(lvRows) ? lvRows : [];
+      const cyc = computeCycle(stu, approvedLeaves, todayIso);
       const class_status = {
-        scheduled_to_date: scheduled,
-        leaves_taken: stu.leaves_taken || 0,
-        used: usedAuto,
-        total,
-        remaining: total ? Math.max(0, total - usedAuto) : null,
+        scheduled_to_date: cyc.scheduled,
+        leaves_taken: cyc.leavesTaken,
+        used: cyc.used,
+        total: cyc.total,
+        remaining: cyc.remaining,
+        due_date: cyc.dueDate,
       };
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: stu, class_status, attendance: Array.isArray(attendance)?attendance:[], notes: Array.isArray(notes)?notes:[] }) };
     }
@@ -622,6 +627,7 @@ exports.handler = async (event) => {
       const existing = await cr.json();
       s.student_id = `CMA-${year}-${String((Array.isArray(existing)?existing.length:0)+1).padStart(3,"0")}`;
       if (!s.enrollment_date) s.enrollment_date = new Date().toISOString().split("T")[0];
+      if (!s.cycle_start) s.cycle_start = s.enrollment_date;
       const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students`, { method:"POST", headers:SB_M, body:JSON.stringify(s) });
       const data = await r.json();
       if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: (data&&data.message)||"Insert failed" }) };
@@ -667,7 +673,7 @@ exports.handler = async (event) => {
 
       const upd = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${id}`, {
         method: "PATCH", headers: SB_M,
-        body: JSON.stringify({ amount_due: 0, due_date: newDueDate, leaves_taken: 0 }),
+        body: JSON.stringify({ amount_due: 0, due_date: newDueDate, cycle_start: student.due_date || new Date().toISOString().slice(0, 10), leaves_taken: 0 }),
       });
       if (upd.status >= 400) {
         const err = await upd.json();
@@ -713,6 +719,7 @@ exports.handler = async (event) => {
           payment_type,
           total_classes_per_cycle: months * 8,
           enrollment_date: startStr,
+          cycle_start: startStr,
           leaves_taken: 0,
           amount_due: paid ? 0 : undefined,
           due_date: dueDate,
@@ -860,36 +867,12 @@ exports.handler = async (event) => {
     if (action === "crm_update_leave") {
       const { id, status: st, admin_note } = JSON.parse(event.body || "{}");
       if (!id || !st) return { statusCode: 400, headers, body: JSON.stringify({ error: "id and status required" }) };
-
-      let newLeavesTaken = null;
-      if (st === 'approved') {
-        // Fetch the leave record to get dates and student
-        const leaveR = await fetch(`${SUPABASE_URL}/rest/v1/crm_leaves?id=eq.${id}&select=date_from,date_to,student_db_id,status,selected_dates`, { headers: SB_H });
-        const leaveRows = await leaveR.json();
-        const leave = Array.isArray(leaveRows) ? leaveRows[0] : null;
-        if (leave && leave.status === 'pending' && leave.student_db_id) {
-          // Fetch student's leaves_taken and class_days
-          const stuR = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${leave.student_db_id}&select=leaves_taken,class_days`, { headers: SB_H });
-          const stuRows = await stuR.json();
-          const stu = Array.isArray(stuRows) ? stuRows[0] : null;
-          const current = stu ? (stu.leaves_taken || 0) : 0;
-          const classDays = stu ? stu.class_days : '';
-          const classDaysCount = leave.selected_dates
-            ? leave.selected_dates.split(',').filter(Boolean).reduce((n, d) => n + countClassDaysInRange(classDays, d, d), 0)
-            : countClassDaysInRange(classDays, leave.date_from, leave.date_to);
-          newLeavesTaken = current + classDaysCount;
-          await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${leave.student_db_id}`, {
-            method: 'PATCH', headers: { ...SB_H, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-            body: JSON.stringify({ leaves_taken: newLeavesTaken })
-          });
-        }
+      if (st !== "approved" && st !== "rejected") {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: "status must be approved or rejected" }) };
       }
-
-      await fetch(`${SUPABASE_URL}/rest/v1/crm_leaves?id=eq.${id}`, {
-        method: 'PATCH', headers: { ...SB_H, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: st, admin_note: admin_note||'' })
-      });
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, leaves_taken: newLeavesTaken }) };
+      const out = await decideLeave({ SUPABASE_URL, H: SB_H, leaveId: id, action: st === "approved" ? "approve" : "reject", adminNote: admin_note || "" });
+      if (out.error) return { statusCode: 400, headers, body: JSON.stringify({ error: out.error === "already_decided" ? `Already ${out.status}` : out.error }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, status: out.status, reason: out.reason || null, remaining: out.remaining ?? null, due_date: out.dueDate || null, student_messaged: !!(out.msg && out.msg.sent) }) };
     }
 
     if (action === "crm_bills_list") {

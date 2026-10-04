@@ -1,7 +1,7 @@
 // One-tap leave approve/reject link sent to the admin on WhatsApp.
 // URL: /.netlify/functions/leave-decide?id=<leave id>&action=approve|reject&sig=<hmac>
 const { verify } = require("./_shared/leaveSign");
-const { countClassDaysInRange } = require("./_shared/schedule");
+const { decideLeave } = require("./_shared/leaveApply");
 
 const page = (title, message, ok) => ({
   statusCode: 200,
@@ -25,41 +25,19 @@ exports.handler = async (event) => {
   const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
   const H = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
 
-  const lr = await fetch(`${SUPABASE_URL}/rest/v1/crm_leaves?id=eq.${encodeURIComponent(id)}&select=*`, { headers: H });
-  const leaves = await lr.json();
-  const leave = Array.isArray(leaves) ? leaves[0] : null;
-  if (!leave) return page("Not found", "This leave request no longer exists.", false);
-  if (leave.status !== "pending") {
-    return page("Already decided", `This leave was already ${leave.status}.`, leave.status === "approved");
+  const out = await decideLeave({ SUPABASE_URL, H, leaveId: id, action });
+  if (out.error === "not_found") return page("Not found", "This leave request no longer exists.", false);
+  if (out.error === "already_decided") {
+    return page("Already decided", `This leave was already ${out.status}.`, out.status === "approved");
   }
 
-  const newStatus = action === "approve" ? "approved" : "rejected";
-  let leavesTaken = null;
-
-  if (newStatus === "approved" && leave.student_db_id) {
-    const sr = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${leave.student_db_id}&select=leaves_taken,class_days`, { headers: H });
-    const srows = await sr.json();
-    const stu = Array.isArray(srows) ? srows[0] : null;
-    const current = stu ? (stu.leaves_taken || 0) : 0;
-    const added = leave.selected_dates
-      ? leave.selected_dates.split(",").filter(Boolean).reduce((n, d) => n + countClassDaysInRange(stu?.class_days, d, d), 0)
-      : countClassDaysInRange(stu?.class_days, leave.date_from, leave.date_to);
-    leavesTaken = current + added;
-    await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${leave.student_db_id}`, {
-      method: "PATCH", headers: { ...H, "Content-Type": "application/json", Prefer: "return=minimal" },
-      body: JSON.stringify({ leaves_taken: leavesTaken }),
-    });
+  if (out.status === "approved") {
+    const extra = out.remaining !== null && out.remaining !== undefined
+      ? ` ${out.student || "Student"} has ${out.remaining} classes left. New due date: ${out.dueDate}.`
+      : "";
+    const note = out.msg && out.msg.sent ? " The student has been messaged." : " The student could not be messaged yet.";
+    return page("Leave approved", `${out.student || "Student"}'s leave was approved.${extra}${note}`, true);
   }
-
-  await fetch(`${SUPABASE_URL}/rest/v1/crm_leaves?id=eq.${encodeURIComponent(id)}`, {
-    method: "PATCH", headers: { ...H, "Content-Type": "application/json", Prefer: "return=minimal" },
-    body: JSON.stringify({ status: newStatus }),
-  });
-
-  const extra = leavesTaken !== null ? ` ${leave.student_name || "Student"} now has ${leavesTaken} leave class(es) used.` : "";
-  return page(
-    newStatus === "approved" ? "Leave approved" : "Leave rejected",
-    `${leave.student_name || "Student"}'s leave (${leave.date_from} to ${leave.date_to}) was ${newStatus}.${extra}`,
-    newStatus === "approved"
-  );
+  const why = out.reason ? ` Reason: ${out.reason}.` : "";
+  return page("Leave rejected", `${out.student || "Student"}'s leave was rejected.${why}`, false);
 };
