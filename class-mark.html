@@ -35,10 +35,9 @@
   <h1>Mark class taken</h1>
   <p class="sub">Pick the student, tap Mark class, then send the WhatsApp message yourself.</p>
 
-  <label for="search">Search student</label>
-  <input id="search" type="text" placeholder="Type a name" style="width:100%;padding:10px;font:inherit;border:1px solid #cfd6df;border-radius:8px;margin-bottom:8px;">
-  <label for="student">Student</label>
-  <select id="student" size="6"><option value="">Select a student</option></select>
+  <label for="student">Student (type a name)</label>
+  <input id="student" type="text" list="student-list" placeholder="Type a name" autocomplete="off" style="width:100%;padding:10px;font:inherit;border:1px solid #cfd6df;border-radius:8px;">
+  <datalist id="student-list"></datalist>
 
   <button class="btn" id="mark-btn" disabled>Mark class taken</button>
   <div class="msg" id="msg"></div>
@@ -69,10 +68,15 @@
       if (!res.ok) { setMsg('Could not load students. Log in again.', false); return; }
       students = (res.data.students || []).filter(function (s) { return s.mode === 'online' && s.is_active; })
         .sort(function (a, b) { return (a.name || '').localeCompare(b.name || ''); });
-      document.getElementById('student').innerHTML = '<option value="">Select a student</option>' + students.map(function (s) {
-        return '<option value="' + s.id + '">' + escapeHtml(s.name) + ' (' + s.student_id + ')</option>';
+      document.getElementById('student-list').innerHTML = students.map(function (s) {
+        return '<option value="' + escapeHtml(s.name + ' (' + s.student_id + ')') + '"></option>';
       }).join('');
     });
+  }
+
+  function pickedStudent() {
+    var v = document.getElementById('student').value.trim();
+    return students.find(function (x) { return v === (x.name + ' (' + x.student_id + ')'); }) || null;
   }
 
   function escapeHtml(t) { return String(t || '').replace(/[&<>"']/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
@@ -83,16 +87,8 @@
     return d;
   }
 
-  document.getElementById('search').addEventListener('input', function () {
-    var q = this.value.trim().toLowerCase();
-    var opts = document.getElementById('student').options;
-    for (var i = 1; i < opts.length; i++) {
-      opts[i].hidden = q && opts[i].text.toLowerCase().indexOf(q) === -1;
-    }
-  });
-
-  document.getElementById('student').addEventListener('change', function () {
-    var ok = !!this.value;
+  document.getElementById('student').addEventListener('input', function () {
+    var ok = !!pickedStudent();
     document.getElementById('mark-btn').disabled = !ok;
     document.getElementById('preview').style.display = 'none';
     document.getElementById('wa-btn').style.display = 'none';
@@ -101,8 +97,7 @@
   });
 
   document.getElementById('mark-btn').addEventListener('click', function () {
-    var id = document.getElementById('student').value;
-    var s = students.find(function (x) { return x.id === id; });
+    var s = pickedStudent();
     if (!s) return;
     var btn = this; btn.disabled = true; setMsg('Saving...', true);
     var today = new Date().toISOString().slice(0, 10);
