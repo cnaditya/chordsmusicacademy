@@ -65,6 +65,12 @@ exports.handler = async (event) => {
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
     const SB_H_PRE = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
+    // Phones are stored in different formats (spaces, +91), so compare the last 10 digits in code.
+    const findActiveByPhone = async (digits, select) => {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&select=${select},phone`, { headers: SB_H_PRE });
+      const rows = await r.json();
+      return Array.isArray(rows) ? rows.filter((x) => String(x.phone || "").replace(/\D/g, "").slice(-10) === digits) : [];
+    };
 
     // Return teacher roles from TEACHER_PASSWORDS env var keys (what shows on login screen)
     if (preBody.action === "crm_teachers_list") {
@@ -98,10 +104,10 @@ exports.handler = async (event) => {
       const { phone } = preBody;
       if (!phone) return { statusCode: 400, headers, body: JSON.stringify({ error: "phone required" }) };
       const digits = phone.replace(/\D/g,'').slice(-10);
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?phone=like.*${digits}&is_active=eq.true&select=id,name,student_id,instrument,mode,teacher`, { headers: SB_H_PRE });
-      const rows = await r.json();
-      if (!Array.isArray(rows) || !rows.length) return { statusCode: 404, headers, body: JSON.stringify({ error: "Student not found" }) };
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: rows[0] }) };
+      const rows = await findActiveByPhone(digits, "id,name,student_id,instrument,mode,teacher");
+      if (!rows.length) return { statusCode: 404, headers, body: JSON.stringify({ error: "Student not found" }) };
+      const { phone: _p, ...studentOut } = rows[0];
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: studentOut }) };
     }
 
     // Public: registration form creates a trial student directly in the CRM
@@ -110,8 +116,7 @@ exports.handler = async (event) => {
       const digits = String(phone || "").replace(/\D/g, "").slice(-10);
       if (!name || digits.length < 10) return { statusCode: 400, headers, body: JSON.stringify({ error: "name and valid phone required" }) };
 
-      const dup = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?phone=like.*${digits}&is_active=eq.true&select=id,student_id,status`, { headers: SB_H_PRE });
-      const existing = await dup.json();
+      const existing = await findActiveByPhone(digits, "id,student_id,status");
       if (Array.isArray(existing) && existing.length) {
         return { statusCode: 200, headers, body: JSON.stringify({ success: true, duplicate: true, student_id: existing[0].student_id }) };
       }
@@ -165,8 +170,7 @@ exports.handler = async (event) => {
       }
 
       const SB_W_PRE = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" };
-      const found = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?phone=like.*${digits}&is_active=eq.true&select=id,student_id,status`, { headers: SB_H_PRE });
-      const existing = await found.json();
+      const existing = await findActiveByPhone(digits, "id,student_id,status");
       if (Array.isArray(existing) && existing.length && existing[0].status === "active") {
         await fetch(`${SUPABASE_URL}/rest/v1/crm_notes`, {
           method: "POST", headers: SB_W_PRE,
