@@ -509,7 +509,21 @@ exports.handler = async (event) => {
       const stu = Array.isArray(students) ? students[0] : null;
       if (!stu) return { statusCode: 404, headers, body: JSON.stringify({ error: "Not found" }) };
       const todayIso = new Date().toISOString().slice(0, 10);
-      const scheduled = stu.enrollment_date ? countClassDaysInRange(stu.class_days, stu.enrollment_date, todayIso) : 0;
+      const cyclePt = String(stu.payment_type || '').toLowerCase();
+      let cycleMonths = 3;
+      const cm = cyclePt.match(/(\d+)\s*month/);
+      if (cm) cycleMonths = parseInt(cm[1]);
+      else if (cyclePt.includes('month')) cycleMonths = 1;
+      else if (cyclePt.includes('quarter')) cycleMonths = 3;
+      else if (cyclePt.includes('half')) cycleMonths = 6;
+      else if (cyclePt.includes('annual') || cyclePt.includes('year')) cycleMonths = 12;
+      let cycleStart = stu.enrollment_date;
+      if (stu.due_date) {
+        const cs = new Date(stu.due_date + 'T00:00:00');
+        cs.setMonth(cs.getMonth() - cycleMonths);
+        cycleStart = cs.toISOString().slice(0, 10);
+      }
+      const scheduled = cycleStart ? countClassDaysInRange(stu.class_days, cycleStart, todayIso) : 0;
       const usedAuto = Math.max(0, scheduled - (stu.leaves_taken || 0));
       const total = stu.total_classes_per_cycle || 0;
       const class_status = {
@@ -575,7 +589,7 @@ exports.handler = async (event) => {
 
       const upd = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${id}`, {
         method: "PATCH", headers: SB_M,
-        body: JSON.stringify({ amount_due: 0, due_date: newDueDate }),
+        body: JSON.stringify({ amount_due: 0, due_date: newDueDate, leaves_taken: 0 }),
       });
       if (upd.status >= 400) {
         const err = await upd.json();
@@ -621,6 +635,7 @@ exports.handler = async (event) => {
           payment_type,
           total_classes_per_cycle: months * 8,
           enrollment_date: startStr,
+          leaves_taken: 0,
           amount_due: paid ? 0 : undefined,
           due_date: dueDate,
         }),
