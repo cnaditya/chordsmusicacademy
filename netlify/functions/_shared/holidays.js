@@ -8,7 +8,6 @@ const HOLIDAYS = [
   "2026-11-08", // Diwali / Deepavali
   "2026-12-25", // Christmas
 
-  "2027-01-01", // New Year's Day
   "2027-01-15", // Makara Sankranti
   "2027-01-26", // Republic Day
   "2027-03-06", // Maha Shivaratri
