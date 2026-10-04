@@ -614,7 +614,6 @@ exports.handler = async (event) => {
         used: cyc.used,
         total: cyc.total,
         remaining: cyc.remaining,
-        due_date: cyc.dueDate,
       };
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: stu, class_status, attendance: Array.isArray(attendance)?attendance:[], notes: Array.isArray(notes)?notes:[] }) };
     }

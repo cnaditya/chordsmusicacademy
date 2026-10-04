@@ -54,7 +54,7 @@ function computeCycle(stu, approvedLeaves, today = todayIso()) {
   const cs = cycleStartOf(stu);
   const classDays = stu.class_days;
   const leaveDates = new Set();
-  for (const l of approvedLeaves) for (const d of leaveClassDates(l, classDays)) leaveDates.add(d);
+  for (const l of approvedLeaves) for (const d of leaveClassDates(l, classDays)) if (!cs || d >= cs) leaveDates.add(d);
 
   const scheduled = cs && cs < today ? countClassDaysInRange(classDays, cs, addDays(today, -1)) : 0;
   const pastLeaves = [...leaveDates].filter((d) => cs && d >= cs && d < today).length;
@@ -74,7 +74,7 @@ function computeCycle(stu, approvedLeaves, today = todayIso()) {
       }
     }
   }
-  return { scheduled, leavesTaken: leaveDates.size, used, total, remaining, dueDate };
+  return { scheduled, leavesTaken: leaveDates.size, used, total, remaining, projectedDue: dueDate };
 }
 
 // Decides whether a pending leave can be approved. Returns { ok: true } or { ok: false, reason }.

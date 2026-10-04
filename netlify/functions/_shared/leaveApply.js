@@ -86,10 +86,12 @@ async function decideLeave({ SUPABASE_URL, H, leaveId, action, adminNote }) {
   let result = { ok: true, remaining: null, dueDate: null };
   if (stu) {
     const cyc = computeCycle(stu, [...approvedLeaves, leave], todayIso());
-    result = { ok: true, remaining: cyc.remaining, dueDate: cyc.dueDate };
+    // The due date only ever moves later: the owner's date on the record is kept if it is already later.
+    const newDue = stu.due_date && stu.due_date > cyc.projectedDue ? stu.due_date : cyc.projectedDue;
+    result = { ok: true, remaining: cyc.remaining, dueDate: newDue };
     await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${stu.id}`, {
       method: "PATCH", headers: JSON_H,
-      body: JSON.stringify({ leaves_taken: cyc.leavesTaken, due_date: cyc.dueDate }),
+      body: JSON.stringify({ leaves_taken: cyc.leavesTaken, due_date: newDue }),
     });
   }
   await setLeave("approved", adminNote);
