@@ -226,7 +226,7 @@ exports.handler = async (event) => {
         try {
           await fetch("https://chordsmusicacademy.in/.netlify/functions/send-whatsapp-alert", {
             method: "POST", headers: { "x-ads-token": secret, "Content-Type": "application/json" },
-            body: JSON.stringify({ message: `Joined: ${fields.name} (${studentId}), ${instrument || "instrument not given"}, ${months} months, ${class_days}${class_time ? " " + class_time : ""}. Payment still to collect. Open CRM.` }),
+            body: JSON.stringify({ message: `Joined: ${fields.name} (${studentId}), ${instrument || "instrument not given"}, ${months} months, ${class_days}${class_time ? " " + class_time : ""}. Phone ${digits}. Payment still to collect. Open CRM.` }),
           });
         } catch (e) { /* alert failure must not block the joining */ }
       }
