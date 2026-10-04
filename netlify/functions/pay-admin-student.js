@@ -102,6 +102,56 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: rows[0] }) };
     }
 
+    // Public: registration form creates a trial student directly in the CRM
+    if (preBody.action === "crm_public_trial") {
+      const { name, phone, email, instrument, level, mode, notes, dob, address, guardian } = preBody;
+      const digits = String(phone || "").replace(/\D/g, "").slice(-10);
+      if (!name || digits.length < 10) return { statusCode: 400, headers, body: JSON.stringify({ error: "name and valid phone required" }) };
+
+      const dup = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?phone=like.*${digits}&is_active=eq.true&select=id,student_id,status`, { headers: SB_H_PRE });
+      const existing = await dup.json();
+      if (Array.isArray(existing) && existing.length) {
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, duplicate: true, student_id: existing[0].student_id }) };
+      }
+
+      const year = new Date().getFullYear();
+      const cr = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?student_id=like.CMA-${year}-*&select=student_id`, { headers: SB_H_PRE });
+      const countRows = await cr.json();
+      const studentId = `CMA-${year}-${String((Array.isArray(countRows) ? countRows.length : 0) + 1).padStart(3, "0")}`;
+
+      const payload = {
+        student_id: studentId,
+        name: String(name).trim(),
+        phone: digits,
+        email: email || "",
+        instrument: instrument || "",
+        level: level || "",
+        mode: mode || "offline",
+        status: "trial",
+        is_active: true,
+        enrollment_date: new Date().toISOString().slice(0, 10),
+        amount_due: 0,
+        notes: [dob && `DOB: ${dob}`, address && `Address: ${address}`, guardian && `Guardian: ${guardian}`, notes && `Preferred timing / notes: ${notes}`, "Source: registration form (trial)"].filter(Boolean).join(" | "),
+      };
+      const ins = await fetch(`${SUPABASE_URL}/rest/v1/crm_students`, {
+        method: "POST", headers: { ...SB_H_PRE, "Content-Type": "application/json", Prefer: "return=representation" },
+        body: JSON.stringify(payload),
+      });
+      const created = await ins.json();
+      if (!ins.ok) return { statusCode: 400, headers, body: JSON.stringify({ error: (created && created.message) || "Insert failed" }) };
+
+      const secret = process.env.ADS_DASHBOARD_PASSWORD;
+      if (secret) {
+        try {
+          await fetch('https://chordsmusicacademy.in/.netlify/functions/send-whatsapp-alert', {
+            method: 'POST', headers: { 'x-ads-token': secret, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: `New trial registration: ${payload.name} (${studentId}) for ${payload.instrument || 'instrument not given'}, ${payload.level || 'level not given'}, ${payload.mode}. Phone ${digits}. Timing: ${notes || 'not given'}. Open CRM to schedule the trial.` }),
+          });
+        } catch (e) { /* alert failure must not block the registration */ }
+      }
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, student_id: studentId }) };
+    }
+
     // Public: student submits leave request
     if (preBody.action === "crm_submit_leave") {
       const { student_db_id, student_id, student_name, date_from, date_to, selected_dates, reason } = preBody;
@@ -530,6 +580,49 @@ exports.handler = async (event) => {
       });
 
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, new_due_date: newDueDate, months_advanced: months }) };
+    }
+
+    if (action === "crm_enroll") {
+      // Converts a trial student into an active enrolment after the trial.
+      const { id, class_days, class_time, payment_type, start_date, paid } = JSON.parse(event.body || "{}");
+      if (!id || !class_days || !payment_type) return { statusCode: 400, headers, body: JSON.stringify({ error: "id, class_days and payment_type required" }) };
+
+      const pt = String(payment_type).toLowerCase();
+      let months = 3;
+      const explicit = pt.match(/(\d+)\s*month/);
+      if (explicit) months = parseInt(explicit[1]);
+      else if (pt.includes("month")) months = 1;
+      else if (pt.includes("quarter")) months = 3;
+      else if (pt.includes("half")) months = 6;
+      else if (pt.includes("annual") || pt.includes("year")) months = 12;
+
+      const startStr = start_date || new Date().toISOString().slice(0, 10);
+      const dueBase = new Date(startStr + "T00:00:00");
+      dueBase.setMonth(dueBase.getMonth() + months);
+      const dueDate = dueBase.toISOString().slice(0, 10);
+
+      const upd = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${id}`, {
+        method: "PATCH", headers: SB_M,
+        body: JSON.stringify({
+          status: "active",
+          class_days,
+          class_time: class_time || "",
+          payment_type,
+          total_classes_per_cycle: months * 8,
+          enrollment_date: startStr,
+          amount_due: paid ? 0 : undefined,
+          due_date: dueDate,
+        }),
+      });
+      if (upd.status >= 400) {
+        const err = await upd.json().catch(() => ({}));
+        return { statusCode: upd.status, headers, body: JSON.stringify({ error: err.message || "Enroll failed" }) };
+      }
+      await fetch(`${SUPABASE_URL}/rest/v1/crm_notes`, {
+        method: "POST", headers: SB_M,
+        body: JSON.stringify({ student_id: id, content: `Enrolled after trial. Classes: ${class_days}${class_time ? ' ' + class_time : ''}. Cycle: ${payment_type} (${months * 8} classes). Next due: ${dueDate}.` }),
+      });
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, due_date: dueDate }) };
     }
 
     if (action === "crm_upload_photo") {

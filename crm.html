@@ -3792,6 +3792,7 @@ function renderOverviewTab(s) {
     <button class="btn btn-primary btn-sm" onclick="openEditFromPanel()">✏️ Edit Student</button>
     <button class="btn btn-sm btn-ghost" onclick="openIdCardModal(panelStudent)">🪪 ID Card</button>
     <button class="btn btn-sm btn-ghost" onclick="openBillModal(panelStudent)">🧾 New Bill</button>
+    ${s.status === 'trial' ? `<button class="btn btn-sm btn-success" onclick="enrollAfterTrial('${s.id}')">🎓 Enroll after trial</button>` : ''}
     ${s.phone?`<a href="${waLink(s)}" target="_blank" class="btn btn-sm btn-ghost" style="color:var(--success);">💬 WhatsApp</a>`:''}
     ${s.phone && s.amount_due > 0 ? `<button data-remind-btn="${s.id}" class="btn btn-sm btn-ghost"
         style="${getRmdCount(s.id)>0?'':'background:#25d366;color:#fff;border:none;'}"
@@ -3899,6 +3900,20 @@ async function markAttendanceForDate(dateStr, status) {
     renderAttCalendar();
     toast(`${cap(status)} on ${fmtDate(dateStr)}`);
   } catch(e) { toast('Failed to mark attendance.','error'); }
+}
+
+async function enrollAfterTrial(id) {
+  const days = window.prompt('Class days (e.g. Tue, Thu):');
+  if (!days) return;
+  const time = window.prompt('Class time (e.g. 6:00PM):', '') || '';
+  const pType = window.prompt('Payment type (monthly / quarterly / 6 months / annual):', 'quarterly');
+  if (!pType) return;
+  const paid = window.confirm('Has the first payment been received?');
+  try {
+    const res = await apiCall({ action: 'crm_enroll', id, class_days: days, class_time: time, payment_type: pType, paid });
+    toast(`Enrolled. Next due: ${fmtDate(res.due_date)}`);
+    viewStudent(id);
+  } catch(e) { toast('Enroll failed.', 'error'); }
 }
 
 /* PAYMENTS TAB */
