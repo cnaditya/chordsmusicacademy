@@ -108,8 +108,6 @@
       <div style="font-weight:700;font-size:1rem;margin-bottom:4px;">Leave Request Submitted!</div>
       <div id="success-msg" style="font-size:0.85rem;"></div>
     </div>
-    <a id="wa-send" href="#" target="_blank" rel="noopener" class="btn" style="display:block;text-align:center;text-decoration:none;background:#25d366;border:none;margin-top:10px;">💬 Also send on WhatsApp</a>
-    <div style="font-size:0.8rem;color:#666;margin-top:6px;text-align:center;">Tap to send the same request from your WhatsApp to Chords Music Academy.</div>
     <button class="btn" style="background:var(--surface);color:var(--primary);border:1px solid var(--primary);margin-top:4px;" onclick="submitAnother()">Submit Another Leave</button>
   </div>
 </div>
@@ -232,9 +230,6 @@ async function submitLeave() {
     const fmtList = sorted.slice(0,3).map(iso => new Date(iso+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short'})).join(', ');
     const extra = count > 3 ? ` +${count-3} more` : '';
     document.getElementById('success-msg').textContent = `${count} leave day${count!==1?'s':''} submitted (${fmtList}${extra}). Your teacher will be notified.`;
-    const allDates = sorted.map(iso => new Date(iso+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})).join(', ');
-    const waText = `Leave request: ${_student.name} (${_student.student_id}). Dates: ${allDates}.` + (reason ? ` Reason: ${reason}.` : '');
-    document.getElementById('wa-send').href = 'https://wa.me/917981585309?text=' + encodeURIComponent(waText);
     show('step3');
   } catch(e) {
     errEl.textContent = e.message;
