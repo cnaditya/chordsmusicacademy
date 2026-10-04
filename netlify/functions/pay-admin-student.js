@@ -152,6 +152,84 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, student_id: studentId }) };
     }
 
+    // Public: joining form, sent by the owner after a successful trial.
+    // Turns an existing trial (matched by phone) or a new entry into an active enrolment.
+    if (preBody.action === "crm_public_join") {
+      const { name, phone, email, instrument, level, mode, dob, address, guardian, class_days, class_time, plan, start_date } = preBody;
+      const digits = String(phone || "").replace(/\D/g, "").slice(-10);
+      const months = parseInt(plan, 10);
+      if (!name || digits.length < 10 || !class_days || ![3, 6, 12].includes(months)) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: "name, valid phone, class_days and plan (3, 6 or 12 months) required" }) };
+      }
+
+      const SB_W_PRE = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" };
+      const found = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?phone=like.*${digits}&is_active=eq.true&select=id,student_id,status`, { headers: SB_H_PRE });
+      const existing = await found.json();
+      if (Array.isArray(existing) && existing.length && existing[0].status === "active") {
+        await fetch(`${SUPABASE_URL}/rest/v1/crm_notes`, {
+          method: "POST", headers: SB_W_PRE,
+          body: JSON.stringify({ student_id: existing[0].id, content: `Joining form submitted again. Not changed automatically, please check. Classes: ${class_days}${class_time ? " " + class_time : ""}, plan ${months} months.` }),
+        });
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, duplicate: true, student_id: existing[0].student_id }) };
+      }
+
+      const startStr = start_date || new Date().toISOString().slice(0, 10);
+      const dueBase = new Date(startStr + "T00:00:00");
+      dueBase.setMonth(dueBase.getMonth() + months);
+      const dueDate = dueBase.toISOString().slice(0, 10);
+      const fields = {
+        name: String(name).trim(),
+        phone: digits,
+        email: email || "",
+        instrument: instrument || "",
+        level: level || "",
+        mode: mode || "offline",
+        status: "active",
+        is_active: true,
+        class_days,
+        class_time: class_time || "",
+        payment_type: `${months} Months`,
+        total_classes_per_cycle: months * 8,
+        enrollment_date: startStr,
+        leaves_taken: 0,
+        due_date: dueDate,
+      };
+
+      let studentDbId, studentId;
+      if (existing.length) {
+        studentDbId = existing[0].id;
+        studentId = existing[0].student_id;
+        const upd = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${studentDbId}`, { method: "PATCH", headers: SB_W_PRE, body: JSON.stringify(fields) });
+        if (upd.status >= 400) return { statusCode: 400, headers, body: JSON.stringify({ error: "Update failed" }) };
+      } else {
+        const year = new Date().getFullYear();
+        const cr = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?student_id=like.CMA-${year}-*&select=student_id`, { headers: SB_H_PRE });
+        const countRows = await cr.json();
+        studentId = `CMA-${year}-${String((Array.isArray(countRows) ? countRows.length : 0) + 1).padStart(3, "0")}`;
+        const ins = await fetch(`${SUPABASE_URL}/rest/v1/crm_students`, { method: "POST", headers: SB_W_PRE, body: JSON.stringify({ ...fields, student_id: studentId, amount_due: 0 }) });
+        const created = await ins.json();
+        if (!ins.ok) return { statusCode: 400, headers, body: JSON.stringify({ error: (created && created.message) || "Insert failed" }) };
+        studentDbId = Array.isArray(created) ? created[0].id : created.id;
+      }
+
+      const details = [dob && `DOB: ${dob}`, address && `Address: ${address}`, guardian && `Guardian: ${guardian}`].filter(Boolean).join(", ");
+      await fetch(`${SUPABASE_URL}/rest/v1/crm_notes`, {
+        method: "POST", headers: SB_W_PRE,
+        body: JSON.stringify({ student_id: studentDbId, content: `Joined via joining form. Classes: ${class_days}${class_time ? " " + class_time : ""}. Plan: ${months} months (${months * 8} classes). First due: ${dueDate}.${details ? " " + details + "." : ""}` }),
+      });
+
+      const secret = process.env.ADS_DASHBOARD_PASSWORD;
+      if (secret) {
+        try {
+          await fetch("https://chordsmusicacademy.in/.netlify/functions/send-whatsapp-alert", {
+            method: "POST", headers: { "x-ads-token": secret, "Content-Type": "application/json" },
+            body: JSON.stringify({ message: `Joined: ${fields.name} (${studentId}), ${instrument || "instrument not given"}, ${months} months, ${class_days}${class_time ? " " + class_time : ""}. Payment still to collect. Open CRM.` }),
+          });
+        } catch (e) { /* alert failure must not block the joining */ }
+      }
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, student_id: studentId, due_date: dueDate }) };
+    }
+
     // Public: student submits leave request
     if (preBody.action === "crm_submit_leave") {
       const { student_db_id, student_id, student_name, date_from, date_to, selected_dates, reason } = preBody;
