@@ -3734,6 +3734,7 @@ async function viewStudent(id) {
     document.getElementById('panel-meta').innerHTML =
       `${s.student_id||''} · ${instrumentIcon(s.instrument)} ${s.instrument||''} · ${badge(s.status)}`;
 
+    window._classStatus = data.class_status || null;
     document.getElementById('tab-overview').innerHTML = renderOverviewTab(s);
     renderAttendanceTab(s, data.attendance||[]);
     document.getElementById('tab-payments').innerHTML = renderPaymentsTab(s);
@@ -3761,6 +3762,12 @@ function switchTab(tab) {
 
 /* OVERVIEW TAB */
 function renderOverviewTab(s) {
+  const cs = window._classStatus;
+  const classBlock = cs ? `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;">
+    <div style="font-size:0.78rem;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Classes (automatic)</div>
+    <div style="font-size:0.9rem;">Used <strong>${cs.used}</strong> of <strong>${cs.total||'—'}</strong> &nbsp;·&nbsp; Remaining <strong style="color:var(--gold);">${cs.remaining ?? '—'}</strong></div>
+    <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">Scheduled since start: ${cs.scheduled_to_date} · Approved leaves: ${cs.leaves_taken} · Holidays are skipped, no make-up</div>
+  </div>` : '';
   const fields = [
     ['Phone', s.phone||'—'],
     ['Email', s.email||'—'],
@@ -3779,7 +3786,7 @@ function renderOverviewTab(s) {
     ['Due Date', s.due_date ? fmtDate(s.due_date) : '—'],
   ];
 
-  return `<div class="field-grid">
+  return `${classBlock}<div class="field-grid">
     ${fields.map(([label,val])=>`
     <div class="field-item">
       <label>${label}</label>

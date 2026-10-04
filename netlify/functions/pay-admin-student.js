@@ -508,7 +508,18 @@ exports.handler = async (event) => {
       const notes = await nr.json();
       const stu = Array.isArray(students) ? students[0] : null;
       if (!stu) return { statusCode: 404, headers, body: JSON.stringify({ error: "Not found" }) };
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: stu, attendance: Array.isArray(attendance)?attendance:[], notes: Array.isArray(notes)?notes:[] }) };
+      const todayIso = new Date().toISOString().slice(0, 10);
+      const scheduled = stu.enrollment_date ? countClassDaysInRange(stu.class_days, stu.enrollment_date, todayIso) : 0;
+      const usedAuto = Math.max(0, scheduled - (stu.leaves_taken || 0));
+      const total = stu.total_classes_per_cycle || 0;
+      const class_status = {
+        scheduled_to_date: scheduled,
+        leaves_taken: stu.leaves_taken || 0,
+        used: usedAuto,
+        total,
+        remaining: total ? Math.max(0, total - usedAuto) : null,
+      };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: stu, class_status, attendance: Array.isArray(attendance)?attendance:[], notes: Array.isArray(notes)?notes:[] }) };
     }
 
     if (action === "crm_add") {
