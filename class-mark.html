@@ -35,8 +35,10 @@
   <h1>Mark class taken</h1>
   <p class="sub">Pick the student, tap Mark class, then send the WhatsApp message yourself.</p>
 
+  <label for="search">Search student</label>
+  <input id="search" type="text" placeholder="Type a name" style="width:100%;padding:10px;font:inherit;border:1px solid #cfd6df;border-radius:8px;margin-bottom:8px;">
   <label for="student">Student</label>
-  <select id="student"><option value="">Select a student</option></select>
+  <select id="student" size="6"><option value="">Select a student</option></select>
 
   <button class="btn" id="mark-btn" disabled>Mark class taken</button>
   <div class="msg" id="msg"></div>
@@ -80,6 +82,14 @@
     if (d.length === 10) d = '91' + d;
     return d;
   }
+
+  document.getElementById('search').addEventListener('input', function () {
+    var q = this.value.trim().toLowerCase();
+    var opts = document.getElementById('student').options;
+    for (var i = 1; i < opts.length; i++) {
+      opts[i].hidden = q && opts[i].text.toLowerCase().indexOf(q) === -1;
+    }
+  });
 
   document.getElementById('student').addEventListener('change', function () {
     var ok = !!this.value;
