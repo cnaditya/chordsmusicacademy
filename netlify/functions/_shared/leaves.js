@@ -67,7 +67,8 @@ function computeCycle(stu, approvedLeaves, today = todayIso()) {
       dueDate = today;
     } else {
       let counted = 0;
-      let d = addDays(today, 1);
+      // Count from the cycle start if it is still in the future, otherwise from tomorrow.
+      let d = cs && cs > today ? cs : addDays(today, 1);
       for (let guard = 0; guard < 2000 && counted < remaining; guard++, d = addDays(d, 1)) {
         if (isClassDay(classDays, d) && !leaveDates.has(d)) counted++;
         if (counted === remaining) dueDate = d;
