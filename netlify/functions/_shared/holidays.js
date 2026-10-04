@@ -10,6 +10,7 @@ const HOLIDAYS = [
 
   "2027-01-15", // Makara Sankranti
   "2027-01-26", // Republic Day
+  // 2027 entries are PROVISIONAL until the Telangana Government publishes the official 2027 notification.
   "2027-03-06", // Maha Shivaratri
   "2027-03-10", // Eid-ul-Fitr
   "2027-03-26", // Good Friday
