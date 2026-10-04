@@ -3799,6 +3799,7 @@ function renderOverviewTab(s) {
     <button class="btn btn-primary btn-sm" onclick="openEditFromPanel()">✏️ Edit Student</button>
     <button class="btn btn-sm btn-ghost" onclick="openIdCardModal(panelStudent)">🪪 ID Card</button>
     <button class="btn btn-sm btn-ghost" onclick="openBillModal(panelStudent)">🧾 New Bill</button>
+    <button class="btn btn-sm btn-ghost" onclick="window.open('receipt.html?id=' + encodeURIComponent(panelStudent.id), '_blank')">🧾 Receipt</button>
     ${s.status === 'trial' ? `<button class="btn btn-sm btn-success" onclick="enrollAfterTrial('${s.id}')">🎓 Enroll after trial</button>` : ''}
     ${s.phone?`<a href="${waLink(s)}" target="_blank" class="btn btn-sm btn-ghost" style="color:var(--success);">💬 WhatsApp</a>`:''}
     ${s.phone && s.amount_due > 0 ? `<button data-remind-btn="${s.id}" class="btn btn-sm btn-ghost"

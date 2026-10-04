@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipt | Chords Music Academy</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f6f0;color:#1a2a3a;padding:20px 16px 40px;}
+  .panel{max-width:650px;margin:0 auto 20px;background:#fff;border-radius:12px;padding:18px;border:1px solid #d9d4cd;}
+  .panel h2{font-size:1.1rem;margin-bottom:12px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:520px){.grid{grid-template-columns:1fr;}}
+  label{display:block;font-size:.8rem;color:#666;margin-bottom:4px;font-weight:600;}
+  input,select{width:100%;padding:9px 10px;font:inherit;border:1px solid #cfd6df;border-radius:8px;}
+  .btn{margin-top:14px;width:100%;padding:12px;font:inherit;font-weight:700;color:#fff;background:#1a2a3a;border:0;border-radius:8px;cursor:pointer;}
+  .btn:disabled{opacity:.6;cursor:default;}
+  .msg{margin-top:10px;font-size:.9rem;color:#b03030;}
+  .tools{max-width:650px;margin:0 auto 14px;display:none;gap:10px;}
+  .tools.show{display:flex;}
+  .tools button{flex:1;padding:10px;font:inherit;font-weight:700;border-radius:8px;border:1px solid #1a2a3a;background:#fff;cursor:pointer;}
+
+  /* Standard receipt layout. Do not change without the owner's approval. */
+  .card{max-width:650px;margin:0 auto;border:2px solid #1a2a3a;border-radius:12px;overflow:hidden;background:#fff;display:none;}
+  .card.show{display:block;}
+  .top{background:linear-gradient(135deg,#1a2a3a,#2c3e50);padding:24px 32px;color:#fff;}
+  .top .label{font-size:0.8rem;letter-spacing:0.1em;opacity:0.8;}
+  .top .acad{font-size:1.6rem;font-weight:800;margin-top:4px;}
+  .top .addr{font-size:0.78rem;opacity:0.85;margin-top:8px;line-height:1.5;}
+  .meta{display:flex;justify-content:space-between;padding:18px 32px;border-bottom:2px solid #eee;}
+  .meta .no{color:#b03030;font-weight:800;font-size:1.1rem;}
+  .meta .date{font-weight:700;color:#1a2a3a;}
+  .body{padding:24px 32px;}
+  .row{padding:14px 0;border-bottom:1px solid #eee;}
+  .row .label{font-size:0.8rem;color:#888;}
+  .row .value{font-size:1.05rem;font-weight:700;color:#1a2a3a;margin-top:4px;}
+  .amt-box{margin-top:20px;border:2px solid #c9972f;border-radius:8px;padding:16px 20px;display:inline-block;}
+  .amt-box .label{font-size:0.8rem;color:#888;}
+  .amt-box .value{font-size:1.2rem;font-weight:800;color:#b03030;margin-top:4px;}
+  .sign{float:right;text-align:center;margin-top:10px;font-size:0.8rem;color:#555;width:220px;}
+  .sign img{width:170px;display:block;margin:0 auto;}
+  .sign .line{border-top:1px solid #999;margin:4px 0 6px;}
+  .foot{padding:16px 32px;background:#f8fafc;text-align:center;font-size:0.8rem;color:#1a2a3a;font-weight:600;clear:both;}
+
+  @media print{
+    body{background:#fff;padding:0;}
+    .panel,.tools{display:none !important;}
+    .card{border:2px solid #1a2a3a;}
+  }
+</style>
+</head>
+<body>
+
+<div class="panel" id="form-panel">
+  <h2 id="form-title">Receipt</h2>
+  <div class="grid">
+    <div><label for="amount">Course fee paid (₹) *</label><input id="amount" type="number" min="0" step="1" placeholder="e.g. 21588"></div>
+    <div><label for="reg">Registration fee (₹)</label><input id="reg" type="number" min="0" step="1" value="500"></div>
+    <div><label for="mode">Payment mode *</label>
+      <select id="mode">
+        <option value="Card">Card</option>
+        <option value="UPI">UPI</option>
+        <option value="Cash">Cash</option>
+        <option value="Bank transfer">Bank transfer</option>
+        <option value="Cheque">Cheque</option>
+      </select>
+    </div>
+    <div><label for="rdate">Receipt date *</label><input id="rdate" type="date"></div>
+  </div>
+  <button class="btn" id="gen-btn">Generate receipt</button>
+  <div class="msg" id="msg"></div>
+</div>
+
+<div class="tools" id="tools">
+  <button onclick="window.print()">Print / Save as PDF</button>
+</div>
+
+<div class="card" id="receipt">
+  <div class="top">
+    <div class="label">RECEIPT</div>
+    <div class="acad">Chords Music Academy</div>
+    <div class="addr">No 602, Abhinandana Jewel, Lanco Hills Road, near Harivillu Apartments,<br>Manikonda, Hyderabad - 500089 &nbsp;|&nbsp; Ph: 7702032373, 7981585309</div>
+  </div>
+  <div class="meta">
+    <div class="no" id="r-no"></div>
+    <div class="date" id="r-date"></div>
+  </div>
+  <div class="body">
+    <div class="row"><div class="label">Received with thanks from</div><div class="value" id="r-name"></div></div>
+    <div class="row"><div class="label">The Sum of Rupees</div><div class="value" id="r-words"></div></div>
+    <div class="row"><div class="label">Towards</div><div class="value" id="r-towards"></div></div>
+    <div class="row"><div class="label">Payment Mode</div><div class="value" id="r-mode"></div></div>
+    <div class="row" style="border-bottom:none;"><div class="label">Next Due Date</div><div class="value" id="r-due"></div></div>
+    <div class="amt-box">
+      <div class="label">Total Paid</div>
+      <div class="value" id="r-total"></div>
+    </div>
+    <div class="sign">
+      For Chords Music Academy
+      <img src="assets/cn-aditya-signature.png" alt="Signature">
+      <div class="line"></div>
+      <strong style="color:#1a2a3a;">C.N.Aditya</strong><br>Authorised Signatory
+    </div>
+  </div>
+  <div class="foot">Thank you for choosing Chords Music Academy! 🎵</div>
+</div>
+
+<script>
+(function () {
+  var API = '/.netlify/functions/pay-admin-student';
+  var TOKEN = sessionStorage.getItem('crm_token') || '';
+  var id = new URLSearchParams(location.search).get('id');
+  var student = null;
+  var msg = document.getElementById('msg');
+
+  function say(t) { msg.textContent = t || ''; }
+
+  function call(body) {
+    return fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
+      body: JSON.stringify(body),
+    }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok, data: d }; }); });
+  }
+
+  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function fmtDate(iso) {
+    if (!iso) return '';
+    var p = iso.split('-');
+    return p[2] + '-' + MONTHS[parseInt(p[1], 10) - 1] + '-' + p[0];
+  }
+
+  var ONES = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  var TENS = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  function two(n) { return n < 20 ? ONES[n] : (TENS[Math.floor(n / 10)] + (n % 10 ? ' ' + ONES[n % 10] : '')); }
+  function three(n) { var h = Math.floor(n / 100), r = n % 100; return (h ? ONES[h] + ' Hundred' + (r ? ' ' : '') : '') + (r ? two(r) : ''); }
+  function inWords(n) {
+    n = Math.round(Number(n) || 0);
+    if (n === 0) return 'Zero';
+    var parts = [];
+    var cr = Math.floor(n / 10000000), la = Math.floor((n % 10000000) / 100000), th = Math.floor((n % 100000) / 1000), rest = n % 1000;
+    if (cr) parts.push(two(cr) + ' Crore');
+    if (la) parts.push(two(la) + ' Lakh');
+    if (th) parts.push(two(th) + ' Thousand');
+    if (rest) parts.push(three(rest));
+    return parts.join(' ');
+  }
+
+  function inr(n) { return '₹' + Number(n).toLocaleString('en-IN'); }
+
+  function monthsOf(pt) {
+    var s = (pt || '').toLowerCase(), m = s.match(/(\d+)\s*month/);
+    if (m) return parseInt(m[1], 10);
+    if (s.indexOf('quarter') >= 0) return 3;
+    if (s.indexOf('half') >= 0) return 6;
+    if (s.indexOf('annual') >= 0 || s.indexOf('year') >= 0) return 12;
+    return 1;
+  }
+
+  function init() {
+    if (!id || !TOKEN) {
+      say('Open the CRM and log in first, then use the Receipt button on a student.');
+      document.getElementById('gen-btn').disabled = true;
+      return;
+    }
+    call({ action: 'crm_get', id: id }).then(function (res) {
+      if (!res.ok || !res.data.student) { say('Could not load the student.'); document.getElementById('gen-btn').disabled = true; return; }
+      student = res.data.student;
+      document.getElementById('form-title').textContent = 'Receipt for ' + student.name + ' (' + student.student_id + ')';
+      document.getElementById('rdate').value = new Date().toISOString().slice(0, 10);
+    });
+  }
+
+  document.getElementById('gen-btn').addEventListener('click', function () {
+    var amount = Number(document.getElementById('amount').value);
+    var reg = Number(document.getElementById('reg').value || 0);
+    var mode = document.getElementById('mode').value;
+    var rdate = document.getElementById('rdate').value;
+    if (!amount || amount <= 0 || !rdate) { say('Enter the course fee and the receipt date.'); return; }
+    var btn = this;
+    btn.disabled = true; say('Creating receipt number...');
+
+    call({ action: 'crm_get_next_receipt_no' }).then(function (res) {
+      if (!res.ok || !res.data.next) throw new Error('receipt number');
+      var no = res.data.next;
+      var months = monthsOf(student.payment_type);
+      var classes = student.total_classes_per_cycle || months * 8;
+      var towards = (student.instrument || 'Music') + ' Classes - ' + months + ' Months - ' + classes + ' Classes';
+      var note = 'Receipt #' + no + ' - ' + inr(amount) + ' received via ' + mode + ' - ' + towards +
+        (reg ? ' (+ Rs.' + reg + ' registration paid separately)' : '');
+      return call({ action: 'crm_add_note', student_id: student.id, content: note }).then(function (saved) {
+        if (!saved.ok) throw new Error('save note');
+        fillReceipt(no, rdate, amount, reg, mode, towards);
+        say('Receipt #' + no + ' saved to the student record.');
+        document.getElementById('tools').classList.add('show');
+        document.getElementById('receipt').classList.add('show');
+      });
+    }).catch(function () {
+      say('Could not create the receipt. Check your connection and try again.');
+    }).then(function () { btn.disabled = false; });
+  });
+
+  function fillReceipt(no, rdate, amount, reg, mode, towards) {
+    document.getElementById('r-no').textContent = 'No: ' + no;
+    document.getElementById('r-date').textContent = 'Date: ' + fmtDate(rdate);
+    document.getElementById('r-name').textContent = student.name;
+    document.getElementById('r-words').textContent = inWords(amount) + (reg ? ' + ' + inWords(reg) + ' Regn.' : '');
+    document.getElementById('r-towards').textContent = towards;
+    document.getElementById('r-mode').textContent = mode;
+    document.getElementById('r-due').textContent = fmtDate(student.due_date);
+    document.getElementById('r-total').textContent = 'Rs. ' + Number(amount).toLocaleString('en-IN') + (reg ? ' + Rs. ' + Number(reg).toLocaleString('en-IN') + ' (Regn.)' : '');
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
