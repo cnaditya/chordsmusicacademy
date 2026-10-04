@@ -1,5 +1,7 @@
 // Handles: seed all students, add single student, update student
 const { resolveRole } = require("./_shared/auth");
+const { sign } = require("./_shared/leaveSign");
+const { countClassDaysInRange } = require("./_shared/schedule");
 
 const STUDENTS = [
   { name:'Gayatri',    phone:'919178619761',  plan:'monthly_5000', payment_type:'monthly', amount:5000, billing_day:1,  class_days:'Mon, Thu', class_time:'6:30am',  teacher:'Aditya' },
@@ -111,6 +113,23 @@ exports.handler = async (event) => {
       });
       const result = await r.json();
       if (!r.ok) return { statusCode: 400, headers, body: JSON.stringify({ error: result.message || 'Failed to submit leave' }) };
+
+      const leaveId = Array.isArray(result) ? result[0]?.id : result?.id;
+      const secret = process.env.ADS_DASHBOARD_PASSWORD;
+      if (leaveId && secret) {
+        const base = `https://chordsmusicacademy.in/.netlify/functions/leave-decide?id=${leaveId}`;
+        const approveUrl = `${base}&action=approve&sig=${sign(leaveId, 'approve', secret)}`;
+        const rejectUrl = `${base}&action=reject&sig=${sign(leaveId, 'reject', secret)}`;
+        const when = selected_dates ? selected_dates : `${date_from} to ${date_to}`;
+        const msg = `Leave request: ${student_name || 'Student'} (${student_id || ''}) for ${when}. Reason: ${reason || 'not given'}. Approve: ${approveUrl} | Reject: ${rejectUrl}`;
+        try {
+          await fetch('https://chordsmusicacademy.in/.netlify/functions/send-whatsapp-alert', {
+            method: 'POST',
+            headers: { 'x-ads-token': secret, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg }),
+          });
+        } catch (e) { /* notification failure must not block the leave being saved */ }
+      }
       return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
     }
 
@@ -657,23 +676,10 @@ exports.handler = async (event) => {
           const stuRows = await stuR.json();
           const stu = Array.isArray(stuRows) ? stuRows[0] : null;
           const current = stu ? (stu.leaves_taken || 0) : 0;
-          const scheduledDays = (stu && stu.class_days)
-            ? stu.class_days.split(',').map(d => parseInt(d.trim())).filter(n => !isNaN(n))
-            : [];
-          let classDaysCount = 0;
-          if (leave.selected_dates) {
-            // Count specific selected dates that fall on class days
-            const dates = leave.selected_dates.split(',').filter(Boolean);
-            classDaysCount = dates.filter(d => scheduledDays.length === 0 || scheduledDays.includes(new Date(d + 'T00:00:00').getDay())).length;
-          } else {
-            // Fallback: iterate the date range
-            const cur = new Date(leave.date_from + 'T00:00:00');
-            const end = new Date(leave.date_to + 'T00:00:00');
-            while (cur <= end) {
-              if (scheduledDays.length === 0 || scheduledDays.includes(cur.getDay())) classDaysCount++;
-              cur.setDate(cur.getDate() + 1);
-            }
-          }
+          const classDays = stu ? stu.class_days : '';
+          const classDaysCount = leave.selected_dates
+            ? leave.selected_dates.split(',').filter(Boolean).reduce((n, d) => n + countClassDaysInRange(classDays, d, d), 0)
+            : countClassDaysInRange(classDays, leave.date_from, leave.date_to);
           newLeavesTaken = current + classDaysCount;
           await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${leave.student_db_id}`, {
             method: 'PATCH', headers: { ...SB_H, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
