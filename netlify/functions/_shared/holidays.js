@@ -4,9 +4,8 @@
 const HOLIDAYS = [
   "2026-10-02", // Gandhi Jayanti
   "2026-10-20", // Dasara / Vijayadashami
-  "2026-10-21", // Dasara following day (regional) — confirm
+  "2026-10-21", // Following day of Vijaya Dasami (Telangana govt holiday)
   "2026-11-08", // Diwali / Deepavali
-  "2026-11-09", // Diwali following holiday (some institutions) — confirm
   "2026-12-25", // Christmas
 
   "2027-01-01", // New Year's Day
