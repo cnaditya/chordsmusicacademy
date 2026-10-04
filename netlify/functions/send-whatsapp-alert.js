@@ -31,6 +31,10 @@ exports.handler = async function (event) {
     return { statusCode: 400, body: JSON.stringify({ error: "Missing message or recipient" }) };
   }
 
+  // WhatsApp template variables reject line breaks, tabs and long runs of spaces,
+  // and cap the length, so flatten the text and keep it under the limit.
+  message = String(message).replace(/\s+/g, " ").trim().slice(0, 900);
+
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
 
