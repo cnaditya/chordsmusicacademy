@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mark class | Chords Music Academy</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f6f0;color:#1a2a3a;padding:20px 16px 40px;}
+  .panel{max-width:520px;margin:0 auto 16px;background:#fff;border-radius:12px;padding:18px;border:1px solid #d9d4cd;}
+  h1{font-size:1.2rem;margin-bottom:4px;}
+  .sub{color:#666;font-size:.9rem;margin-bottom:12px;}
+  label{display:block;font-size:.8rem;color:#666;margin:10px 0 4px;font-weight:600;}
+  select{width:100%;padding:10px;font:inherit;border:1px solid #cfd6df;border-radius:8px;}
+  .btn{display:block;width:100%;margin-top:12px;padding:12px;font:inherit;font-weight:700;color:#fff;background:#1a2a3a;border:0;border-radius:8px;cursor:pointer;text-align:center;text-decoration:none;}
+  .btn.wa{background:#25d366;}
+  .btn:disabled{opacity:.6;cursor:default;}
+  .msg{margin-top:10px;font-size:.9rem;min-height:1.2em;}
+  .ok{color:#15803d;} .err{color:#b03030;}
+  .preview{margin-top:12px;padding:10px;background:#f8fafc;border-radius:8px;font-size:.9rem;white-space:pre-line;display:none;}
+  .hint{font-size:.8rem;color:#666;margin-top:6px;}
+</style>
+</head>
+<body>
+
+<div class="panel" id="login-panel" style="display:none;">
+  <h1>Admin login</h1>
+  <label for="pw">CRM password</label>
+  <input id="pw" type="password" autocomplete="current-password" style="width:100%;padding:10px;font:inherit;border:1px solid #cfd6df;border-radius:8px;">
+  <button class="btn" id="login-btn">Log in</button>
+  <div class="msg err" id="login-msg"></div>
+</div>
+
+<div class="panel" id="form-panel" style="display:none;">
+  <h1>Mark class taken</h1>
+  <p class="sub">Pick the student, tap Mark class, then send the WhatsApp message yourself.</p>
+
+  <label for="student">Student</label>
+  <select id="student"><option value="">Select a student</option></select>
+
+  <button class="btn" id="mark-btn" disabled>Mark class taken</button>
+  <div class="msg" id="msg"></div>
+
+  <div class="preview" id="preview"></div>
+  <a class="btn wa" id="wa-btn" href="#" target="_blank" rel="noopener" style="display:none;">Send on WhatsApp</a>
+  <div class="hint" id="wa-hint" style="display:none;">Opens WhatsApp with the message ready. Tap send yourself.</div>
+</div>
+
+<script>
+(function () {
+  var API = '/.netlify/functions/pay-admin-student';
+  var TOKEN = sessionStorage.getItem('crm_token') || '';
+  var students = [];
+
+  function call(body) {
+    return fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
+      body: JSON.stringify(body),
+    }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok, data: d }; }); });
+  }
+
+  function setMsg(text, ok) { var el = document.getElementById('msg'); el.textContent = text; el.className = 'msg ' + (ok ? 'ok' : 'err'); }
+
+  function loadStudents() {
+    call({ action: 'crm_list' }).then(function (res) {
+      if (!res.ok) { setMsg('Could not load students. Log in again.', false); return; }
+      students = (res.data.students || []).filter(function (s) { return s.mode === 'online' && s.is_active; })
+        .sort(function (a, b) { return (a.name || '').localeCompare(b.name || ''); });
+      document.getElementById('student').innerHTML = '<option value="">Select a student</option>' + students.map(function (s) {
+        return '<option value="' + s.id + '">' + escapeHtml(s.name) + ' (' + s.student_id + ')</option>';
+      }).join('');
+    });
+  }
+
+  function escapeHtml(t) { return String(t || '').replace(/[&<>"']/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+
+  function digitsForWa(phone) {
+    var d = String(phone || '').replace(/\D/g, '');
+    if (d.length === 10) d = '91' + d;
+    return d;
+  }
+
+  document.getElementById('student').addEventListener('change', function () {
+    var ok = !!this.value;
+    document.getElementById('mark-btn').disabled = !ok;
+    document.getElementById('preview').style.display = 'none';
+    document.getElementById('wa-btn').style.display = 'none';
+    document.getElementById('wa-hint').style.display = 'none';
+    setMsg('', true);
+  });
+
+  document.getElementById('mark-btn').addEventListener('click', function () {
+    var id = document.getElementById('student').value;
+    var s = students.find(function (x) { return x.id === id; });
+    if (!s) return;
+    var btn = this; btn.disabled = true; setMsg('Saving...', true);
+    var today = new Date().toISOString().slice(0, 10);
+
+    call({ action: 'crm_add_note', student_id: s.id, content: 'Class taken ' + today + ' (marked from class page)' })
+      .then(function (saved) {
+        if (!saved.ok) throw new Error('save');
+        return call({ action: 'crm_get', id: s.id });
+      })
+      .then(function (res) {
+        var cs = (res && res.data && res.data.class_status) || {};
+        var st = (res && res.data && res.data.student) || s;
+        var text = 'Hi ' + (st.name || '') + ', today\'s class is marked as taken.' +
+          (cs.total ? ' Classes done: ' + (cs.used || 0) + ' of ' + cs.total + '. Classes left: ' + (cs.remaining != null ? cs.remaining : 0) + '.' : '');
+        var phone = digitsForWa(st.phone);
+        document.getElementById('preview').textContent = text;
+        document.getElementById('preview').style.display = '';
+        var wa = document.getElementById('wa-btn');
+        if (phone) {
+          wa.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text);
+          wa.style.display = '';
+          document.getElementById('wa-hint').style.display = '';
+        } else {
+          wa.style.display = 'none';
+          setMsg('No phone number saved for this student.', false);
+        }
+        setMsg('Class marked.', true);
+      })
+      .catch(function () { setMsg('Could not save the class. Try again.', false); })
+      .then(function () { btn.disabled = false; });
+  });
+
+  document.getElementById('login-btn').addEventListener('click', function () {
+    var pw = document.getElementById('pw').value;
+    var lm = document.getElementById('login-msg');
+    if (!pw) { lm.textContent = 'Enter the password.'; return; }
+    fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'crm_validate_role', password: pw }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (d) {
+        if (d.success && d.role === 'admin' && d.token) {
+          TOKEN = d.token; sessionStorage.setItem('crm_token', TOKEN);
+          document.getElementById('login-panel').style.display = 'none';
+          document.getElementById('form-panel').style.display = '';
+          loadStudents();
+        } else { lm.textContent = 'Wrong password.'; }
+      })
+      .catch(function () { lm.textContent = 'Could not log in. Try again.'; });
+  });
+
+  if (TOKEN) {
+    document.getElementById('form-panel').style.display = '';
+    loadStudents();
+  } else {
+    document.getElementById('login-panel').style.display = '';
+  }
+})();
+</script>
+</body>
+</html>
