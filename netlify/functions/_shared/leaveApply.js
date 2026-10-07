@@ -7,7 +7,7 @@ const { normalizePhone } = require("./normalizePhone");
 const API_VERSION = "v23.0";
 
 // Sends one line to the student through the approved cma_update template.
-async function messageStudent(phone, text) {
+async function messageStudent(phone, text, title) {
   const to = normalizePhone(phone);
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
@@ -24,7 +24,7 @@ async function messageStudent(phone, text) {
           name: "cma_update",
           language: { code: "en_US" },
           components: [
-            { type: "header", parameters: [{ type: "text", text: "Leave update" }] },
+            { type: "header", parameters: [{ type: "text", text: title || "Leave update" }] },
             { type: "body", parameters: [{ type: "text", text: String(text).replace(/\s+/g, " ").trim().slice(0, 900) }] },
           ],
         },

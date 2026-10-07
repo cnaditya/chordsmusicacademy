@@ -2,7 +2,7 @@
 const { resolveRole } = require("./_shared/auth");
 const { sign } = require("./_shared/leaveSign");
 const { countClassDaysInRange } = require("./_shared/schedule");
-const { decideLeave } = require("./_shared/leaveApply");
+const { decideLeave, messageStudent } = require("./_shared/leaveApply");
 const { computeCycle } = require("./_shared/leaves");
 
 const STUDENTS = [
@@ -937,6 +937,30 @@ exports.handler = async (event) => {
       if (!student_id || !date) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and date required" }) };
       await fetch(`${SUPABASE_URL}/rest/v1/crm_attendance?student_id=eq.${student_id}&date=eq.${date}`, { method: "DELETE", headers: SB_H });
       return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    }
+
+    if (action === "crm_mark_class") {
+      const { student_id, date } = JSON.parse(event.body || "{}");
+      if (!student_id) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id required" }) };
+      const when = date || new Date().toISOString().slice(0, 10);
+      await fetch(`${SUPABASE_URL}/rest/v1/crm_notes`, {
+        method: "POST", headers: SB_M,
+        body: JSON.stringify({ student_id, content: `Class taken ${when} (marked from class page)` }),
+      });
+      const sr = await fetch(`${SUPABASE_URL}/rest/v1/crm_students?id=eq.${student_id}&select=*`, { headers: SB_H });
+      const srows = await sr.json();
+      const stu = Array.isArray(srows) ? srows[0] : null;
+      if (!stu) return { statusCode: 404, headers, body: JSON.stringify({ error: "Student not found" }) };
+      const lvR = await fetch(`${SUPABASE_URL}/rest/v1/crm_leaves?student_db_id=eq.${student_id}&status=eq.approved&select=*`, { headers: SB_H });
+      const lvRows = await lvR.json();
+      const cyc = computeCycle(stu, Array.isArray(lvRows) ? lvRows : [], when);
+      const left = cyc.total ? ` Classes done: ${cyc.used} of ${cyc.total}. Classes left: ${cyc.remaining}.` : "";
+      const text = `Hi ${stu.name}, today's class is marked as taken.${left}`;
+      const sendResult = stu.phone ? await messageStudent(stu.phone, text, "Class update") : { sent: false, error: "no phone on record" };
+      return {
+        statusCode: 200, headers,
+        body: JSON.stringify({ success: true, text, sent: !!sendResult.sent, send_error: sendResult.sent ? null : sendResult.error, used: cyc.used, total: cyc.total, remaining: cyc.remaining }),
+      };
     }
 
     if (action === "crm_add_note") {

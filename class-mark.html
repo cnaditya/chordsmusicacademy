@@ -33,7 +33,7 @@
 
 <div class="panel" id="form-panel" style="display:none;">
   <h1>Mark class taken</h1>
-  <p class="sub">Pick the student, tap Mark class, then send the WhatsApp message yourself.</p>
+  <p class="sub">Pick the student and tap Mark class. The WhatsApp message sends automatically.</p>
 
   <label for="student">Student (type a name)</label>
   <input id="student" type="text" list="student-list" placeholder="Type a name" autocomplete="off" style="width:100%;padding:10px;font:inherit;border:1px solid #cfd6df;border-radius:8px;">
@@ -99,34 +99,31 @@
   document.getElementById('mark-btn').addEventListener('click', function () {
     var s = pickedStudent();
     if (!s) return;
-    var btn = this; btn.disabled = true; setMsg('Saving...', true);
-    var today = new Date().toISOString().slice(0, 10);
+    var btn = this; btn.disabled = true; setMsg('Marking and sending...', true);
 
-    call({ action: 'crm_add_note', student_id: s.id, content: 'Class taken ' + today + ' (marked from class page)' })
-      .then(function (saved) {
-        if (!saved.ok) throw new Error('save');
-        return call({ action: 'crm_get', id: s.id });
-      })
+    call({ action: 'crm_mark_class', student_id: s.id })
       .then(function (res) {
-        var cs = (res && res.data && res.data.class_status) || {};
-        var st = (res && res.data && res.data.student) || s;
-        var text = 'Hi ' + (st.name || '') + ', today\'s class is marked as taken.' +
-          (cs.total ? ' Classes done: ' + (cs.used || 0) + ' of ' + cs.total + '. Classes left: ' + (cs.remaining != null ? cs.remaining : 0) + '.' : '');
-        var phone = digitsForWa(st.phone);
-        document.getElementById('preview').textContent = text;
+        if (!res.ok || !res.data.success) throw new Error('mark');
+        var d = res.data;
+        document.getElementById('preview').textContent = d.text;
         document.getElementById('preview').style.display = '';
         var wa = document.getElementById('wa-btn');
-        if (phone) {
-          wa.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text);
-          wa.style.display = '';
-          document.getElementById('wa-hint').style.display = '';
-        } else {
+        var hint = document.getElementById('wa-hint');
+        if (d.sent) {
+          setMsg('Class marked. WhatsApp sent automatically.', true);
           wa.style.display = 'none';
-          setMsg('No phone number saved for this student.', false);
+          hint.style.display = 'none';
+        } else {
+          setMsg('Class marked, but the WhatsApp did not send (' + (d.send_error ? JSON.stringify(d.send_error) : 'no phone on record') + '). Use the button below instead.', false);
+          var phone = digitsForWa(s.phone);
+          if (phone) {
+            wa.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(d.text);
+            wa.style.display = '';
+            hint.style.display = '';
+          }
         }
-        setMsg('Class marked.', true);
       })
-      .catch(function () { setMsg('Could not save the class. Try again.', false); })
+      .catch(function () { setMsg('Could not mark the class. Try again.', false); })
       .then(function () { btn.disabled = false; });
   });
 
