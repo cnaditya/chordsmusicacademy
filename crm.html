@@ -4027,7 +4027,7 @@ async function viewStudent(id) {
     window._classStatus = data.class_status || null;
     document.getElementById('tab-overview').innerHTML = renderOverviewTab(s);
     renderAttendanceTab(s, data.attendance||[]);
-    document.getElementById('tab-payments').innerHTML = renderPaymentsTab(s);
+    document.getElementById('tab-payments').innerHTML = renderPaymentsTab(s, data.notes||[]);
     renderNotesTab(s, data.notes||[]);
     renderLeavesTab(s, []);
     // Load leaves async
@@ -4215,8 +4215,37 @@ async function enrollAfterTrial(id) {
 }
 
 /* PAYMENTS TAB */
-function renderPaymentsTab(s) {
+function renderPaymentsTab(s, allNotes) {
   const overdue = isDueOverdue(s.due_date);
+
+  // Build payment history from notes containing ₹
+  const payNotes = (allNotes||[]).filter(n => (n.content||'').includes('₹'));
+  const periodMonths = { monthly:1, quarterly:3, 'half-yearly':6, half_yearly:6, yearly:12, annual:12 };
+  function noteNextDue(noteDate, paymentType) {
+    const pt = (paymentType||'').toLowerCase().replace(/ /g,'_');
+    let mo = periodMonths[pt] || 3;
+    const mm = (paymentType||'').match(/(\d+)\s*month/i); if (mm) mo = parseInt(mm[1]);
+    const d = new Date(noteDate + 'T00:00:00'); d.setMonth(d.getMonth() + mo);
+    return d.toISOString().slice(0,10);
+  }
+  const historyRows = payNotes.map(n => {
+    const pr = parseReceiptNote(n.content||'');
+    const noteDate = (n.created_at||'').slice(0,10);
+    const p = { name: s.name, student_id: s.student_id||'', phone: s.phone||'', amount: pr.amt, date: noteDate, note: n.content||'', due_date: noteNextDue(noteDate, s.payment_type), payment_type: s.payment_type||'' };
+    const pJson = JSON.stringify(p).replace(/"/g,'&quot;');
+    const dateLabel = noteDate ? new Date(noteDate+'T12:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    return `<tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:8px 10px;font-size:0.82rem;color:var(--muted);">${dateLabel}</td>
+      <td style="padding:8px 10px;font-size:0.82rem;">${pr.rcpt!=='—'?`#${pr.rcpt}`:'—'}</td>
+      <td style="padding:8px 10px;font-size:0.82rem;">${pr.plan||'—'}</td>
+      <td style="padding:8px 10px;font-size:0.85rem;font-weight:600;color:var(--gold);">₹${pr.amt?pr.amt.toLocaleString('en-IN'):'—'}</td>
+      <td style="padding:8px 6px;white-space:nowrap;">
+        <button onclick="downloadReceiptFromNote(${pJson})" style="font-size:0.72rem;padding:3px 7px;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--text);cursor:pointer;margin-right:3px;" title="Download Receipt">📄</button>
+        ${s.phone?`<button onclick="whatsappReceipt(${pJson})" style="font-size:0.72rem;padding:3px 7px;border:1px solid #25d366;border-radius:4px;background:transparent;color:#25d366;cursor:pointer;" title="Send via WhatsApp">📱</button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+
   return `
   <div class="payment-info">
     <div class="pay-stat">
@@ -4253,9 +4282,26 @@ function renderPaymentsTab(s) {
     </div>
   </div>
 
-  <div style="font-size:0.82rem;color:var(--muted);padding:12px 14px;background:var(--surface2);border-radius:var(--radius-sm);">
+  <div style="font-size:0.82rem;color:var(--muted);padding:12px 14px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:20px;">
     Classes attended this cycle: <strong style="color:var(--text);">${s.classes_attended||0} / ${s.total_classes_per_cycle||8}</strong>
-  </div>`;
+  </div>
+
+  ${payNotes.length > 0 ? `
+  <div style="font-size:0.78rem;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Payment History</div>
+  <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border);">
+          <th style="padding:7px 10px;text-align:left;font-size:0.75rem;color:var(--muted);font-weight:500;">Date</th>
+          <th style="padding:7px 10px;text-align:left;font-size:0.75rem;color:var(--muted);font-weight:500;">Receipt</th>
+          <th style="padding:7px 10px;text-align:left;font-size:0.75rem;color:var(--muted);font-weight:500;">Plan</th>
+          <th style="padding:7px 10px;text-align:left;font-size:0.75rem;color:var(--muted);font-weight:500;">Amount</th>
+          <th style="padding:7px 10px;"></th>
+        </tr>
+      </thead>
+      <tbody>${historyRows}</tbody>
+    </table>
+  </div>` : ''}`;
 }
 
 async function updatePayment() {
