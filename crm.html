@@ -3985,7 +3985,7 @@ async function markPaid() {
   showConfirm('Mark as Paid', 'Mark paid and auto-advance the due date to the next billing cycle (based on their payment type)?', 'Mark Paid', async () => {
     try {
       const res = await apiCall({ action: 'crm_mark_paid', id: currentStudentId, amount });
-      toast(`Marked paid! Next due: ${fmtDate(res.new_due_date)}`);
+      toast(`Marked paid! Receipt #${res.receipt_no} · Next due: ${fmtDate(res.new_due_date)}`);
       viewStudent(currentStudentId);
     } catch(e) { toast('Failed.','error'); }
   });

@@ -683,15 +683,27 @@ exports.handler = async (event) => {
         return { statusCode: upd.status, headers, body: JSON.stringify({ error: err.message || "Update failed" }) };
       }
 
+      // Auto-issue a receipt number so this payment is tracked exactly like one
+      // generated through the Receipt tool, and shows up in "fees collected this month".
+      const rnoR = await fetch(`${SUPABASE_URL}/rest/v1/crm_notes?content=like.Receipt%20%23*&select=content&order=created_at.desc&limit=100`, { headers: SB_H });
+      const rnoNotes = await rnoR.json();
+      let receiptNo = 1001;
+      if (Array.isArray(rnoNotes)) {
+        rnoNotes.forEach(n => {
+          const m = (n.content || "").match(/Receipt #(\d+)/);
+          if (m) { const no = parseInt(m[1]); if (no >= receiptNo) receiptNo = no + 1; }
+        });
+      }
+
       await fetch(`${SUPABASE_URL}/rest/v1/crm_notes`, {
         method: "POST", headers: SB_M,
         body: JSON.stringify({
           student_id: id,
-          content: `Rs.${paidAmount} received - marked paid. Due date advanced to ${newDueDate} (${months}-month cycle).`,
+          content: `Receipt #${receiptNo} issued — ₹${paidAmount} · ${months}-month cycle · Due advanced to ${newDueDate}`,
         }),
       });
 
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, new_due_date: newDueDate, months_advanced: months }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, new_due_date: newDueDate, months_advanced: months, receipt_no: receiptNo }) };
     }
 
     if (action === "crm_enroll") {
