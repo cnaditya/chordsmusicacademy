@@ -514,7 +514,7 @@ exports.handler = async (event) => {
       const thisMonth = new Date().toISOString().slice(0,7); // "2026-09"
       const [r, notesR] = await Promise.all([
         fetch(`${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&select=id,status,mode,instrument,amount_due,due_date,enrollment_date,name,student_id,teacher,class_days,class_time,level,phone`, { headers: SB_H }),
-        fetch(`${SUPABASE_URL}/rest/v1/crm_notes?content=like.*%E2%82%B9*&created_at=gte.${thisMonth}-01&select=student_id,content,created_at&order=created_at.desc&limit=500`, { headers: SB_H }),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_notes?content=like.*%E2%82%B9*&created_at=gte.${thisMonth}-01&select=id,student_id,content,created_at&order=created_at.desc&limit=500`, { headers: SB_H }),
       ]);
       const all = await r.json();
       if (!Array.isArray(all)) {
@@ -528,10 +528,43 @@ exports.handler = async (event) => {
       const offlineIds = new Set(all.filter(s=>s.mode==="offline").map(s=>s.id));
       const parseAmt = c => { const m = (c||'').match(/₹([\d,]+)/); return m ? parseInt(m[1].replace(/,/g,'')) : 0; };
       const offlineNotes = (Array.isArray(notes)?notes:[]).filter(n=>offlineIds.has(n.student_id));
-      const collected_offline = offlineNotes.reduce((sum,n)=>sum+parseAmt(n.content),0);
-      const collected_breakdown = offlineNotes.map(n => {
+
+      // Auto-fix payment dates: derive correct date from due_date by trying 1/3/6/12 months back
+      const todayStr = new Date().toISOString().slice(0,10);
+      const fixMonth = todayStr.slice(0,7);
+      const fixPromises = offlineNotes.map(async n => {
         const stu = studentMap[n.student_id] || {};
-        return { name: stu.name||'Unknown', student_id: stu.student_id||'', amount: parseAmt(n.content), date: (n.created_at||'').slice(0,10), note: n.content||'' };
+        const dueDate = stu.due_date;
+        if (!dueDate) return n;
+        const noteDate = (n.created_at||'').slice(0,10);
+        // Find which period subtraction from due_date lands in this month
+        let correctDate = null;
+        for (const months of [1, 2, 3, 5, 6, 12]) {
+          const d = new Date(dueDate + 'T00:00:00');
+          d.setMonth(d.getMonth() - months);
+          const result = d.toISOString().slice(0,10);
+          if (result.startsWith(fixMonth)) {
+            // If it lands in this month but in the future, fee was collected early → use 1st of month
+            correctDate = result <= todayStr ? result : fixMonth + '-01';
+            break;
+          }
+        }
+        // Fallback: if note is future-dated and we couldn't calculate, revert to today
+        if (!correctDate && noteDate > todayStr) correctDate = todayStr;
+        if (correctDate && noteDate !== correctDate) {
+          fetch(`${SUPABASE_URL}/rest/v1/crm_notes?id=eq.${n.id}`, {
+            method: 'PATCH', headers: SB_M, body: JSON.stringify({ created_at: correctDate + 'T12:00:00' })
+          }).catch(() => {});
+          return { ...n, created_at: correctDate + 'T12:00:00' };
+        }
+        return n;
+      });
+      const fixedNotes = await Promise.all(fixPromises);
+
+      const collected_offline = fixedNotes.reduce((sum,n)=>sum+parseAmt(n.content),0);
+      const collected_breakdown = fixedNotes.map(n => {
+        const stu = studentMap[n.student_id] || {};
+        return { id: n.id, name: stu.name||'Unknown', student_id: stu.student_id||'', phone: stu.phone||'', amount: parseAmt(n.content), date: (n.created_at||'').slice(0,10), note: n.content||'', due_date: stu.due_date||'', payment_type: stu.payment_type||'' };
       }).filter(x=>x.amount>0);
       // All active offline/online students — full month forecast regardless of specific due_date
       const allActiveOffline = activeStudents.filter(s => s.mode==="offline");
@@ -634,7 +667,33 @@ exports.handler = async (event) => {
       const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_students`, { method:"POST", headers:SB_M, body:JSON.stringify(s) });
       const data = await r.json();
       if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: (data&&data.message)||"Insert failed" }) };
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: Array.isArray(data)?data[0]:data }) };
+      const newStudent = Array.isArray(data) ? data[0] : data;
+
+      // Auto-generate enrollment receipt if amount_due is set
+      if (newStudent && newStudent.id && s.amount_due > 0) {
+        const rnoR = await fetch(`${SUPABASE_URL}/rest/v1/crm_notes?content=like.Receipt%20%23*&select=content&order=created_at.desc&limit=100`, { headers: SB_H });
+        const rnoNotes = await rnoR.json();
+        let receiptNo = 1001;
+        if (Array.isArray(rnoNotes)) {
+          rnoNotes.forEach(n => { const m = (n.content||'').match(/Receipt #(\d+)/); if (m) { const no = parseInt(m[1]); if (no >= receiptNo) receiptNo = no + 1; } });
+        }
+        const pt = (s.payment_type||'').toLowerCase();
+        let months = 3;
+        const expl = pt.match(/(\d+)\s*month/); if (expl) months = parseInt(expl[1]);
+        else if (pt.includes('month')) months = 1;
+        else if (pt.includes('quarter')) months = 3;
+        else if (pt.includes('half')) months = 6;
+        else if (pt.includes('annual')||pt.includes('year')) months = 12;
+        const enrollDate = s.enrollment_date || new Date().toISOString().slice(0,10);
+        const dateLabel = new Date(enrollDate+'T12:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+        const noteContent = `Receipt #${receiptNo} issued — ₹${s.amount_due} · ${s.payment_type||months+' months'} · ${s.instrument||''} · ${s.mode==='online'?'Online':'Offline Group'} · Cash · ${dateLabel}`;
+        await fetch(`${SUPABASE_URL}/rest/v1/crm_notes`, {
+          method:'POST', headers:SB_M,
+          body: JSON.stringify({ student_id: newStudent.id, content: noteContent, created_at: enrollDate+'T12:00:00' })
+        });
+        newStudent._receipt_no = receiptNo;
+      }
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, student: newStudent }) };
     }
 
     if (action === "crm_update") {
@@ -846,7 +905,7 @@ exports.handler = async (event) => {
 
     if (action === "crm_revenue_trend") {
       const [offR, notesR] = await Promise.all([
-        fetch(`${SUPABASE_URL}/rest/v1/crm_students?mode=eq.offline&select=id`, { headers: SB_H }),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_students?mode=eq.offline&is_active=eq.true&select=id`, { headers: SB_H }),
         fetch(`${SUPABASE_URL}/rest/v1/crm_notes?content=like.*%E2%82%B9*&select=student_id,content,created_at&order=created_at.desc&limit=2000`, { headers: SB_H }),
       ]);
       const offlineStudents = await offR.json();
@@ -984,6 +1043,14 @@ exports.handler = async (event) => {
       const data = await r.json();
       if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: (data&&data.message)||"Note failed" }) };
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, note: Array.isArray(data)?data[0]:data }) };
+    }
+
+    if (action === "crm_update_note") {
+      const { note_id, created_at: newDate } = JSON.parse(event.body);
+      if (!note_id || !newDate) return { statusCode: 400, headers, body: JSON.stringify({ error: "note_id and created_at required" }) };
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_notes?id=eq.${note_id}`, { method:"PATCH", headers:SB_M, body:JSON.stringify({ created_at: newDate }) });
+      if (r.status >= 400) { const d=await r.json(); return { statusCode:r.status, headers, body:JSON.stringify({ error:(d&&d.message)||"Update failed" }) }; }
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
     }
 
     // ── LEADS ─────────────────────────────────────────────────────────────────
