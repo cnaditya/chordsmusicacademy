@@ -3594,6 +3594,16 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
       <div class="stat-value" style="font-size:1.3rem;color:var(--success);">₹${(stats.collected_offline||0).toLocaleString('en-IN')}</div>
       <div class="stat-sub">${(stats.collected_breakdown||[]).length} payment${(stats.collected_breakdown||[]).length!==1?'s':''} this month</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-label">💸 Expenses (Salaries)</div>
+      <div class="stat-value" style="font-size:1.3rem;color:var(--danger,#e74c3c);">₹${(stats.total_expenses||0).toLocaleString('en-IN')}</div>
+      <div class="stat-sub" title="${Object.entries(stats.monthly_salaries||{}).map(([k,v])=>k+': ₹'+v.toLocaleString('en-IN')).join(' · ')}">${Object.keys(stats.monthly_salaries||{}).length} teacher${Object.keys(stats.monthly_salaries||{}).length!==1?'s':''} · fixed monthly</div>
+    </div>
+    <div class="stat-card ${(stats.net_profit||0)>=0?'green':''}">
+      <div class="stat-label">📈 Net Profit This Month</div>
+      <div class="stat-value" style="font-size:1.3rem;color:${(stats.net_profit||0)>=0?'var(--success)':'var(--danger,#e74c3c)'};">₹${(stats.net_profit||0).toLocaleString('en-IN')}</div>
+      <div class="stat-sub">Collected − salaries (offline only)</div>
+    </div>
   </div>
 
   <div class="dash-card" style="margin-bottom:20px;">

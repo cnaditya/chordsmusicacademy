@@ -566,6 +566,14 @@ exports.handler = async (event) => {
         const stu = studentMap[n.student_id] || {};
         return { id: n.id, name: stu.name||'Unknown', student_id: stu.student_id||'', phone: stu.phone||'', amount: parseAmt(n.content), date: (n.created_at||'').slice(0,10), note: n.content||'', due_date: stu.due_date||'', payment_type: stu.payment_type||'' };
       }).filter(x=>x.amount>0);
+
+      // Fixed monthly teacher salaries (offline instrument-based, per Aaditya 2026-10-15).
+      // Edit amounts here when they change — no DB migration needed for a handful of values.
+      // Add an instrument here once that teacher's salary is confirmed; instruments missing
+      // from this list (Piano/Keyboard, Drums, etc.) aren't counted as an expense yet.
+      const MONTHLY_SALARIES = { Guitar: 20000, Violin: 15000, Vocal: 12000 };
+      const total_expenses = Object.values(MONTHLY_SALARIES).reduce((a,b)=>a+b,0);
+      const net_profit = collected_offline - total_expenses;
       // All active offline/online students — full month forecast regardless of specific due_date
       const allActiveOffline = activeStudents.filter(s => s.mode==="offline");
       const allActiveOnline  = activeStudents.filter(s => s.mode==="online");
@@ -584,6 +592,9 @@ exports.handler = async (event) => {
         revenue_online_count: allActiveOnline.length,
         collected_offline,
         collected_breakdown,
+        monthly_salaries: MONTHLY_SALARIES,
+        total_expenses,
+        net_profit,
         estimated_due_list: allActiveOffline.map(s=>({ id:s.id, name:s.name, student_id:s.student_id, instrument:s.instrument, teacher:s.teacher, due_date:s.due_date, amount_due:s.amount_due, mode:s.mode })),
       };
       const instruments = {};
