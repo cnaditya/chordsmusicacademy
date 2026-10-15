@@ -4,6 +4,28 @@ Dated log of changes to the CRM (`crm.html`, `netlify/functions/pay-admin-studen
 
 ---
 
+## 2026-10-15
+
+**Net Profit on the dashboard (commits `3bd5472`, `1fdeb45`)**
+- Dashboard now shows **Expenses** and **Net Profit** stat cards next to Collected This Month. Net Profit = this month's offline collected revenue − total monthly expenses.
+- Expenses are tracked in a new Supabase table, `crm_expenses` (`name`, `amount`, `is_active`) — **requires a one-time SQL migration**, see below. Until that table exists/has rows, expenses show as ₹0 and net profit = collected (no error, just nothing to subtract).
+- Seeded with the three salaries Aaditya gave: Guitar Teacher ₹20,000, Violin Teacher ₹15,000, Vocal Teacher ₹12,000/month. Piano/Keyboard and Drums teachers aren't in the list yet — add them via the UI whenever their salary is confirmed.
+- **Fully editable from the CRM UI**, no code change needed for future changes: click the Expenses card on the dashboard → add, edit, or remove any line (new backend actions `crm_expenses_list`/`crm_expense_add`/`crm_expense_update`/`crm_expense_delete`, soft-delete via `is_active`).
+- SQL run by Aaditya in Supabase SQL Editor:
+  ```sql
+  create table if not exists crm_expenses (
+    id uuid primary key default gen_random_uuid(),
+    name text not null,
+    amount numeric not null default 0,
+    is_active boolean not null default true,
+    created_at timestamptz not null default now()
+  );
+  insert into crm_expenses (name, amount) values
+    ('Guitar Teacher', 20000), ('Violin Teacher', 15000), ('Vocal Teacher', 12000);
+  ```
+
+---
+
 ## 2026-10-13
 
 **Receipt download, WhatsApp, and Payment History (commits `ff917cf`, `35cac8d`)**
