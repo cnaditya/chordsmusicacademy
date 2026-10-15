@@ -23,6 +23,7 @@ Dated log of changes to the CRM (`crm.html`, `netlify/functions/pay-admin-studen
   insert into crm_expenses (name, amount) values
     ('Guitar Teacher', 20000), ('Violin Teacher', 15000), ('Vocal Teacher', 12000);
   ```
+- **Checked after Aaditya ran the SQL**: the insert had run twice, leaving 6 rows (duplicated Guitar/Violin/Vocal) and doubling expenses to ₹94,000, which pushed Net Profit negative. Removed the 3 duplicate rows — back to the correct 3. Also smoke-tested add/update/delete end-to-end (temporary "TEST Drums Teacher" row, confirmed dashboard total changed and reverted correctly, then deleted).
 
 ---
 
