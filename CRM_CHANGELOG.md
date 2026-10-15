@@ -4,6 +4,24 @@ Dated log of changes to the CRM (`crm.html`, `netlify/functions/pay-admin-studen
 
 ---
 
+## 2026-10-15 (lead attribution + ads cleanup)
+
+**Registration form: added "How did you hear about us?" (commit `83a18d5`)**
+- `registration.html` step 4 now has a required single-select (Google, YouTube, Instagram, Friend/Reference, Walk-in), stored as "Source: X" prefixed into the existing `notes` field — no schema change. Flows through to Firestore, the CRM lead, `crm_public_trial`, and the owner's WhatsApp alert.
+- Why: auditing Google Ads performance found the site had zero way to attribute a lead/enrollment to its actual source — couldn't tell if a student came from a paid ad, organic search, Instagram, or a referral. This closes that gap going forward (doesn't retroactively fix past data).
+
+**Fixed `ads-report.js` silently ignoring non-standard `days=` values (commit `767075a`)**
+- Only accepted an exact allowlist of `[7, 30, 90]`; any other value (e.g. `days=60`, `days=1`) silently fell back to 30 days with no error. This is the same issue flagged much earlier in the project as "`days=1` being ignored" and never actually fixed.
+- Real impact found: comparing dashboard output against a direct Google Ads API query, Piano's true Sep 1–Oct 15 spend was ₹9,655 with 8 conversions (₹1,207/conversion) — the dashboard, silently capped to the last 30 days, had only been showing ₹5,790 and underselling Piano's real performance.
+- Now clamps any requested integer to [1, 365] instead of rejecting it.
+
+**Google Ads: paused Guitar, Violin, Drums campaigns** (via direct API mutation, not this repo)
+- Reasoning: ₹3,831 combined spend Sep 1–Oct 15 across the three, zero real conversions (verified via Google's own conversion-action tracking, not just page views — checked each action's `include_in_conversions_metric`). 15 real Guitar/Violin/Drums students joined offline in the same window with no matching ad-tracked lead at all, meaning they came from referral/walk-in, not these ads — reinforces the pause rather than contradicting it.
+- Piano and Vocal kept running (₹1,207 and ₹500 per conversion respectively — healthy).
+- Open item: Piano's campaign excludes "WhatsApp Click" from its primary conversion count while Vocal's includes it (3 real WhatsApp leads on Piano aren't informing its Smart Bidding). Checked `campaign.selective_optimization` via the API — it's empty on all 5 campaigns, so that's not the mechanism. Needs checking directly in Ads UI → Piano campaign → Settings → Goals; not yet fixed.
+
+---
+
 ## 2026-10-15
 
 **Net Profit on the dashboard (commits `3bd5472`, `1fdeb45`)**
