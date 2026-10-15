@@ -4,8 +4,9 @@
 
 const API_VERSION = "v25";
 const CAMPAIGN_NAMES = ["Chords Music Academy", "Guitar", "Vocal", "Violin", "Drums"];
-const ALLOWED_DAYS = [7, 30, 90];
 const DEFAULT_DAYS = 30;
+const MIN_DAYS = 1;
+const MAX_DAYS = 365; // Google Ads reporting generally only guarantees ~2 years of history anyway
 
 async function getAccessToken() {
   const res = await fetch("https://oauth2.googleapis.com/token", {
@@ -65,7 +66,7 @@ exports.handler = async function (event) {
 
   try {
     const requestedDays = parseInt((event.queryStringParameters || {}).days, 10);
-    const DAYS = ALLOWED_DAYS.includes(requestedDays) ? requestedDays : DEFAULT_DAYS;
+    const DAYS = Number.isInteger(requestedDays) ? Math.min(Math.max(requestedDays, MIN_DAYS), MAX_DAYS) : DEFAULT_DAYS;
 
     const accessToken = await getAccessToken();
     const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID;
