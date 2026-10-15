@@ -1261,6 +1261,23 @@ CREATE TABLE IF NOT EXISTS crm_notes (
   </div>
 </div>
 
+<!-- EXPENSES MODAL -->
+<div class="modal-overlay" id="expenses-modal" style="display:none;" onclick="if(event.target===this)closeExpensesModal()">
+  <div class="modal-box" style="max-width:460px;width:95%;">
+    <h2>💸 Monthly Expenses</h2>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;">Fixed costs subtracted from this month's collected revenue to get Net Profit. Add a new teacher or cost any time — no code change needed.</p>
+    <div id="expenses-list-wrap"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+      <input id="new-expense-name" type="text" placeholder="e.g. Drums Teacher" style="flex:2;padding:9px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);">
+      <input id="new-expense-amount" type="number" placeholder="₹/month" style="flex:1;padding:9px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);">
+      <button class="btn btn-primary btn-sm" onclick="addExpense()">+ Add</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeExpensesModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM DIALOG -->
 <div class="confirm-modal" id="confirm-modal" style="display:none;">
   <div class="confirm-box">
@@ -3594,15 +3611,15 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
       <div class="stat-value" style="font-size:1.3rem;color:var(--success);">₹${(stats.collected_offline||0).toLocaleString('en-IN')}</div>
       <div class="stat-sub">${(stats.collected_breakdown||[]).length} payment${(stats.collected_breakdown||[]).length!==1?'s':''} this month</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" onclick="openExpensesModal()" style="cursor:pointer;" title="Click to manage expenses">
       <div class="stat-label">💸 Expenses (Salaries)</div>
       <div class="stat-value" style="font-size:1.3rem;color:var(--danger,#e74c3c);">₹${(stats.total_expenses||0).toLocaleString('en-IN')}</div>
-      <div class="stat-sub" title="${Object.entries(stats.monthly_salaries||{}).map(([k,v])=>k+': ₹'+v.toLocaleString('en-IN')).join(' · ')}">${Object.keys(stats.monthly_salaries||{}).length} teacher${Object.keys(stats.monthly_salaries||{}).length!==1?'s':''} · fixed monthly</div>
+      <div class="stat-sub" title="${(stats.expenses_list||[]).map(e=>e.name+': ₹'+Number(e.amount).toLocaleString('en-IN')).join(' · ')}">${(stats.expenses_list||[]).length} item${(stats.expenses_list||[]).length!==1?'s':''} · ✏️ manage</div>
     </div>
     <div class="stat-card ${(stats.net_profit||0)>=0?'green':''}">
       <div class="stat-label">📈 Net Profit This Month</div>
       <div class="stat-value" style="font-size:1.3rem;color:${(stats.net_profit||0)>=0?'var(--success)':'var(--danger,#e74c3c)'};">₹${(stats.net_profit||0).toLocaleString('en-IN')}</div>
-      <div class="stat-sub">Collected − salaries (offline only)</div>
+      <div class="stat-sub">Collected − expenses (offline only)</div>
     </div>
   </div>
 
@@ -4323,6 +4340,65 @@ async function updatePayment() {
     toast('Payment updated.');
     viewStudent(currentStudentId);
   } catch(e) { toast('Update failed.','error'); }
+}
+
+function openExpensesModal() {
+  document.getElementById('expenses-modal').style.display = 'flex';
+  loadExpensesList();
+}
+function closeExpensesModal() {
+  document.getElementById('expenses-modal').style.display = 'none';
+  if (currentPage === 'dashboard') loadDashboard();
+}
+async function loadExpensesList() {
+  const wrap = document.getElementById('expenses-list-wrap');
+  wrap.innerHTML = '<div style="color:var(--muted);font-size:0.83rem;">Loading…</div>';
+  try {
+    const res = await apiCall({ action: 'crm_expenses_list' });
+    const rows = res.expenses || [];
+    if (!rows.length) {
+      wrap.innerHTML = '<div style="color:var(--muted);font-size:0.83rem;">No expenses yet — add one below.</div>';
+      return;
+    }
+    wrap.innerHTML = rows.map(e => `
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <input value="${escapeHtml(e.name)}" id="exp-name-${e.id}" style="flex:2;padding:7px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);">
+        <input type="number" value="${e.amount}" id="exp-amount-${e.id}" style="flex:1;padding:7px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);">
+        <button class="btn btn-ghost btn-sm" title="Save" onclick="saveExpense('${e.id}')">💾</button>
+        <button class="btn btn-ghost btn-sm" title="Remove" onclick="deleteExpense('${e.id}')">🗑️</button>
+      </div>`).join('');
+  } catch (e) {
+    wrap.innerHTML = '<div style="color:var(--danger,#e74c3c);font-size:0.83rem;">Could not load expenses. If this is the first time, run the crm_expenses table SQL in Supabase first.</div>';
+  }
+}
+async function addExpense() {
+  const name = document.getElementById('new-expense-name').value.trim();
+  const amount = parseInt(document.getElementById('new-expense-amount').value) || 0;
+  if (!name || !amount) { toast('Enter a name and amount.', 'error'); return; }
+  try {
+    await apiCall({ action: 'crm_expense_add', name, amount });
+    document.getElementById('new-expense-name').value = '';
+    document.getElementById('new-expense-amount').value = '';
+    toast('Expense added.');
+    loadExpensesList();
+  } catch (e) { toast('Could not add expense.', 'error'); }
+}
+async function saveExpense(id) {
+  const name = document.getElementById(`exp-name-${id}`).value.trim();
+  const amount = parseInt(document.getElementById(`exp-amount-${id}`).value) || 0;
+  try {
+    await apiCall({ action: 'crm_expense_update', id, name, amount });
+    toast('Saved.');
+  } catch (e) { toast('Could not save.', 'error'); }
+}
+async function deleteExpense(id) {
+  showConfirm('Remove Expense', 'Remove this expense from Net Profit calculations?', 'Remove', async () => {
+    try {
+      await apiCall({ action: 'crm_expense_delete', id });
+      toast('Removed.');
+      loadExpensesList();
+    } catch (e) { toast('Could not remove.', 'error'); }
+  });
 }
 
 async function markPaid() {

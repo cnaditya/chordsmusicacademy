@@ -512,9 +512,10 @@ exports.handler = async (event) => {
 
     if (action === "crm_dashboard") {
       const thisMonth = new Date().toISOString().slice(0,7); // "2026-09"
-      const [r, notesR] = await Promise.all([
+      const [r, notesR, expensesR] = await Promise.all([
         fetch(`${SUPABASE_URL}/rest/v1/crm_students?is_active=eq.true&select=id,status,mode,instrument,amount_due,due_date,enrollment_date,name,student_id,teacher,class_days,class_time,level,phone`, { headers: SB_H }),
         fetch(`${SUPABASE_URL}/rest/v1/crm_notes?content=like.*%E2%82%B9*&created_at=gte.${thisMonth}-01&select=id,student_id,content,created_at&order=created_at.desc&limit=500`, { headers: SB_H }),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_expenses?is_active=eq.true&select=name,amount`, { headers: SB_H }),
       ]);
       const all = await r.json();
       if (!Array.isArray(all)) {
@@ -522,6 +523,8 @@ exports.handler = async (event) => {
         return { statusCode: 500, headers, body: JSON.stringify({ error: "Unexpected response", raw: JSON.stringify(all) }) };
       }
       const notes = await notesR.json();
+      const expenseRows = await expensesR.json();
+      const expensesList = Array.isArray(expenseRows) ? expenseRows : []; // empty (not an error) until crm_expenses exists or has rows
       const recent = [...all].sort((a, b) => new Date(b.enrollment_date || 0) - new Date(a.enrollment_date || 0)).slice(0, 5);
       const activeStudents = all.filter(s=>s.status==="active");
       const studentMap = Object.fromEntries(all.map(s=>[s.id, s]));
@@ -567,12 +570,9 @@ exports.handler = async (event) => {
         return { id: n.id, name: stu.name||'Unknown', student_id: stu.student_id||'', phone: stu.phone||'', amount: parseAmt(n.content), date: (n.created_at||'').slice(0,10), note: n.content||'', due_date: stu.due_date||'', payment_type: stu.payment_type||'' };
       }).filter(x=>x.amount>0);
 
-      // Fixed monthly teacher salaries (offline instrument-based, per Aaditya 2026-10-15).
-      // Edit amounts here when they change — no DB migration needed for a handful of values.
-      // Add an instrument here once that teacher's salary is confirmed; instruments missing
-      // from this list (Piano/Keyboard, Drums, etc.) aren't counted as an expense yet.
-      const MONTHLY_SALARIES = { Guitar: 20000, Violin: 15000, Vocal: 12000 };
-      const total_expenses = Object.values(MONTHLY_SALARIES).reduce((a,b)=>a+b,0);
+      // Monthly fixed expenses (teacher salaries etc.) — managed via crm_expenses table,
+      // editable in the CRM UI (crm_expenses_list/add/update/delete actions below).
+      const total_expenses = expensesList.reduce((sum,e)=>sum+(Number(e.amount)||0),0);
       const net_profit = collected_offline - total_expenses;
       // All active offline/online students — full month forecast regardless of specific due_date
       const allActiveOffline = activeStudents.filter(s => s.mode==="offline");
@@ -592,7 +592,7 @@ exports.handler = async (event) => {
         revenue_online_count: allActiveOnline.length,
         collected_offline,
         collected_breakdown,
-        monthly_salaries: MONTHLY_SALARIES,
+        expenses_list: expensesList,
         total_expenses,
         net_profit,
         estimated_due_list: allActiveOffline.map(s=>({ id:s.id, name:s.name, student_id:s.student_id, instrument:s.instrument, teacher:s.teacher, due_date:s.due_date, amount_due:s.amount_due, mode:s.mode })),
@@ -983,6 +983,44 @@ exports.handler = async (event) => {
       if (!r.ok) return { statusCode: 400, headers, body: JSON.stringify({ error: (Array.isArray(result)?result[0]:result)?.message || 'Failed to create bill' }) };
       const created = Array.isArray(result) ? result[0] : result;
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, bill: created }) };
+    }
+
+    if (action === "crm_expenses_list") {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_expenses?is_active=eq.true&select=*&order=created_at.asc`, { headers: SB_H });
+      const rows = await r.json();
+      if (!Array.isArray(rows)) {
+        if (r.status === 404 || (rows && rows.code === "42P01")) return { statusCode: 404, headers, body: JSON.stringify({ error: "table_not_found" }) };
+        return { statusCode: 500, headers, body: JSON.stringify({ error: "Unexpected response" }) };
+      }
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, expenses: rows }) };
+    }
+
+    if (action === "crm_expense_add") {
+      const { name, amount } = JSON.parse(event.body || "{}");
+      if (!name || !amount) return { statusCode: 400, headers, body: JSON.stringify({ error: "name and amount required" }) };
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_expenses`, { method: "POST", headers: SB_M, body: JSON.stringify({ name: String(name).trim(), amount: Number(amount) }) });
+      const data = await r.json();
+      if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: (data && data.message) || "Add failed" }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, expense: Array.isArray(data) ? data[0] : data }) };
+    }
+
+    if (action === "crm_expense_update") {
+      const { id, name, amount } = JSON.parse(event.body || "{}");
+      if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: "id required" }) };
+      const fields = {};
+      if (name !== undefined) fields.name = String(name).trim();
+      if (amount !== undefined) fields.amount = Number(amount);
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_expenses?id=eq.${id}`, { method: "PATCH", headers: SB_M, body: JSON.stringify(fields) });
+      if (r.status >= 400) { const d = await r.json(); return { statusCode: r.status, headers, body: JSON.stringify({ error: (d && d.message) || "Update failed" }) }; }
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    }
+
+    if (action === "crm_expense_delete") {
+      const { id } = JSON.parse(event.body || "{}");
+      if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: "id required" }) };
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/crm_expenses?id=eq.${id}`, { method: "PATCH", headers: SB_M, body: JSON.stringify({ is_active: false }) });
+      if (r.status >= 400) return { statusCode: r.status, headers, body: JSON.stringify({ error: "Delete failed" }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
     }
 
     if (action === "crm_get_next_receipt_no") {
