@@ -3470,6 +3470,8 @@ async function editPaymentDate(noteId, currentDate) {
   } catch(e) { toast('Failed: ' + e.message, 'error'); }
 }
 
+let _revMetric = 'revenue';
+
 function toggleRevChart() {
   _revExpanded = !_revExpanded;
   const body = document.getElementById('rev-chart-body');
@@ -3477,6 +3479,14 @@ function toggleRevChart() {
   if (body) body.style.display = _revExpanded ? 'block' : 'none';
   if (chev) chev.textContent = _revExpanded ? '▲' : '▼';
   if (_revExpanded) renderRevenueChart(_revPeriod);
+}
+
+function setRevMetric(metric) {
+  _revMetric = metric;
+  document.querySelectorAll('.rev-metric-btn').forEach(b => b.classList.toggle('active', b.dataset.m === metric));
+  const note = document.getElementById('rev-chart-note');
+  if (note) note.style.display = metric === 'net_profit' ? 'block' : 'none';
+  renderRevenueChart(_revPeriod);
 }
 
 function renderRevenueChart(period) {
@@ -3487,29 +3497,37 @@ function renderRevenueChart(period) {
   if (!el) return;
   const slice = _revMonths.slice(-period);
   if (!slice.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:20px 0;text-align:center;">No payment data yet.</div>'; return; }
-  const maxVal = Math.max(...slice.map(m => m.revenue), 1);
+  const metric = _revMetric;
+  const vals = slice.map(m => metric === 'net_profit' ? (m.net_profit ?? m.revenue) : m.revenue);
+  const maxVal = Math.max(...vals, 1);
+  const minVal = Math.min(...vals, 0); // 0 unless net profit goes negative
+  const range = maxVal - minVal || 1;
   // viewBox aspect ratio 400:130 → on a 340px card renders ~110px tall — compact but readable
   const W = 400, H = 130, pad = 30, barGap = 3;
   const barW = Math.floor((W - pad) / slice.length) - barGap;
   const barArea = H - 30;
+  const zeroY = H - 18 - Math.round(((0 - minVal) / range) * barArea);
   const bars = slice.map((m, i) => {
-    const bh = Math.max(m.revenue > 0 ? 4 : 0, Math.round((m.revenue / maxVal) * barArea));
+    const v = vals[i];
+    const barH = Math.max(Math.abs(v) > 0 ? 3 : 0, Math.round((Math.abs(v) / range) * barArea));
     const x = pad + i * (barW + barGap);
-    const y = H - 18 - bh;
+    const y = v >= 0 ? zeroY - barH : zeroY;
     const isCurrentMonth = m.month === new Date().toISOString().slice(0,7);
-    const fill = isCurrentMonth ? '#4f46e5' : '#a5b4fc';
-    const amtLabel = m.revenue >= 1000 ? '₹' + (m.revenue/1000).toFixed(1) + 'k' : m.revenue > 0 ? '₹'+m.revenue : '';
+    const negative = v < 0;
+    const fill = negative ? '#e74c3c' : (isCurrentMonth ? '#4f46e5' : '#a5b4fc');
+    const amtLabel = Math.abs(v) >= 1000 ? (v<0?'-':'') + '₹' + (Math.abs(v)/1000).toFixed(1) + 'k' : v !== 0 ? '₹'+v : '';
+    const lblY = v >= 0 ? y - 3 : y + barH + 10;
     const xLbl = period === 12 ? m.label.slice(0,3) : m.label;
     return `
-      <rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="2" fill="${fill}" opacity="0.9"/>
-      ${m.revenue > 0 ? `<text x="${x+barW/2}" y="${y-3}" text-anchor="middle" font-size="9" fill="var(--muted)">${amtLabel}</text>` : ''}
+      <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="2" fill="${fill}" opacity="0.9"/>
+      ${v !== 0 ? `<text x="${x+barW/2}" y="${lblY}" text-anchor="middle" font-size="9" fill="var(--muted)">${amtLabel}</text>` : ''}
       <text x="${x+barW/2}" y="${H-3}" text-anchor="middle" font-size="9" fill="var(--muted)">${xLbl}</text>`;
   }).join('');
-  const gridLines = [0.5,1].map(frac => {
-    const gv = Math.round(maxVal * frac);
-    const gy = H - 18 - Math.round(frac * barArea);
-    const lbl = gv >= 1000 ? '₹'+(gv/1000).toFixed(0)+'k' : '₹'+gv;
-    return `<line x1="${pad}" y1="${gy}" x2="${W}" y2="${gy}" stroke="var(--border)" stroke-width="0.5"/>
+  const gridVals = minVal < 0 ? [minVal, 0, maxVal] : [maxVal*0.5, maxVal];
+  const gridLines = gridVals.map(gv => {
+    const gy = H - 18 - Math.round(((gv - minVal) / range) * barArea);
+    const lbl = Math.abs(gv) >= 1000 ? (gv<0?'-':'')+'₹'+(Math.abs(gv)/1000).toFixed(0)+'k' : '₹'+gv;
+    return `<line x1="${pad}" y1="${gy}" x2="${W}" y2="${gy}" stroke="var(--border)" stroke-width="${gv===0?1:0.5}"/>
             <text x="${pad-2}" y="${gy+3}" text-anchor="end" font-size="9" fill="var(--muted)">${lbl}</text>`;
   }).join('');
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible;">${gridLines}${bars}</svg>`;
@@ -3654,14 +3672,21 @@ function renderDashboard(data, renewalDue = [], trendMonths = []) {
 
   <div class="dash-card" style="margin-bottom:20px;">
     <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onclick="toggleRevChart()">
-      <div class="dash-card-title" style="margin:0;">🏫 Offline Revenue Trend</div>
+      <div class="dash-card-title" style="margin:0;">🏫 Offline Revenue & Net Profit Trend</div>
       <span id="rev-chevron" style="color:var(--muted);font-size:0.85rem;">▼</span>
     </div>
     <div id="rev-chart-body" style="display:none;margin-top:12px;">
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        ${[3,6,12].map(p=>`<button class="chip rev-period-btn${p===6?' active':''}" data-p="${p}" onclick="event.stopPropagation();renderRevenueChart(${p})">${p===12?'1Y':p+'M'}</button>`).join('')}
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <div style="display:flex;gap:6px;">
+          ${[3,6,12].map(p=>`<button class="chip rev-period-btn${p===6?' active':''}" data-p="${p}" onclick="event.stopPropagation();renderRevenueChart(${p})">${p===12?'1Y':p+'M'}</button>`).join('')}
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="chip rev-metric-btn active" data-m="revenue" onclick="event.stopPropagation();setRevMetric('revenue')">Revenue</button>
+          <button class="chip rev-metric-btn" data-m="net_profit" onclick="event.stopPropagation();setRevMetric('net_profit')">Net Profit</button>
+        </div>
       </div>
       <div id="rev-chart-area" style="width:100%;"></div>
+      <div id="rev-chart-note" style="font-size:0.72rem;color:var(--muted);margin-top:6px;display:none;">Net Profit here uses today's expense total (₹${(stats.total_expenses||0).toLocaleString('en-IN')}/month) applied to every month — not each month's actual cost at the time, since salaries weren't tracked historically.</div>
     </div>
   </div>
 

@@ -915,12 +915,18 @@ exports.handler = async (event) => {
     }
 
     if (action === "crm_revenue_trend") {
-      const [offR, notesR] = await Promise.all([
+      const [offR, notesR, expensesR] = await Promise.all([
         fetch(`${SUPABASE_URL}/rest/v1/crm_students?mode=eq.offline&is_active=eq.true&select=id`, { headers: SB_H }),
         fetch(`${SUPABASE_URL}/rest/v1/crm_notes?content=like.*%E2%82%B9*&select=student_id,content,created_at&order=created_at.desc&limit=2000`, { headers: SB_H }),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_expenses?is_active=eq.true&select=amount`, { headers: SB_H }),
       ]);
       const offlineStudents = await offR.json();
       const notes = await notesR.json();
+      const expenseRows = await expensesR.json();
+      // Current monthly expense total, applied flat to every month — we don't have historical
+      // salary records, so this is "what net profit would have been at today's expense rate",
+      // not each month's actual cost at the time.
+      const currentMonthlyExpenses = (Array.isArray(expenseRows) ? expenseRows : []).reduce((sum,e)=>sum+(Number(e.amount)||0),0);
       const offlineIds = new Set((Array.isArray(offlineStudents) ? offlineStudents : []).map(s => s.id));
       const parseAmt = c => { const m = c.match(/₹([\d,]+)/); return m ? parseInt(m[1].replace(/,/g,'')) : 0; };
       const monthly = {};
@@ -934,9 +940,10 @@ exports.handler = async (event) => {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
         const label = d.toLocaleDateString('en-IN',{month:'short'}) + " '" + String(d.getFullYear()).slice(2);
-        result.push({ month: key, label, revenue: monthly[key]||0 });
+        const revenue = monthly[key]||0;
+        result.push({ month: key, label, revenue, net_profit: revenue - currentMonthlyExpenses });
       }
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, months: result }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, months: result, current_monthly_expenses: currentMonthlyExpenses }) };
     }
 
     if (action === "crm_get_leaves") {
