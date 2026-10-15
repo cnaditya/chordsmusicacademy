@@ -522,6 +522,27 @@ body{background:radial-gradient(ellipse 65% 85% at center,rgba(8,8,18,0.8) 0%,rg
   <!-- STEP 4: Notes -->
   <div id="step4" style="display:none">
     <div class="card">
+      <div class="card-title">📣 How Did You Hear About Us?</div>
+      <div class="opt-grid" id="source-opts">
+        <div class="opt-card" data-val="Google" onclick="pick(this,'source-opts')">
+          <div class="oc-icon">🔍</div><div class="oc-label">Google</div>
+        </div>
+        <div class="opt-card" data-val="YouTube" onclick="pick(this,'source-opts')">
+          <div class="oc-icon">▶️</div><div class="oc-label">YouTube</div>
+        </div>
+        <div class="opt-card" data-val="Instagram" onclick="pick(this,'source-opts')">
+          <div class="oc-icon">📷</div><div class="oc-label">Instagram</div>
+        </div>
+        <div class="opt-card" data-val="Friend/Reference" onclick="pick(this,'source-opts')">
+          <div class="oc-icon">🤝</div><div class="oc-label">Friend/Reference</div>
+        </div>
+        <div class="opt-card" data-val="Walk-in" onclick="pick(this,'source-opts')">
+          <div class="oc-icon">🚶</div><div class="oc-label">Walk-in</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
       <div class="card-title">💬 Anything Else?</div>
       <div class="field">
         <label>Additional notes <span style="font-weight:400;color:#aaa">(optional)</span></label>
@@ -530,7 +551,7 @@ body{background:radial-gradient(ellipse 65% 85% at center,rgba(8,8,18,0.8) 0%,rg
     </div>
 
     <div id="submit-err" style="background:rgba(231,76,60,0.15);border:1.5px solid rgba(231,76,60,0.5);border-radius:10px;padding:10px 14px;font-size:0.78rem;color:#ff8a80;margin-bottom:12px;display:none">
-      ⚠️ Please select an instrument and experience level before submitting.
+      ⚠️ Please select an instrument, experience level, and how you heard about us before submitting.
     </div>
 
     <div class="nav">
@@ -714,10 +735,11 @@ function genRegId() {
 function submitReg() {
   var inst = getSelected('inst-opts');
   var level = getSelected('level-opts');
+  var source = getSelected('source-opts');
   var mode = 'Offline Group Class (In-person)';
 
   document.getElementById('submit-err').style.display = 'none';
-  if (!inst || !level) {
+  if (!inst || !level || !source) {
     document.getElementById('submit-err').style.display = 'block';
     return;
   }
@@ -734,7 +756,8 @@ function submitReg() {
   var phone = document.getElementById('phone').value.trim();
   var email = document.getElementById('email').value.trim();
   var guardian = document.getElementById('guardian').value.trim();
-  var notes = document.getElementById('notes').value.trim();
+  var notesRaw = document.getElementById('notes').value.trim();
+  var notes = 'Source: ' + source + (notesRaw ? ' | ' + notesRaw : '');
   var regId = genRegId();
 
   // Open WhatsApp to owner NOW (sync, direct user click — not blocked)
@@ -751,7 +774,8 @@ function submitReg() {
     '*Instrument:* ' + inst + '\n' +
     '*Level:* ' + level + '\n' +
     '*Mode:* ' + mode + '\n' +
-    (notes ? '*Notes:* ' + notes + '\n' : '') +
+    '*Heard via:* ' + source + '\n' +
+    (notesRaw ? '*Notes:* ' + notesRaw + '\n' : '') +
     '━━━━━━━━━━━━━━━━━━'
   );
   window.open('https://api.whatsapp.com/send?phone=917981585309&text=' + ownerMsg, '_blank');
