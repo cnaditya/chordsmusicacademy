@@ -1090,6 +1090,17 @@ exports.handler = async (event) => {
       };
     }
 
+    if (action === "crm_send_whatsapp") {
+      // Sends an arbitrary message to an arbitrary phone number via the cma_update template.
+      // Used by the online-classes nightly attendance routine (and anything else that needs to
+      // message a phone number not necessarily in crm_students, e.g. the separate online-classes
+      // artifact's own student list).
+      const { phone, title, text } = JSON.parse(event.body || "{}");
+      if (!phone || !text) return { statusCode: 400, headers, body: JSON.stringify({ error: "phone and text required" }) };
+      const result = await messageStudent(phone, text, title || "Class update");
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, sent: !!result.sent, error: result.sent ? null : result.error }) };
+    }
+
     if (action === "crm_add_note") {
       const { student_id, content, created_at } = JSON.parse(event.body);
       if (!student_id || !content) return { statusCode: 400, headers, body: JSON.stringify({ error: "student_id and content required" }) };
