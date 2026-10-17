@@ -99,6 +99,7 @@ exports.handler = async (event) => {
 
     for (const s of students) {
       if (!s.phone) { skipped.push({ name: s.name, reason: "no phone" }); continue; }
+      if (s.status === "paused" || s.status === "dropped") { skipped.push({ name: s.name, reason: "status:" + s.status }); continue; }
 
       const due = new Date(s.due_date);
       due.setHours(0, 0, 0, 0);
