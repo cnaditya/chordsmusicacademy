@@ -4,6 +4,14 @@ Dated log of changes to the CRM (`crm.html`, `netlify/functions/pay-admin-studen
 
 ---
 
+## 2026-10-17
+
+**Fixed `fee-reminders.js` sending reminders to paused/dropped students (commit `6624271`)**
+- Rakesh Boppana (CMA-2026-070, `status: paused`) got a `fee_overdue` WhatsApp this morning — the function only ever checked `is_active`, never `status`. Same root-cause bug that hit Shaik Aayat and Hameed earlier (worked around then by soft-deleting those two individually).
+- Fixed properly this time: the function now skips any student with `status: "paused"` or `"dropped"` before deciding which reminder to send, logged in its `skipped` list with the reason. No more manual `is_active` cleanup needed when someone is paused — just set their status.
+
+---
+
 ## 2026-10-15 (lead attribution + ads cleanup)
 
 **Registration form: added "How did you hear about us?" (commit `83a18d5`)**
