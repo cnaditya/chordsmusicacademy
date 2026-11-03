@@ -918,15 +918,13 @@ exports.handler = async (event) => {
       const [offR, notesR, expensesR] = await Promise.all([
         fetch(`${SUPABASE_URL}/rest/v1/crm_students?mode=eq.offline&is_active=eq.true&select=id`, { headers: SB_H }),
         fetch(`${SUPABASE_URL}/rest/v1/crm_notes?content=like.*%E2%82%B9*&select=student_id,content,created_at&order=created_at.desc&limit=2000`, { headers: SB_H }),
-        fetch(`${SUPABASE_URL}/rest/v1/crm_expenses?is_active=eq.true&select=amount`, { headers: SB_H }),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_expenses?is_active=eq.true&select=amount,created_at`, { headers: SB_H }),
       ]);
       const offlineStudents = await offR.json();
       const notes = await notesR.json();
       const expenseRows = await expensesR.json();
-      // Current monthly expense total, applied flat to every month — we don't have historical
-      // salary records, so this is "what net profit would have been at today's expense rate",
-      // not each month's actual cost at the time.
-      const currentMonthlyExpenses = (Array.isArray(expenseRows) ? expenseRows : []).reduce((sum,e)=>sum+(Number(e.amount)||0),0);
+      const expenses = Array.isArray(expenseRows) ? expenseRows : [];
+      const currentMonthlyExpenses = expenses.reduce((sum,e)=>sum+(Number(e.amount)||0),0);
       const offlineIds = new Set((Array.isArray(offlineStudents) ? offlineStudents : []).map(s => s.id));
       const parseAmt = c => { const m = c.match(/₹([\d,]+)/); return m ? parseInt(m[1].replace(/,/g,'')) : 0; };
       const monthly = {};
@@ -941,7 +939,14 @@ exports.handler = async (event) => {
         const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
         const label = d.toLocaleDateString('en-IN',{month:'short'}) + " '" + String(d.getFullYear()).slice(2);
         const revenue = monthly[key]||0;
-        result.push({ month: key, label, revenue, net_profit: revenue - currentMonthlyExpenses });
+        // Each expense only counts from the month it was actually added (its own created_at)
+        // onward, so past months reflect what was really being paid then, not today's total —
+        // e.g. a teacher who joined this month shouldn't retroactively show up as an Oct cost.
+        const expensesForMonth = expenses.reduce((sum,e)=>{
+          const expMonth = (e.created_at||'').slice(0,7);
+          return expMonth && expMonth <= key ? sum + (Number(e.amount)||0) : sum;
+        }, 0);
+        result.push({ month: key, label, revenue, net_profit: revenue - expensesForMonth });
       }
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, months: result, current_monthly_expenses: currentMonthlyExpenses }) };
     }
