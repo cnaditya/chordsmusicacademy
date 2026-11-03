@@ -4,6 +4,26 @@ Dated log of changes to the CRM (`crm.html`, `netlify/functions/pay-admin-studen
 
 ---
 
+## 2026-11-03
+
+**New Keyboard Teacher salary added to Expenses (`crm_expenses`)**
+- New keyboard teacher joined 1 Nov 2026, salary ₹25,000/month. Added via `crm_expense_add` — monthly teacher salaries now: Violin ₹15,000, Vocal ₹12,000, Srikanth (Guitar) ₹20,000, Keyboard Teacher ₹25,000 = ₹72,000/month total, feeding into the dashboard's Net Profit stat.
+
+**Fixed a duplicate student record (Reva Pathak)**
+- Manually enrolled Reva Pathak (CMA-2026-136, billed, receipt #1048) on 29 Oct; minutes later the public registration form auto-created a second "trial" record for the same person (CMA-2026-137, phone 8830702741) — same guardian/address, clearly the same enrollment hitting the form independently.
+- Merged: copied phone/email/address/guardian name from the trial record into CMA-2026-136 (the real, billed record), then soft-deleted CMA-2026-137 (`is_active:false`) with a note cross-referencing the merge.
+- Worth periodically checking for this pattern (new offline student added manually around the same time they also filled the registration form) — no systemic fix yet, just caught by eye this time.
+
+**New students added (CRM + receipts), with part-payment handling for two annual packages**
+- Reva Pathak (CMA-2026-136): Keyboard, 3 months/24 classes, ₹8,397 UPI, receipt #1048.
+- Dhanunjay (CMA-2026-139): Keyboard, 6 months/48 classes, ₹13,000 UPI, no regn fee, receipt #1051.
+- Nihaal Ram Singamsetti (CMA-2026-140): Keyboard, Annual/96 classes, ₹20,000 UPI (+₹500 regn), receipt #1052.
+- Deekshita Maddula (CMA-2026-141): Keyboard, Annual (₹20,000 total). Part-paid ₹6,000 UPI (+₹500 regn) today, receipt #1053; ₹14,000 balance due 16 Nov 2026.
+- Punarnavi (CMA-2026-026): converted from monthly to a discounted Annual package (₹18,000 total, cycle Nov 1 2026 – Nov 1 2027). Part-paid ₹8,000 UPI, receipt #1049; ₹10,000 balance due 1 Dec 2026.
+- **Both Deekshita and Punarnavi have an explicit "IMPORTANT billing note" left on their CRM record**: when the remaining balance is paid, do NOT use Mark Paid's auto-advance (it adds N months from the balance due-date, which would overshoot past the real one-year anniversary). Instead manually set `due_date` to the correct one-year mark and `amount_due` to 0.
+
+---
+
 ## 2026-10-17
 
 **Fixed `fee-reminders.js` sending reminders to paused/dropped students (commit `6624271`)**
