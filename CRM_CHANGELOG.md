@@ -4,6 +4,13 @@ Dated log of changes to the CRM (`crm.html`, `netlify/functions/pay-admin-studen
 
 ---
 
+## 2026-11-03 (revenue trend fix)
+
+**Fixed `crm_revenue_trend` applying today's expense total to past months (commit `f8ee768`)**
+- The 12-month trend used one flat current-expense figure for every month, so adding the new Keyboard Teacher (₹25,000, joined 1 Nov) retroactively inflated October's "cost" too — Oct showed net profit ₹76,867 when the real figure (using the expenses actually being paid in October, before the keyboard teacher existed) is ₹1,01,867.
+- Fixed: each expense row now only counts toward a month if its own `created_at` is on/before that month. Verified live after deploy — Oct net profit corrected from ₹76,867 to ₹1,01,867.
+- Caveat: this uses `created_at` as a proxy for "when this expense started applying," which only works if expense rows are added around when the real cost actually began (true for the keyboard teacher). An expense row seeded later for a salary that existed earlier (like the original Guitar/Violin/Vocal seed, added 2026-10-15 for salaries that existed before) will still under-count expenses in months before the row was added. No fix for that without real historical salary records.
+
 ## 2026-11-03
 
 **New Keyboard Teacher salary added to Expenses (`crm_expenses`)**
