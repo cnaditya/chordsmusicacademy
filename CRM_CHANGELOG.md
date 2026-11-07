@@ -4,6 +4,12 @@ Dated log of changes to the CRM (`crm.html`, `netlify/functions/pay-admin-studen
 
 ---
 
+## 2026-11-07
+
+**Added and then deleted a demo student (Satish) — no lasting data change**
+- Aaditya asked for a dummy student (Satish, Guitar, 3 months, ₹8,500, joined 6 Nov, phone 7676766776) to demo the add-student/receipt flow. Created as CMA-2026-143, receipt #1055 generated and sent as a PDF.
+- Same session, Aaditya asked to delete it since it was only a demo. Hard-deleted both the `crm_students` row and the `crm_notes` receipt row directly via Supabase (not the soft-delete `crm_delete` action, which only sets `is_active: false` and would have left the receipt note counting toward November's revenue stat) — confirmed gone via `crm_get`. No real student data, revenue, or receipt numbering sequence was affected (receipt #1055 is simply skipped/unused going forward).
+
 ## 2026-11-03 (revenue trend fix)
 
 **Fixed `crm_revenue_trend` applying today's expense total to past months (commit `f8ee768`)**
