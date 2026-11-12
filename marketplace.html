@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gear Marketplace - Chords Music Academy</title>
+<meta name="description" content="Used music gear for sale from Chords Music Academy — recording interfaces, instruments and studio equipment.">
+<link rel="icon" type="image/png" href="images/chords_PNG.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif; background:#0d0d0d; color:#eee; line-height:1.6; }
+  header { padding:1.2rem 1.5rem; text-align:center; border-bottom:1px solid rgba(243,156,18,0.2); }
+  header a { color:#f39c12; text-decoration:none; font-weight:800; font-size:1.2rem; }
+  .wrap { max-width:1000px; margin:0 auto; padding:2.5rem 1.5rem 4rem; }
+  h1 { font-size:clamp(1.8rem,4vw,2.4rem); font-weight:900; color:#fff; margin-bottom:0.3rem; }
+  .sub { color:#888; margin-bottom:2.5rem; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.8rem; }
+  .card { background:#1a1a1a; border:1px solid rgba(243,156,18,0.15); border-radius:16px; overflow:hidden; }
+  .card .imgs { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; }
+  .card .imgs img { width:100%; flex:0 0 100%; scroll-snap-align:start; object-fit:cover; aspect-ratio:4/3; }
+  .card .body { padding:1.3rem 1.4rem 1.5rem; }
+  .card h3 { font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:0.4rem; }
+  .card .cond { display:inline-block; background:rgba(46,204,113,0.15); border:1px solid rgba(46,204,113,0.4); color:#2ecc71; font-size:0.75rem; font-weight:600; padding:0.2rem 0.7rem; border-radius:20px; margin-bottom:0.7rem; }
+  .card p.desc { color:#999; font-size:0.9rem; margin-bottom:1rem; }
+  .price { font-size:1.4rem; font-weight:900; color:#f39c12; margin-bottom:1rem; }
+  .buy-btn { width:100%; background:linear-gradient(135deg,#f39c12,#e67e22); color:#fff; border:none; padding:0.85rem; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; }
+  .buy-btn:disabled { opacity:0.6; cursor:not-allowed; }
+  .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:999; align-items:center; justify-content:center; padding:1rem; }
+  .modal-bg.open { display:flex; }
+  .modal { background:#1a1a1a; border:1px solid rgba(243,156,18,0.3); border-radius:16px; padding:1.8rem; max-width:380px; width:100%; }
+  .modal h3 { color:#fff; margin-bottom:1rem; }
+  .modal input { width:100%; background:#0d0d0d; border:1px solid #333; color:#eee; padding:0.7rem; border-radius:8px; margin-bottom:0.8rem; font-size:0.9rem; }
+  .modal .row { display:flex; gap:0.6rem; }
+  .modal .row button { flex:1; padding:0.75rem; border-radius:8px; border:none; font-weight:700; cursor:pointer; }
+  .modal .cancel { background:#2a2a2a; color:#aaa; }
+  .modal .pay { background:linear-gradient(135deg,#f39c12,#e67e22); color:#fff; }
+  .sold-badge { background:rgba(231,76,60,0.15); border:1px solid rgba(231,76,60,0.4); color:#e74c3c; }
+</style>
+</head>
+<body>
+<header><a href="index.html">CHORDS MUSIC ACADEMY</a></header>
+<div class="wrap">
+  <h1>Gear Marketplace</h1>
+  <p class="sub">Used music & studio equipment, sold by Chords Music Academy.</p>
+  <div class="grid" id="grid"></div>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">Buyer details</h3>
+    <input id="bName" placeholder="Full name">
+    <input id="bPhone" placeholder="Phone number">
+    <input id="bEmail" placeholder="Email (optional)">
+    <input id="bAddress" placeholder="Shipping address">
+    <div class="row">
+      <button class="cancel" onclick="closeModal()">Cancel</button>
+      <button class="pay" id="payBtn" onclick="startPayment()">Pay ₹<span id="payAmt"></span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ITEMS = [
+  {
+    slug: "volt-876",
+    title: "Universal Audio Volt 876 Audio Interface",
+    price: 62000,
+    condition: "Like New, Barely Used",
+    desc: "Recently received as a gift — barely used. No original bill.",
+    images: ["images/marketplace/volt-876-1.jpg","images/marketplace/volt-876-2.jpg","images/marketplace/volt-876-3.jpg"],
+  },
+];
+
+const grid = document.getElementById("grid");
+ITEMS.forEach(item => {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <div class="imgs">${item.images.map(src => `<img src="${src}" alt="${item.title}">`).join("")}</div>
+    <div class="body">
+      <span class="cond">${item.condition}</span>
+      <h3>${item.title}</h3>
+      <p class="desc">${item.desc}</p>
+      <div class="price">₹${item.price.toLocaleString("en-IN")}</div>
+      <button class="buy-btn" onclick="openModal('${item.slug}')">Buy Now</button>
+    </div>`;
+  grid.appendChild(card);
+});
+
+let currentItem = null;
+function openModal(slug) {
+  currentItem = ITEMS.find(i => i.slug === slug);
+  document.getElementById("modalTitle").textContent = currentItem.title;
+  document.getElementById("payAmt").textContent = currentItem.price.toLocaleString("en-IN");
+  document.getElementById("modalBg").classList.add("open");
+}
+function closeModal() { document.getElementById("modalBg").classList.remove("open"); }
+
+async function startPayment() {
+  const name = document.getElementById("bName").value.trim();
+  const phone = document.getElementById("bPhone").value.trim();
+  const email = document.getElementById("bEmail").value.trim();
+  const address = document.getElementById("bAddress").value.trim();
+  if (!name || !phone || !address) { alert("Please fill name, phone and address."); return; }
+
+  const payBtn = document.getElementById("payBtn");
+  payBtn.disabled = true; payBtn.textContent = "Please wait...";
+
+  try {
+    const orderRes = await fetch("/.netlify/functions/create-marketplace-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ item_slug: currentItem.slug }),
+    });
+    const order = await orderRes.json();
+    if (!orderRes.ok) throw new Error(order.error || "Could not start payment");
+
+    const rzp = new Razorpay({
+      key: order.key_id,
+      amount: order.amount,
+      currency: "INR",
+      name: "Chords Music Academy",
+      description: order.title,
+      order_id: order.order_id,
+      prefill: { name, contact: phone, email },
+      theme: { color: "#f39c12" },
+      handler: async function (response) {
+        const verifyRes = await fetch("/.netlify/functions/verify-marketplace-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            buyer_name: name, buyer_phone: phone, buyer_email: email, buyer_address: address,
+          }),
+        });
+        const verify = await verifyRes.json();
+        if (verify.success) {
+          alert("Payment successful! We'll contact you to arrange shipping/pickup.");
+          closeModal();
+        } else {
+          alert("Payment could not be verified. Please contact us directly.");
+        }
+      },
+      modal: { ondismiss: function () { payBtn.disabled = false; payBtn.textContent = "Pay ₹" + currentItem.price.toLocaleString("en-IN"); } },
+    });
+    rzp.open();
+  } catch (e) {
+    alert(e.message || "Something went wrong");
+  } finally {
+    payBtn.disabled = false;
+    payBtn.textContent = "Pay ₹" + currentItem.price.toLocaleString("en-IN");
+  }
+}
+</script>
+</body>
+</html>
