@@ -38,15 +38,11 @@ exports.handler = async (event) => {
 
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
+    const SB = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=representation" };
 
-    await fetch(`${SUPABASE_URL}/rest/v1/marketplace_orders?razorpay_order_id=eq.${encodeURIComponent(razorpay_order_id)}`, {
+    const orderRes = await fetch(`${SUPABASE_URL}/rest/v1/marketplace_orders?razorpay_order_id=eq.${encodeURIComponent(razorpay_order_id)}`, {
       method: "PATCH",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal",
-      },
+      headers: SB,
       body: JSON.stringify({
         razorpay_payment_id,
         status: "paid",
@@ -56,6 +52,16 @@ exports.handler = async (event) => {
         buyer_address: buyer_address || null,
       }),
     });
+    const orderRows = await orderRes.json();
+    const itemSlug = Array.isArray(orderRows) && orderRows[0] ? orderRows[0].item_slug : null;
+
+    if (itemSlug) {
+      await fetch(`${SUPABASE_URL}/rest/v1/marketplace_items?slug=eq.${encodeURIComponent(itemSlug)}`, {
+        method: "PATCH",
+        headers: { ...SB, Prefer: "return=minimal" },
+        body: JSON.stringify({ is_sold: true }),
+      });
+    }
 
     return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
   } catch (e) {

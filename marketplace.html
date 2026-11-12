@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gear Marketplace - Chords Music Academy</title>
-<meta name="description" content="Used music gear for sale from Chords Music Academy — recording interfaces, instruments and studio equipment.">
+<title>Gear Store - Chords Music Academy</title>
+<meta name="description" content="Used music & studio gear for sale — keyboards, audio interfaces, instruments and pro equipment from Chords Music Academy.">
 <link rel="icon" type="image/png" href="images/chords_PNG.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -12,22 +12,36 @@
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Inter',sans-serif; background:#0d0d0d; color:#eee; line-height:1.6; }
-  header { padding:1.2rem 1.5rem; text-align:center; border-bottom:1px solid rgba(243,156,18,0.2); }
-  header a { color:#f39c12; text-decoration:none; font-weight:800; font-size:1.2rem; }
-  .wrap { max-width:1000px; margin:0 auto; padding:2.5rem 1.5rem 4rem; }
+  header { padding:1.2rem 1.5rem; text-align:center; border-bottom:1px solid rgba(243,156,18,0.2); position:sticky; top:0; background:#0d0d0d; z-index:50; }
+  header a.brand { color:#f39c12; text-decoration:none; font-weight:800; font-size:1.1rem; letter-spacing:0.3px; }
+  .wrap { max-width:1100px; margin:0 auto; padding:2.2rem 1.5rem 4rem; }
   h1 { font-size:clamp(1.8rem,4vw,2.4rem); font-weight:900; color:#fff; margin-bottom:0.3rem; }
-  .sub { color:#888; margin-bottom:2.5rem; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.8rem; }
-  .card { background:#1a1a1a; border:1px solid rgba(243,156,18,0.15); border-radius:16px; overflow:hidden; }
-  .card .imgs { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; }
+  .sub { color:#888; margin-bottom:1.8rem; }
+
+  .controls { display:flex; gap:0.8rem; flex-wrap:wrap; margin-bottom:1.8rem; }
+  .search-box { flex:1; min-width:220px; position:relative; }
+  .search-box input { width:100%; background:#1a1a1a; border:1px solid #333; color:#eee; padding:0.75rem 1rem; border-radius:10px; font-size:0.92rem; }
+  .search-box input:focus { outline:none; border-color:#f39c12; }
+  .chips { display:flex; gap:0.5rem; flex-wrap:wrap; }
+  .chip { background:#1a1a1a; border:1px solid #333; color:#aaa; padding:0.5rem 1rem; border-radius:20px; font-size:0.85rem; cursor:pointer; white-space:nowrap; transition:all 0.15s; }
+  .chip.active, .chip:hover { border-color:#f39c12; color:#f39c12; }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.6rem; }
+  .card { background:#1a1a1a; border:1px solid rgba(243,156,18,0.15); border-radius:16px; overflow:hidden; display:flex; flex-direction:column; }
+  .card .imgs { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; background:#111; position:relative; }
   .card .imgs img { width:100%; flex:0 0 100%; scroll-snap-align:start; object-fit:cover; aspect-ratio:4/3; }
-  .card .body { padding:1.3rem 1.4rem 1.5rem; }
-  .card h3 { font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:0.4rem; }
-  .card .cond { display:inline-block; background:rgba(46,204,113,0.15); border:1px solid rgba(46,204,113,0.4); color:#2ecc71; font-size:0.75rem; font-weight:600; padding:0.2rem 0.7rem; border-radius:20px; margin-bottom:0.7rem; }
-  .card p.desc { color:#999; font-size:0.9rem; margin-bottom:1rem; }
-  .price { font-size:1.4rem; font-weight:900; color:#f39c12; margin-bottom:1rem; }
-  .buy-btn { width:100%; background:linear-gradient(135deg,#f39c12,#e67e22); color:#fff; border:none; padding:0.85rem; border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; }
-  .buy-btn:disabled { opacity:0.6; cursor:not-allowed; }
+  .card .imgs .noimg { width:100%; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; color:#444; font-size:0.85rem; }
+  .card .body { padding:1.2rem 1.3rem 1.4rem; display:flex; flex-direction:column; flex:1; }
+  .card .cat { font-size:0.7rem; color:#f39c12; text-transform:uppercase; letter-spacing:0.6px; font-weight:700; margin-bottom:0.3rem; }
+  .card h3 { font-size:1.05rem; font-weight:700; color:#fff; margin-bottom:0.4rem; }
+  .card .cond { display:inline-block; background:rgba(46,204,113,0.15); border:1px solid rgba(46,204,113,0.4); color:#2ecc71; font-size:0.72rem; font-weight:600; padding:0.2rem 0.65rem; border-radius:20px; margin-bottom:0.6rem; width:fit-content; }
+  .card p.desc { color:#999; font-size:0.87rem; margin-bottom:1rem; flex:1; }
+  .price { font-size:1.3rem; font-weight:900; color:#f39c12; margin-bottom:1rem; }
+  .buy-btn { width:100%; background:linear-gradient(135deg,#f39c12,#e67e22); color:#fff; border:none; padding:0.8rem; border-radius:10px; font-size:0.92rem; font-weight:700; cursor:pointer; }
+  .buy-btn:disabled { background:#333; color:#777; cursor:not-allowed; }
+  .sold-tag { position:absolute; top:0.7rem; right:0.7rem; background:rgba(231,76,60,0.9); color:#fff; font-size:0.72rem; font-weight:700; padding:0.3rem 0.7rem; border-radius:20px; }
+  .empty { text-align:center; color:#666; padding:4rem 0; grid-column:1/-1; }
+
   .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:999; align-items:center; justify-content:center; padding:1rem; }
   .modal-bg.open { display:flex; }
   .modal { background:#1a1a1a; border:1px solid rgba(243,156,18,0.3); border-radius:16px; padding:1.8rem; max-width:380px; width:100%; }
@@ -37,15 +51,19 @@
   .modal .row button { flex:1; padding:0.75rem; border-radius:8px; border:none; font-weight:700; cursor:pointer; }
   .modal .cancel { background:#2a2a2a; color:#aaa; }
   .modal .pay { background:linear-gradient(135deg,#f39c12,#e67e22); color:#fff; }
-  .sold-badge { background:rgba(231,76,60,0.15); border:1px solid rgba(231,76,60,0.4); color:#e74c3c; }
 </style>
 </head>
 <body>
-<header><a href="index.html">CHORDS MUSIC ACADEMY</a></header>
+<header><a class="brand" href="index.html">CHORDS MUSIC ACADEMY</a></header>
 <div class="wrap">
-  <h1>Gear Marketplace</h1>
-  <p class="sub">Used music & studio equipment, sold by Chords Music Academy.</p>
-  <div class="grid" id="grid"></div>
+  <h1>Gear Store</h1>
+  <p class="sub">Used keyboards, audio interfaces, instruments & pro gear.</p>
+
+  <div class="controls">
+    <div class="search-box"><input id="search" placeholder="Search gear..."></div>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="grid" id="grid" style="margin-top:1.6rem;"><div class="empty">Loading...</div></div>
 </div>
 
 <div class="modal-bg" id="modalBg">
@@ -63,38 +81,65 @@
 </div>
 
 <script>
-const ITEMS = [
-  {
-    slug: "volt-876",
-    title: "Universal Audio Volt 876 Audio Interface",
-    price: 62000,
-    condition: "Like New, Barely Used",
-    desc: "Recently received as a gift — barely used. No original bill.",
-    images: ["images/marketplace/volt-876-1.jpg","images/marketplace/volt-876-2.jpg","images/marketplace/volt-876-3.jpg"],
-  },
-];
-
-const grid = document.getElementById("grid");
-ITEMS.forEach(item => {
-  const card = document.createElement("div");
-  card.className = "card";
-  card.innerHTML = `
-    <div class="imgs">${item.images.map(src => `<img src="${src}" alt="${item.title}">`).join("")}</div>
-    <div class="body">
-      <span class="cond">${item.condition}</span>
-      <h3>${item.title}</h3>
-      <p class="desc">${item.desc}</p>
-      <div class="price">₹${item.price.toLocaleString("en-IN")}</div>
-      <button class="buy-btn" onclick="openModal('${item.slug}')">Buy Now</button>
-    </div>`;
-  grid.appendChild(card);
-});
-
+let ALL_ITEMS = [];
+let currentCategory = "all";
 let currentItem = null;
+
+async function loadItems() {
+  try {
+    const res = await fetch("/.netlify/functions/marketplace-list");
+    const data = await res.json();
+    ALL_ITEMS = data.items || [];
+    buildChips();
+    render();
+  } catch (e) {
+    document.getElementById("grid").innerHTML = '<div class="empty">Could not load listings. Please refresh.</div>';
+  }
+}
+
+function buildChips() {
+  const cats = ["all", ...new Set(ALL_ITEMS.map(i => i.category || "other"))];
+  document.getElementById("chips").innerHTML = cats.map(c =>
+    `<button class="chip ${c === currentCategory ? "active" : ""}" data-cat="${c}">${c === "all" ? "All" : c.replace(/\b\w/g, m => m.toUpperCase())}</button>`
+  ).join("");
+  document.querySelectorAll(".chip").forEach(btn => btn.onclick = () => { currentCategory = btn.dataset.cat; buildChips(); render(); });
+}
+
+function render() {
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  const filtered = ALL_ITEMS.filter(i => {
+    const matchesCat = currentCategory === "all" || (i.category || "other") === currentCategory;
+    const matchesSearch = !q || i.title.toLowerCase().includes(q) || (i.description || "").toLowerCase().includes(q);
+    return matchesCat && matchesSearch;
+  });
+
+  const grid = document.getElementById("grid");
+  if (!filtered.length) { grid.innerHTML = '<div class="empty">No gear matches your search right now.</div>'; return; }
+
+  grid.innerHTML = filtered.map(item => {
+    const imgs = (item.images && item.images.length) ? item.images.map(src => `<img src="${src}" alt="${item.title}">`).join("") : '<div class="noimg">No photo</div>';
+    return `
+    <div class="card">
+      <div class="imgs">${imgs}${item.is_sold ? '<span class="sold-tag">SOLD</span>' : ""}</div>
+      <div class="body">
+        <div class="cat">${(item.category || "other")}</div>
+        <h3>${item.title}</h3>
+        ${item.condition ? `<span class="cond">${item.condition}</span>` : ""}
+        <p class="desc">${item.description || ""}</p>
+        <div class="price">₹${Number(item.price).toLocaleString("en-IN")}</div>
+        <button class="buy-btn" ${item.is_sold ? "disabled" : ""} onclick="openModal('${item.slug}')">${item.is_sold ? "Sold Out" : "Buy Now"}</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+document.getElementById("search").addEventListener("input", render);
+
 function openModal(slug) {
-  currentItem = ITEMS.find(i => i.slug === slug);
+  currentItem = ALL_ITEMS.find(i => i.slug === slug);
+  if (!currentItem) return;
   document.getElementById("modalTitle").textContent = currentItem.title;
-  document.getElementById("payAmt").textContent = currentItem.price.toLocaleString("en-IN");
+  document.getElementById("payAmt").textContent = Number(currentItem.price).toLocaleString("en-IN");
   document.getElementById("modalBg").classList.add("open");
 }
 function closeModal() { document.getElementById("modalBg").classList.remove("open"); }
@@ -142,20 +187,23 @@ async function startPayment() {
         if (verify.success) {
           alert("Payment successful! We'll contact you to arrange shipping/pickup.");
           closeModal();
+          loadItems();
         } else {
           alert("Payment could not be verified. Please contact us directly.");
         }
       },
-      modal: { ondismiss: function () { payBtn.disabled = false; payBtn.textContent = "Pay ₹" + currentItem.price.toLocaleString("en-IN"); } },
+      modal: { ondismiss: function () { payBtn.disabled = false; payBtn.textContent = "Pay ₹" + Number(currentItem.price).toLocaleString("en-IN"); } },
     });
     rzp.open();
   } catch (e) {
     alert(e.message || "Something went wrong");
   } finally {
     payBtn.disabled = false;
-    payBtn.textContent = "Pay ₹" + currentItem.price.toLocaleString("en-IN");
+    payBtn.textContent = "Pay ₹" + Number(currentItem.price).toLocaleString("en-IN");
   }
 }
+
+loadItems();
 </script>
 </body>
 </html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gear Store Admin - Chords Music Academy</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:#0d0d0d; color:#eee; padding:2rem 1rem; }
+  .wrap { max-width:640px; margin:0 auto; }
+  h1 { color:#f39c12; font-size:1.4rem; margin-bottom:1.5rem; }
+  label { display:block; font-size:0.82rem; color:#999; margin-bottom:0.3rem; margin-top:0.9rem; }
+  input, textarea, select { width:100%; background:#1a1a1a; border:1px solid #333; color:#eee; padding:0.65rem 0.8rem; border-radius:8px; font-size:0.9rem; font-family:inherit; }
+  textarea { resize:vertical; min-height:70px; }
+  button { margin-top:1.3rem; background:linear-gradient(135deg,#f39c12,#e67e22); color:#fff; border:none; padding:0.8rem 1.5rem; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9rem; }
+  button.secondary { background:#2a2a2a; color:#aaa; margin-left:0.5rem; }
+  #login { max-width:320px; margin:4rem auto; }
+  .item-row { background:#1a1a1a; border:1px solid #2a2a2a; border-radius:10px; padding:0.9rem 1rem; margin-top:0.7rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+  .item-row .meta { font-size:0.82rem; color:#888; }
+  .item-row .title { color:#fff; font-weight:600; font-size:0.92rem; }
+  .sold { color:#e74c3c; }
+  .item-row button { margin-top:0; padding:0.4rem 0.8rem; font-size:0.8rem; }
+  h2 { margin-top:2.5rem; color:#fff; font-size:1.1rem; }
+</style>
+</head>
+<body>
+<div id="login" class="wrap">
+  <h1>Gear Store Admin</h1>
+  <label>Admin Password</label>
+  <input id="tokenInput" type="password" placeholder="Admin password">
+  <button onclick="login()">Login</button>
+</div>
+
+<div id="panel" class="wrap" style="display:none;">
+  <h1>Add New Listing</h1>
+  <label>Title</label>
+  <input id="title" placeholder="e.g. Yamaha P-125 Digital Piano">
+  <label>Category</label>
+  <select id="category">
+    <option value="keyboards">Keyboards</option>
+    <option value="audio-interfaces">Audio Interfaces</option>
+    <option value="guitars">Guitars</option>
+    <option value="drums">Drums</option>
+    <option value="microphones">Microphones</option>
+    <option value="other">Other</option>
+  </select>
+  <label>Price (₹)</label>
+  <input id="price" type="number" placeholder="62000">
+  <label>Condition</label>
+  <input id="condition" placeholder="e.g. Like New, Barely Used">
+  <label>Description</label>
+  <textarea id="description" placeholder="Short description for buyers"></textarea>
+  <label>Image URLs (one per line — upload photos to images/marketplace/ first, or ask Claude to add them)</label>
+  <textarea id="images" placeholder="images/marketplace/item-1.jpg"></textarea>
+  <button onclick="addItem()">Add Listing</button>
+
+  <h2>Current Listings</h2>
+  <div id="itemsList"></div>
+</div>
+
+<script>
+let TOKEN = "";
+
+function login() {
+  TOKEN = document.getElementById("tokenInput").value.trim();
+  if (!TOKEN) return;
+  document.getElementById("login").style.display = "none";
+  document.getElementById("panel").style.display = "block";
+  loadItems();
+}
+
+async function call(action, extra) {
+  const res = await fetch("/.netlify/functions/marketplace-admin", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-admin-token": TOKEN },
+    body: JSON.stringify({ action, ...extra }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Request failed");
+  return data;
+}
+
+async function loadItems() {
+  try {
+    const data = await call("list_all");
+    const list = document.getElementById("itemsList");
+    if (!data.items.length) { list.innerHTML = '<p style="color:#666;margin-top:0.8rem;">No listings yet.</p>'; return; }
+    list.innerHTML = data.items.map(i => `
+      <div class="item-row">
+        <div>
+          <div class="title">${i.title} ${i.is_sold ? '<span class="sold">(SOLD)</span>' : ""}</div>
+          <div class="meta">${i.category} · ₹${Number(i.price).toLocaleString("en-IN")} · ${i.is_active ? "active" : "hidden"}</div>
+        </div>
+        <div>
+          <button class="secondary" onclick="toggleActive('${i.id}', ${!i.is_active})">${i.is_active ? "Hide" : "Unhide"}</button>
+          <button class="secondary" onclick="deleteItem('${i.id}')">Delete</button>
+        </div>
+      </div>`).join("");
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+async function addItem() {
+  const title = document.getElementById("title").value.trim();
+  const price = document.getElementById("price").value;
+  if (!title || !price) { alert("Title and price are required"); return; }
+  const images = document.getElementById("images").value.split("\n").map(s => s.trim()).filter(Boolean);
+  try {
+    await call("add", {
+      title,
+      category: document.getElementById("category").value,
+      price,
+      condition: document.getElementById("condition").value.trim(),
+      description: document.getElementById("description").value.trim(),
+      images,
+    });
+    document.getElementById("title").value = "";
+    document.getElementById("price").value = "";
+    document.getElementById("condition").value = "";
+    document.getElementById("description").value = "";
+    document.getElementById("images").value = "";
+    loadItems();
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+async function toggleActive(id, newVal) {
+  try { await call("update", { id, is_active: newVal }); loadItems(); } catch (e) { alert(e.message); }
+}
+async function deleteItem(id) {
+  if (!confirm("Delete this listing permanently?")) return;
+  try { await call("delete", { id }); loadItems(); } catch (e) { alert(e.message); }
+}
+</script>
+</body>
+</html>
