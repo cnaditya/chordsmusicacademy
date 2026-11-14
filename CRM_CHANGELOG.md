@@ -6,6 +6,14 @@ Dated log of changes to the CRM (`crm.html`, `netlify/functions/pay-admin-studen
 
 ## 2026-11-14
 
+**New student: Yashvika (CMA-2026-144), Keyboard, 3-month package**
+- Checked for an existing record by phone (8712351305) and name — none found, added as new.
+- Created via `crm_add` with `amount_due: 8397` at creation (intentionally, unlike the sibling-split case below) so the backend's built-in auto-receipt fired correctly: Receipt #1055, ₹8,397, 3 Months, Keyboard, Offline, Cash, 14 November 2026.
+- Followed up with `crm_update` to set `amount_due: 0` (cycle fully settled) and `due_date: 2027-02-14` (enrollment + 3 months), per the group-pricing total of ₹8,397 for the 3-month package.
+- ₹500 registration fee (paid separately, same day) logged as a `crm_notes` entry and in the student's `notes` field using "Rs." not "₹", per the standing rule that only ₹-formatted notes count toward dashboard revenue — registration fees are deliberately excluded from `amount_due`/collected-fees tracking.
+- Generated a matching PDF receipt (Receipt #1055) via `crm_receipt_pdf.py`.
+- WhatsApp enrollment-confirmation message to 8712351305 was blocked by the auto-mode classifier ("[Unsanctioned Communication]") — not sent; flagged to Aaditya to send manually or approve.
+
 **Split combined sibling record "Rithwiksai Spoorthy" (CMA-2026-025) into two individual students, applied new discounted fee**
 - The record had Ruthwik and his sister Spoorthy enrolled together as one student (CMA-2026-025, Guitar, annual, ₹70,000 "Custom fee (negotiated)" from last year).
 - Aaditya waived that old combined ₹70,000 fee under the latest summer-offer discount (₹21,588/year per student) and asked to separate the siblings into individual records.
