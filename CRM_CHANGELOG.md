@@ -4,6 +4,16 @@ Dated log of changes to the CRM (`crm.html`, `netlify/functions/pay-admin-studen
 
 ---
 
+## 2026-11-14
+
+**Split combined sibling record "Rithwiksai Spoorthy" (CMA-2026-025) into two individual students, applied new discounted fee**
+- The record had Ruthwik and his sister Spoorthy enrolled together as one student (CMA-2026-025, Guitar, annual, ₹70,000 "Custom fee (negotiated)" from last year).
+- Aaditya waived that old combined ₹70,000 fee under the latest summer-offer discount (₹21,588/year per student) and asked to separate the siblings into individual records.
+- Updated CMA-2026-025 in place to represent Ruthwik only (renamed, `amount_due` → ₹21,588, due_date unchanged at 2026-11-15, old `notes` field and a `crm_notes` entry both record the waived ₹70,000 and the split).
+- Created a new record for Spoorthy (CMA-2026-143, same phone, Guitar, annual, ₹21,588, due_date 2026-11-15) via `crm_add` with `amount_due: 0` at creation (to avoid the auto-generated Cash receipt that `crm_add` fires when `amount_due > 0`), then a follow-up `crm_update` to set the real fee — same workaround as the Satish demo-student case on 2026-11-07.
+- Note for future sessions: `crm_update`'s body shape is `{action, id, student: {...fields}}` — the `student` key must be a nested object of the fields to patch, not the `student_id` string. Passing a string there returns `{"success":true}` with zero rows actually changed (confirmed and worked around this session).
+- Sent two separate WhatsApp messages (via `crm_send_whatsapp`) to the shared phone number (+919652583865), one naming Ruthwik's ₹21,588 fee and one naming Spoorthy's ₹21,588 fee — both sent successfully.
+
 ## 2026-11-07
 
 **Added and then deleted a demo student (Satish) — no lasting data change**
