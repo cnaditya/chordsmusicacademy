@@ -13,6 +13,11 @@ Dated log of changes to the CRM (`crm.html`, `netlify/functions/pay-admin-studen
 - `crm_notes` audit entry added on each record (amounts written as "Rs." not "₹" since these are status/audit notes, not real payments — see [[feedback_cma_payment_notes_format]]).
 - Note: per [[feedback_cma_broadcast_active_only]], pausing changes `status` to "paused" but leaves `is_active: true` — broadcasts and other `status=active`-filtered features will now correctly skip them, but anything filtering only on `is_active` will not.
 
+**Paused Ruthwik (CMA-2026-025) and Spoorthy (CMA-2026-143) for non-payment**
+- Both Rs.21,588 annual Guitar fees still due (see 2026-11-14 sibling-split entry for background) — status changed active -> paused on both.
+- Two separate WhatsApp messages sent to the shared phone number (+919652583865), one naming each sibling, stating the full fee must be paid at once to rejoin and no classes will be taken until then.
+- `crm_notes` audit entry added on each record.
+
 ## 2026-11-14
 
 **New student: Yashvika (CMA-2026-144), Keyboard, 3-month package**
