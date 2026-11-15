@@ -4,6 +4,15 @@ Dated log of changes to the CRM (`crm.html`, `netlify/functions/pay-admin-studen
 
 ---
 
+## 2026-11-15
+
+**Paused Shreyan (CMA-2026-093) and Abhay Vardhan (CMA-2026-005) for non-payment**
+- Shreyan: Drums, annual, Rs.21,588 overdue since 1-Oct-2026 — status changed active -> paused.
+- Abhay Vardhan: Guitar, biannual, Rs.12,500 overdue since 19-Oct-2026 — status changed active -> paused.
+- WhatsApp sent to both informing them classes are paused due to non-payment, asking if they'd like to continue and clear the balance to resume.
+- `crm_notes` audit entry added on each record (amounts written as "Rs." not "₹" since these are status/audit notes, not real payments — see [[feedback_cma_payment_notes_format]]).
+- Note: per [[feedback_cma_broadcast_active_only]], pausing changes `status` to "paused" but leaves `is_active: true` — broadcasts and other `status=active`-filtered features will now correctly skip them, but anything filtering only on `is_active` will not.
+
 ## 2026-11-14
 
 **New student: Yashvika (CMA-2026-144), Keyboard, 3-month package**
