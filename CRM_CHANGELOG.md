@@ -4,7 +4,18 @@ Dated log of changes to the CRM (`crm.html`, `netlify/functions/pay-admin-studen
 
 ---
 
+## 2026-11-18
+
+**KrishnaRithwik shanmukh (CMA-2026-009) paid quarterly fee — ₹15,000**
+- Carnatic Vocal, offline, quarterly. Payment was due 15-Nov-2026; previous payment was Receipt #1020 (₹15,000, 28-Aug-2026), nothing recorded in between, so no duplicate.
+- Recorded via `crm_mark_paid` (amount 15000): auto-issued **Receipt #1057**, `amount_due` set to 0, `due_date` advanced 2026-11-15 -> **2027-02-15**, `cycle_start` set to 2026-11-15, `leaves_taken` reset to 0.
+- Payment method not stated (the mark-paid note doesn't record one); last quarter's was Online.
+
 ## 2026-11-15
+
+**New-Mac migration verification — temporary test records, fully removed**
+- `ZZTEST DELETE ME` student + one note (no ₹ amount) created via `crm_add` / `crm_add_note` to verify API access from the new MacBook Pro, then hard-deleted from `crm_notes` and `crm_students` via Supabase REST. No leftovers in `crm_notes` / `crm_leaves` / `crm_bills`.
+- `aditya-demo` demo student (Keyboard, quarterly, ₹8,397, auto Receipt #1057) created at Aaditya's request for a receipt demo, then hard-deleted (note + student) the same day. Revenue stats, receipt numbering and CMA-2026-145 student-ID numbering were unaffected afterwards — #1057 was reused for the real 2026-11-18 payment above.
 
 **Paused Shreyan (CMA-2026-093) and Abhay Vardhan (CMA-2026-005) for non-payment**
 - Shreyan: Drums, annual, Rs.21,588 overdue since 1-Oct-2026 — status changed active -> paused.
