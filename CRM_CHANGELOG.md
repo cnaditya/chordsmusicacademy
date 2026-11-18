@@ -6,6 +6,10 @@ Dated log of changes to the CRM (`crm.html`, `netlify/functions/pay-admin-studen
 
 ## 2026-11-18
 
+**Shreyan (CMA-2026-093) — confirmed no further dues messages**
+- Already paused since 2026-11-15 (see below). Verified paused students are excluded from every reminder path: `fee-reminders.js` skips `status: paused` before any template (incl. weekly winback) is chosen; dashboard `dueStudents` only lists active/trial; broadcasts filter `status=active`.
+- Added a `crm_notes` "DO NOT SEND FEE REMINDERS" note on his record (amount written as Rs., not ₹, so it isn't counted as a payment) so nobody re-activates him by mistake. Rs.21,588 outstanding left on record; no status/amount change.
+
 **New student: Akshar (CMA-2026-145) — Drums, joined & paid 17-Nov-2026 — ₹8,897**
 - Offline, 3 Months package. Paid ₹8,397 course fee + ₹500 registration = ₹8,897 on 17-Nov-2026 (recorded on 18-Nov, backdated).
 - Added via `crm_add` with `amount_due: 0` (already paid), `enrollment_date`/`cycle_start` 2026-11-17, `due_date` **2027-02-17**. Phone 7799727727. Class days/time and teacher not yet set.
