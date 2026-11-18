@@ -6,6 +6,12 @@ Dated log of changes to the CRM (`crm.html`, `netlify/functions/pay-admin-studen
 
 ## 2026-11-18
 
+**New student: Akshar (CMA-2026-145) — Drums, joined & paid 17-Nov-2026 — ₹8,897**
+- Offline, 3 Months package. Paid ₹8,397 course fee + ₹500 registration = ₹8,897 on 17-Nov-2026 (recorded on 18-Nov, backdated).
+- Added via `crm_add` with `amount_due: 0` (already paid), `enrollment_date`/`cycle_start` 2026-11-17, `due_date` **2027-02-17**. Phone 7799727727. Class days/time and teacher not yet set.
+- Payment logged as one `crm_add_note` (backdated `created_at` 2026-11-17): **Receipt #1058** — total ₹8897 is the first ₹ figure so the dashboard counts it once; the ₹8,397 / ₹500 breakdown follows it in the same note.
+- Payment method not stated — receipt shows Cash (CRM default).
+
 **KrishnaRithwik shanmukh (CMA-2026-009) paid quarterly fee — ₹15,000**
 - Carnatic Vocal, offline, quarterly. Payment was due 15-Nov-2026; previous payment was Receipt #1020 (₹15,000, 28-Aug-2026), nothing recorded in between, so no duplicate.
 - Recorded via `crm_mark_paid` (amount 15000): auto-issued **Receipt #1057**, `amount_due` set to 0, `due_date` advanced 2026-11-15 -> **2027-02-15**, `cycle_start` set to 2026-11-15, `leaves_taken` reset to 0.
